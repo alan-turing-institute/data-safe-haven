@@ -77,6 +77,7 @@ class SREFirewallComponent(ComponentResource):
         # Deploy IP address
         public_ip = network.PublicIPAddress(
             f"{self._name}_pip_firewall",
+            location=props.location,
             public_ip_address_name=f"{stack_name}-pip-firewall",
             public_ip_allocation_method=network.IPAllocationMethod.STATIC,
             resource_group_name=props.resource_group_name,
@@ -92,6 +93,7 @@ class SREFirewallComponent(ComponentResource):
         # from Microsoft.
         public_ip_management = network.PublicIPAddress(
             f"{self._name}_pip_firewall_management",
+            location=props.location,
             public_ip_address_name=f"{stack_name}-pip-firewall-management",
             public_ip_allocation_method=network.IPAllocationMethod.STATIC,
             resource_group_name=props.resource_group_name,

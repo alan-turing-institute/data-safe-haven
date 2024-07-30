@@ -1,9 +1,12 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import network, resources
+from pulumi_azure_native import network
 
-from data_safe_haven.infrastructure.common import get_id_from_subnet
+from data_safe_haven.infrastructure.common import (
+    DockerHubCredentials,
+    get_id_from_subnet,
+)
 from data_safe_haven.types import DatabaseSystem, SoftwarePackageCategory
 
 from .database_servers import SREDatabaseServerComponent, SREDatabaseServerProps
@@ -22,8 +25,8 @@ class SREUserServicesProps:
         self,
         database_service_admin_password: Input[str],
         databases: list[DatabaseSystem],  # this must *not* be passed as an Input[T]
-        dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
+        dockerhub_credentials: DockerHubCredentials,
         gitea_database_password: Input[str],
         hedgedoc_database_password: Input[str],
         ldap_server_hostname: Input[str],
@@ -32,13 +35,12 @@ class SREUserServicesProps:
         ldap_user_filter: Input[str],
         ldap_user_search_base: Input[str],
         location: Input[str],
-        networking_resource_group_name: Input[str],
         nexus_admin_password: Input[str],
+        resource_group_name: Input[str],
         software_packages: SoftwarePackageCategory,
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
-        storage_account_resource_group_name: Input[str],
         subnet_containers_support: Input[network.GetSubnetResult],
         subnet_containers: Input[network.GetSubnetResult],
         subnet_databases: Input[network.GetSubnetResult],
@@ -46,8 +48,8 @@ class SREUserServicesProps:
     ) -> None:
         self.database_service_admin_password = database_service_admin_password
         self.databases = databases
-        self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
+        self.dockerhub_credentials = dockerhub_credentials
         self.gitea_database_password = gitea_database_password
         self.hedgedoc_database_password = hedgedoc_database_password
         self.ldap_server_hostname = ldap_server_hostname
@@ -56,13 +58,12 @@ class SREUserServicesProps:
         self.ldap_user_filter = ldap_user_filter
         self.ldap_user_search_base = ldap_user_search_base
         self.location = location
-        self.networking_resource_group_name = networking_resource_group_name
         self.nexus_admin_password = Output.secret(nexus_admin_password)
+        self.resource_group_name = resource_group_name
         self.software_packages = software_packages
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
-        self.storage_account_resource_group_name = storage_account_resource_group_name
         self.subnet_containers_id = Output.from_input(subnet_containers).apply(
             get_id_from_subnet
         )
@@ -92,15 +93,6 @@ class SREUserServicesComponent(ComponentResource):
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
-        # Deploy resource group
-        resource_group = resources.ResourceGroup(
-            f"{self._name}_resource_group",
-            location=props.location,
-            resource_group_name=f"{stack_name}-rg-user-services",
-            opts=child_opts,
-            tags=child_tags,
-        )
-
         # Deploy the Gitea server
         SREGiteaServerComponent(
             "sre_gitea_server",
@@ -109,20 +101,18 @@ class SREUserServicesComponent(ComponentResource):
                 containers_subnet_id=props.subnet_containers_id,
                 database_subnet_id=props.subnet_containers_support_id,
                 database_password=props.gitea_database_password,
-                dns_resource_group_name=props.dns_resource_group_name,
                 dns_server_ip=props.dns_server_ip,
+                dockerhub_credentials=props.dockerhub_credentials,
                 ldap_server_hostname=props.ldap_server_hostname,
                 ldap_server_port=props.ldap_server_port,
                 ldap_username_attribute=props.ldap_username_attribute,
                 ldap_user_filter=props.ldap_user_filter,
                 ldap_user_search_base=props.ldap_user_search_base,
                 location=props.location,
-                networking_resource_group_name=props.networking_resource_group_name,
+                resource_group_name=props.resource_group_name,
                 sre_fqdn=props.sre_fqdn,
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
-                storage_account_resource_group_name=props.storage_account_resource_group_name,
-                user_services_resource_group_name=resource_group.name,
             ),
             opts=child_opts,
             tags=child_tags,
@@ -136,20 +126,18 @@ class SREUserServicesComponent(ComponentResource):
                 containers_subnet_id=props.subnet_containers_id,
                 database_password=props.hedgedoc_database_password,
                 database_subnet_id=props.subnet_containers_support_id,
-                dns_resource_group_name=props.dns_resource_group_name,
                 dns_server_ip=props.dns_server_ip,
+                dockerhub_credentials=props.dockerhub_credentials,
                 ldap_server_hostname=props.ldap_server_hostname,
                 ldap_server_port=props.ldap_server_port,
                 ldap_username_attribute=props.ldap_username_attribute,
                 ldap_user_filter=props.ldap_user_filter,
                 ldap_user_search_base=props.ldap_user_search_base,
                 location=props.location,
-                networking_resource_group_name=props.networking_resource_group_name,
+                resource_group_name=props.resource_group_name,
                 sre_fqdn=props.sre_fqdn,
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
-                storage_account_resource_group_name=props.storage_account_resource_group_name,
-                user_services_resource_group_name=resource_group.name,
             ),
             opts=child_opts,
             tags=child_tags,
@@ -160,18 +148,16 @@ class SREUserServicesComponent(ComponentResource):
             "sre_software_repositories",
             stack_name,
             SRESoftwareRepositoriesProps(
-                dns_resource_group_name=props.dns_resource_group_name,
                 dns_server_ip=props.dns_server_ip,
+                dockerhub_credentials=props.dockerhub_credentials,
                 location=props.location,
-                networking_resource_group_name=props.networking_resource_group_name,
                 nexus_admin_password=props.nexus_admin_password,
+                resource_group_name=props.resource_group_name,
                 sre_fqdn=props.sre_fqdn,
                 software_packages=props.software_packages,
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
-                storage_account_resource_group_name=props.storage_account_resource_group_name,
                 subnet_id=props.subnet_software_repositories_id,
-                user_services_resource_group_name=resource_group.name,
             ),
             opts=child_opts,
             tags=child_tags,
@@ -185,12 +171,10 @@ class SREUserServicesComponent(ComponentResource):
                 SREDatabaseServerProps(
                     database_password=props.database_service_admin_password,
                     database_system=database,
-                    dns_resource_group_name=props.dns_resource_group_name,
                     location=props.location,
-                    networking_resource_group_name=props.networking_resource_group_name,
+                    resource_group_name=props.resource_group_name,
                     sre_fqdn=props.sre_fqdn,
                     subnet_id=props.subnet_databases_id,
-                    user_services_resource_group_name=resource_group.name,
                 ),
                 opts=child_opts,
                 tags=child_tags,

@@ -2,7 +2,7 @@ import pytest
 from freezegun import freeze_time
 
 from data_safe_haven.exceptions import DataSafeHavenValueError
-from data_safe_haven.functions import json_safe, next_occurrence
+from data_safe_haven.functions import get_key_vault_name, json_safe, next_occurrence
 
 
 class TestNextOccurrence:
@@ -54,6 +54,18 @@ class TestNextOccurrence:
         with pytest.raises(DataSafeHavenValueError) as exc_info:
             next_occurrence(5, 13, "Australia/Perth", time_format="invalid")
         assert exc_info.match(r"Time format 'invalid' was not recognised.")
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        (r"shm-a-sre-b", "shmasrebsecrets"),
+        (r"shm-verylongshmname-sre-verylongsrename", "shmverylsreverylosecrets"),
+        (r"a-long-string-with-lots-of-tokens", "alostrwitlotoftoksecrets"),
+    ],
+)
+def test_get_key_vault_name(value, expected):
+    assert get_key_vault_name(value) == expected
 
 
 @pytest.mark.parametrize(

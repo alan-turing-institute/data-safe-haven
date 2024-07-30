@@ -6,6 +6,7 @@ from typing import Any, cast
 
 from azure.core.exceptions import (
     AzureError,
+    ClientAuthenticationError,
     HttpResponseError,
     ResourceExistsError,
     ResourceNotFoundError,
@@ -47,7 +48,7 @@ from azure.mgmt.msi.v2022_01_31_preview.models import Identity
 from azure.mgmt.resource.resources.v2021_04_01 import ResourceManagementClient
 from azure.mgmt.resource.resources.v2021_04_01.models import ResourceGroup
 from azure.mgmt.resource.subscriptions import SubscriptionClient
-from azure.mgmt.resource.subscriptions.models import Location
+from azure.mgmt.resource.subscriptions.models import Location, Subscription
 from azure.mgmt.storage.v2021_08_01 import StorageManagementClient
 from azure.mgmt.storage.v2021_08_01.models import (
     BlobContainer,
@@ -62,17 +63,49 @@ from azure.mgmt.storage.v2021_08_01.models import (
 from azure.storage.blob import BlobClient, BlobServiceClient
 from azure.storage.filedatalake import DataLakeServiceClient
 
-from data_safe_haven.exceptions import DataSafeHavenAzureError
-from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
-from data_safe_haven.logging import get_logger
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureAPIAuthenticationError,
+    DataSafeHavenAzureError,
+    DataSafeHavenValueError,
+)
+from data_safe_haven.logging import get_logger, get_null_logger
+from data_safe_haven.types import AzureSdkCredentialScope
+
+from .credentials import AzureSdkCredential
+from .graph_api import GraphApi
 
 
-class AzureApi(AzureAuthenticator):
-    """Interface to the Azure REST API"""
+class AzureSdk:
+    """Interface to the Azure Python SDK"""
 
-    def __init__(self, subscription_name: str) -> None:
-        super().__init__(subscription_name)
-        self.logger = get_logger()
+    def __init__(
+        self, subscription_name: str, *, disable_logging: bool = False
+    ) -> None:
+        self._credentials: dict[AzureSdkCredentialScope, AzureSdkCredential] = {}
+        self.logger = get_null_logger() if disable_logging else get_logger()
+        self.subscription_name = subscription_name
+        self.subscription_id_: str | None = None
+        self.tenant_id_: str | None = None
+
+    @property
+    def entra_directory(self) -> GraphApi:
+        return GraphApi(credential=self.credential(AzureSdkCredentialScope.GRAPH_API))
+
+    @property
+    def subscription_id(self) -> str:
+        if not self.subscription_id_:
+            self.subscription_id_ = str(
+                self.get_subscription(self.subscription_name).subscription_id
+            )
+        return self.subscription_id_
+
+    @property
+    def tenant_id(self) -> str:
+        if not self.tenant_id_:
+            self.tenant_id_ = str(
+                self.get_subscription(self.subscription_name).tenant_id
+            )
+        return self.tenant_id_
 
     def blob_client(
         self,
@@ -129,6 +162,13 @@ class AzureApi(AzureAuthenticator):
         )
         return exists
 
+    def credential(
+        self, scope: AzureSdkCredentialScope = AzureSdkCredentialScope.DEFAULT
+    ) -> AzureSdkCredential:
+        if scope not in self._credentials:
+            self._credentials[scope] = AzureSdkCredential(scope)
+        return self._credentials[scope]
+
     def download_blob(
         self,
         blob_name: str,
@@ -181,7 +221,7 @@ class AzureApi(AzureAuthenticator):
         """
         try:
             # Connect to Azure clients
-            dns_client = DnsManagementClient(self.credential, self.subscription_id)
+            dns_client = DnsManagementClient(self.credential(), self.subscription_id)
 
             # Ensure that record exists
             self.logger.debug(
@@ -227,7 +267,7 @@ class AzureApi(AzureAuthenticator):
         """
         try:
             # Connect to Azure clients
-            dns_client = DnsManagementClient(self.credential, self.subscription_id)
+            dns_client = DnsManagementClient(self.credential(), self.subscription_id)
 
             # Ensure that record exists
             self.logger.debug(
@@ -266,7 +306,7 @@ class AzureApi(AzureAuthenticator):
         """
         try:
             # Connect to Azure clients
-            dns_client = DnsManagementClient(self.credential, self.subscription_id)
+            dns_client = DnsManagementClient(self.credential(), self.subscription_id)
 
             # Ensure that record exists
             self.logger.debug(
@@ -312,7 +352,7 @@ class AzureApi(AzureAuthenticator):
 
             # Connect to Azure clients
             key_vault_client = KeyVaultManagementClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
             # Ensure that key vault exists
             key_vault_client.vaults.begin_create_or_update(
@@ -382,13 +422,12 @@ class AzureApi(AzureAuthenticator):
         try:
             # Connect to Azure clients
             key_client = KeyClient(
-                f"https://{key_vault_name}.vault.azure.net", self.credential
+                credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
+                vault_url=f"https://{key_vault_name}.vault.azure.net",
             )
 
             # Ensure that key exists
-            self.logger.debug(
-                f"Ensuring that key [green]{key_name}[/] exists...",
-            )
+            self.logger.debug(f"Ensuring that key [green]{key_name}[/] exists...")
             key = None
             try:
                 key = key_client.get_key(key_name)
@@ -422,7 +461,7 @@ class AzureApi(AzureAuthenticator):
                 f"Ensuring that managed identity [green]{identity_name}[/] exists...",
             )
             msi_client = ManagedServiceIdentityClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
             managed_identity = msi_client.user_assigned_identities.create_or_update(
                 resource_group_name,
@@ -451,7 +490,7 @@ class AzureApi(AzureAuthenticator):
         try:
             # Connect to Azure clients
             resource_client = ResourceManagementClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
 
             # Ensure that resource group exists
@@ -497,7 +536,7 @@ class AzureApi(AzureAuthenticator):
         try:
             # Connect to Azure clients
             storage_client = StorageManagementClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
             self.logger.debug(
                 f"Ensuring that storage account [green]{storage_account_name}[/] exists...",
@@ -536,7 +575,9 @@ class AzureApi(AzureAuthenticator):
             DataSafeHavenAzureError if the existence of the certificate could not be verified
         """
         # Connect to Azure clients
-        storage_client = StorageManagementClient(self.credential, self.subscription_id)
+        storage_client = StorageManagementClient(
+            self.credential(), self.subscription_id
+        )
 
         self.logger.debug(
             f"Ensuring that storage container [green]{container_name}[/] exists...",
@@ -569,8 +610,8 @@ class AzureApi(AzureAuthenticator):
         """
         # Connect to Azure clients
         certificate_client = CertificateClient(
+            credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
             vault_url=f"https://{key_vault_name}.vault.azure.net",
-            credential=self.credential,
         )
         # Ensure that certificate exists
         try:
@@ -590,8 +631,8 @@ class AzureApi(AzureAuthenticator):
         """
         # Connect to Azure clients
         key_client = KeyClient(
+            credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
             vault_url=f"https://{key_vault_name}.vault.azure.net",
-            credential=self.credential,
         )
         # Ensure that certificate exists
         try:
@@ -611,7 +652,8 @@ class AzureApi(AzureAuthenticator):
         """
         # Connect to Azure clients
         secret_client = SecretClient(
-            f"https://{key_vault_name}.vault.azure.net", self.credential
+            credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
+            vault_url=f"https://{key_vault_name}.vault.azure.net",
         )
         # Ensure that secret exists
         try:
@@ -631,7 +673,7 @@ class AzureApi(AzureAuthenticator):
             List[str]: Names of Azure locations
         """
         try:
-            subscription_client = SubscriptionClient(self.credential)
+            subscription_client = SubscriptionClient(self.credential())
             return [
                 str(location.name)
                 for location in cast(
@@ -661,7 +703,7 @@ class AzureApi(AzureAuthenticator):
         try:
             # Connect to Azure client
             storage_client = StorageManagementClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
             storage_keys = None
             for _ in range(attempts):
@@ -685,6 +727,19 @@ class AzureApi(AzureAuthenticator):
             msg = f"Keys could not be loaded for {msg_sa} in {msg_rg}."
             raise DataSafeHavenAzureError(msg) from exc
 
+    def get_subscription(self, subscription_name: str) -> Subscription:
+        """Get an Azure subscription by name."""
+        try:
+            subscription_client = SubscriptionClient(self.credential())
+            for subscription in subscription_client.subscriptions.list():
+                if subscription.display_name == subscription_name:
+                    return subscription
+        except ClientAuthenticationError as exc:
+            msg = "Failed to authenticate with Azure API."
+            raise DataSafeHavenAzureAPIAuthenticationError(msg) from exc
+        msg = f"Could not find subscription '{subscription_name}'"
+        raise DataSafeHavenValueError(msg)
+
     def import_keyvault_certificate(
         self,
         certificate_name: str,
@@ -702,8 +757,8 @@ class AzureApi(AzureAuthenticator):
         try:
             # Connect to Azure clients
             certificate_client = CertificateClient(
+                credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
                 vault_url=f"https://{key_vault_name}.vault.azure.net",
-                credential=self.credential,
             )
             # Import the certificate, overwriting any existing certificate with the same name
             self.logger.debug(
@@ -733,7 +788,7 @@ class AzureApi(AzureAuthenticator):
         try:
             # Connect to Azure client
             compute_client = ComputeManagementClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
             # Construct SKU information
             skus = {}
@@ -757,6 +812,66 @@ class AzureApi(AzureAuthenticator):
             msg = f"Failed to load available VM sizes for Azure location {location}."
             raise DataSafeHavenAzureError(msg) from exc
 
+    def purge_keyvault(
+        self,
+        key_vault_name: str,
+        location: str,
+    ) -> bool:
+        """Purge a deleted Key Vault from Azure
+
+        Returns:
+            True: if the Key Vault was purged from a deleted state
+            False: if the Key Vault did not need to be purged
+
+        Raises:
+            DataSafeHavenAzureError if the non-existence of the Key Vault could not be verified
+        """
+        try:
+            # Connect to Azure clients
+            key_vault_client = KeyVaultManagementClient(
+                self.credential(), self.subscription_id
+            )
+
+            # Check whether a deleted Key Vault exists
+            try:
+                key_vault_client.vaults.get_deleted(
+                    vault_name=key_vault_name,
+                    location=location,
+                )
+            except HttpResponseError:
+                self.logger.info(
+                    f"Key Vault [green]{key_vault_name}[/] does not need to be purged."
+                )
+                return False
+
+            # Purge the Key Vault
+            with suppress(HttpResponseError):
+                self.logger.debug(
+                    f"Purging Key Vault [green]{key_vault_name}[/]...",
+                )
+
+                # Keep polling until purge is finished
+                poller = key_vault_client.vaults.begin_purge_deleted(
+                    vault_name=key_vault_name,
+                    location=location,
+                )
+                while not poller.done():
+                    poller.wait(10)
+
+            # Check whether the Key Vault is still in deleted state
+            with suppress(HttpResponseError):
+                if key_vault_client.vaults.get_deleted(
+                    vault_name=key_vault_name,
+                    location=location,
+                ):
+                    msg = f"Key Vault '{key_vault_name}' exists in deleted state."
+                    raise AzureError(msg)
+            self.logger.info(f"Purged Key Vault [green]{key_vault_name}[/].")
+            return True
+        except AzureError as exc:
+            msg = f"Failed to remove Key Vault '{key_vault_name}'."
+            raise DataSafeHavenAzureError(msg) from exc
+
     def purge_keyvault_certificate(
         self,
         certificate_name: str,
@@ -765,13 +880,13 @@ class AzureApi(AzureAuthenticator):
         """Purge a deleted certificate from the KeyVault
 
         Raises:
-            DataSafeHavenAzureError if the existence of the certificate could not be verified
+            DataSafeHavenAzureError if the non-existence of the certificate could not be verified
         """
         try:
             # Connect to Azure clients
             certificate_client = CertificateClient(
+                credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
                 vault_url=f"https://{key_vault_name}.vault.azure.net",
-                credential=self.credential,
             )
             # Ensure that record is removed
             self.logger.debug(
@@ -845,7 +960,7 @@ class AzureApi(AzureAuthenticator):
         """
         try:
             # Connect to Azure clients
-            dns_client = DnsManagementClient(self.credential, self.subscription_id)
+            dns_client = DnsManagementClient(self.credential(), self.subscription_id)
             # Check whether resource currently exists
             try:
                 dns_client.record_sets.get(
@@ -889,8 +1004,8 @@ class AzureApi(AzureAuthenticator):
         try:
             # Connect to Azure clients
             certificate_client = CertificateClient(
+                credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
                 vault_url=f"https://{key_vault_name}.vault.azure.net",
-                credential=self.credential,
             )
             self.logger.debug(
                 f"Removing certificate [green]{certificate_name}[/] from Key Vault [green]{key_vault_name}[/]...",
@@ -950,7 +1065,7 @@ class AzureApi(AzureAuthenticator):
         try:
             # Connect to Azure clients
             resource_client = ResourceManagementClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
 
             if not resource_client.resource_groups.check_existence(resource_group_name):
@@ -1003,7 +1118,7 @@ class AzureApi(AzureAuthenticator):
         try:
             # Connect to Azure clients
             compute_client = ComputeManagementClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
             vm = compute_client.virtual_machines.get(resource_group_name, vm_name)
             if not vm.os_profile:
@@ -1088,7 +1203,7 @@ class AzureApi(AzureAuthenticator):
         try:
             # Ensure that storage container exists in the storage account
             storage_client = StorageManagementClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
             try:
                 container = storage_client.blob_containers.get(
@@ -1106,7 +1221,8 @@ class AzureApi(AzureAuthenticator):
 
             # Connect to Azure clients
             service_client = DataLakeServiceClient(
-                f"https://{storage_account_name}.dfs.core.windows.net", self.credential
+                account_url=f"https://{storage_account_name}.dfs.core.windows.net",
+                credential=self.credential(),
             )
             file_system_client = service_client.get_file_system_client(
                 file_system=container_name

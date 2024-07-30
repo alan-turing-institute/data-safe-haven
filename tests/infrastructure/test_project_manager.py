@@ -22,8 +22,6 @@ class TestSREProjectManager:
         sre_config,
         pulumi_config_no_key,
         pulumi_project_sandbox,
-        mock_azure_cli_confirm,  # noqa: ARG002
-        mock_install_plugins,  # noqa: ARG002
     ):
         sre = SREProjectManager(
             context_no_secrets,
@@ -35,13 +33,27 @@ class TestSREProjectManager:
         assert sre.context == context_no_secrets
         assert sre.pulumi_project == pulumi_project_sandbox
 
+    def test_cleanup(
+        self,
+        capsys,
+        mock_azuresdk_blob_exists,  # noqa: ARG002
+        mock_azuresdk_purge_keyvault,  # noqa: ARG002
+        mock_azuresdk_remove_blob,  # noqa: ARG002
+        sre_project_manager,
+    ):
+        sre_project_manager.cleanup()
+        stdout, _ = capsys.readouterr()
+        assert (
+            "Removed Pulumi stack backup shm-acmedeployment-sre-sandbox.json.bak."
+            in stdout
+        )
+        assert "Purged Azure Key Vault shmacmedsresandbosecrets." in stdout
+
     def test_new_project(
         self,
         context_no_secrets,
         sre_config,
         pulumi_config_empty,
-        mock_azure_cli_confirm,  # noqa: ARG002
-        mock_install_plugins,  # noqa: ARG002
     ):
         sre = SREProjectManager(
             context_no_secrets,
@@ -63,15 +75,13 @@ class TestSREProjectManager:
         context_no_secrets,
         sre_config,
         pulumi_config_empty,
-        mock_azure_cli_confirm,  # noqa: ARG002
-        mock_install_plugins,  # noqa: ARG002
     ):
         sre = SREProjectManager(
             context_no_secrets, sre_config, pulumi_config_empty, create_project=False
         )
         with raises(
             DataSafeHavenConfigError,
-            match="No SHM/SRE named sandbox is defined.",
+            match="No SRE named sandbox is defined.",
         ):
             _ = sre.pulumi_project
 

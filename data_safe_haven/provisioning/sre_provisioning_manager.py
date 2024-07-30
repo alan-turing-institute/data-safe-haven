@@ -4,9 +4,9 @@ import pathlib
 from typing import Any
 
 from data_safe_haven.external import (
-    AzureApi,
     AzureContainerInstance,
     AzurePostgreSQLDatabase,
+    AzureSdk,
     GraphApi,
 )
 from data_safe_haven.infrastructure import SREProjectManager
@@ -28,7 +28,7 @@ class SREProvisioningManager:
     ):
         self._available_vm_skus: dict[str, dict[str, Any]] | None = None
         self.location = location
-        self.graph_api = GraphApi(auth_token=graph_api_token)
+        self.graph_api = GraphApi.from_token(graph_api_token)
         self.logger = get_logger()
         self.sre_name = sre_name
         self.subscription_name = subscription_name
@@ -36,8 +36,8 @@ class SREProvisioningManager:
         # Read secrets from key vault
         keyvault_name = sre_stack.output("data")["key_vault_name"]
         secret_name = sre_stack.output("data")["password_user_database_admin_secret"]
-        azure_api = AzureApi(self.subscription_name)
-        connection_db_server_password = azure_api.get_keyvault_secret(
+        azure_sdk = AzureSdk(self.subscription_name)
+        connection_db_server_password = azure_sdk.get_keyvault_secret(
             keyvault_name, secret_name
         )
 
@@ -67,8 +67,8 @@ class SREProvisioningManager:
     def available_vm_skus(self) -> dict[str, dict[str, Any]]:
         """Load available VM SKUs for this region"""
         if not self._available_vm_skus:
-            azure_api = AzureApi(self.subscription_name)
-            self._available_vm_skus = azure_api.list_available_vm_skus(self.location)
+            azure_sdk = AzureSdk(self.subscription_name)
+            self._available_vm_skus = azure_sdk.list_available_vm_skus(self.location)
         return self._available_vm_skus
 
     def create_security_groups(self) -> None:
@@ -114,7 +114,7 @@ class SREProvisioningManager:
             "user_group_name": self.security_group_params["user_group_name"],
         }
         for details in connection_data["connections"]:
-            self.logger.debug(
+            self.logger.info(
                 f"Adding connection [bold]{details['connection_name']}[/] at [green]{details['ip_address']}[/]."
             )
         postgres_script_path = (

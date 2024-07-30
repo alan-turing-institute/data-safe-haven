@@ -10,7 +10,7 @@ from azure.mgmt.containerinstance.models import (
 )
 
 from data_safe_haven.exceptions import DataSafeHavenAzureError
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external import AzureSdk
 from data_safe_haven.logging import get_logger
 
 
@@ -23,7 +23,7 @@ class AzureContainerInstance:
         resource_group_name: str,
         subscription_name: str,
     ):
-        self.azure_api = AzureApi(subscription_name)
+        self.azure_sdk = AzureSdk(subscription_name)
         self.logger = get_logger()
         self.resource_group_name = resource_group_name
         self.container_group_name = container_group_name
@@ -36,7 +36,7 @@ class AzureContainerInstance:
     @property
     def current_ip_address(self) -> str:
         aci_client = ContainerInstanceManagementClient(
-            self.azure_api.credential, self.azure_api.subscription_id
+            self.azure_sdk.credential(), self.azure_sdk.subscription_id
         )
         ip_address = aci_client.container_groups.get(
             self.resource_group_name, self.container_group_name
@@ -51,7 +51,7 @@ class AzureContainerInstance:
         # Connect to Azure clients
         try:
             aci_client = ContainerInstanceManagementClient(
-                self.azure_api.credential, self.azure_api.subscription_id
+                self.azure_sdk.credential(), self.azure_sdk.subscription_id
             )
             if not target_ip_address:
                 target_ip_address = self.current_ip_address
@@ -98,7 +98,7 @@ class AzureContainerInstance:
         """
         # Connect to Azure clients
         aci_client = ContainerInstanceManagementClient(
-            self.azure_api.credential, self.azure_api.subscription_id
+            self.azure_sdk.credential(), self.azure_sdk.subscription_id
         )
 
         # Run command

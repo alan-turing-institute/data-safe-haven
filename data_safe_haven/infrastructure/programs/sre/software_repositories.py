@@ -6,6 +6,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, storage
 
 from data_safe_haven.infrastructure.common import (
+    DockerHubCredentials,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
@@ -24,34 +25,30 @@ class SRESoftwareRepositoriesProps:
 
     def __init__(
         self,
-        dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
+        dockerhub_credentials: DockerHubCredentials,
         location: Input[str],
-        networking_resource_group_name: Input[str],
         nexus_admin_password: Input[str],
+        resource_group_name: Input[str],
         software_packages: SoftwarePackageCategory,
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
-        storage_account_resource_group_name: Input[str],
         subnet_id: Input[str],
-        user_services_resource_group_name: Input[str],
     ) -> None:
-        self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
+        self.dockerhub_credentials = dockerhub_credentials
         self.location = location
-        self.networking_resource_group_name = networking_resource_group_name
         self.nexus_admin_password = Output.secret(nexus_admin_password)
         self.nexus_packages: str | None = {
             SoftwarePackageCategory.ANY: "all",
             SoftwarePackageCategory.PRE_APPROVED: "selected",
             SoftwarePackageCategory.NONE: None,
         }[software_packages]
-        self.user_services_resource_group_name = user_services_resource_group_name
+        self.resource_group_name = resource_group_name
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
-        self.storage_account_resource_group_name = storage_account_resource_group_name
         self.subnet_id = subnet_id
 
 
@@ -78,7 +75,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
             f"{self._name}_file_share_caddy",
             access_tier=storage.ShareAccessTier.COOL,
             account_name=props.storage_account_name,
-            resource_group_name=props.storage_account_resource_group_name,
+            resource_group_name=props.resource_group_name,
             share_name="software-repositories-caddy",
             share_quota=1,
             signed_identifiers=[],
@@ -88,7 +85,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
             f"{self._name}_file_share_nexus",
             access_tier=storage.ShareAccessTier.COOL,
             account_name=props.storage_account_name,
-            resource_group_name=props.storage_account_resource_group_name,
+            resource_group_name=props.resource_group_name,
             share_name="software-repositories-nexus",
             share_quota=5,
             signed_identifiers=[],
@@ -98,7 +95,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
             f"{self._name}_file_share_nexus_allowlists",
             access_tier=storage.ShareAccessTier.COOL,
             account_name=props.storage_account_name,
-            resource_group_name=props.storage_account_resource_group_name,
+            resource_group_name=props.resource_group_name,
             share_name="software-repositories-nexus-allowlists",
             share_quota=1,
             signed_identifiers=[],
@@ -187,7 +184,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         ],
                     ),
                     containerinstance.ContainerArgs(
-                        image="sonatype/nexus3:3.69.0",
+                        image="sonatype/nexus3:3.70.1",
                         name="nexus"[:63],
                         environment_variables=[],
                         ports=[],
@@ -256,6 +253,16 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 dns_config=containerinstance.DnsConfigurationArgs(
                     name_servers=[props.dns_server_ip],
                 ),
+                # Required due to DockerHub rate-limit: https://docs.docker.com/docker-hub/download-rate-limit/
+                image_registry_credentials=[
+                    {
+                        "password": Output.secret(
+                            props.dockerhub_credentials.access_token
+                        ),
+                        "server": props.dockerhub_credentials.server,
+                        "username": props.dockerhub_credentials.username,
+                    }
+                ],
                 ip_address=containerinstance.IpAddressArgs(
                     ports=[
                         containerinstance.PortArgs(
@@ -265,8 +272,9 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                     ],
                     type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
                 ),
+                location=props.location,
                 os_type=containerinstance.OperatingSystemTypes.LINUX,
-                resource_group_name=props.user_services_resource_group_name,
+                resource_group_name=props.resource_group_name,
                 restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
                 sku=containerinstance.ContainerGroupSku.STANDARD,
                 subnet_ids=[
@@ -312,12 +320,11 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 f"{self._name}_nexus_dns_record_set",
                 LocalDnsRecordProps(
                     base_fqdn=props.sre_fqdn,
-                    public_dns_resource_group_name=props.networking_resource_group_name,
-                    private_dns_resource_group_name=props.dns_resource_group_name,
                     private_ip_address=get_ip_address_from_container_group(
                         container_group
                     ),
                     record_name="nexus",
+                    resource_group_name=props.resource_group_name,
                 ),
                 opts=ResourceOptions.merge(
                     child_opts, ResourceOptions(parent=container_group)

@@ -6,12 +6,12 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     containerinstance,
     network,
-    resources,
     storage,
 )
 
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.infrastructure.common import (
+    DockerHubCredentials,
     get_id_from_subnet,
 )
 from data_safe_haven.infrastructure.components import (
@@ -35,6 +35,7 @@ class SRERemoteDesktopProps:
         allow_paste: Input[bool],
         database_password: Input[str],
         dns_server_ip: Input[str],
+        dockerhub_credentials: DockerHubCredentials,
         entra_application_fqdn: Input[str],
         entra_application_name: Input[str],
         entra_auth_token: str,
@@ -46,9 +47,9 @@ class SRERemoteDesktopProps:
         ldap_user_filter: Input[str],
         ldap_user_search_base: Input[str],
         location: Input[str],
+        resource_group_name: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
-        storage_account_resource_group_name: Input[str],
         subnet_guacamole_containers: Input[network.GetSubnetResult],
         subnet_guacamole_containers_support: Input[network.GetSubnetResult],
         database_username: Input[str] | None = "postgresadmin",
@@ -60,6 +61,7 @@ class SRERemoteDesktopProps:
         self.disable_copy = not allow_copy
         self.disable_paste = not allow_paste
         self.dns_server_ip = dns_server_ip
+        self.dockerhub_credentials = dockerhub_credentials
         self.entra_application_name = entra_application_name
         self.entra_application_url = Output.concat("https://", entra_application_fqdn)
         self.entra_auth_token = entra_auth_token
@@ -71,9 +73,9 @@ class SRERemoteDesktopProps:
         self.ldap_user_filter = ldap_user_filter
         self.ldap_user_search_base = ldap_user_search_base
         self.location = location
+        self.resource_group_name = resource_group_name
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
-        self.storage_account_resource_group_name = storage_account_resource_group_name
         self.subnet_guacamole_containers_id = Output.from_input(
             subnet_guacamole_containers
         ).apply(get_id_from_subnet)
@@ -121,15 +123,6 @@ class SRERemoteDesktopComponent(ComponentResource):
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
-        # Deploy resource group
-        resource_group = resources.ResourceGroup(
-            f"{self._name}_resource_group",
-            location=props.location,
-            resource_group_name=f"{stack_name}-rg-remote-desktop",
-            opts=child_opts,
-            tags=child_tags,
-        )
-
         # Define Entra ID application
         entra_application = EntraApplication(
             f"{self._name}_entra_application",
@@ -146,7 +139,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             f"{self._name}_file_share",
             access_tier=storage.ShareAccessTier.COOL,
             account_name=props.storage_account_name,
-            resource_group_name=props.storage_account_resource_group_name,
+            resource_group_name=props.resource_group_name,
             share_name="remote-desktop-caddy",
             share_quota=1,
             signed_identifiers=[],
@@ -174,7 +167,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             PostgresqlDatabaseProps(
                 database_names=[db_guacamole_connections],
                 database_password=props.database_password,
-                database_resource_group_name=resource_group.name,
+                database_resource_group_name=props.resource_group_name,
                 database_server_name=f"{stack_name}-db-server-guacamole",
                 database_subnet_id=props.subnet_guacamole_containers_support_id,
                 database_username=props.database_username,
@@ -307,7 +300,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                     ),
                 ),
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/guacamole-user-sync:v0.4.0",
+                    image="ghcr.io/alan-turing-institute/guacamole-user-sync:v0.5.0",
                     name="guacamole-user-sync"[:63],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
@@ -376,6 +369,14 @@ class SRERemoteDesktopComponent(ComponentResource):
             dns_config=containerinstance.DnsConfigurationArgs(
                 name_servers=[props.dns_server_ip],
             ),
+            # Required due to DockerHub rate-limit: https://docs.docker.com/docker-hub/download-rate-limit/
+            image_registry_credentials=[
+                {
+                    "password": Output.secret(props.dockerhub_credentials.access_token),
+                    "server": props.dockerhub_credentials.server,
+                    "username": props.dockerhub_credentials.username,
+                }
+            ],
             ip_address=containerinstance.IpAddressArgs(
                 ports=[
                     containerinstance.PortArgs(
@@ -385,8 +386,9 @@ class SRERemoteDesktopComponent(ComponentResource):
                 ],
                 type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
             ),
+            location=props.location,
             os_type=containerinstance.OperatingSystemTypes.LINUX,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
             sku=containerinstance.ContainerGroupSku.STANDARD,
             subnet_ids=[
@@ -413,9 +415,6 @@ class SRERemoteDesktopComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Register outputs
-        self.resource_group_name = resource_group.name
-
         # Register exports
         self.exports = {
             "connection_db_name": db_guacamole_connections,
@@ -423,5 +422,5 @@ class SRERemoteDesktopComponent(ComponentResource):
             "container_group_name": container_group.name,
             "disable_copy": props.disable_copy,
             "disable_paste": props.disable_paste,
-            "resource_group_name": resource_group.name,
+            "resource_group_name": props.resource_group_name,
         }

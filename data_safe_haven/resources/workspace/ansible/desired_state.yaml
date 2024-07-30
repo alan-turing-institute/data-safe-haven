@@ -1,0 +1,174 @@
+---
+- name: Desired state configuration
+  hosts: localhost
+  become: true
+
+  tasks:
+    - name: Update package cache
+      tags: apt
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 600
+
+    - name: List apt packages to install
+      tags: apt
+      ansible.builtin.debug:
+        msg: "{{ apt_packages.common | union(apt_packages[ansible_facts.distribution_release]) }}"
+
+    - name: Install apt packages
+      tags: apt
+      ansible.builtin.apt:
+        name: "{{ apt_packages.common | union(apt_packages[ansible_facts.distribution_release]) }}"
+        state: present
+      async: 3600
+      poll: 30
+
+    - name: Install snap packages
+      community.general.snap:
+        name: "{{ item.name }}"
+        classic: "{{ item.classic }}"
+        state: present
+      loop: "{{ snap_packages }}"
+
+    - name: Enable bash autocompletion globally
+      ansible.builtin.blockinfile:
+        path: /etc/bash.bashrc
+        block: |
+          # enable bash completion in interactive shells
+          if [ ! $(shopt -oq posix) ]; then
+            if [ -f /usr/share/bash-completion/bash_completion ]; then
+                . /usr/share/bash-completion/bash_completion
+            elif [ -f /etc/bash_completion ]; then
+                . /etc/bash_completion
+            fi
+          fi
+
+    - name: Copy bashrc skeleton
+      ansible.builtin.copy:
+        src: etc/skel/bashrc
+        dest: /etc/skel/.bashrc
+        mode: '0755'
+
+    - name: Copy xsession skeleton
+      ansible.builtin.copy:
+        src: etc/skel/xsession
+        dest: /etc/skel/.xsession
+        mode: '0444'
+
+    - name: Add ldap to /etc/nsswitch.conf
+      ansible.builtin.replace:
+        path: /etc/nsswitch.conf
+        regexp: '^(passwd|group|shadow)(:.*)(?<!ldap)$'
+        replace: '\1\2 ldap'
+
+    - name: Ensure home directories are created on LDAP login
+      community.general.pamd:
+        name: common-session
+        type: session
+        control: optional
+        module_path: pam_mkhomedir.so
+        module_arguments: 'skel=/etc/skel umask=0022'
+        state: args_present
+      notify: Update PAM auth
+
+    - name: Don't prompt to change expired passwords via ldap
+      community.general.pamd:
+        name: common-account
+        type: account
+        control: '[success=ok new_authtok_reqd=done ignore=ignore user_unknown=ignore authinfo_unavail=ignore default=bad]'
+        module_path: pam_ldap.so
+        new_control: '[success=ok ignore=ignore user_unknown=ignore authinfo_unavail=ignore default=bad]'
+        state: updated
+
+    - name: Enable SSH password authentication
+      # Should look to migrate to https://github.com/dev-sec/ansible-collection-hardening
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PasswordAuthentication'
+        line: 'PasswordAuthentication yes'
+        validate: sshd -T -f %s
+      notify: Restart sshd
+
+    - name: Enable PAM SSH authentication
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^UsePAM'
+        line: 'UsePAM yes'
+        validate: sshd -T -f %s
+      notify: Restart sshd
+
+    - name: Enable and start xrdp services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      loop:
+        - xrdp
+        - xrdp-sesman
+
+    - name: Add polkit rule to allow colord
+      ansible.builtin.copy:
+        src: etc/polkit-1/localauthority/50-local.d/50-colord.pkla
+        dest: /etc/polkit-1/localauthority/50-local.d/50-colord.pkla
+        mode: '0644'
+
+    - name: Enable and start auditd service
+      tags: auditd
+      ansible.builtin.systemd:
+        name: auditd
+        enabled: true
+        state: started
+
+    - name: Get minimum uid  # noqa: inline-env-var
+      tags: auditd
+      ansible.builtin.command:
+        cmd: awk '/^\s*UID_MIN/{print $2}' /etc/login.defs
+      register: uid_min
+      changed_when: false
+
+    - name: Template auditd rules
+      tags: auditd
+      ansible.builtin.template:
+        src: etc/audit/rules.d/audit.rules.j2
+        dest: /etc/audit/rules.d/audit.rules
+        mode: '0640'
+      notify: Restart auditd
+
+    - name: Copy auditd privileged executable rules script
+      tags: auditd
+      ansible.builtin.copy:
+        src: usr/local/bin/privileged-rules
+        dest: /usr/local/bin/privileged-rules
+        mode: '0500'
+
+    - name: Generate auditd privileged executable rules
+      tags: auditd
+      ansible.builtin.shell:
+        cmd: /usr/local/bin/privileged-rules > /etc/audit/rules.d/50-privileged.rules
+        creates: /etc/audit/rules.d/50-privileged.rules
+      notify: Restart auditd
+
+    - name: Copy smoke test files
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /usr/local/smoke_tests/
+        mode: '0755'
+      with_fileglob: 'usr/local/smoke_tests/*'
+
+
+  handlers:
+    - name: Restart auditd
+      ansible.builtin.systemd:
+        name: auditd
+        enabled: true
+        state: restarted
+
+    - name: Restart sshd
+      ansible.builtin.systemd:
+        name: sshd
+        enabled: true
+        state: restarted
+
+    - name: Update PAM auth  # noqa: no-changed-when
+      ansible.builtin.command:
+        cmd: pam-auth-update --enable mkhomedir ldap

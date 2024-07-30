@@ -5,7 +5,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenTypeError,
 )
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external import AzureSdk
 
 
 class TestDSHPulumiProject:
@@ -120,7 +120,7 @@ class TestDSHPulumiConfig:
             DSHPulumiConfig.from_yaml(not_valid)
 
     def test_upload(self, mocker, pulumi_config, context):
-        mock_method = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
+        mock_method = mocker.patch.object(AzureSdk, "upload_blob", return_value=None)
         pulumi_config.upload(context)
 
         mock_method.assert_called_once_with(
@@ -133,7 +133,7 @@ class TestDSHPulumiConfig:
 
     def test_from_remote(self, mocker, pulumi_config_yaml, context):
         mock_method = mocker.patch.object(
-            AzureApi, "download_blob", return_value=pulumi_config_yaml
+            AzureSdk, "download_blob", return_value=pulumi_config_yaml
         )
         pulumi_config = DSHPulumiConfig.from_remote(context)
 
@@ -149,9 +149,9 @@ class TestDSHPulumiConfig:
         )
 
     def test_from_remote_or_create(self, mocker, pulumi_config_yaml, context):
-        mock_exists = mocker.patch.object(AzureApi, "blob_exists", return_value=True)
+        mock_exists = mocker.patch.object(AzureSdk, "blob_exists", return_value=True)
         mock_download = mocker.patch.object(
-            AzureApi, "download_blob", return_value=pulumi_config_yaml
+            AzureSdk, "download_blob", return_value=pulumi_config_yaml
         )
         pulumi_config = DSHPulumiConfig.from_remote_or_create(context, projects={})
 
@@ -176,7 +176,7 @@ class TestDSHPulumiConfig:
     def test_from_remote_or_create_create(
         self, mocker, pulumi_config_yaml, context  # noqa: ARG002
     ):
-        mock_exists = mocker.patch.object(AzureApi, "blob_exists", return_value=False)
+        mock_exists = mocker.patch.object(AzureSdk, "blob_exists", return_value=False)
         pulumi_config = DSHPulumiConfig.from_remote_or_create(
             context, encrypted_key="abc", projects={}
         )

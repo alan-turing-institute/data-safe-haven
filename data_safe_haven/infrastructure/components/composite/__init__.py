@@ -4,7 +4,7 @@ from .microsoft_sql_database import (
     MicrosoftSQLDatabaseProps,
 )
 from .postgresql_database import PostgresqlDatabaseComponent, PostgresqlDatabaseProps
-from .virtual_machine import LinuxVMComponentProps, VMComponent, WindowsVMComponentProps
+from .virtual_machine import LinuxVMComponentProps, VMComponent
 
 __all__ = [
     "LinuxVMComponentProps",
@@ -15,5 +15,4 @@ __all__ = [
     "PostgresqlDatabaseComponent",
     "PostgresqlDatabaseProps",
     "VMComponent",
-    "WindowsVMComponentProps",
 ]

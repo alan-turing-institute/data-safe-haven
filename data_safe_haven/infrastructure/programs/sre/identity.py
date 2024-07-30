@@ -3,9 +3,10 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import containerinstance, network, resources, storage
+from pulumi_azure_native import containerinstance, network, storage
 
 from data_safe_haven.infrastructure.common import (
+    DockerHubCredentials,
     get_id_from_subnet,
     get_ip_address_from_container_group,
 )
@@ -22,32 +23,30 @@ class SREIdentityProps:
 
     def __init__(
         self,
-        dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
+        dockerhub_credentials: DockerHubCredentials,
         entra_application_name: Input[str],
         entra_auth_token: str,
         entra_tenant_id: Input[str],
         location: Input[str],
-        networking_resource_group_name: Input[str],
+        resource_group_name: Input[str],
         shm_fqdn: Input[str],
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
-        storage_account_resource_group_name: Input[str],
         subnet_containers: Input[network.GetSubnetResult],
     ) -> None:
-        self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
+        self.dockerhub_credentials = dockerhub_credentials
         self.entra_application_name = entra_application_name
         self.entra_auth_token = entra_auth_token
         self.entra_tenant_id = entra_tenant_id
         self.location = location
-        self.networking_resource_group_name = networking_resource_group_name
+        self.resource_group_name = resource_group_name
         self.shm_fqdn = shm_fqdn
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
-        self.storage_account_resource_group_name = storage_account_resource_group_name
         self.subnet_containers_id = Output.from_input(subnet_containers).apply(
             get_id_from_subnet
         )
@@ -71,21 +70,12 @@ class SREIdentityComponent(ComponentResource):
         # The port that the server will be hosted on
         self.server_port = 1389
 
-        # Deploy resource group
-        resource_group = resources.ResourceGroup(
-            f"{self._name}_resource_group",
-            location=props.location,
-            resource_group_name=f"{stack_name}-rg-identity",
-            opts=child_opts,
-            tags=child_tags,
-        )
-
         # Define configuration file share
         file_share = storage.FileShare(
             f"{self._name}_file_share",
             access_tier=storage.ShareAccessTier.COOL,
             account_name=props.storage_account_name,
-            resource_group_name=props.storage_account_resource_group_name,
+            resource_group_name=props.resource_group_name,
             share_name="identity-redis",
             share_quota=5,
             signed_identifiers=[],
@@ -112,7 +102,7 @@ class SREIdentityComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-identity",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/apricot:0.0.6",
+                    image="ghcr.io/alan-turing-institute/apricot:0.0.7",
                     name="apricot",
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
@@ -192,6 +182,14 @@ class SREIdentityComponent(ComponentResource):
             dns_config=containerinstance.DnsConfigurationArgs(
                 name_servers=[props.dns_server_ip],
             ),
+            # Required due to DockerHub rate-limit: https://docs.docker.com/docker-hub/download-rate-limit/
+            image_registry_credentials=[
+                {
+                    "password": Output.secret(props.dockerhub_credentials.access_token),
+                    "server": props.dockerhub_credentials.server,
+                    "username": props.dockerhub_credentials.username,
+                }
+            ],
             ip_address=containerinstance.IpAddressArgs(
                 ports=[
                     containerinstance.PortArgs(
@@ -205,8 +203,9 @@ class SREIdentityComponent(ComponentResource):
                 ],
                 type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
             ),
+            location=props.location,
             os_type=containerinstance.OperatingSystemTypes.LINUX,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
             sku=containerinstance.ContainerGroupSku.STANDARD,
             subnet_ids=[
@@ -239,10 +238,9 @@ class SREIdentityComponent(ComponentResource):
             f"{self._name}_dns_record_set",
             LocalDnsRecordProps(
                 base_fqdn=props.sre_fqdn,
-                public_dns_resource_group_name=props.networking_resource_group_name,
-                private_dns_resource_group_name=props.dns_resource_group_name,
                 private_ip_address=get_ip_address_from_container_group(container_group),
                 record_name="identity",
+                resource_group_name=props.resource_group_name,
             ),
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=container_group)

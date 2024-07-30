@@ -20,6 +20,13 @@ class AzureDnsZoneNames(tuple[str, ...], Enum):
 
 
 @verify(UNIQUE)
+class AzureSdkCredentialScope(str, Enum):
+    DEFAULT = "https://management.azure.com/.default"
+    GRAPH_API = "https://graph.microsoft.com/.default"
+    KEY_VAULT = "https://vault.azure.net"
+
+
+@verify(UNIQUE)
 class DatabaseSystem(str, Enum):
     MICROSOFT_SQL_SERVER = "mssql"
     POSTGRESQL = "postgresql"
@@ -74,7 +81,8 @@ class NetworkingPriorities(int, Enum):
     INTERNAL_SRE_APPLICATION_GATEWAY = 1600
     INTERNAL_SRE_APT_PROXY_SERVER = 1700
     INTERNAL_SRE_DATA_CONFIGURATION = 1800
-    INTERNAL_SRE_DATA_PRIVATE = 1900
+    INTERNAL_SRE_DATA_DESIRED_STATE = 1810
+    INTERNAL_SRE_DATA_PRIVATE = 1820
     INTERNAL_SRE_GUACAMOLE_CONTAINERS = 2000
     INTERNAL_SRE_GUACAMOLE_CONTAINERS_SUPPORT = 2100
     INTERNAL_SRE_IDENTITY_CONTAINERS = 2200

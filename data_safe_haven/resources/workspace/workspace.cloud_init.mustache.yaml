@@ -1,6 +1,11 @@
 #cloud-config
 
 write_files:
+  - path: "/etc/database_credential"
+    permissions: "0400"
+    content: |
+      {{ database_service_admin_password }}
+
   - path: "/etc/nslcd.conf"
     permissions: "0400"
     content: |
@@ -48,12 +53,45 @@ write_files:
           options(repos = r)
       })
 
-  - path: "/etc/skel/.xsession"
-    permissions: "0444"
+  - path: "/root/desired_state.sh"
+    permissions: "0700"
     content: |
-      xfce4-session
+      #!/usr/bin/env bash
+      pushd /desired_state
+      ansible-playbook /desired_state/desired_state.yaml
+      popd
+
+  - path: "/etc/systemd/system/desired-state.timer"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Run desired state script daily
+
+      [Timer]
+      OnCalendar=daily
+      Persistent=true
+
+      [Install]
+      WantedBy=timers.target
+
+  - path: "/etc/systemd/system/desired-state.service"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Run desired state script
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      Type=oneshot
+      ExecStartPre=sleep 1m
+      ExecStart=/root/desired_state.sh
+      StandardOutput=journal+console
+
 
 mounts:
+  # Desired state configuration is in a blob container mounted as NFSv3
+  - ["{{storage_account_data_desired_state_name}}.blob.core.windows.net:/{{storage_account_data_desired_state_name}}/desiredstate", /desired_state, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
   # Secure data is in a blob container mounted as NFSv3
   - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/ingress", /data, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
   - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/egress", /output, nfs, "rw,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
@@ -75,57 +113,17 @@ apt:
 
 # Install necessary apt packages
 packages:
-  # System requirements
+  - ansible
   - libnss-ldapd  # LDAP login
   - libpam-ldapd  # LDAP login
   - ldap-utils    # LDAP login
   - nfs-common    # Mounting shared volumes
-  - xfce4         # XFCE desktop
-  - xrdp          # remote desktop client
-  # Programming
-  - python-is-python3  # Python language
-  - python3            # Python language
-  - python3-dev        # Python language
-  - python3-pip        # Python language
-  - python3-venv       # Python language
-  - r-base             # R language
-  # Tools
-  - firefox       # web browser
-  - libpq-dev     # interact with PostgreSQL databases
-  - msodbcsql17   # interact with Microsoft SQL databases
-  - unixodbc-dev  # interact with Microsoft SQL databases
-  # Bash testing
-  - bats
 package_update: true
 package_upgrade: true
 
 runcmd:
-  # Configure LDAP user login
-  # -------------------------
-  - echo ">=== Configure LDAP user login... ===<"
-  # Configure nsswitch
-  - echo "Adding ldap to /etc/nsswitch.conf"
-  - sed -i -r "s|^(passwd\|group\|shadow)(:.*)$|\1\2 ldap|g" /etc/nsswitch.conf
-  # Configure PAM for LDAP
-  - echo "Configuring PAM for LDAP login"
-  - sed -i "s|pam_mkhomedir.so|pam_mkhomedir.so skel=/etc/skel umask=0022|g" /usr/share/pam-configs/mkhomedir
-  - sed -i "s| use_authtok||g" /usr/share/pam-configs/ldap
-  - pam-auth-update --enable mkhomedir ldap
-  # Allow SSH password authentication
-  - sed -i "s|^PasswordAuthentication.*|PasswordAuthentication yes|g" /etc/ssh/sshd_config
-  - sed -i "s|^UsePAM.*|UsePAM yes|g" /etc/ssh/sshd_config
   # Restart services
-  - systemctl restart nscd
   - systemctl restart nslcd
-  - systemctl restart sshd
-
-  # Enable xrdp and session manager at startup
-  # ------------------------------------------
-  - echo ">=== Enable xrdp... ===<"
-  - systemctl enable xrdp
-  - systemctl enable xrdp-sesman
-  - systemctl start xrdp
-  - systemctl start xrdp-sesman
 
   # Mount all external volumes
   # --------------------------
@@ -133,7 +131,20 @@ runcmd:
   - grep -v -e '^[[:space:]]*$' /etc/fstab | sed 's|^|  /etc/fstab  |'
   - mount -fav
   - while (! mountpoint -q /data); do sleep 5; mount /data; done
+  - while (! mountpoint -q /desired_state); do sleep 5; mount /desired_state; done
   - while (! mountpoint -q /home); do sleep 5; mount /home; done
   - while (! mountpoint -q /output); do sleep 5; mount /output; done
   - while (! mountpoint -q /shared); do sleep 5; mount /shared; done
   - findmnt
+
+  # Enable and start desired state timer
+  # ------------------------------------
+  - echo ">=== Enabling desired state timer... ===<"
+  - systemctl daemon-reload
+  - systemctl enable desired-state.timer
+  - systemctl start desired-state.timer
+
+  # Run desired state service
+  # -------------------------
+  - echo ">=== Running initial desired state configuration... ===<"
+  - systemctl start desired-state

@@ -41,18 +41,18 @@ def add(
             raise
 
         # Load GraphAPI
-        graph_api = GraphApi(
-            tenant_id=shm_config.shm.entra_tenant_id,
-            default_scopes=[
+        graph_api = GraphApi.from_scopes(
+            scopes=[
                 "Group.Read.All",
                 "User.ReadWrite.All",
                 "UserAuthenticationMethod.ReadWrite.All",
             ],
+            tenant_id=shm_config.shm.entra_tenant_id,
         )
 
         # Add users to SHM
         users = UserHandler(context, graph_api)
-        users.add(csv)
+        users.add(csv, shm_config.shm.fqdn)
     except DataSafeHavenError as exc:
         logger.critical("Could not add users to Data Safe Haven.")
         raise typer.Exit(1) from exc
@@ -80,9 +80,9 @@ def list_users(
             raise
 
         # Load GraphAPI
-        graph_api = GraphApi(
+        graph_api = GraphApi.from_scopes(
+            scopes=["Directory.Read.All", "Group.Read.All"],
             tenant_id=shm_config.shm.entra_tenant_id,
-            default_scopes=["Directory.Read.All", "Group.Read.All"],
         )
 
         # Load Pulumi config
@@ -136,9 +136,9 @@ def register(
             raise DataSafeHavenError(msg)
 
         # Load GraphAPI
-        graph_api = GraphApi(
+        graph_api = GraphApi.from_scopes(
+            scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
             tenant_id=shm_config.shm.entra_tenant_id,
-            default_scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
         )
 
         logger.debug(
@@ -187,9 +187,9 @@ def remove(
             raise
 
         # Load GraphAPI
-        graph_api = GraphApi(
+        graph_api = GraphApi.from_scopes(
+            scopes=["User.ReadWrite.All"],
             tenant_id=shm_config.shm.entra_tenant_id,
-            default_scopes=["User.ReadWrite.All"],
         )
 
         # Remove users from SHM
@@ -241,9 +241,9 @@ def unregister(
             raise DataSafeHavenError(msg)
 
         # Load GraphAPI
-        graph_api = GraphApi(
+        graph_api = GraphApi.from_scopes(
+            scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
             tenant_id=shm_config.shm.entra_tenant_id,
-            default_scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
         )
 
         logger.debug(

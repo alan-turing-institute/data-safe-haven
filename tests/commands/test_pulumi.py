@@ -5,15 +5,14 @@ class TestRun:
     def test_run_sre(
         self,
         runner,
-        mock_shm_config_from_remote,  # noqa: ARG002
-        mock_sre_config_from_remote,  # noqa: ARG002
-        mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
-        mock_graph_api_create_token_administrator,  # noqa: ARG002
-        mock_azure_cli_confirm,  # noqa: ARG002
+        local_project_settings,  # noqa: ARG002
+        mock_graph_api_token,  # noqa: ARG002
         mock_install_plugins,  # noqa: ARG002
         mock_key_vault_key,  # noqa: ARG002
+        mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote,  # noqa: ARG002
+        mock_sre_config_from_remote,  # noqa: ARG002
         offline_pulumi_account,  # noqa: ARG002
-        local_project_settings,  # noqa: ARG002
     ):
         result = runner.invoke(pulumi_command_group, ["sandbox", "stack ls"])
         assert result.exit_code == 0
@@ -30,15 +29,14 @@ class TestRun:
     def test_run_sre_invalid_command(
         self,
         runner,
-        mock_shm_config_from_remote,  # noqa: ARG002
-        mock_sre_config_from_remote,  # noqa: ARG002
-        mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
-        mock_graph_api_create_token_administrator,  # noqa: ARG002
-        mock_azure_cli_confirm,  # noqa: ARG002
+        local_project_settings,  # noqa: ARG002
+        mock_graph_api_token,  # noqa: ARG002
         mock_install_plugins,  # noqa: ARG002
         mock_key_vault_key,  # noqa: ARG002
+        mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote,  # noqa: ARG002
+        mock_sre_config_from_remote,  # noqa: ARG002
         offline_pulumi_account,  # noqa: ARG002
-        local_project_settings,  # noqa: ARG002
     ):
         result = runner.invoke(
             pulumi_command_group, ["sandbox", "not a pulumi command"]
@@ -49,16 +47,15 @@ class TestRun:
     def test_run_sre_invalid_name(
         self,
         runner,
-        mock_shm_config_from_remote,  # noqa: ARG002
-        mock_sre_config_alternate_from_remote,  # noqa: ARG002
-        mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
-        mock_graph_api_create_token_administrator,  # noqa: ARG002
-        mock_azure_cli_confirm,  # noqa: ARG002
+        local_project_settings,  # noqa: ARG002
+        mock_graph_api_token,  # noqa: ARG002
         mock_install_plugins,  # noqa: ARG002
         mock_key_vault_key,  # noqa: ARG002
+        mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote,  # noqa: ARG002
+        mock_sre_config_alternate_from_remote,  # noqa: ARG002
         offline_pulumi_account,  # noqa: ARG002
-        local_project_settings,  # noqa: ARG002
     ):
         result = runner.invoke(pulumi_command_group, ["alternate", "stack ls"])
         assert result.exit_code == 1
-        assert "No SHM/SRE named alternative is defined" in result.stdout
+        assert "No SRE named alternative is defined" in result.stdout

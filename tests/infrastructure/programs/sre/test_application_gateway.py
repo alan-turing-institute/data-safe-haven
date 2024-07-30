@@ -15,6 +15,7 @@ from ..resource_assertions import assert_equal, assert_equal_json
 @pytest.fixture
 def application_gateway_props(
     identity_key_vault_reader,
+    location,
     resource_group,
     sre_fqdn,
     subnet_application_gateway,
@@ -23,6 +24,7 @@ def application_gateway_props(
     return SREApplicationGatewayProps(
         key_vault_certificate_id="key_vault_certificate_id",
         key_vault_identity=identity_key_vault_reader,
+        location=location,
         resource_group=resource_group,
         sre_fqdn=sre_fqdn,
         subnet_application_gateway=subnet_application_gateway,
@@ -101,7 +103,7 @@ class TestSREApplicationGatewayProps:
         self, application_gateway_props: SREApplicationGatewayProps
     ):
         application_gateway_props.subnet_guacamole_containers_ip_addresses.apply(
-            partial(assert_equal, ["10.0.1.28", "10.0.1.29", "10.0.1.30"]),
+            partial(assert_equal, ["10.0.1.36", "10.0.1.37", "10.0.1.38"]),
             run_with_unknowns=True,
         )
 
@@ -157,9 +159,9 @@ class TestSREApplicationGatewayComponent:
                         "provisioning_state": None,
                         "type": None,
                         "backend_addresses": [
-                            {"ip_address": "10.0.1.28"},
-                            {"ip_address": "10.0.1.29"},
-                            {"ip_address": "10.0.1.30"},
+                            {"ip_address": "10.0.1.36"},
+                            {"ip_address": "10.0.1.37"},
+                            {"ip_address": "10.0.1.38"},
                         ],
                         "name": "appGatewayBackendGuacamole",
                     }
@@ -406,10 +408,12 @@ class TestSREApplicationGatewayComponent:
 
     @pulumi.runtime.test
     def test_application_gateway_location(
-        self, application_gateway_component: SREApplicationGatewayComponent
+        self,
+        application_gateway_component: SREApplicationGatewayComponent,
+        location: str,
     ):
         application_gateway_component.application_gateway.location.apply(
-            partial(assert_equal, None),
+            partial(assert_equal, location),
             run_with_unknowns=True,
         )
 

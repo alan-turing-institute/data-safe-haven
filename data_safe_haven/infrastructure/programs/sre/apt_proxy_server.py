@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import containerinstance, resources, storage
+from pulumi_azure_native import containerinstance, storage
 
 from data_safe_haven.infrastructure.common import (
     get_id_from_subnet,
@@ -22,26 +22,22 @@ class SREAptProxyServerProps:
     def __init__(
         self,
         containers_subnet: Input[str],
-        dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
         location: Input[str],
-        networking_resource_group_name: Input[str],
+        resource_group_name: Input[str],
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
-        storage_account_resource_group_name: Input[str],
     ) -> None:
         self.containers_subnet_id = Output.from_input(containers_subnet).apply(
             get_id_from_subnet
         )
-        self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
         self.location = location
-        self.networking_resource_group_name = networking_resource_group_name
+        self.resource_group_name = resource_group_name
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
-        self.storage_account_resource_group_name = storage_account_resource_group_name
 
 
 class SREAptProxyServerComponent(ComponentResource):
@@ -59,21 +55,12 @@ class SREAptProxyServerComponent(ComponentResource):
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
-        # Deploy resource group
-        resource_group = resources.ResourceGroup(
-            f"{self._name}_resource_group",
-            location=props.location,
-            resource_group_name=f"{stack_name}-rg-apt-proxy-server",
-            opts=child_opts,
-            tags=child_tags,
-        )
-
         # Define configuration file shares
         file_share_apt_proxy_server = storage.FileShare(
             f"{self._name}_file_share_apt_proxy_server",
             access_tier=storage.ShareAccessTier.COOL,
             account_name=props.storage_account_name,
-            resource_group_name=props.storage_account_resource_group_name,
+            resource_group_name=props.resource_group_name,
             share_name="apt-proxy-server",
             share_quota=1,
             signed_identifiers=[],
@@ -148,8 +135,9 @@ class SREAptProxyServerComponent(ComponentResource):
                 ],
                 type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
             ),
+            location=props.location,
             os_type=containerinstance.OperatingSystemTypes.LINUX,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
             sku=containerinstance.ContainerGroupSku.STANDARD,
             subnet_ids=[
@@ -186,10 +174,9 @@ class SREAptProxyServerComponent(ComponentResource):
             f"{self._name}_apt_proxy_server_dns_record_set",
             LocalDnsRecordProps(
                 base_fqdn=props.sre_fqdn,
-                public_dns_resource_group_name=props.networking_resource_group_name,
-                private_dns_resource_group_name=props.dns_resource_group_name,
                 private_ip_address=get_ip_address_from_container_group(container_group),
                 record_name="apt",
+                resource_group_name=props.resource_group_name,
             ),
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=container_group)

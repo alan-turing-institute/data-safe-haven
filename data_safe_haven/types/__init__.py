@@ -13,6 +13,7 @@ from .annotated_types import (
 )
 from .enums import (
     AzureDnsZoneNames,
+    AzureSdkCredentialScope,
     DatabaseSystem,
     FirewallPriorities,
     ForbiddenDomains,
@@ -26,6 +27,7 @@ from .types import PathType
 __all__ = [
     "AzureDnsZoneNames",
     "AzureLocation",
+    "AzureSdkCredentialScope",
     "AzureSubscriptionName",
     "AzureVmSku",
     "DatabaseSystem",

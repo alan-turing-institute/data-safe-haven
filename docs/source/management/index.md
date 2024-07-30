@@ -1,4 +1,4 @@
-# Managing a Data Safe Haven
+# Management
 
 ## Add users to the Data Safe Haven
 
@@ -9,6 +9,7 @@ You will need a full name, phone number, email address and country for each user
 1. You can add users directly in your Entra tenant, following the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/how-to-create-delete-users).
 
 2. Alternatively, you can add multiple users from a CSV file with columns named (`GivenName`, `Surname`, `Phone`, `Email`, `CountryCode`).
+    - (Optional) you can provide a `Domain` column if you like but this will otherwise default to the domain of your SHM
 
 ```{code} shell
 $ dsh users add <my CSV users file>
@@ -28,10 +29,14 @@ $ dsh users add <my CSV users file>
 2. Alternatively, you can add multiple users from the command line:
 
 ```{code} shell
-$ dsh users register -s <SRE name> <username1> <username2>
+$ dsh users register <SRE name> -u <username1> -u <username2>
 ```
 
 where you must specify the usernames for each user you want to add to this SRE.
+
+:::{note}
+Usernames are of the format `<GivenName>.<Surname>` and do not include the Entra ID domain.
+:::
 
 ## Listing available users
 
@@ -42,6 +47,23 @@ where you must specify the usernames for each user you want to add to this SRE.
 ```{code} shell
 $ dsh users list <SRE name>
 ```
+
+## Manually register users for self-service password reset
+
+:::{tip}
+Users created via the `dsh users` command line tool will be automatically registered for SSPR.
+:::
+
+If you have manually created a user and want to enable SSPR, do the following
+
+- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
+- Browse to **Users > All Users** from the menu on the left side
+- Select the user you want to enable SSPR for
+- On the **Manage > Authentication Methods** page fill out their contact info as follows:
+    - Phone: add the user's phone number with a space between the country code and the rest of the number (_e.g._ `+44 7700900000`)
+    - Email: enter the user's email address here
+    - Ensure that you have registered **both** a phone number and an email address
+    - Click the `Save` icon in the top panel
 
 ## Removing a deployed Data Safe Haven
 
