@@ -9,6 +9,7 @@ import data_safe_haven.external.api.azure_sdk
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
     DataSafeHavenAzureError,
+    DataSafeHavenAzureStorageError,
     DataSafeHavenValueError,
 )
 from data_safe_haven.external import AzureSdk, GraphApi
@@ -187,6 +188,22 @@ class TestAzureSdk:
         mock_storage_exists.assert_called_once_with(
             "storage_account",
         )
+
+    def test_blob_exists_no_storage(
+        self,
+        mocker,
+        mock_blob_client,  # noqa: ARG002
+    ):
+        sdk = AzureSdk("subscription name")
+        mocker.patch.object(sdk, "storage_exists", return_value=False)
+        with pytest.raises(
+            DataSafeHavenAzureStorageError,
+            match="Storage account 'storage_account' does not exist",
+        ):
+            sdk.blob_exists(
+                "exists", "resource_group", "storage_account", "storage_container"
+            )
+
 
     def test_blob_does_not_exist(
         self, mock_blob_client, mock_storage_exists  # noqa: ARG002
