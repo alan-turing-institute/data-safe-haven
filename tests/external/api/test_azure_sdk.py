@@ -116,9 +116,12 @@ def mock_storage_management_client(monkeypatch):
         def list(self):
             return ["shmstorageaccount", "shmstorageaccounter", "shmstorageaccountest"]
 
+        def list_keys(self, *args, **kwargs):  # noqa: ARG002
+            return ["fake_key1", "another_fake_key"]
+
     class MockStorageManagementClient:
         def __init__(self, *args, **kwargs):  # noqa: ARG002
-            self.storage_account = MockStorageAccountsOperations()
+            self.storage_accounts = MockStorageAccountsOperations()
 
     monkeypatch.setattr(
         data_safe_haven.external.api.azure_sdk,
@@ -229,6 +232,17 @@ class TestAzureSdk:
             DataSafeHavenAzureError, match="Failed to retrieve key does not exist"
         ):
             sdk.get_keyvault_key("does not exist", "key vault name")
+
+    def test_get_storage_account_keys_no_account(
+        self,
+        mock_storage_management_client,  # noqa: ARG002
+        mock_azuresdk_get_subscription,  # noqa: ARG002
+    ):
+        sdk = AzureSdk("subscription name")
+        with pytest.raises(
+            DataSafeHavenAzureStorageError, match="Could not connect to storage account"
+        ):
+            sdk.get_storage_account_keys("no resource group", "storage_account")
 
     def test_get_subscription(self, request, mock_subscription_client):  # noqa: ARG002
         sdk = AzureSdk("subscription name")
