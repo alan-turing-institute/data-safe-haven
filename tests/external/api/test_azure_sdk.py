@@ -204,7 +204,6 @@ class TestAzureSdk:
                 "exists", "resource_group", "storage_account", "storage_container"
             )
 
-
     def test_blob_does_not_exist(
         self, mock_blob_client, mock_storage_exists  # noqa: ARG002
     ):
