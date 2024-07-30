@@ -3,6 +3,9 @@ from azure.core.exceptions import ClientAuthenticationError, ResourceNotFoundErr
 from azure.mgmt.keyvault.v2023_07_01.models import DeletedVault
 from azure.mgmt.resource.subscriptions import SubscriptionClient
 from azure.mgmt.resource.subscriptions.models import Subscription
+from azure.mgmt.storage.v2021_08_01.models import (
+    StorageAccountListKeysResult,
+)
 from pytest import fixture
 
 import data_safe_haven.external.api.azure_sdk
@@ -116,8 +119,13 @@ def mock_storage_management_client(monkeypatch):
         def list(self):
             return ["shmstorageaccount", "shmstorageaccounter", "shmstorageaccountest"]
 
-        def list_keys(self, *args, **kwargs):  # noqa: ARG002
-            return ["fake_key1", "another_fake_key"]
+        def list_keys(
+            self, resource_group_name, account_name, **kwargs  # noqa: ARG002
+        ):
+            if account_name == "shmstorageaccount":
+                return StorageAccountListKeysResult()
+            else:
+                return None
 
     class MockStorageManagementClient:
         def __init__(self, *args, **kwargs):  # noqa: ARG002
@@ -233,16 +241,24 @@ class TestAzureSdk:
         ):
             sdk.get_keyvault_key("does not exist", "key vault name")
 
-    def test_get_storage_account_keys_no_account(
+    @pytest.mark.parametrize(
+        "storage_account_name",
+        [("shmstorageaccount"), ("shmstoragenonexistent")],
+    )
+    def test_get_storage_account_keys(
         self,
+        storage_account_name,
         mock_storage_management_client,  # noqa: ARG002
         mock_azuresdk_get_subscription,  # noqa: ARG002
     ):
         sdk = AzureSdk("subscription name")
-        with pytest.raises(
-            DataSafeHavenAzureStorageError, match="Could not connect to storage account"
-        ):
-            sdk.get_storage_account_keys("no resource group", "storage_account")
+        if storage_account_name == "shmstorageaccount":
+            error_text = "No keys were retrieved"
+        else:
+            error_text = "Could not connect to storage account"
+
+        with pytest.raises(DataSafeHavenAzureStorageError, match=error_text):
+            sdk.get_storage_account_keys("resource group", storage_account_name)
 
     def test_get_subscription(self, request, mock_subscription_client):  # noqa: ARG002
         sdk = AzureSdk("subscription name")
