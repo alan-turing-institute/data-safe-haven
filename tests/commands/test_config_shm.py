@@ -33,9 +33,11 @@ class TestShowSHM:
             template_text = f.read()
         assert shm_config_yaml in template_text
 
-    def test_no_remote(self, mocker, context, runner):
+    def test_no_remote(self, mocker, runner):
 
-        mocker.patch.object(SHMConfig, "from_remote", side_effect=DataSafeHavenAzureError(" "))
+        mocker.patch.object(
+            SHMConfig, "from_remote", side_effect=DataSafeHavenAzureError(" ")
+        )
         result = runner.invoke(config_command_group, ["show-shm"])
         assert "SHM must be deployed" in result.stdout
         assert result.exit_code == 1
