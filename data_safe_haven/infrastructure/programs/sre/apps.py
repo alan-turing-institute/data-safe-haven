@@ -24,8 +24,10 @@ class SREAppsProps:
 
     def __init__(
         self,
+        location: Input[str],
         resource_group: Input[resources.ResourceGroup],
     ):
+        self.location = location
         self.resource_group_name = Output.from_input(resource_group).apply(
             get_name_from_rg
         )
@@ -91,6 +93,14 @@ class SREAppsComponent(ComponentResource):
             tags=child_tags,
         )
 
+        # Get URL of app blob
+        blob_url = get_blob_url(
+            blob=blob_gitea_mirror,
+            container=container,
+            storage_account=storage_account,
+            resource_group_name=props.resource_group_name,
+        )
+
         # Deploy service plan
         app_service_plan = web.AppServicePlan(
             f"{self._name}_app_service_plan",
@@ -107,4 +117,65 @@ class SREAppsComponent(ComponentResource):
             },
         )
 
-        # connection_string = get_connection_string()
+        # Deploy app
+        web.WebApp(
+            f"{self._name}_web_app",
+            enabled=True,
+            https_only=True,
+            kind="FunctionApp",
+            location=props.location,
+            name="giteamirror",
+            resource_group_name=props.resource_group_name,
+            server_farm_id=app_service_plan.id,
+            site_config=web.SiteConfig(
+                app_settings=[
+                    {"name": "runtime", "value": "python"},
+                    {"name": "FUNCTIONS_WORKER_RUNTIME", "value": "python"},
+                    {"name": "WEBSITE_RUN_FROM_PACKAGE", "value": blob_url},
+                    {"name": "FUNCTIONS_EXTENSION_VERSION", "value": "~4"},
+                ],
+            )
+        )
+
+
+def get_blob_url(
+    blob: Input[storage.Blob],
+    container: Input[storage.BlobContainer],
+    storage_account: Input[storage.StorageAccount],
+    resource_group_name: Input[str],
+) -> Output[str]:
+    sas = storage.list_storage_account_service_sas_output(
+        account_name=storage_account.name,
+        protocols=storage.HttpProtocol.Https,
+        # shared_access_expiry_time="2030-01-01",
+        # shared_access_start_time="2021-01-01",
+        resource_group_name=resource_group_name,
+        # Access to container
+        resource=storage.SignedResource.C,
+        # Read access
+        permissions=storage.Permissions.R,
+        canonicalized_resource=Output.format(
+            "/blob/{account_name}/{container_name}",
+            account_name=storage_account.name,
+            container_name=container.name,
+        ),
+        content_type="application/json",
+        cache_control="max-age=5",
+        content_disposition="inline",
+        content_encoding="deflate",
+    )
+    token = sas.service_sas_token
+    # return Output.format(
+    #     "https://{0}.blob.core.windows.net/{1}/{2}?{3}",
+    #     storage_account.name,
+    #     container.name,
+    #     blob.name,
+    #     token,
+    # )
+    return Output.format(
+        "https://{storage_account_name}.blob.core.windows.net/{container_name}/{blob_name}?{token}",
+        storage_account_name=storage_account.name,
+        container_name=container.name,
+        blob_name=blob.name,
+        token=token,
+    )
