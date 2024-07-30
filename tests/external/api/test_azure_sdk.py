@@ -109,6 +109,24 @@ def mock_key_vault_management_client(monkeypatch):
 
 
 @fixture
+def mock_storage_management_client(monkeypatch):
+
+    class MockStorageAccountsOperations:
+        def list(self):
+            return ["shmstorageaccount", "shmstorageaccounter", "shmstorageaccountest"]
+
+    class MockStorageManagementClient:
+        def __init__(self, *args, **kwargs):  # noqa: ARG002
+            self.storage_account = MockStorageAccountsOperations()
+
+    monkeypatch.setattr(
+        data_safe_haven.external.api.azure_sdk,
+        "StorageManagementClient",
+        MockStorageManagementClient,
+    )
+
+
+@fixture
 def mock_subscription_client(monkeypatch, request):
     class MockSubscriptionsOperations:
         def __init__(self, *args, **kwargs):
@@ -240,3 +258,18 @@ class TestAzureSdk:
         assert "Found deleted key vault key_vault_name in location" in stdout
         assert "Purging deleted key vault key_vault_name in location" in stdout
         assert "Purged Key Vault key_vault_name" in stdout
+
+    @pytest.mark.parametrize(
+        "storage_account_name,exists",
+        [("shmstorageaccount", True), ("shmstoragenonexistent", False)],
+    )
+    def test_storage_exists(
+        self,
+        storage_account_name,
+        exists,
+        mock_storage_management_client,  # noqa: ARG002
+        mock_azuresdk_get_subscription,  # noqa: ARG002
+    ):
+        sdk = AzureSdk("subscription name")
+
+        assert sdk.storage_exists(storage_account_name) == exists
