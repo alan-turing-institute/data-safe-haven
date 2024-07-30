@@ -1252,7 +1252,7 @@ class AzureSdk:
         storage_client = StorageManagementClient(
             self.credential(), self.subscription_id
         )
-        return storage_account_name in storage_client.storage_account.list()
+        return storage_account_name in storage_client.storage_accounts.list()
 
     def upload_blob(
         self,
