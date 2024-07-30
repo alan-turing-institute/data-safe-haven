@@ -2,10 +2,6 @@
 
 import pulumi
 from pulumi_azure_native import resources
-from sre.apps import (
-    SREAppsComponent,
-    SREAppsProps,
-)
 
 from data_safe_haven.config import Context, SREConfig
 from data_safe_haven.infrastructure.common import DockerHubCredentials
@@ -13,6 +9,10 @@ from data_safe_haven.infrastructure.common import DockerHubCredentials
 from .sre.application_gateway import (
     SREApplicationGatewayComponent,
     SREApplicationGatewayProps,
+)
+from .sre.apps import (
+    SREAppsComponent,
+    SREAppsProps,
 )
 from .sre.apt_proxy_server import SREAptProxyServerComponent, SREAptProxyServerProps
 from .sre.backup import (
