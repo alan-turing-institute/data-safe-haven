@@ -18,7 +18,66 @@ def aad_guid(aad_guid: str) -> str:
 
 
 def azure_location(azure_location: str) -> str:
-    if not re.match(r"^[a-z]+[0-9]?[a-z]*$", azure_location):
+    # Generate a list of locations with the following command:
+    # `az account list-locations --query "[?metadata.regionType == 'Physical'].name"`
+    locations = [
+        "australiacentral",
+        "australiacentral2",
+        "australiaeast",
+        "australiasoutheast",
+        "brazilsouth",
+        "brazilsoutheast",
+        "brazilus",
+        "canadacentral",
+        "canadaeast",
+        "centralindia",
+        "centralus",
+        "centraluseuap",
+        "eastasia",
+        "eastus",
+        "eastus2",
+        "eastus2euap",
+        "eastusstg",
+        "francecentral",
+        "francesouth",
+        "germanynorth",
+        "germanywestcentral",
+        "israelcentral",
+        "italynorth",
+        "japaneast",
+        "japanwest",
+        "jioindiacentral",
+        "jioindiawest",
+        "koreacentral",
+        "koreasouth",
+        "mexicocentral",
+        "northcentralus",
+        "northeurope",
+        "norwayeast",
+        "norwaywest",
+        "polandcentral",
+        "qatarcentral",
+        "southafricanorth",
+        "southafricawest",
+        "southcentralus",
+        "southeastasia",
+        "southindia",
+        "spaincentral",
+        "swedencentral",
+        "switzerlandnorth",
+        "switzerlandwest",
+        "uaecentral",
+        "uaenorth",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westeurope",
+        "westindia",
+        "westus",
+        "westus2",
+        "westus3",
+    ]
+    if azure_location not in locations:
         msg = "Expected valid Azure location, for example 'uksouth'."
         raise ValueError(msg)
     return azure_location
