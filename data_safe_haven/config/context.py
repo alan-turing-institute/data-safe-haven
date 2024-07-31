@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from data_safe_haven import __version__
 from data_safe_haven.directories import config_dir
 from data_safe_haven.external import AzureSdk
+from data_safe_haven.functions import alphanumeric
 from data_safe_haven.serialisers import ContextBase
 from data_safe_haven.types import (
     AzureSubscriptionName,
@@ -48,8 +49,10 @@ class Context(ContextBase, BaseModel, validate_assignment=True):
 
     @property
     def storage_account_name(self) -> str:
-        # maximum of 24 characters allowed
-        return f"shm{self.name[:21]}"
+        # https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview#storage-account-name
+        #   Storage account names must be between 3 and 24 characters in length and may
+        #   contain numbers and lowercase letters only.
+        return f"shm{alphanumeric(self.name)[:21]}"
 
     @property
     def key_vault_name(self) -> str:
