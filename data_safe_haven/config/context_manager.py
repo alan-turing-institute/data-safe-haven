@@ -119,6 +119,12 @@ class ContextManager(YAMLSerialisableModel):
             )
             context.subscription_name = subscription_name
 
+        # If the name has changed we also need to change the key
+        if name:
+            self.contexts[name] = context
+            del self.contexts[self.selected]
+            self.selected = name
+
     def add(
         self,
         *,
