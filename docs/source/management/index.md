@@ -10,17 +10,22 @@ You will need a full name, phone number, email address and country for each user
 
 2. Alternatively, you can add multiple users from a CSV file with columns named (`GivenName`, `Surname`, `Phone`, `Email`, `CountryCode`).
     - (Optional) you can provide a `Domain` column if you like but this will otherwise default to the domain of your SHM
+    - {{warning}} **Phone** must be in [E.123 international format](https://en.wikipedia.org/wiki/E.123)
+    - {{warning}} **CountryCode** is the two letter [ISO 3166-1 Alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements) code
+
+::::{admonition} Example CSV user file
+:class: dropdown tip
+
+:::{code} text
+GivenName;Surname;Phone;Email;CountryCode
+Sherlock;Holmes;+44800456456;sherlock@bakerst.london;GB
+John;Watson;+18005550100;john@nhs.uk;US
+:::
+::::
 
 ```{code} shell
 $ dsh users add PATH_TO_MY_CSV_FILE
 ```
-
-:::{warning}
-
-- the phone number must be in [E.123 international format](https://en.wikipedia.org/wiki/E.123).
-- the country code is the two letter [ISO 3166-1 Alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements) code.
-
-:::
 
 ## Assign existing users to an SRE
 
