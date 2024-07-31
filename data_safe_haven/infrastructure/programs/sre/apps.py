@@ -117,10 +117,10 @@ class SREAppsComponent(ComponentResource):
             https_only=True,
             kind="FunctionApp",
             location=props.location,
-            name="giteamirror",
+            name=f"{stack_name}gitea-mirror-api",
             resource_group_name=props.resource_group_name,
             server_farm_id=app_service_plan.id,
-            site_config=web.SiteConfig(
+            site_config=web.SiteConfigArgs(
                 app_settings=[
                     {"name": "runtime", "value": "python"},
                     {"name": "FUNCTIONS_WORKER_RUNTIME", "value": "python"},
@@ -141,8 +141,8 @@ def get_blob_url(
     sas = storage.list_storage_account_service_sas_output(
         account_name=storage_account.name,
         protocols=storage.HttpProtocol.HTTPS,
-        # shared_access_expiry_time="2030-01-01",
-        # shared_access_start_time="2021-01-01",
+        shared_access_expiry_time="2030-01-01",
+        shared_access_start_time="2021-01-01",
         resource_group_name=resource_group_name,
         # Access to container
         resource=storage.SignedResource.C,
@@ -159,13 +159,6 @@ def get_blob_url(
         content_encoding="deflate",
     )
     token = sas.service_sas_token
-    # return Output.format(
-    #     "https://{0}.blob.core.windows.net/{1}/{2}?{3}",
-    #     storage_account.name,
-    #     container.name,
-    #     blob.name,
-    #     token,
-    # )
     return Output.format(
         "https://{storage_account_name}.blob.core.windows.net/{container_name}/{blob_name}?{token}",
         storage_account_name=storage_account.name,
