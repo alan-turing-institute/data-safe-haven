@@ -47,9 +47,9 @@ Usernames are of the format _GIVEN-NAME_._SURNAME_ and do not include the Entra 
 
 - You can do this from the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 
-  1. Browse to **{menuselection}`Groups --> All Groups`
-  2. Click on the group named **Data Safe Haven SRE _SRE-NAME_ Users**
-  3. Browse to **{menuselection}`Manage --> Members`** from the secondary menu on the left side
+    1. Browse to **{menuselection}`Groups --> All Groups`
+    2. Click on the group named **Data Safe Haven SRE _SRE-NAME_ Users**
+    3. Browse to **{menuselection}`Manage --> Members`** from the secondary menu on the left side
 
 - You can do this at the command line by running the following command:
 
