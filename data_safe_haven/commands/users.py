@@ -52,7 +52,7 @@ def add(
 
         # Add users to SHM
         users = UserHandler(context, graph_api)
-        users.add(csv)
+        users.add(csv, shm_config.shm.fqdn)
     except DataSafeHavenError as exc:
         logger.critical("Could not add users to Data Safe Haven.")
         raise typer.Exit(1) from exc
