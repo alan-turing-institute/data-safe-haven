@@ -28,9 +28,9 @@ $ dsh context add --help
 - Run a command like the following to create your local context file.
 
 ```{code} shell
-$ dsh context add --admin-group-name _AZURE_GROUP_CONTAINING_ALL_ADMINISTRATORS_ --name _CONTEXT_NAME_ --description _HUMAN_FRIENDLY_NAME_ --subscription _AZURE_SUBSCRIPTION_NAME_
+$ dsh context add --admin-group-name AZURE_GROUP_CONTAINING_ALL_ADMINISTRATORS --name CONTEXT_NAME --description HUMAN_FRIENDLY_NAME --subscription-name AZURE_SUBSCRIPTION_NAME
 ```
 
 :::{note}
-If you have multiple contexts defined, you can select which context you want to use with `dsh context switch _CONTEXT_NAME_`.
+If you have multiple contexts defined, you can select which context you want to use with `dsh context switch CONTEXT_NAME`.
 :::
