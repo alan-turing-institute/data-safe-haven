@@ -17,8 +17,8 @@ $ dsh users add <my CSV users file>
 
 :::{warning}
 
-- the phone number must be in full international format.
-- the country code is the two letter  ISO 3166-1 Alpha-2  code.
+- the phone number must be in [E.123 international format](https://en.wikipedia.org/wiki/E.123).
+- the country code is the two letter [ISO 3166-1 Alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements) code.
 
 :::
 
