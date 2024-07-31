@@ -15,6 +15,7 @@ from azure.identity import (
     TokenCachePersistenceOptions,
 )
 
+from data_safe_haven import console
 from data_safe_haven.directories import config_dir
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenValueError
 from data_safe_haven.logging import get_logger
@@ -28,9 +29,12 @@ class DeferredCredential(TokenCredential):
 
     def __init__(
         self,
+        *,
         scopes: Sequence[str],
+        confirm_credentials: bool = False,
         tenant_id: str | None = None,
     ) -> None:
+        self.confirm_credentials = confirm_credentials
         self.logger = get_logger()
         self.scopes = scopes
         self.tenant_id = tenant_id
@@ -84,12 +88,13 @@ class AzureSdkCredential(DeferredCredential):
     Uses AzureCliCredential for authentication
     """
 
-    _show_login_msg = True
-
     def __init__(
-        self, scope: AzureSdkCredentialScope = AzureSdkCredentialScope.DEFAULT
+        self,
+        scope: AzureSdkCredentialScope,
+        *,
+        confirm_credentials: bool = False,
     ) -> None:
-        super().__init__(scopes=[scope.value])
+        super().__init__(scopes=[scope.value], confirm_credentials=confirm_credentials)
 
     def get_credential(self) -> TokenCredential:
         """Get a new AzureCliCredential."""
@@ -97,7 +102,7 @@ class AzureSdkCredential(DeferredCredential):
         # Check that we are logged into Azure
         try:
             decoded = self.decode_token(credential.get_token(*self.scopes).token)
-            if AzureSdkCredential._show_login_msg:
+            if self.confirm_credentials:
                 self.logger.info(
                     "You are currently logged into the [blue]Azure CLI[/] with the following details:"
                 )
@@ -107,7 +112,13 @@ class AzureSdkCredential(DeferredCredential):
                 self.logger.info(
                     f"\ttenant: [green]{decoded['upn'].split('@')[1]}[/] ({decoded['tid']})"
                 )
-                AzureSdkCredential._show_login_msg = False
+                if not console.confirm(
+                    "Do you want to continue with these credentials?",
+                    default_to_yes=True,
+                ):
+                    msg = "Selected credentials are incorrect."
+                    raise DataSafeHavenValueError(msg)
+                self.confirm_credentials = False
         except (CredentialUnavailableError, DataSafeHavenValueError) as exc:
             self.logger.error(
                 "Please authenticate with Azure: run '[green]az login[/]' using [bold]infrastructure administrator[/] credentials."
@@ -124,14 +135,16 @@ class GraphApiCredential(DeferredCredential):
     Uses DeviceCodeCredential for authentication
     """
 
-    _show_login_msg = True
-
     def __init__(
         self,
+        scopes: Sequence[str],
         tenant_id: str,
-        scopes: Sequence[str] = [],
+        *,
+        confirm_credentials: bool = False,
     ) -> None:
-        super().__init__(scopes=scopes, tenant_id=tenant_id)
+        super().__init__(
+            scopes=scopes, tenant_id=tenant_id, confirm_credentials=confirm_credentials
+        )
 
     def get_credential(self) -> TokenCredential:
         """Get a new DeviceCodeCredential, using cached credentials if they are available"""
@@ -175,7 +188,7 @@ class GraphApiCredential(DeferredCredential):
             f_auth.write(new_auth_record.serialize())
 
         # Write confirmation details about this login
-        if GraphApiCredential._show_login_msg:
+        if self.confirm_credentials:
             self.logger.info(
                 "You are currently logged into the [blue]Microsoft Graph API[/] with the following details:"
             )
@@ -185,7 +198,12 @@ class GraphApiCredential(DeferredCredential):
             self.logger.info(
                 f"\ttenant: [green]{new_auth_record._username.split('@')[1]}[/] ({new_auth_record._tenant_id})"
             )
-            GraphApiCredential._show_login_msg = False
+            if not console.confirm(
+                "Do you want to continue with these credentials?", default_to_yes=True
+            ):
+                msg = "Selected credentials are incorrect."
+                raise DataSafeHavenValueError(msg)
+            self.confirm_credentials = False
 
         # Return the credential
         return credential
