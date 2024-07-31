@@ -38,6 +38,19 @@ Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundament
 
 ## Deployment
 
+::::{admonition} Ensure you are using a `hatch` shell
+:class: dropdown important
+
+You must use a `hatch` shell to run any `dsh` commands.
+From the project base directory run:
+
+:::{code} shell
+$ hatch shell
+:::
+
+This ensures that you are using the intended version of Data Safe Haven with the correct set of dependencies.
+::::
+
 Before deploying the Safe Haven Management (SHM) infrastructure you need to decide on a few parameters:
 
 - `entra_tenant_id`: Tenant ID for the Entra ID used to manage TRE users

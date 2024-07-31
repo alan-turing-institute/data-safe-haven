@@ -44,12 +44,8 @@ Download or checkout this code from GitHub.
 Please contact the development team in case of any problems.
 :::
 
-Enter the base directory and start a new `hatch` environment by doing the following:
+Enter the base directory and install Python dependencies with `hatch` by doing the following:
 
 ```{code} shell
-$ hatch shell
+$ hatch run true
 ```
-
-:::{hint}
-Using a hatch environment this way ensures that you are using the intended version of Data Safe Haven with the correct set of dependencies.
-:::
