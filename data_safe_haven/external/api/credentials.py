@@ -120,9 +120,9 @@ class AzureSdkCredential(DeferredCredential):
 
     def __init__(
         self,
-        scope: AzureSdkCredentialScope,
+        scope: AzureSdkCredentialScope = AzureSdkCredentialScope.DEFAULT,
         *,
-        skip_confirmation: bool,
+        skip_confirmation: bool = False,
     ) -> None:
         super().__init__(scopes=[scope.value], skip_confirmation=skip_confirmation)
 
@@ -157,10 +157,10 @@ class GraphApiCredential(DeferredCredential):
 
     def __init__(
         self,
-        scopes: Sequence[str],
         tenant_id: str,
         *,
-        skip_confirmation: bool,
+        scopes: Sequence[str] = [],
+        skip_confirmation: bool = False,
     ) -> None:
         super().__init__(
             scopes=scopes, tenant_id=tenant_id, skip_confirmation=skip_confirmation
