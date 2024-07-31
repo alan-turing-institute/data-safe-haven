@@ -68,7 +68,6 @@ class SREAppsComponent(ComponentResource):
                 child_opts,
                 ResourceOptions(parent=storage_account),
             ),
-            tags=child_tags,
         )
 
         # Upload Gitea mirror function app
@@ -84,7 +83,6 @@ class SREAppsComponent(ComponentResource):
                 child_opts,
                 ResourceOptions(parent=container),
             ),
-            tags=child_tags,
         )
 
         # Get URL of app blob
@@ -109,6 +107,7 @@ class SREAppsComponent(ComponentResource):
                 "family": "B",
                 "capacity": 1,
             },
+            tags=child_tags,
         )
 
         # Deploy app
@@ -129,6 +128,7 @@ class SREAppsComponent(ComponentResource):
                     {"name": "FUNCTIONS_EXTENSION_VERSION", "value": "~4"},
                 ],
             ),
+            tags=child_tags,
         )
 
 
@@ -140,7 +140,7 @@ def get_blob_url(
 ) -> Output[str]:
     sas = storage.list_storage_account_service_sas_output(
         account_name=storage_account.name,
-        protocols=storage.HttpProtocol.Https,
+        protocols=storage.HttpProtocol.HTTPS,
         # shared_access_expiry_time="2030-01-01",
         # shared_access_start_time="2021-01-01",
         resource_group_name=resource_group_name,
