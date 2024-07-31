@@ -99,6 +99,7 @@ class SREAppsComponent(ComponentResource):
             kind="linux",
             location=props.location,
             name=f"{stack_name}-app-service-plan",
+            reserved=True,
             resource_group_name=props.resource_group_name,
             sku={
                 "name": "B1",
@@ -115,7 +116,7 @@ class SREAppsComponent(ComponentResource):
             f"{self._name}_web_app",
             enabled=True,
             https_only=True,
-            kind="FunctionApp",
+            kind="functionapp,linux",
             location=props.location,
             name=f"{stack_name}-gitea-mirror-api",
             resource_group_name=props.resource_group_name,
