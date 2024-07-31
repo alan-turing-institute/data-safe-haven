@@ -66,7 +66,9 @@ class DeclarativeSRE:
         self.context = context
         self.config = config
         self.graph_api_token = graph_api_token
-        self.stack_name = replace_separators(f"shm-{context.name}-sre-{config.name}", "-")
+        self.stack_name = replace_separators(
+            f"shm-{context.name}-sre-{config.name}", "-"
+        )
         self.tags = {"component": f"SRE {config.name}"} | context.tags
 
     def __call__(self) -> None:
