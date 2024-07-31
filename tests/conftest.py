@@ -254,6 +254,15 @@ def mock_key_vault_key(monkeypatch):
 
 
 @fixture
+def mock_storage_exists(mocker):
+    return mocker.patch.object(
+        AzureSdk,
+        "storage_exists",
+        return_value=True,
+    )
+
+
+@fixture
 def offline_pulumi_account(monkeypatch):
     """Overwrite PulumiAccount so that it runs locally"""
     monkeypatch.setattr(

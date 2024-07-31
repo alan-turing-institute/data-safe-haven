@@ -28,6 +28,16 @@ class DataSafeHavenAzureError(DataSafeHavenError):
     pass
 
 
+class DataSafeHavenAzureStorageError(DataSafeHavenAzureError):
+    """
+    Exception class for handling errors when interacting with Azure Storage.
+
+    Raise this error when a storage account does not exist.
+    """
+
+    pass
+
+
 class DataSafeHavenAzureAPIAuthenticationError(DataSafeHavenError):
     """
     Exception class for handling errors when authenticating against the Azure API.

@@ -7,6 +7,11 @@ import typer
 
 from data_safe_haven import console
 from data_safe_haven.config import ContextManager, SHMConfig, SREConfig
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureStorageError,
+    DataSafeHavenConfigError,
+    DataSafeHavenError,
+)
 from data_safe_haven.logging import get_logger
 
 config_command_group = typer.Typer()
@@ -21,8 +26,22 @@ def show_shm(
     ] = None
 ) -> None:
     """Print the SHM configuration for the selected Data Safe Haven context"""
-    context = ContextManager.from_file().assert_context()
-    config = SHMConfig.from_remote(context)
+    logger = get_logger()
+    try:
+        context = ContextManager.from_file().assert_context()
+    except DataSafeHavenConfigError as exc:
+        logger.critical(
+            "No context is selected. Use `dsh context add` to create a context "
+            "or `dsh context switch` to select one."
+        )
+        raise typer.Exit(1) from exc
+    try:
+        config = SHMConfig.from_remote(context)
+    except DataSafeHavenError as exc:
+        logger.critical(
+            "SHM must be deployed before its configuration can be displayed."
+        )
+        raise typer.Exit(1) from exc
     config_yaml = config.to_yaml()
     if file:
         with open(file, "w") as outfile:
@@ -41,8 +60,25 @@ def show(
     ] = None,
 ) -> None:
     """Print the SRE configuration for the selected SRE and Data Safe Haven context"""
-    context = ContextManager.from_file().assert_context()
-    sre_config = SREConfig.from_remote_by_name(context, name)
+    logger = get_logger()
+    try:
+        context = ContextManager.from_file().assert_context()
+    except DataSafeHavenConfigError as exc:
+        logger.critical(
+            "No context is selected. Use `dsh context add` to create a context "
+            "or `dsh context switch` to select one."
+        )
+        raise typer.Exit(1) from exc
+    try:
+        sre_config = SREConfig.from_remote_by_name(context, name)
+    except DataSafeHavenAzureStorageError as exc:
+        logger.critical("Ensure SHM is deployed before attempting to use SRE configs.")
+        raise typer.Exit(1) from exc
+    except DataSafeHavenError as exc:
+        logger.critical(
+            f"No configuration exists for an SRE named '{name}' for the selected context."
+        )
+        raise typer.Exit(1) from exc
     config_yaml = sre_config.to_yaml()
     if file:
         with open(file, "w") as outfile:
@@ -80,8 +116,12 @@ def upload(
     logger = get_logger()
 
     # Create configuration object from file
-    with open(file) as config_file:
-        config_yaml = config_file.read()
+    if file.is_file():
+        with open(file) as config_file:
+            config_yaml = config_file.read()
+    else:
+        logger.critical(f"Configuration file '{file}' not found.")
+        raise typer.Exit(1)
     config = SREConfig.from_yaml(config_yaml)
 
     # Present diff to user
@@ -101,4 +141,8 @@ def upload(
             console.print("No changes, won't upload configuration.")
             raise typer.Exit()
 
-    config.upload(context, filename=config.filename)
+    try:
+        config.upload(context, filename=config.filename)
+    except DataSafeHavenError as exc:
+        logger.critical("No infrastructure found for the selected context.")
+        raise typer.Exit(1) from exc
