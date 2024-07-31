@@ -435,7 +435,7 @@ class GraphApi:
                         json={"emailAddress": email_address},
                     )
             except DataSafeHavenMicrosoftGraphError as exc:
-                msg = f"Failed to add authentication email address'{email_address}'."
+                msg = f"Failed to add authentication email address '{email_address}'."
                 raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
             # Set the authentication phone number
