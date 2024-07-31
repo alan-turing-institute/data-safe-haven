@@ -32,10 +32,10 @@ class DeferredCredential(TokenCredential):
         self,
         *,
         scopes: Sequence[str],
-        confirm_credentials: bool = False,
+        skip_confirmation: bool,
         tenant_id: str | None = None,
     ) -> None:
-        self.confirm_credentials = confirm_credentials
+        self.skip_confirmation = skip_confirmation
         self.logger = get_logger()
         self.scopes = scopes
         self.tenant_id = tenant_id
@@ -71,14 +71,21 @@ class DeferredCredential(TokenCredential):
         tenant_name: str,
         tenant_id: str,
     ) -> None:
-        if not self.confirm_credentials:
+        """
+        Allow user to confirm that credentials are correct.
+
+        Responses are cached so the user will only be prompted once per run.
+        If 'skip_confirmation' is set, then no confirmation will be performed.
+
+        Raises:
+            DataSafeHavenValueError: if the user indicates that the credentials are wrong
+        """
+        if self.skip_confirmation:
             return
         if (user_id, tenant_id) in DeferredCredential.cache_:
             return
         DeferredCredential.cache_.add((user_id, tenant_id))
-        self.logger.info(
-            f"You are currently logged into the [blue]{target_name}[/] as:"
-        )
+        self.logger.info(f"You are logged into the [blue]{target_name}[/] as:")
         self.logger.info(f"\tuser: [green]{user_name}[/] ({user_id})")
         self.logger.info(f"\ttenant: [green]{tenant_name}[/] ({tenant_id})")
         if not console.confirm("Are these details correct?", default_to_yes=True):
@@ -115,9 +122,9 @@ class AzureSdkCredential(DeferredCredential):
         self,
         scope: AzureSdkCredentialScope,
         *,
-        confirm_credentials: bool = False,
+        skip_confirmation: bool,
     ) -> None:
-        super().__init__(scopes=[scope.value], confirm_credentials=confirm_credentials)
+        super().__init__(scopes=[scope.value], skip_confirmation=skip_confirmation)
 
     def get_credential(self) -> TokenCredential:
         """Get a new AzureCliCredential."""
@@ -153,10 +160,10 @@ class GraphApiCredential(DeferredCredential):
         scopes: Sequence[str],
         tenant_id: str,
         *,
-        confirm_credentials: bool = False,
+        skip_confirmation: bool,
     ) -> None:
         super().__init__(
-            scopes=scopes, tenant_id=tenant_id, confirm_credentials=confirm_credentials
+            scopes=scopes, tenant_id=tenant_id, skip_confirmation=skip_confirmation
         )
 
     def get_credential(self) -> TokenCredential:

@@ -72,7 +72,7 @@ class GraphApi:
     ) -> "GraphApi":
         return cls(
             credential=GraphApiCredential(
-                scopes, tenant_id, confirm_credentials=(not disable_logging)
+                scopes, tenant_id, skip_confirmation=disable_logging
             ),
             disable_logging=disable_logging,
         )

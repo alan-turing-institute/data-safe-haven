@@ -168,7 +168,7 @@ class AzureSdk:
     ) -> AzureSdkCredential:
         if scope not in self._credentials:
             self._credentials[scope] = AzureSdkCredential(
-                scope, confirm_credentials=(not self.disable_logging)
+                scope, skip_confirmation=self.disable_logging
             )
         return self._credentials[scope]
 
