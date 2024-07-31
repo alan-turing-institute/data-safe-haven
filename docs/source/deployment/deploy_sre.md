@@ -19,12 +19,12 @@ This ensures that you are using the intended version of Data Safe Haven with the
 
 ## Configuration
 
-Each project will have its own dedicated Secure Research Environment (SRE).
+Each project will have its own dedicated SRE.
 
 - Create a configuration file
 
 ```console
-> dsh config template --file config.yaml
+> dsh config template --file PATH_YOU_WANT_TO_SAVE_TO.yaml
 ```
 
 - Edit this file in your favourite text editor, replacing the placeholder text with appropriate values for your setup.
@@ -66,7 +66,7 @@ $ dsh config upload config.yaml
 As private endpoints for flexible PostgreSQL are still in preview, the following command is currently needed:
 
 ```{code} shell
-$ az feature register --name "enablePrivateEndpoint" --namespace "Microsoft.DBforPostgreSQL"
+$ az feature register --name "enablePrivateEndpoint" --namespace "Microsoft.DBforPostgreSQL" --subscription NAME_OR_ID_OF_YOUR_SUBSCRIPTION
 ```
 
 :::
