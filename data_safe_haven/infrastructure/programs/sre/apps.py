@@ -117,7 +117,7 @@ class SREAppsComponent(ComponentResource):
             https_only=True,
             kind="FunctionApp",
             location=props.location,
-            name=f"{stack_name}gitea-mirror-api",
+            name=f"{stack_name}-gitea-mirror-api",
             resource_group_name=props.resource_group_name,
             server_farm_id=app_service_plan.id,
             site_config=web.SiteConfigArgs(
