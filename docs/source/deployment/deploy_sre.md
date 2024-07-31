@@ -24,7 +24,7 @@ Each project will have its own dedicated SRE.
 - Create a configuration file
 
 ```console
-> dsh config template --file PATH_YOU_WANT_TO_SAVE_TO.yaml
+> dsh config template --file PATH_WHERE_YOU_WANT_TO_SAVE_YOUR_YAML_FILE
 ```
 
 - Edit this file in your favourite text editor, replacing the placeholder text with appropriate values for your setup.
@@ -57,8 +57,12 @@ sre:
 - Upload the config to Azure. This will validate your file and report any problems.
 
 ```{code} shell
-$ dsh config upload config.yaml
+$ dsh config upload PATH_TO_YOUR_EDITED_YAML_FILE
 ```
+
+:::{hint}
+If you want to make changes to the config, edit this file and then run `dsh config upload` again
+:::
 
 ## Requirements
 
@@ -76,5 +80,5 @@ $ az feature register --name "enablePrivateEndpoint" --namespace "Microsoft.DBfo
 - Deploy each SRE individually [approx 30 minutes]:
 
 ```{code} shell
-$ dsh sre deploy _YOUR_SRE_NAME_
+$ dsh sre deploy YOUR_SRE_NAME
 ```
