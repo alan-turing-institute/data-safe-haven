@@ -122,7 +122,8 @@ class ContextManager(YAMLSerialisableModel):
         # If the name has changed we also need to change the key
         if name:
             self.contexts[name] = context
-            del self.contexts[self.selected]
+            if self.selected:
+                del self.contexts[self.selected]
             self.selected = name
 
     def add(
