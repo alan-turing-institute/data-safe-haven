@@ -9,6 +9,7 @@ from data_safe_haven.infrastructure.common import (
 )
 from data_safe_haven.types import DatabaseSystem, SoftwarePackageCategory
 
+from .clamav_mirror import SREClamAVMirrorComponent, SREClamAVMirrorProps
 from .database_servers import SREDatabaseServerComponent, SREDatabaseServerProps
 from .gitea_server import SREGiteaServerComponent, SREGiteaServerProps
 from .hedgedoc_server import SREHedgeDocServerComponent, SREHedgeDocServerProps
@@ -158,6 +159,24 @@ class SREUserServicesComponent(ComponentResource):
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
                 subnet_id=props.subnet_software_repositories_id,
+            ),
+            opts=child_opts,
+            tags=child_tags,
+        )
+
+        # Deploy ClamAV mirror server
+        SREClamAVMirrorComponent(
+            "sre_clamav_mirror",
+            stack_name,
+            SREClamAVMirrorProps(
+                subnet_id=props.subnet_software_repositories_id,
+                dns_server_ip=props.dns_server_ip,
+                dockerhub_credentials=props.dockerhub_credentials,
+                location=props.location,
+                resource_group_name=props.resource_group_name,
+                sre_fqdn=props.sre_fqdn,
+                storage_account_key=props.storage_account_key,
+                storage_account_name=props.storage_account_name,
             ),
             opts=child_opts,
             tags=child_tags,
