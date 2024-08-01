@@ -64,6 +64,7 @@ class SREConfig(AzureSerialisableModel):
                 data_provider_ip_addresses=[
                     "List of IP addresses belonging to data providers"
                 ],
+                gitea_external_mirror="external/internal/none: whether to create a mirror for external Gitea repositories",
                 remote_desktop=ConfigSubsectionRemoteDesktopOpts.model_construct(
                     allow_copy="True/False: whether to allow copying text out of the environment",
                     allow_paste="True/False: whether to allow pasting text into the environment",
