@@ -23,13 +23,16 @@ Each project will have its own dedicated SRE.
 
 - Create a configuration file
 
-```console
+:::{code} shell
 $ dsh config template --file PATH_YOU_WANT_TO_SAVE_YOUR_YAML_FILE_TO
-```
+:::
 
 - Edit this file in your favourite text editor, replacing the placeholder text with appropriate values for your setup.
 
-```yaml
+::::{admonition} Example YAML configuration file
+:class: dropdown tip
+
+:::{code} yaml
 azure:
   subscription_id: # ID of the Azure subscription that the TRE will be deployed to
   tenant_id: # Home tenant for the Azure account used to deploy infrastructure: `az account show`
@@ -50,15 +53,17 @@ sre:
   software_packages: # any/pre-approved/none: which packages from external repositories to allow
   timezone: # Timezone in pytz format (eg. Europe/London)
   workspace_skus: # List of Azure VM SKUs - see cloudprice.net for list of valid SKUs
-```
+:::
+
+::::
 
 ## Upload the configuration file
 
 - Upload the config to Azure. This will validate your file and report any problems.
 
-```{code} shell
+:::{code} shell
 $ dsh config upload PATH_TO_YOUR_EDITED_YAML_FILE
-```
+:::
 
 :::{hint}
 If you want to make changes to the config, edit this file and then run `dsh config upload` again
@@ -69,11 +74,11 @@ If you want to make changes to the config, edit this file and then run `dsh conf
 :::{important}
 As private endpoints for flexible PostgreSQL are still in preview, the following command is currently needed:
 
-```{code} shell
+:::{code} shell
 $ az feature register --name "enablePrivateEndpoint" \
                       --namespace "Microsoft.DBforPostgreSQL" \
                       --subscription NAME_OR_ID_OF_YOUR_SUBSCRIPTION
-```
+:::
 
 :::
 
@@ -81,6 +86,6 @@ $ az feature register --name "enablePrivateEndpoint" \
 
 - Deploy each SRE individually [approx 30 minutes]:
 
-```{code} shell
+:::{code} shell
 $ dsh sre deploy YOUR_SRE_NAME
-```
+:::

@@ -1,13 +1,13 @@
 # Deployment
 
-```{toctree}
+:::{toctree}
 :hidden:
 
 setup_context.md
 deploy_shm.md
 configure_entra_id.md
 deploy_sre.md
-```
+:::
 
 Deploying an instance of the Data Safe Haven involves the following steps:
 
@@ -46,6 +46,6 @@ Please contact the development team in case of any problems.
 
 Enter the base directory and install Python dependencies with `hatch` by doing the following:
 
-```{code} shell
+:::{code} shell
 $ hatch run true
-```
+:::
