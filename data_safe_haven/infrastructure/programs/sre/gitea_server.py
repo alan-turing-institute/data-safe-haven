@@ -16,6 +16,7 @@ from data_safe_haven.infrastructure.components import (
     PostgresqlDatabaseProps,
 )
 from data_safe_haven.resources import resources_path
+from data_safe_haven.types import GiteaServerAvailability
 from data_safe_haven.utility import FileReader
 
 
@@ -29,6 +30,7 @@ class SREGiteaServerProps:
         database_subnet_id: Input[str],
         dns_server_ip: Input[str],
         dockerhub_credentials: DockerHubCredentials,
+        gitea_server: GiteaServerAvailability,
         ldap_server_hostname: Input[str],
         ldap_server_port: Input[int],
         ldap_username_attribute: Input[str],
@@ -49,6 +51,7 @@ class SREGiteaServerProps:
         )
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
+        self.gitea_server = gitea_server
         self.ldap_server_hostname = ldap_server_hostname
         self.ldap_server_port = ldap_server_port
         self.ldap_username_attribute = ldap_username_attribute
