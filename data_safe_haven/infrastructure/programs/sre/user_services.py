@@ -145,7 +145,7 @@ class SREUserServicesComponent(ComponentResource):
         )
 
         # Deploy software repository servers
-        software_repositories = SRESoftwareRepositoriesComponent(
+        self.software_repositories = SRESoftwareRepositoriesComponent(
             "sre_software_repositories",
             stack_name,
             SRESoftwareRepositoriesProps(
@@ -198,6 +198,3 @@ class SREUserServicesComponent(ComponentResource):
                 opts=child_opts,
                 tags=child_tags,
             )
-
-        # Register outputs
-        self.software_repositories = software_repositories
