@@ -137,6 +137,7 @@ class SREAppsComponent(ComponentResource):
                     {"name": "WEBSITE_RUN_FROM_PACKAGE", "value": blob_url},
                     {"name": "FUNCTIONS_EXTENSION_VERSION", "value": "~4"},
                 ],
+                linux_fx_version="Python|3.11",
             ),
             tags=child_tags,
         )
