@@ -128,6 +128,7 @@ class SREAppsComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             server_farm_id=app_service_plan.id,
             site_config=web.SiteConfigArgs(
+                always_on=True,
                 app_settings=[
                     {"name": "AzureWebJobsStorage", "value": connection_string},
                     {"name": "runtime", "value": "python"},
