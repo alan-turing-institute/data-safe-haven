@@ -7,7 +7,7 @@ from data_safe_haven.infrastructure.common import (
     DockerHubCredentials,
     get_id_from_subnet,
 )
-from data_safe_haven.types import DatabaseSystem, SoftwarePackageCategory
+from data_safe_haven.types import DatabaseSystem, GiteaServers, SoftwarePackageCategory
 
 from .database_servers import SREDatabaseServerComponent, SREDatabaseServerProps
 from .gitea_server import SREGiteaServerComponent, SREGiteaServerProps
@@ -28,6 +28,7 @@ class SREUserServicesProps:
         dns_server_ip: Input[str],
         dockerhub_credentials: DockerHubCredentials,
         gitea_database_password: Input[str],
+        gitea_servers: GiteaServers,
         hedgedoc_database_password: Input[str],
         ldap_server_hostname: Input[str],
         ldap_server_port: Input[int],
@@ -51,6 +52,7 @@ class SREUserServicesProps:
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
         self.gitea_database_password = gitea_database_password
+        self.gitea_servers = gitea_servers
         self.hedgedoc_database_password = hedgedoc_database_password
         self.ldap_server_hostname = ldap_server_hostname
         self.ldap_server_port = ldap_server_port
@@ -93,30 +95,36 @@ class SREUserServicesComponent(ComponentResource):
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
-        # Deploy the Gitea server
-        SREGiteaServerComponent(
-            "sre_gitea_server",
-            stack_name,
-            SREGiteaServerProps(
-                containers_subnet_id=props.subnet_containers_id,
-                database_subnet_id=props.subnet_containers_support_id,
-                database_password=props.gitea_database_password,
-                dns_server_ip=props.dns_server_ip,
-                dockerhub_credentials=props.dockerhub_credentials,
-                ldap_server_hostname=props.ldap_server_hostname,
-                ldap_server_port=props.ldap_server_port,
-                ldap_username_attribute=props.ldap_username_attribute,
-                ldap_user_filter=props.ldap_user_filter,
-                ldap_user_search_base=props.ldap_user_search_base,
-                location=props.location,
-                resource_group_name=props.resource_group_name,
-                sre_fqdn=props.sre_fqdn,
-                storage_account_key=props.storage_account_key,
-                storage_account_name=props.storage_account_name,
-            ),
-            opts=child_opts,
-            tags=child_tags,
-        )
+        # Deploy the Gitea servers
+        if props.gitea_servers == GiteaServers.BOTH:
+            gitea_servers = ["external", "internal"]
+        else:
+            gitea_servers = ["internal"]
+        for gitea_server in gitea_servers:
+            SREGiteaServerComponent(
+                f"sre_{gitea_server}_gitea_server",
+                stack_name,
+                SREGiteaServerProps(
+                    containers_subnet_id=props.subnet_containers_id,
+                    database_subnet_id=props.subnet_containers_support_id,
+                    database_password=props.gitea_database_password,
+                    dns_server_ip=props.dns_server_ip,
+                    dockerhub_credentials=props.dockerhub_credentials,
+                    gitea_server=gitea_server,
+                    ldap_server_hostname=props.ldap_server_hostname,
+                    ldap_server_port=props.ldap_server_port,
+                    ldap_username_attribute=props.ldap_username_attribute,
+                    ldap_user_filter=props.ldap_user_filter,
+                    ldap_user_search_base=props.ldap_user_search_base,
+                    location=props.location,
+                    resource_group_name=props.resource_group_name,
+                    sre_fqdn=props.sre_fqdn,
+                    storage_account_key=props.storage_account_key,
+                    storage_account_name=props.storage_account_name,
+                ),
+                opts=child_opts,
+                tags=child_tags,
+            )
 
         # Deploy the HedgeDoc server
         SREHedgeDocServerComponent(
