@@ -69,9 +69,9 @@ If you have manually created a user and want to enable SSPR, do the following
 - Browse to **Users > All Users** from the menu on the left side
 - Select the user you want to enable SSPR for
 - On the **Manage > Authentication Methods** page fill out their contact info as follows:
-    - **Phone:** add the user's phone number with a space between the country code and the rest of the number (_e.g._ +44 7700900000)
-    - **Email:** enter the user's email address here
-    - Ensure that you have registered **both** a phone number and an email address
+    - Ensure that you register **both** a phone number and an email address
+        - **Phone:** add the user's phone number with a space between the country code and the rest of the number (_e.g._ +44 7700900000)
+        - **Email:** enter the user's email address here
     - Click the **{guilabel}`Save`** icon in the top panel
 
 ## Removing a deployed Data Safe Haven
@@ -86,10 +86,4 @@ $ dsh sre teardown YOUR_SRE_NAME
 
 ```{code} shell
 $ dsh shm teardown
-```
-
-- Run the following if you want to teardown the deployed Data Safe Haven context:
-
-```{code} shell
-$ dsh context teardown
 ```

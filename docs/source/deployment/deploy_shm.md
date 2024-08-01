@@ -38,7 +38,7 @@ Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundament
 
 ## Deployment
 
-::::{admonition} Ensure you are using a `hatch` shell
+::::{admonition} Ensure you are using a hatch shell
 :class: dropdown important
 
 You must use a `hatch` shell to run any `dsh` commands.
@@ -86,7 +86,7 @@ You will be prompted to log in to the Azure CLI and to the Graph API.
 :::{important}
 You may be asked to delegate your domain name to Azure. To do this, you'll need to know details about the parent domain. For example, if you are deploying to `dsh.example.com` then the parent name is `example.com`.
 
-- Follow [this tutorial](https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain) if the parent domain is hosted outside Azure
-- Follow [this tutorial](https://learn.microsoft.com/en-us/azure/dns/tutorial-public-dns-zones-child#verify-the-child-dns-zone) if the parent domain is hosted in Azure
+- Follow [this tutorial](https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain) if the parent domain is hosted **outside Azure**
+- Follow [this tutorial](https://learn.microsoft.com/en-us/azure/dns/tutorial-public-dns-zones-child#verify-the-child-dns-zone) if the parent domain is hosted **in Azure**
 
 :::

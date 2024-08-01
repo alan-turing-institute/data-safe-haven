@@ -4,7 +4,7 @@
 
 These instructions will deploy a new  Secure Research Environment (SRE).
 
-::::{admonition} Ensure you are using a `hatch` shell
+::::{admonition} Ensure you are using a hatch shell
 :class: dropdown important
 
 You must use a `hatch` shell to run any `dsh` commands.
@@ -24,7 +24,7 @@ Each project will have its own dedicated SRE.
 - Create a configuration file
 
 ```console
-> dsh config template --file PATH_WHERE_YOU_WANT_TO_SAVE_YOUR_YAML_FILE
+$ dsh config template --file PATH_YOU_WANT_TO_SAVE_YOUR_YAML_FILE_TO
 ```
 
 - Edit this file in your favourite text editor, replacing the placeholder text with appropriate values for your setup.

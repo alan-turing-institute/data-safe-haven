@@ -37,7 +37,7 @@ This is necessary both to secure logins and to allow users to set their own pass
 - Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 - Browse to **{menuselection}`Protection --> Authentication methods`** from the menu on the left side
 - Browse to **{menuselection}`Manage --> Policies`** from the secondary menu on the left side
-- For each of **Microsoft Authenticator**, **SMS**, **Third-party software OATH tokens**, **Voice call** and **Email OTP** click on the method name
+- For each of **Microsoft Authenticator**, **SMS**, **Voice call** and **Email OTP** click on the method name
     - Ensure the slider is set to **Enable** and the target to **All users**
     - Click the **{guilabel}`Save`** button
 
