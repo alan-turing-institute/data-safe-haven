@@ -10,6 +10,7 @@ from pytest import fixture
 
 import data_safe_haven.config.context_manager as context_mod
 import data_safe_haven.logging.logger
+from data_safe_haven import console
 from data_safe_haven.config import (
     Context,
     ContextManager,
@@ -231,6 +232,24 @@ def mock_azuresdk_remove_blob(mocker):
         AzureSdk,
         "remove_blob",
         return_value=None,
+    )
+
+
+@fixture
+def mock_confirm_no(mocker):
+    return mocker.patch.object(
+        console,
+        "confirm",
+        return_value=False,
+    )
+
+
+@fixture
+def mock_confirm_yes(mocker):
+    return mocker.patch.object(
+        console,
+        "confirm",
+        return_value=True,
     )
 
 

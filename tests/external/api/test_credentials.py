@@ -8,11 +8,55 @@ from data_safe_haven.directories import config_dir
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external.api.credentials import (
     AzureSdkCredential,
+    DeferredCredential,
     GraphApiCredential,
 )
 
 
 class TestDeferredCredential:
+    def test_confirm_credentials_interactive(
+        self,
+        mock_confirm_yes,  # noqa: ARG002
+        mock_azureclicredential_get_token,  # noqa: ARG002
+        capsys,
+        request,
+    ):
+        DeferredCredential.cache_ = set()
+        credential = AzureSdkCredential(skip_confirmation=False)
+        credential.get_credential()
+        out, _ = capsys.readouterr()
+        assert "You are logged into the Azure CLI as" in out
+        assert f"user: username ({request.config.guid_user})" in out
+        assert f"tenant: example.com ({request.config.guid_tenant})" in out
+
+    def test_confirm_credentials_interactive_fail(
+        self,
+        mock_confirm_no,  # noqa: ARG002
+        mock_azureclicredential_get_token,  # noqa: ARG002
+    ):
+        DeferredCredential.cache_ = set()
+        credential = AzureSdkCredential(skip_confirmation=False)
+        with pytest.raises(
+            DataSafeHavenAzureError,
+            match="Error getting account information from Azure CLI.",
+        ):
+            credential.get_credential()
+
+    def test_confirm_credentials_interactive_cache(
+        self,
+        mock_confirm_yes,  # noqa: ARG002
+        mock_azureclicredential_get_token,  # noqa: ARG002
+        capsys,
+        request,
+    ):
+        DeferredCredential.cache_ = {
+            (request.config.guid_user, request.config.guid_tenant)
+        }
+        credential = AzureSdkCredential(skip_confirmation=False)
+        credential.get_credential()
+        out, _ = capsys.readouterr()
+        assert "You are logged into the Azure CLI as" not in out
+
     def test_decode_token_error(
         self, mock_azureclicredential_get_token_invalid  # noqa: ARG002
     ):
