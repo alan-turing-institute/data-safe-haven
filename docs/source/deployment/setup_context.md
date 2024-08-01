@@ -28,7 +28,10 @@ $ dsh context add --help
 - Run a command like the following to create your local context file.
 
 ```{code} shell
-$ dsh context add --admin-group-name AZURE_GROUP_CONTAINING_ALL_ADMINISTRATORS --name CONTEXT_NAME --description HUMAN_FRIENDLY_NAME --subscription-name AZURE_SUBSCRIPTION_NAME
+$ dsh context add --admin-group-name AZURE_SECURITY_GROUP_CONTAINING_ALL_ADMINISTRATORS \
+                  --name NAME_WITH_ONLY_LETTERS_NUMBERS_AND_UNDERSCORES \
+                  --description HUMAN_FRIENDLY_DESCRIPTION_OF_YOUR_TRE \
+                  --subscription-name AZURE_SUBSCRIPTION_NAME
 ```
 
 :::{note}

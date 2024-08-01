@@ -85,7 +85,9 @@ Before deploying the Safe Haven Management (SHM) infrastructure you need to deci
 Once you've decided on these, run the following command: [approx 5 minutes]:
 
 ```{code} shell
-$ dsh shm deploy --entra-tenant-id YOUR_ENTRA_TENANT_ID --fqdn YOUR_DOMAIN_NAME --location YOUR_LOCATION
+$ dsh shm deploy --entra-tenant-id YOUR_ENTRA_TENANT_ID \
+                 --fqdn YOUR_DOMAIN_NAME \
+                 --location YOUR_LOCATION
 ```
 
 :::{note}
