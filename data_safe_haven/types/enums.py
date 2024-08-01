@@ -183,3 +183,11 @@ class SoftwarePackageCategory(str, Enum):
     ANY = "any"
     PRE_APPROVED = "pre-approved"
     NONE = "none"
+
+@verify(UNIQUE)
+class GiteaServerAvailability(str, Enum):
+    """Availability of Gitea server."""
+
+    EXTERNAL = "external"
+    INTERNAL = "internal"
+    NONE = "none"
