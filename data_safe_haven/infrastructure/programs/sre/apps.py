@@ -93,6 +93,12 @@ class SREAppsComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
         )
 
+        # Get connection string
+        connection_string = get_connection_string(
+            resource_group_name=props.resource_group_name,
+            storage_account=storage_account,
+        )
+
         # Deploy service plan
         app_service_plan = web.AppServicePlan(
             f"{self._name}_app_service_plan",
@@ -123,7 +129,9 @@ class SREAppsComponent(ComponentResource):
             server_farm_id=app_service_plan.id,
             site_config=web.SiteConfigArgs(
                 app_settings=[
+                    {"name": "AzureWebJobsStorage", "value": connection_string},
                     {"name": "runtime", "value": "python"},
+                    {"name": "pythonVersion", "value": "3.11"},
                     {"name": "FUNCTIONS_WORKER_RUNTIME", "value": "python"},
                     {"name": "WEBSITE_RUN_FROM_PACKAGE", "value": blob_url},
                     {"name": "FUNCTIONS_EXTENSION_VERSION", "value": "~4"},
@@ -136,8 +144,8 @@ class SREAppsComponent(ComponentResource):
 def get_blob_url(
     blob: Input[storage.Blob],
     container: Input[storage.BlobContainer],
-    storage_account: Input[storage.StorageAccount],
     resource_group_name: Input[str],
+    storage_account: Input[storage.StorageAccount],
 ) -> Output[str]:
     sas = storage.list_storage_account_service_sas_output(
         account_name=storage_account.name,
@@ -154,10 +162,10 @@ def get_blob_url(
             account_name=storage_account.name,
             container_name=container.name,
         ),
-        content_type="application/json",
-        cache_control="max-age=5",
-        content_disposition="inline",
-        content_encoding="deflate",
+        # content_type="application/json",
+        # cache_control="max-age=5",
+        # content_disposition="inline",
+        # content_encoding="deflate",
     )
     token = sas.service_sas_token
     return Output.format(
@@ -166,4 +174,21 @@ def get_blob_url(
         container_name=container.name,
         blob_name=blob.name,
         token=token,
+    )
+
+
+def get_connection_string(
+    resource_group_name: Input[str],
+    storage_account: Input[storage.StorageAccount],
+) -> Output[str]:
+    storage_account_keys = storage.list_storage_account_keys_output(
+        resource_group_name=resource_group_name,
+        account_name=storage_account.name,
+    )
+    primary_storage_key = storage_account_keys.keys[0].value
+
+    return Output.format(
+        "DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={primary_storage_key}",
+        storage_account_name=storage_account.name,
+        primary_storage_key=primary_storage_key,
     )
