@@ -8,15 +8,59 @@ from data_safe_haven.directories import config_dir
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external.api.credentials import (
     AzureSdkCredential,
+    DeferredCredential,
     GraphApiCredential,
 )
 
 
 class TestDeferredCredential:
+    def test_confirm_credentials_interactive(
+        self,
+        mock_confirm_yes,  # noqa: ARG002
+        mock_azureclicredential_get_token,  # noqa: ARG002
+        capsys,
+        request,
+    ):
+        DeferredCredential.cache_ = set()
+        credential = AzureSdkCredential(skip_confirmation=False)
+        credential.get_credential()
+        out, _ = capsys.readouterr()
+        assert "You are logged into the Azure CLI as" in out
+        assert f"user: username ({request.config.guid_user})" in out
+        assert f"tenant: example.com ({request.config.guid_tenant})" in out
+
+    def test_confirm_credentials_interactive_fail(
+        self,
+        mock_confirm_no,  # noqa: ARG002
+        mock_azureclicredential_get_token,  # noqa: ARG002
+    ):
+        DeferredCredential.cache_ = set()
+        credential = AzureSdkCredential(skip_confirmation=False)
+        with pytest.raises(
+            DataSafeHavenAzureError,
+            match="Error getting account information from Azure CLI.",
+        ):
+            credential.get_credential()
+
+    def test_confirm_credentials_interactive_cache(
+        self,
+        mock_confirm_yes,  # noqa: ARG002
+        mock_azureclicredential_get_token,  # noqa: ARG002
+        capsys,
+        request,
+    ):
+        DeferredCredential.cache_ = {
+            (request.config.guid_user, request.config.guid_tenant)
+        }
+        credential = AzureSdkCredential(skip_confirmation=False)
+        credential.get_credential()
+        out, _ = capsys.readouterr()
+        assert "You are logged into the Azure CLI as" not in out
+
     def test_decode_token_error(
         self, mock_azureclicredential_get_token_invalid  # noqa: ARG002
     ):
-        credential = AzureSdkCredential()
+        credential = AzureSdkCredential(skip_confirmation=True)
         with pytest.raises(
             DataSafeHavenAzureError,
             match="Error getting account information from Azure CLI.",
@@ -26,11 +70,11 @@ class TestDeferredCredential:
 
 class TestAzureSdkCredential:
     def test_get_credential(self, mock_azureclicredential_get_token):  # noqa: ARG002
-        credential = AzureSdkCredential()
+        credential = AzureSdkCredential(skip_confirmation=True)
         assert isinstance(credential.get_credential(), AzureCliCredential)
 
     def test_get_token(self, mock_azureclicredential_get_token):  # noqa: ARG002
-        credential = AzureSdkCredential()
+        credential = AzureSdkCredential(skip_confirmation=True)
         assert isinstance(credential.token, str)
 
     def test_decode_token(
@@ -38,7 +82,7 @@ class TestAzureSdkCredential:
         request,
         mock_azureclicredential_get_token,  # noqa: ARG002
     ):
-        credential = AzureSdkCredential()
+        credential = AzureSdkCredential(skip_confirmation=True)
         decoded = credential.decode_token(credential.token)
         assert decoded["name"] == "username"
         assert decoded["oid"] == request.config.guid_user
@@ -65,7 +109,9 @@ class TestGraphApiCredential:
             f_auth.write(serialised_record)
 
         # Get a credential
-        credential = GraphApiCredential(request.config.guid_tenant)
+        credential = GraphApiCredential(
+            request.config.guid_tenant, skip_confirmation=True
+        )
         credential.get_credential()
 
         # Remove the authentication record
@@ -78,7 +124,9 @@ class TestGraphApiCredential:
         request,
         mock_graphapicredential_get_token,  # noqa: ARG002
     ):
-        credential = GraphApiCredential(request.config.guid_tenant)
+        credential = GraphApiCredential(
+            request.config.guid_tenant, skip_confirmation=True
+        )
         decoded = credential.decode_token(credential.token)
         assert decoded["scp"] == "GroupMember.Read.All User.Read.All"
         assert decoded["tid"] == request.config.guid_tenant
@@ -90,7 +138,9 @@ class TestGraphApiCredential:
         mock_devicecodecredential_get_token,  # noqa: ARG002
         tmp_config_dir,  # noqa: ARG002
     ):
-        credential = GraphApiCredential(request.config.guid_tenant)
+        credential = GraphApiCredential(
+            request.config.guid_tenant, skip_confirmation=True
+        )
         assert isinstance(credential.get_credential(), DeviceCodeCredential)
 
     def test_get_credential_callback(
@@ -100,7 +150,9 @@ class TestGraphApiCredential:
         mock_devicecodecredential_new,  # noqa: ARG002
         tmp_config_dir,  # noqa: ARG002
     ):
-        credential = GraphApiCredential(request.config.guid_tenant)
+        credential = GraphApiCredential(
+            request.config.guid_tenant, skip_confirmation=True
+        )
         credential.get_credential()
         captured = capsys.readouterr()
         cleaned_stdout = " ".join(captured.out.split())
@@ -115,5 +167,7 @@ class TestGraphApiCredential:
         mock_devicecodecredential_get_token,  # noqa: ARG002
         mock_graphapicredential_get_credential,  # noqa: ARG002
     ):
-        credential = GraphApiCredential(request.config.guid_tenant)
+        credential = GraphApiCredential(
+            request.config.guid_tenant, skip_confirmation=True
+        )
         assert isinstance(credential.token, str)

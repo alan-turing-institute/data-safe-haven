@@ -15,6 +15,7 @@ from azure.identity import (
     TokenCachePersistenceOptions,
 )
 
+from data_safe_haven import console
 from data_safe_haven.directories import config_dir
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenValueError
 from data_safe_haven.logging import get_logger
@@ -25,12 +26,16 @@ class DeferredCredential(TokenCredential):
     """A token credential that wraps and caches other credential classes."""
 
     tokens_: ClassVar[dict[str, AccessToken]] = {}
+    cache_: ClassVar[set[tuple[str, str]]] = set()
 
     def __init__(
         self,
+        *,
         scopes: Sequence[str],
+        skip_confirmation: bool,
         tenant_id: str | None = None,
     ) -> None:
+        self.skip_confirmation = skip_confirmation
         self.logger = get_logger()
         self.scopes = scopes
         self.tenant_id = tenant_id
@@ -58,6 +63,35 @@ class DeferredCredential(TokenCredential):
     def get_credential(self) -> TokenCredential:
         """Get a credential provider from the child class."""
 
+    def confirm_credentials_interactive(
+        self,
+        target_name: str,
+        user_name: str,
+        user_id: str,
+        tenant_name: str,
+        tenant_id: str,
+    ) -> None:
+        """
+        Allow user to confirm that credentials are correct.
+
+        Responses are cached so the user will only be prompted once per run.
+        If 'skip_confirmation' is set, then no confirmation will be performed.
+
+        Raises:
+            DataSafeHavenValueError: if the user indicates that the credentials are wrong
+        """
+        if self.skip_confirmation:
+            return
+        if (user_id, tenant_id) in DeferredCredential.cache_:
+            return
+        DeferredCredential.cache_.add((user_id, tenant_id))
+        self.logger.info(f"You are logged into the [blue]{target_name}[/] as:")
+        self.logger.info(f"\tuser: [green]{user_name}[/] ({user_id})")
+        self.logger.info(f"\ttenant: [green]{tenant_name}[/] ({tenant_id})")
+        if not console.confirm("Are these details correct?", default_to_yes=True):
+            msg = "Selected credentials are incorrect."
+            raise DataSafeHavenValueError(msg)
+
     def get_token(
         self,
         *scopes: str,
@@ -84,30 +118,27 @@ class AzureSdkCredential(DeferredCredential):
     Uses AzureCliCredential for authentication
     """
 
-    _show_login_msg = True
-
     def __init__(
-        self, scope: AzureSdkCredentialScope = AzureSdkCredentialScope.DEFAULT
+        self,
+        scope: AzureSdkCredentialScope = AzureSdkCredentialScope.DEFAULT,
+        *,
+        skip_confirmation: bool = False,
     ) -> None:
-        super().__init__(scopes=[scope.value])
+        super().__init__(scopes=[scope.value], skip_confirmation=skip_confirmation)
 
     def get_credential(self) -> TokenCredential:
         """Get a new AzureCliCredential."""
         credential = AzureCliCredential(additionally_allowed_tenants=["*"])
-        # Check that we are logged into Azure
+        # Confirm that these are the desired credentials
         try:
             decoded = self.decode_token(credential.get_token(*self.scopes).token)
-            if AzureSdkCredential._show_login_msg:
-                self.logger.info(
-                    "You are currently logged into the [blue]Azure CLI[/] with the following details:"
-                )
-                self.logger.info(
-                    f"\tuser: [green]{decoded['name']}[/] ({decoded['oid']})"
-                )
-                self.logger.info(
-                    f"\ttenant: [green]{decoded['upn'].split('@')[1]}[/] ({decoded['tid']})"
-                )
-                AzureSdkCredential._show_login_msg = False
+            self.confirm_credentials_interactive(
+                "Azure CLI",
+                user_name=decoded["name"],
+                user_id=decoded["oid"],
+                tenant_name=decoded["upn"].split("@")[1],
+                tenant_id=decoded["tid"],
+            )
         except (CredentialUnavailableError, DataSafeHavenValueError) as exc:
             self.logger.error(
                 "Please authenticate with Azure: run '[green]az login[/]' using [bold]infrastructure administrator[/] credentials."
@@ -124,14 +155,16 @@ class GraphApiCredential(DeferredCredential):
     Uses DeviceCodeCredential for authentication
     """
 
-    _show_login_msg = True
-
     def __init__(
         self,
         tenant_id: str,
+        *,
         scopes: Sequence[str] = [],
+        skip_confirmation: bool = False,
     ) -> None:
-        super().__init__(scopes=scopes, tenant_id=tenant_id)
+        super().__init__(
+            scopes=scopes, tenant_id=tenant_id, skip_confirmation=skip_confirmation
+        )
 
     def get_credential(self) -> TokenCredential:
         """Get a new DeviceCodeCredential, using cached credentials if they are available"""
@@ -174,18 +207,14 @@ class GraphApiCredential(DeferredCredential):
         with open(authentication_record_path, "w") as f_auth:
             f_auth.write(new_auth_record.serialize())
 
-        # Write confirmation details about this login
-        if GraphApiCredential._show_login_msg:
-            self.logger.info(
-                "You are currently logged into the [blue]Microsoft Graph API[/] with the following details:"
-            )
-            self.logger.info(
-                f"\tuser: [green]{new_auth_record.username}[/] ({new_auth_record._home_account_id.split('.')[0]})"
-            )
-            self.logger.info(
-                f"\ttenant: [green]{new_auth_record._username.split('@')[1]}[/] ({new_auth_record._tenant_id})"
-            )
-            GraphApiCredential._show_login_msg = False
+        # Confirm that these are the desired credentials
+        self.confirm_credentials_interactive(
+            "Microsoft Graph API",
+            user_name=new_auth_record.username,
+            user_id=new_auth_record._home_account_id.split(".")[0],
+            tenant_name=new_auth_record._username.split("@")[1],
+            tenant_id=new_auth_record._tenant_id,
+        )
 
         # Return the credential
         return credential
