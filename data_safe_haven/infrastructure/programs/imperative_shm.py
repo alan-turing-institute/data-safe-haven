@@ -14,7 +14,7 @@ class ImperativeSHM:
         self.azure_sdk_: AzureSdk | None = None
         self.config = config
         self.context = context
-        self.tags = {"component": "SHM"} | context.tags
+        self.tags = {"component": "SHM", "deployed with": "Python"} | context.tags
 
     @property
     def azure_sdk(self) -> AzureSdk:

@@ -66,7 +66,10 @@ class DeclarativeSRE:
         self.config = config
         self.graph_api_token = graph_api_token
         self.stack_name = f"shm-{context.name}-sre-{config.name}"
-        self.tags = {"sre_name": f"SRE {config.name}"} | context.tags
+        self.tags = {
+            "deployed with": "Pulumi",
+            "sre_name": f"SRE {config.name}",
+        } | context.tags
 
     def __call__(self) -> None:
         # Load pulumi configuration options
