@@ -15,6 +15,10 @@ from .sre.backup import (
     SREBackupComponent,
     SREBackupProps,
 )
+from .sre.clamav_mirror import (
+    SREClamAVMirrorComponent,
+    SREClamAVMirrorProps,
+)
 from .sre.data import (
     SREDataComponent,
     SREDataProps,
@@ -225,6 +229,23 @@ class DeclarativeSRE:
                 sre_fqdn=networking.sre_fqdn,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
+            ),
+            tags=self.tags,
+        )
+
+        # Deploy the ClamAV mirror server
+        SREClamAVMirrorComponent(
+            "sre_clamav_mirror",
+            self.stack_name,
+            SREClamAVMirrorProps(
+                dns_server_ip=dns.ip_address,
+                dockerhub_credentials=dockerhub_credentials,
+                location=self.config.azure.location,
+                resource_group_name=resource_group.name,
+                sre_fqdn=networking.sre_fqdn,
+                storage_account_key=data.storage_account_data_configuration_key,
+                storage_account_name=data.storage_account_data_configuration_name,
+                subnet=networking.subnet_clamav_mirror,
             ),
             tags=self.tags,
         )

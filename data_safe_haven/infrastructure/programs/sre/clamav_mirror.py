@@ -1,10 +1,11 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import containerinstance, storage
+from pulumi_azure_native import containerinstance, network, storage
 
 from data_safe_haven.infrastructure.common import (
     DockerHubCredentials,
+    get_id_from_subnet,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
@@ -18,7 +19,6 @@ class SREClamAVMirrorProps:
 
     def __init__(
         self,
-        subnet_id: Input[str],
         dns_server_ip: Input[str],
         dockerhub_credentials: DockerHubCredentials,
         location: Input[str],
@@ -26,8 +26,8 @@ class SREClamAVMirrorProps:
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
+        subnet: Input[network.GetSubnetResult],
     ) -> None:
-        self.subnet_id = subnet_id
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
         self.location = location
@@ -35,6 +35,7 @@ class SREClamAVMirrorProps:
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
+        self.subnet_id = Output.from_input(subnet).apply(get_id_from_subnet)
 
 
 class SREClamAVMirrorComponent(ComponentResource):
