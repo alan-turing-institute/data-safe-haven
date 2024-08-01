@@ -47,7 +47,7 @@ class SREDatabaseServerComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:DatabaseServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "database server"} | (tags if tags else {})
 
         if props.database_system == DatabaseSystem.MICROSOFT_SQL_SERVER:
             # Define a Microsoft SQL server and default database

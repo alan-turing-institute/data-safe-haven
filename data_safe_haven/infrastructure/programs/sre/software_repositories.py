@@ -65,7 +65,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:SoftwareRepositoriesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "software repositories"} | (tags if tags else {})
 
         # Use a dummy hostname if no repositories are deployed
         hostname: Output[str] = "example.com"
