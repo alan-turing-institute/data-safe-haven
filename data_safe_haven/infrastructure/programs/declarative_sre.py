@@ -182,6 +182,7 @@ class DeclarativeSRE:
                 resource_group_name=resource_group.name,
                 route_table_name=networking.route_table_name,
                 subnet_apt_proxy_server=networking.subnet_apt_proxy_server,
+                subnet_clamav_mirror=networking.subnet_clamav_mirror,
                 subnet_firewall=networking.subnet_firewall,
                 subnet_firewall_management=networking.subnet_firewall_management,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,

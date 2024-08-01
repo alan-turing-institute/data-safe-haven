@@ -26,6 +26,7 @@ class SREFirewallProps:
         resource_group_name: Input[str],
         route_table_name: Input[str],
         subnet_apt_proxy_server: Input[network.GetSubnetResult],
+        subnet_clamav_mirror: Input[network.GetSubnetResult],
         subnet_firewall: Input[network.GetSubnetResult],
         subnet_firewall_management: Input[network.GetSubnetResult],
         subnet_guacamole_containers: Input[network.GetSubnetResult],
@@ -38,6 +39,9 @@ class SREFirewallProps:
         self.route_table_name = route_table_name
         self.subnet_apt_proxy_server_prefixes = Output.from_input(
             subnet_apt_proxy_server
+        ).apply(get_address_prefixes_from_subnet)
+        self.subnet_clamav_mirror_prefixes = Output.from_input(
+            subnet_clamav_mirror
         ).apply(get_address_prefixes_from_subnet)
         self.subnet_identity_containers_prefixes = Output.from_input(
             subnet_identity_containers
@@ -130,6 +134,31 @@ class SREFirewallComponent(ComponentResource):
                             ],
                             source_addresses=props.subnet_apt_proxy_server_prefixes,
                             target_fqdns=PermittedDomains.APT_REPOSITORIES,
+                        ),
+                    ],
+                ),
+                network.AzureFirewallApplicationRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(
+                        type=network.AzureFirewallRCActionType.ALLOW
+                    ),
+                    name="clamav-mirror",
+                    priority=FirewallPriorities.SRE_CLAMAV_MIRROR,
+                    rules=[
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external ClamAV definition update requests",
+                            name="AllowClamAVDefinitionUpdates",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTP),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
+                                ),
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTPS),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                                ),
+                            ],
+                            source_addresses=props.subnet_clamav_mirror_prefixes,
+                            target_fqdns=PermittedDomains.CLAMAV_UPDATES,
                         ),
                     ],
                 ),
@@ -238,18 +267,6 @@ class SREFirewallComponent(ComponentResource):
                             ],
                             source_addresses=props.subnet_workspaces_prefixes,
                             target_fqdns=PermittedDomains.UBUNTU_SNAPCRAFT,
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external Clam AV database access",
-                            name="AllowClamAVDatabase",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=int(Ports.HTTPS),
-                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
-                                ),
-                            ],
-                            source_addresses=props.subnet_workspaces_prefixes,
-                            target_fqdns=PermittedDomains.CLAMAV_UPDATES,
                         ),
                     ],
                 ),
