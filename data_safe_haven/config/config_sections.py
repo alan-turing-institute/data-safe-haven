@@ -13,7 +13,7 @@ from data_safe_haven.types import (
     DatabaseSystem,
     EmailAddress,
     Fqdn,
-    GiteaServerAvailability,
+    GiteaServers,
     Guid,
     IpAddress,
     SafeString,
@@ -54,7 +54,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     data_provider_ip_addresses: list[IpAddress] = Field(
         ..., default_factory=list[IpAddress]
     )
-    gitea_external_mirror: GiteaServerAvailability = GiteaServerAvailability.NONE
+    gitea_servers: GiteaServers = GiteaServers.INTERNAL
     remote_desktop: ConfigSubsectionRemoteDesktopOpts = Field(
         ..., default_factory=ConfigSubsectionRemoteDesktopOpts
     )
