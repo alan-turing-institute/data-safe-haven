@@ -185,9 +185,8 @@ class SoftwarePackageCategory(str, Enum):
     NONE = "none"
 
 @verify(UNIQUE)
-class GiteaServerAvailability(str, Enum):
+class GiteaServers(str, Enum):
     """Availability of Gitea server."""
 
     EXTERNAL = "external"
     INTERNAL = "internal"
-    NONE = "none"
