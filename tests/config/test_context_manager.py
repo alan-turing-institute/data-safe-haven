@@ -280,5 +280,5 @@ class TestContextManager:
         settings.write(config_file_path)
         with open(config_file_path) as f:
             context_dict = yaml.safe_load(f)
-        assert context_dict["selected"] == "gems"
-        assert context_dict["contexts"]["gems"]["name"] == "replaced"
+        assert context_dict["selected"] == "replaced"
+        assert context_dict["contexts"]["replaced"]["name"] == "replaced"
