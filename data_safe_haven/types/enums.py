@@ -188,5 +188,5 @@ class SoftwarePackageCategory(str, Enum):
 class GiteaServers(str, Enum):
     """Availability of Gitea server."""
 
-    EXTERNAL = "external"
+    BOTH = "both"
     INTERNAL = "internal"
