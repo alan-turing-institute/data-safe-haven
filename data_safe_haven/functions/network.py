@@ -35,7 +35,8 @@ def ip_address_in_list(ip_address_list: Sequence[str]) -> bool:
     Raises:
         DataSafeHavenValueError: if the current IP address could not be determined
     """
-    ip_address = current_ip_address(as_cidr=True)
-    if ip_address not in [str(ipaddress.IPv4Network(ip)) for ip in ip_address_list]:
-        return False
-    return True
+    current_cidr = ipaddress.IPv4Network(current_ip_address())
+    return any(
+        ipaddress.IPv4Network(authorised_cidr).supernet_of(current_cidr)
+        for authorised_cidr in ip_address_list
+    )
