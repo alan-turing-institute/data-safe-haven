@@ -69,19 +69,6 @@ $ dsh config upload PATH_TO_YOUR_EDITED_YAML_FILE
 If you want to make changes to the config, edit this file and then run `dsh config upload` again
 :::
 
-## Requirements
-
-:::{important}
-As private endpoints for flexible PostgreSQL are still in preview, the following command is currently needed:
-
-:::{code} shell
-$ az feature register --name "enablePrivateEndpoint" \
-                      --namespace "Microsoft.DBforPostgreSQL" \
-                      --subscription NAME_OR_ID_OF_YOUR_SUBSCRIPTION
-:::
-
-:::
-
 ## Deployment
 
 - Deploy each SRE individually [approx 30 minutes]:
