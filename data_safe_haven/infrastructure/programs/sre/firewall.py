@@ -249,7 +249,7 @@ class SREFirewallComponent(ComponentResource):
                             name="AllowUbuntuKeyserver",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=int(Ports.CLAMAV),
+                                    port=int(Ports.HKP),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
                                 ),
                             ],

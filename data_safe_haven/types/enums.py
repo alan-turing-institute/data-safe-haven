@@ -165,8 +165,8 @@ class PermittedDomains(tuple[str, ...], Enum):
 @verify(UNIQUE)
 class Ports(str, Enum):
     AZURE_MONITORING = "514"
-    CLAMAV = "11371"
     DNS = "53"
+    HKP = "11371"
     HTTP = "80"
     HTTPS = "443"
     LDAP_APRICOT = "1389"
