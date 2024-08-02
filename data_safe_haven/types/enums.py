@@ -184,9 +184,3 @@ class SoftwarePackageCategory(str, Enum):
     PRE_APPROVED = "pre-approved"
     NONE = "none"
 
-@verify(UNIQUE)
-class GiteaServers(str, Enum):
-    """Availability of Gitea server."""
-
-    BOTH = "both"
-    INTERNAL = "internal"
