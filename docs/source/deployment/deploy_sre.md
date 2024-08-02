@@ -2,7 +2,7 @@
 
 # Deploy a Secure Research Environment
 
-These instructions will deploy a new  Secure Research Environment (SRE).
+These instructions will deploy a new Secure Research Environment (SRE).
 
 ::::{admonition} Ensure you are using a hatch shell
 :class: dropdown important
