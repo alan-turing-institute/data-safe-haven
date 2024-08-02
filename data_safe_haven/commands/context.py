@@ -120,6 +120,7 @@ def add(
         name=name,
         subscription_name=subscription_name,
     )
+    manager.selected = name
     manager.write()
 
 

@@ -21,16 +21,19 @@ You can specify the directory where your context configuration (`context.yaml`) 
 
 - You will need to provide some options to set up your DSH context. You can see what these are by running the following:
 
-```{code} shell
+:::{code} shell
 $ dsh context add --help
-```
+:::
 
 - Run a command like the following to create your local context file.
 
-```{code} shell
-$ dsh context add --admin-group-name _AZURE_GROUP_CONTAINING_ALL_ADMINISTRATORS_ --name _CONTEXT_NAME_ --description _HUMAN_FRIENDLY_NAME_ --subscription _AZURE_SUBSCRIPTION_NAME_
-```
+:::{code} shell
+$ dsh context add --admin-group-name AZURE_SECURITY_GROUP_CONTAINING_ALL_ADMINISTRATORS \
+                  --name NAME_WITH_ONLY_LETTERS_NUMBERS_AND_UNDERSCORES \
+                  --description HUMAN_FRIENDLY_DESCRIPTION_OF_YOUR_TRE \
+                  --subscription-name AZURE_SUBSCRIPTION_NAME
+:::
 
 :::{note}
-If you have multiple contexts defined, you can select which context you want to use with `dsh context switch _CONTEXT_NAME_`.
+If you have multiple contexts defined, you can select which context you want to use with `dsh context switch CONTEXT_NAME`.
 :::

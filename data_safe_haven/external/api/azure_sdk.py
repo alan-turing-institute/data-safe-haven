@@ -66,6 +66,7 @@ from azure.storage.filedatalake import DataLakeServiceClient
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
     DataSafeHavenAzureError,
+    DataSafeHavenAzureStorageError,
     DataSafeHavenValueError,
 )
 from data_safe_haven.logging import get_logger, get_null_logger
@@ -82,6 +83,7 @@ class AzureSdk:
         self, subscription_name: str, *, disable_logging: bool = False
     ) -> None:
         self._credentials: dict[AzureSdkCredentialScope, AzureSdkCredential] = {}
+        self.disable_logging = disable_logging
         self.logger = get_null_logger() if disable_logging else get_logger()
         self.subscription_name = subscription_name
         self.subscription_id_: str | None = None
@@ -126,7 +128,7 @@ class AzureSdk:
         )
         if not isinstance(blob_service_client, BlobServiceClient):
             msg = f"Could not connect to storage account '{storage_account_name}'."
-            raise DataSafeHavenAzureError(msg)
+            raise DataSafeHavenAzureStorageError(msg)
 
         # Get the blob client
         blob_client = blob_service_client.get_blob_client(
@@ -146,6 +148,10 @@ class AzureSdk:
         Returns:
             bool: Whether or not the blob exists
         """
+
+        if not self.storage_exists(storage_account_name):
+            msg = f"Storage account '{storage_account_name}' does not exist."
+            raise DataSafeHavenAzureStorageError(msg)
         try:
             blob_client = self.blob_client(
                 resource_group_name,
@@ -166,7 +172,9 @@ class AzureSdk:
         self, scope: AzureSdkCredentialScope = AzureSdkCredentialScope.DEFAULT
     ) -> AzureSdkCredential:
         if scope not in self._credentials:
-            self._credentials[scope] = AzureSdkCredential(scope)
+            self._credentials[scope] = AzureSdkCredential(
+                scope, skip_confirmation=self.disable_logging
+            )
         return self._credentials[scope]
 
     def download_blob(
@@ -558,7 +566,7 @@ class AzureSdk:
             return storage_account
         except AzureError as exc:
             msg = f"Failed to create storage account {storage_account_name}."
-            raise DataSafeHavenAzureError(msg) from exc
+            raise DataSafeHavenAzureStorageError(msg) from exc
 
     def ensure_storage_blob_container(
         self,
@@ -595,7 +603,7 @@ class AzureSdk:
             return container
         except HttpResponseError as exc:
             msg = f"Failed to create storage container '{container_name}'."
-            raise DataSafeHavenAzureError(msg) from exc
+            raise DataSafeHavenAzureStorageError(msg) from exc
 
     def get_keyvault_certificate(
         self, certificate_name: str, key_vault_name: str
@@ -717,15 +725,15 @@ class AzureSdk:
                 time.sleep(5)
             if not isinstance(storage_keys, StorageAccountListKeysResult):
                 msg = f"Could not connect to {msg_sa} in {msg_rg}."
-                raise DataSafeHavenAzureError(msg)
+                raise DataSafeHavenAzureStorageError(msg)
             keys = cast(list[StorageAccountKey], storage_keys.keys)
             if not keys or not isinstance(keys, list) or len(keys) == 0:
                 msg = f"No keys were retrieved for {msg_sa} in {msg_rg}."
-                raise DataSafeHavenAzureError(msg)
+                raise DataSafeHavenAzureStorageError(msg)
             return keys
         except AzureError as exc:
             msg = f"Keys could not be loaded for {msg_sa} in {msg_rg}."
-            raise DataSafeHavenAzureError(msg) from exc
+            raise DataSafeHavenAzureStorageError(msg) from exc
 
     def get_subscription(self, subscription_name: str) -> Subscription:
         """Get an Azure subscription by name."""
@@ -934,7 +942,7 @@ class AzureSdk:
             )
             if not isinstance(blob_service_client, BlobServiceClient):
                 msg = f"Could not connect to storage account '{storage_account_name}'."
-                raise DataSafeHavenAzureError(msg)
+                raise DataSafeHavenAzureStorageError(msg)
             # Remove the requested blob
             blob_client = blob_service_client.get_blob_client(
                 container=storage_container_name, blob=blob_name
@@ -1233,6 +1241,21 @@ class AzureSdk:
         except AzureError as exc:
             msg = f"Failed to set ACL '{desired_acl}' on container '{container_name}'."
             raise DataSafeHavenAzureError(msg) from exc
+
+    def storage_exists(
+        self,
+        storage_account_name: str,
+    ) -> bool:
+        """Find out whether a storage account exists in Azure storage
+
+        Returns:
+            bool: Whether or not the storage account exists
+        """
+
+        storage_client = StorageManagementClient(
+            self.credential(), self.subscription_id
+        )
+        return storage_account_name in storage_client.storage_accounts.list()
 
     def upload_blob(
         self,

@@ -71,7 +71,9 @@ class GraphApi:
         disable_logging: bool = False,
     ) -> "GraphApi":
         return cls(
-            credential=GraphApiCredential(tenant_id, scopes),
+            credential=GraphApiCredential(
+                scopes=scopes, tenant_id=tenant_id, skip_confirmation=disable_logging
+            ),
             disable_logging=disable_logging,
         )
 
@@ -420,26 +422,43 @@ class GraphApi:
                 user_id = json_response["id"]
             # Set the authentication email address
             try:
-                self.http_post(
-                    f"https://graph.microsoft.com/beta/users/{user_id}/authentication/emailMethods",
-                    json={"emailAddress": email_address},
+                response = self.http_get(
+                    f"https://graph.microsoft.com/beta/users/{user_id}/authentication/emailMethods"
                 )
-            except DataSafeHavenMicrosoftGraphError as exc:
-                if "already registered" not in str(exc):
-                    msg = (
-                        f"Failed to add authentication email address '{email_address}'."
+                if existing_email_addresses := [
+                    item["emailAddress"] for item in response.json()["value"]
+                ]:
+                    self.logger.warning(
+                        f"Email authentication is already set up for Entra user '[green]{username}[/]' using {existing_email_addresses}."
                     )
-                    raise DataSafeHavenMicrosoftGraphError(msg) from exc
+                else:
+                    self.http_post(
+                        f"https://graph.microsoft.com/beta/users/{user_id}/authentication/emailMethods",
+                        json={"emailAddress": email_address},
+                    )
+            except DataSafeHavenMicrosoftGraphError as exc:
+                msg = f"Failed to add authentication email address '{email_address}'."
+                raise DataSafeHavenMicrosoftGraphError(msg) from exc
+
             # Set the authentication phone number
             try:
-                self.http_post(
-                    f"https://graph.microsoft.com/beta/users/{user_id}/authentication/phoneMethods",
-                    json={"phoneNumber": phone_number, "phoneType": "mobile"},
+                response = self.http_get(
+                    f"https://graph.microsoft.com/beta/users/{user_id}/authentication/phoneMethods"
                 )
+                if existing_phone_numbers := [
+                    item["phoneNumber"] for item in response.json()["value"]
+                ]:
+                    self.logger.warning(
+                        f"Phone authentication is already set up for Entra user '[green]{username}[/]' using {existing_phone_numbers}."
+                    )
+                else:
+                    self.http_post(
+                        f"https://graph.microsoft.com/beta/users/{user_id}/authentication/phoneMethods",
+                        json={"phoneNumber": phone_number, "phoneType": "mobile"},
+                    )
             except DataSafeHavenMicrosoftGraphError as exc:
-                if "already registered" not in str(exc):
-                    msg = f"Failed to add authentication phone number '{phone_number}'."
-                    raise DataSafeHavenMicrosoftGraphError(msg) from exc
+                msg = f"Failed to add authentication phone number '{phone_number}'."
+                raise DataSafeHavenMicrosoftGraphError(msg) from exc
             # Ensure user is enabled
             self.http_patch(
                 f"{self.base_endpoint}/users/{user_id}",
@@ -674,6 +693,20 @@ class GraphApi:
             msg = f"Could not assign delegated role '{application_role_name}' to application '{application_name}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
+    @staticmethod
+    def http_raise_for_status(response: requests.Response) -> None:
+        """Check the status of a response
+
+        Raises:
+            RequestException if the response did not succeed
+        """
+        # We do not use response.ok as this allows 3xx codes
+        if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
+            return
+        raise requests.exceptions.RequestException(
+            response=response, request=response.request
+        )
+
     def http_delete(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP DELETE request
 
@@ -690,16 +723,14 @@ class GraphApi:
                 timeout=120,
                 **kwargs,
             )
+            self.http_raise_for_status(response)
+            return response
+
         except requests.exceptions.RequestException as exc:
             msg = f"Could not execute DELETE request to '{url}'."
+            if exc.response:
+                msg += f" Response content received: '{exc.response.content.decode()}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
-
-        # We do not use response.ok as this allows 3xx codes
-        if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
-            return response
-        else:
-            msg = f"Could not execute DELETE request to '{url}'. Response content received: '{response.content.decode()}'."
-            raise DataSafeHavenMicrosoftGraphError(msg)
 
     def http_get_single_page(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP GET request
@@ -717,16 +748,13 @@ class GraphApi:
                 timeout=120,
                 **kwargs,
             )
+            self.http_raise_for_status(response)
+            return response
         except requests.exceptions.RequestException as exc:
             msg = f"Could not execute GET request to '{url}'."
+            if exc.response:
+                msg += f" Response content received: '{exc.response.content.decode()}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
-
-        # We do not use response.ok as this allows 3xx codes
-        if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
-            return response
-        else:
-            msg = f"Could not execute GET request to '{url}'. Response content received: '{response.content.decode()}'. Token {self.token}"
-            raise DataSafeHavenMicrosoftGraphError(msg)
 
     def http_get(self, url: str, **kwargs: Any) -> requests.Response:
         """Make a paged HTTP GET request and return all values
@@ -755,9 +783,13 @@ class GraphApi:
             response._content = json.dumps(json_content).encode("utf-8")
 
             # Return the full response
+            self.http_raise_for_status(response)
             return response
         except requests.exceptions.RequestException as exc:
-            msg = f"Could not execute GET request to '{base_url}'. Response content received: '{response.content.decode()}'. Token {self.token}"
+            msg = f"Could not execute GET request to '{base_url}'."
+            if exc.response:
+                msg += f" Response content received: '{exc.response.content.decode()}'."
+            msg += f" Token {self.token}."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_patch(self, url: str, **kwargs: Any) -> requests.Response:
@@ -776,16 +808,13 @@ class GraphApi:
                 timeout=120,
                 **kwargs,
             )
+            self.http_raise_for_status(response)
+            return response
         except requests.exceptions.RequestException as exc:
             msg = f"Could not execute PATCH request to '{url}'."
+            if exc.response:
+                msg += f" Response content received: '{exc.response.content.decode()}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
-
-        # We do not use response.ok as this allows 3xx codes
-        if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
-            return response
-        else:
-            msg = f"Could not execute PATCH request to '{url}'. Response content received: '{response.content.decode()}'."
-            raise DataSafeHavenMicrosoftGraphError(msg)
 
     def http_post(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP POST request
@@ -803,17 +832,16 @@ class GraphApi:
                 timeout=120,
                 **kwargs,
             )
+            self.http_raise_for_status(response)
+
+            # Wait for operation to complete before returning
+            time.sleep(30)
+            return response
         except requests.exceptions.RequestException as exc:
             msg = f"Could not execute POST request to '{url}'."
+            if exc.response:
+                msg += f" Response content received: '{exc.response.content.decode()}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
-
-        # We do not use response.ok as this allows 3xx codes
-        if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
-            time.sleep(30)  # wait for operation to complete
-            return response
-        else:
-            msg = f"Could not execute POST request to '{url}'. Response content received: '{response.content.decode()}'."
-            raise DataSafeHavenMicrosoftGraphError(msg)
 
     def read_applications(self) -> Sequence[dict[str, Any]]:
         """Get list of applications

@@ -6,6 +6,7 @@ class ResearchUser:
         self,
         account_enabled: bool | None = None,
         country: str | None = None,
+        domain: str | None = None,
         email_address: str | None = None,
         given_name: str | None = None,
         phone_number: str | None = None,
@@ -15,6 +16,7 @@ class ResearchUser:
     ) -> None:
         self.account_enabled = account_enabled
         self.country = country
+        self.domain = domain
         self.email_address = email_address
         self.given_name = given_name
         self.phone_number = phone_number

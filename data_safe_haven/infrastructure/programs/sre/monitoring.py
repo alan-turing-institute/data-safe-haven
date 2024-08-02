@@ -49,7 +49,7 @@ class SREMonitoringComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:MonitoringComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "monitoring"} | (tags if tags else {})
 
         # Deploy maintenance configuration
         # See https://learn.microsoft.com/en-us/azure/update-manager/scheduled-patching

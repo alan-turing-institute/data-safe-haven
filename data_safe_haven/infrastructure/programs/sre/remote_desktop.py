@@ -121,7 +121,7 @@ class SRERemoteDesktopComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:RemoteDesktopComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "remote desktop"} | (tags if tags else {})
 
         # Define Entra ID application
         entra_application = EntraApplication(
@@ -171,6 +171,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 database_server_name=f"{stack_name}-db-server-guacamole",
                 database_subnet_id=props.subnet_guacamole_containers_support_id,
                 database_username=props.database_username,
+                disable_secure_transport=False,
                 location=props.location,
             ),
             opts=child_opts,

@@ -109,6 +109,6 @@ Note that this means that eg. password managers cannot be used to autofill a {re
 
 ### Python/R package availability:
 
-- **{ref}`policy_tier_3`:** A pre-agreed allowlist of packages from `CRAN` and `PyPI` (via proxy or local mirror).
-- **{ref}`policy_tier_2`:** Anything on `CRAN` or `PyPI` (via proxy or local mirror).
+- **{ref}`policy_tier_3`:** A pre-agreed allowlist of packages from **CRAN** and **PyPI** (via proxy or local mirror).
+- **{ref}`policy_tier_2`:** Anything on **CRAN** or **PyPI** (via proxy or local mirror).
 - **{ref}`policy_tier_0` and {ref}`policy_tier_1`:** Direct access to any package repository.

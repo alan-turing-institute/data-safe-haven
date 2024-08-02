@@ -85,7 +85,7 @@ class ContextManager(YAMLSerialisableModel):
         if context := self.context:
             return context
         else:
-            msg = "No context selected"
+            msg = "No context selected."
             raise DataSafeHavenConfigError(msg)
 
     def update(
@@ -118,6 +118,13 @@ class ContextManager(YAMLSerialisableModel):
                 f"Updating subscription name from '{context.subscription_name}' to '[green]{subscription_name}[/]'."
             )
             context.subscription_name = subscription_name
+
+        # If the name has changed we also need to change the key
+        if name:
+            self.contexts[name] = context
+            if self.selected:
+                del self.contexts[self.selected]
+            self.selected = name
 
     def add(
         self,

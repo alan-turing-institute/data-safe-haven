@@ -30,9 +30,9 @@ class TestContext:
             Context(**context_dict)
 
     def test_tags(self, context):
-        assert context.tags["deployment"] == "Acme Deployment"
-        assert context.tags["deployed by"] == "Python"
+        assert context.tags["description"] == "Acme Deployment"
         assert context.tags["project"] == "Data Safe Haven"
+        assert context.tags["shm_name"] == "acmedeployment"
         assert context.tags["version"] == __version__
 
     def test_name(self, context):
@@ -280,5 +280,5 @@ class TestContextManager:
         settings.write(config_file_path)
         with open(config_file_path) as f:
             context_dict = yaml.safe_load(f)
-        assert context_dict["selected"] == "gems"
-        assert context_dict["contexts"]["gems"]["name"] == "replaced"
+        assert context_dict["selected"] == "replaced"
+        assert context_dict["contexts"]["replaced"]["name"] == "replaced"

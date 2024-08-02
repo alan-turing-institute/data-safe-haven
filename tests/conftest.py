@@ -10,6 +10,7 @@ from pytest import fixture
 
 import data_safe_haven.config.context_manager as context_mod
 import data_safe_haven.logging.logger
+from data_safe_haven import console
 from data_safe_haven.config import (
     Context,
     ContextManager,
@@ -235,6 +236,24 @@ def mock_azuresdk_remove_blob(mocker):
 
 
 @fixture
+def mock_confirm_no(mocker):
+    return mocker.patch.object(
+        console,
+        "confirm",
+        return_value=False,
+    )
+
+
+@fixture
+def mock_confirm_yes(mocker):
+    return mocker.patch.object(
+        console,
+        "confirm",
+        return_value=True,
+    )
+
+
+@fixture
 def mock_install_plugins(mocker):
     mocker.patch.object(ProjectManager, "install_plugins", return_value=None)
 
@@ -251,6 +270,15 @@ def mock_key_vault_key(monkeypatch):
         return MockKeyVaultKey(key_name, key_vault_name)
 
     monkeypatch.setattr(AzureSdk, "get_keyvault_key", mock_get_keyvault_key)
+
+
+@fixture
+def mock_storage_exists(mocker):
+    return mocker.patch.object(
+        AzureSdk,
+        "storage_exists",
+        return_value=True,
+    )
 
 
 @fixture

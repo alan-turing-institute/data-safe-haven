@@ -23,7 +23,7 @@ class UserHandler:
         self.context = context
         self.logger = get_logger()
 
-    def add(self, users_csv_path: pathlib.Path) -> None:
+    def add(self, users_csv_path: pathlib.Path, domain: str) -> None:
         """Add users to Entra ID and Guacamole
 
         Raises:
@@ -51,6 +51,7 @@ class UserHandler:
                     ResearchUser(
                         account_enabled=True,
                         country=user["CountryCode"],
+                        domain=user.get("Domain", domain),
                         email_address=user["Email"],
                         given_name=user["GivenName"],
                         phone_number=user["Phone"],
@@ -63,7 +64,7 @@ class UserHandler:
 
             # Add users to Entra ID
             self.entra_users.add(users)
-        except Exception as exc:
+        except csv.Error as exc:
             msg = f"Could not add users from '{users_csv_path}'."
             raise DataSafeHavenUserHandlingError(msg) from exc
 

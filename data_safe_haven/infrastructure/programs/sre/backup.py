@@ -39,7 +39,7 @@ class SREBackupComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:BackupComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "backup"} | (tags if tags else {})
 
         # Deploy backup vault
         backup_vault = dataprotection.BackupVault(

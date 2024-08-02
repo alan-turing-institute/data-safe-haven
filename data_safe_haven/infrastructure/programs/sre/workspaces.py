@@ -110,7 +110,7 @@ class SREWorkspacesComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:WorkspacesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "workspaces"} | (tags if tags else {})
 
         # Load cloud-init file
         cloudinit = Output.all(

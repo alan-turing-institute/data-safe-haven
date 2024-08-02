@@ -48,10 +48,10 @@ class TestTyperAzureSubscriptionName:
     @pytest.mark.parametrize(
         "subscription_name",
         [
-            "My_Subscription",
-            "Your Subscription ",
+            "My!Subscription",
+            "",
             "%^*",
-            "1A subscription",
+            "1@ subscription",
             "sübscríptìőn",
             "🙂",
         ],
