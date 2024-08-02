@@ -19,10 +19,7 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.logging import get_logger, get_null_logger
 
-from .credentials import (
-    DeferredCredential,
-    GraphApiCredential,
-)
+from .credentials import DeferredCredential, GraphApiCredential
 
 
 class GraphApi:
