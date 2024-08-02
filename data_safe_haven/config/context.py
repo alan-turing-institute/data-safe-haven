@@ -33,9 +33,9 @@ class Context(ContextBase, BaseModel, validate_assignment=True):
     @property
     def tags(self) -> dict[str, str]:
         return {
-            "deployment": self.description,
-            "deployed by": "Python",
+            "description": self.description,
             "project": "Data Safe Haven",
+            "shm_name": self.name,
             "version": __version__,
         }
 

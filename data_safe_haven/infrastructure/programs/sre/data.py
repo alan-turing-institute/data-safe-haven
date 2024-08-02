@@ -110,7 +110,7 @@ class SREDataComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:DataComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "data"} | (tags if tags else {})
 
         # Define Key Vault reader
         identity_key_vault_reader = managedidentity.UserAssignedIdentity(

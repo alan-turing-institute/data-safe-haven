@@ -61,7 +61,7 @@ class SREApplicationGatewayComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:ApplicationGatewayComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "application gateway"} | (tags if tags else {})
 
         # Define public IP address
         public_ip = network.PublicIPAddress(

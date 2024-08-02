@@ -121,7 +121,7 @@ class SRERemoteDesktopComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:RemoteDesktopComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "remote desktop"} | (tags if tags else {})
 
         # Define Entra ID application
         entra_application = EntraApplication(

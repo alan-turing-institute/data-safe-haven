@@ -69,7 +69,10 @@ class DeclarativeSRE:
         self.stack_name = replace_separators(
             f"shm-{context.name}-sre-{config.name}", "-"
         )
-        self.tags = {"component": f"SRE {config.name}"} | context.tags
+        self.tags = {
+            "deployed with": "Pulumi",
+            "sre_name": f"SRE {config.name}",
+        } | context.tags
 
     def __call__(self) -> None:
         # Load pulumi configuration options

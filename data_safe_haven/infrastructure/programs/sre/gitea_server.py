@@ -74,7 +74,7 @@ class SREGiteaServerComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:GiteaServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "Gitea server"} | (tags if tags else {})
 
         # Define configuration file shares
         file_share_gitea_caddy = storage.FileShare(
