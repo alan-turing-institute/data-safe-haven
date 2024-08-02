@@ -1454,6 +1454,7 @@ class SRENetworkingComponent(ComponentResource):
         subnet_data_configuration_name = "DataConfigurationSubnet"
         subnet_data_desired_state_name = "DataDesiredStateSubnet"
         subnet_data_private_name = "DataPrivateSubnet"
+        # subnet_external_git_mirror_name = "ExternalGitMirrorSubnet"
         subnet_firewall_name = "AzureFirewallSubnet"
         subnet_firewall_management_name = "AzureFirewallManagementSubnet"
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
