@@ -84,7 +84,7 @@ class SREGiteaServerComponent(ComponentResource):
             access_tier=storage.ShareAccessTier.COOL,
             account_name=props.storage_account_name,
             resource_group_name=props.resource_group_name,
-            share_name="gitea-caddy",
+            share_name=f"{props.gitea_server}-gitea-caddy",
             share_quota=1,
             signed_identifiers=[],
             opts=child_opts,
@@ -94,7 +94,7 @@ class SREGiteaServerComponent(ComponentResource):
             access_tier=storage.ShareAccessTier.COOL,
             account_name=props.storage_account_name,
             resource_group_name=props.resource_group_name,
-            share_name="gitea-gitea",
+            share_name=f"{props.gitea_server}-gitea-gitea",
             share_quota=1,
             signed_identifiers=[],
             opts=child_opts,
@@ -119,9 +119,14 @@ class SREGiteaServerComponent(ComponentResource):
         )
 
         # Upload Gitea configuration script
-        gitea_configure_sh_reader = FileReader(
-            resources_path / "gitea" / "gitea" / "configure.mustache.sh"
-        )
+        if props.gitea_server == "external":
+            gitea_configure_sh_reader = FileReader(
+                resources_path / "gitea_external" / "gitea" / "configure.mustache.sh"
+            )
+        else:
+            gitea_configure_sh_reader = FileReader(
+                resources_path / "gitea" / "gitea" / "configure.mustache.sh"
+            )
         gitea_configure_sh = Output.all(
             admin_email="dshadmin@example.com",
             admin_username="dshadmin",
