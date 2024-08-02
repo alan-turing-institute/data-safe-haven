@@ -12,10 +12,7 @@ from data_safe_haven.infrastructure.common import (
     get_name_from_subnet,
     get_name_from_vnet,
 )
-from data_safe_haven.infrastructure.components import (
-    LinuxVMComponentProps,
-    VMComponent,
-)
+from data_safe_haven.infrastructure.components import LinuxVMComponentProps, VMComponent
 from data_safe_haven.logging import get_logger
 from data_safe_haven.resources import resources_path
 

@@ -7,10 +7,7 @@ from typing import ClassVar, TypeVar
 import yaml
 from pydantic import BaseModel, ValidationError
 
-from data_safe_haven.exceptions import (
-    DataSafeHavenConfigError,
-    DataSafeHavenTypeError,
-)
+from data_safe_haven.exceptions import DataSafeHavenConfigError, DataSafeHavenTypeError
 from data_safe_haven.types import PathType
 
 T = TypeVar("T", bound="YAMLSerialisableModel")

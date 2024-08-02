@@ -42,7 +42,7 @@ class TestRun:
             pulumi_command_group, ["sandbox", "not a pulumi command"]
         )
         assert result.exit_code == 1
-        assert "Failed to run command \'not a pulumi command\'." in result.stdout
+        assert "Failed to run command 'not a pulumi command'." in result.stdout
 
     def test_run_sre_invalid_name(
         self,

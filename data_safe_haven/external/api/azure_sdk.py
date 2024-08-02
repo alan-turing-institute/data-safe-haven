@@ -12,10 +12,7 @@ from azure.core.exceptions import (
     ResourceNotFoundError,
     ServiceRequestError,
 )
-from azure.keyvault.certificates import (
-    CertificateClient,
-    KeyVaultCertificate,
-)
+from azure.keyvault.certificates import CertificateClient, KeyVaultCertificate
 from azure.keyvault.keys import KeyClient, KeyVaultKey
 from azure.keyvault.secrets import SecretClient
 from azure.mgmt.compute.v2021_07_01 import ComputeManagementClient

@@ -11,46 +11,16 @@ from .sre.application_gateway import (
     SREApplicationGatewayProps,
 )
 from .sre.apt_proxy_server import SREAptProxyServerComponent, SREAptProxyServerProps
-from .sre.backup import (
-    SREBackupComponent,
-    SREBackupProps,
-)
-from .sre.data import (
-    SREDataComponent,
-    SREDataProps,
-)
-from .sre.dns_server import (
-    SREDnsServerComponent,
-    SREDnsServerProps,
-)
-from .sre.firewall import (
-    SREFirewallComponent,
-    SREFirewallProps,
-)
-from .sre.identity import (
-    SREIdentityComponent,
-    SREIdentityProps,
-)
-from .sre.monitoring import (
-    SREMonitoringComponent,
-    SREMonitoringProps,
-)
-from .sre.networking import (
-    SRENetworkingComponent,
-    SRENetworkingProps,
-)
-from .sre.remote_desktop import (
-    SRERemoteDesktopComponent,
-    SRERemoteDesktopProps,
-)
-from .sre.user_services import (
-    SREUserServicesComponent,
-    SREUserServicesProps,
-)
-from .sre.workspaces import (
-    SREWorkspacesComponent,
-    SREWorkspacesProps,
-)
+from .sre.backup import SREBackupComponent, SREBackupProps
+from .sre.data import SREDataComponent, SREDataProps
+from .sre.dns_server import SREDnsServerComponent, SREDnsServerProps
+from .sre.firewall import SREFirewallComponent, SREFirewallProps
+from .sre.identity import SREIdentityComponent, SREIdentityProps
+from .sre.monitoring import SREMonitoringComponent, SREMonitoringProps
+from .sre.networking import SRENetworkingComponent, SRENetworkingProps
+from .sre.remote_desktop import SRERemoteDesktopComponent, SRERemoteDesktopProps
+from .sre.user_services import SREUserServicesComponent, SREUserServicesProps
+from .sre.workspaces import SREWorkspacesComponent, SREWorkspacesProps
 
 
 class DeclarativeSRE:

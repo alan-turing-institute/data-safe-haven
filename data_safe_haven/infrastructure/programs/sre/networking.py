@@ -12,10 +12,7 @@ from data_safe_haven.infrastructure.common import (
     get_id_from_vnet,
     get_name_from_vnet,
 )
-from data_safe_haven.types import (
-    NetworkingPriorities,
-    Ports,
-)
+from data_safe_haven.types import NetworkingPriorities, Ports
 
 
 class SRENetworkingProps:
