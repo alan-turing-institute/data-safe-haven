@@ -4,6 +4,7 @@ import pulumi
 from pulumi_azure_native import resources
 
 from data_safe_haven.config import Context, SREConfig
+from data_safe_haven.functions import replace_separators
 from data_safe_haven.infrastructure.common import DockerHubCredentials
 
 from .sre.application_gateway import (
@@ -65,7 +66,9 @@ class DeclarativeSRE:
         self.context = context
         self.config = config
         self.graph_api_token = graph_api_token
-        self.stack_name = f"shm-{context.name}-sre-{config.name}"
+        self.stack_name = replace_separators(
+            f"shm-{context.name}-sre-{config.name}", "-"
+        )
         self.tags = {
             "deployed with": "Pulumi",
             "sre_name": f"SRE {config.name}",

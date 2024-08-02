@@ -130,7 +130,7 @@ class TestAdd:
                 "--name",
                 "example",
                 "--subscription-name",
-                "Invalid Subscription Name  ",
+                "Invalid Subscription Name ^$",
             ],
         )
         assert result.exit_code == 2
