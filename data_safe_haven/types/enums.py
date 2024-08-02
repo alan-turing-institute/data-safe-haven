@@ -183,4 +183,3 @@ class SoftwarePackageCategory(str, Enum):
     ANY = "any"
     PRE_APPROVED = "pre-approved"
     NONE = "none"
-
