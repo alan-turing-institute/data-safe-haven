@@ -63,7 +63,6 @@ source = ["data_safe_haven/"]
 relative_files = true
 omit= [
   "tests/*",
-  "data_safe_haven/resources/*",
 ]
 
 [tool.hatch.envs.default]
@@ -91,6 +90,7 @@ detached = true
 dependencies = [
   "ansible>=10.2.0",
   "ansible-dev-tools>=24.7.1",
+  "azure-functions>=1.20.0",
   "black>=24.1.0",
   "mypy>=1.0.0",
   "pydantic>=2.4",
@@ -122,6 +122,7 @@ typing = "mypy {args:data_safe_haven}"
 
 [tool.hatch.envs.test]
 dependencies = [
+  "azure-functions>=1.20.0",
   "coverage>=7.5.1",
   "freezegun>=1.5",
   "pytest>=8.1",
