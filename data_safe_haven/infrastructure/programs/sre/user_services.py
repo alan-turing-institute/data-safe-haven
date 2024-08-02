@@ -45,6 +45,7 @@ class SREUserServicesProps:
         subnet_containers_support: Input[network.GetSubnetResult],
         subnet_containers: Input[network.GetSubnetResult],
         subnet_databases: Input[network.GetSubnetResult],
+        # subnet_external_git_mirror: Input[network.GetSubnetResult],
         subnet_software_repositories: Input[network.GetSubnetResult],
     ) -> None:
         self.database_service_admin_password = database_service_admin_password
@@ -75,6 +76,9 @@ class SREUserServicesProps:
         self.subnet_databases_id = Output.from_input(subnet_databases).apply(
             get_id_from_subnet
         )
+        # self.subnet_external_git_mirror_id = Output.from_input(
+        #     subnet_external_git_mirror
+        # ).apply(get_id_from_subnet)
         self.subnet_software_repositories_id = Output.from_input(
             subnet_software_repositories
         ).apply(get_id_from_subnet)
@@ -96,15 +100,19 @@ class SREUserServicesComponent(ComponentResource):
         child_tags = {"component": "user services"} | (tags if tags else {})
 
         # Deploy the Gitea servers
-        gitea_servers = (
-            ["external", "internal"] if props.external_git_mirror else ["internal"]
-        )
+        if props.external_git_mirror:
+            gitea_servers = ["external", "internal"]
+            subnet = [props.subnet_containers_id, props.subnet_containers_id]
+        else:
+            gitea_servers = ["internal"]
+            subnet = [props.subnet_containers_id]
+
         for gitea_server in gitea_servers:
             SREGiteaServerComponent(
                 f"sre_{gitea_server}_gitea_server",
                 stack_name,
                 SREGiteaServerProps(
-                    containers_subnet_id=props.subnet_containers_id,
+                    containers_subnet_id=subnet[0],
                     database_subnet_id=props.subnet_containers_support_id,
                     database_password=props.gitea_database_password,
                     dns_server_ip=props.dns_server_ip,
