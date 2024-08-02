@@ -154,30 +154,20 @@
         dest: /etc/clamav/clamd.conf
         mode: '0644'
 
-    - name: Start and enable fresh clam
+    # This also generates a default freshclam.conf if one does not exist
+    - name: Enable and start freshclam service
       ansible.builtin.systemd:
         name: clamav-freshclam
         state: started
         enabled: true
 
-    - name: Remove default freshclam mirrors
-      ansible.builtin.lineinfile:
-        path: /etc/clamav/freshclam.conf
-        regexp: '^DatabaseMirror.*clamav.net$'
-        state: absent
-
-    - name: Set custom freshclam mirror
+    - name: Set freshclam private mirror
       ansible.builtin.lineinfile:
         path: /etc/clamav/freshclam.conf
         line: "{{lookup('file', '/etc/clamav/freshclam-mirror.conf')}}"
         create: yes
         state: present
-
-    # This is required to fetch definitions for the clamav daemon to run
-    - name: Initial freshclam run
-      ansible.builtin.command:
-        cmd: freshclam
-        creates: '/var/lib/clamav/main.{c[vl]d,inc}'
+      notify: Restart freshclam
 
     - name: Install ClamAV services and timer
       ansible.builtin.copy:
@@ -217,6 +207,12 @@
     - name: Restart auditd
       ansible.builtin.systemd:
         name: auditd
+        enabled: true
+        state: restarted
+
+    - name: Restart freshclam
+      ansible.builtin.systemd:
+        name: clamav-freshclam
         enabled: true
         state: restarted
 
