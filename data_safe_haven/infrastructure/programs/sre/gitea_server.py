@@ -16,7 +16,6 @@ from data_safe_haven.infrastructure.components import (
     PostgresqlDatabaseProps,
 )
 from data_safe_haven.resources import resources_path
-from data_safe_haven.types import GiteaServerAvailability
 from data_safe_haven.utility import FileReader
 
 
@@ -30,7 +29,7 @@ class SREGiteaServerProps:
         database_subnet_id: Input[str],
         dns_server_ip: Input[str],
         dockerhub_credentials: DockerHubCredentials,
-        gitea_server: GiteaServerAvailability,
+        external_git_mirror: Input[bool],
         ldap_server_hostname: Input[str],
         ldap_server_port: Input[int],
         ldap_username_attribute: Input[str],
@@ -51,7 +50,7 @@ class SREGiteaServerProps:
         )
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
-        self.gitea_server = gitea_server
+        self.external_git_mirror = external_git_mirror
         self.ldap_server_hostname = ldap_server_hostname
         self.ldap_server_port = ldap_server_port
         self.ldap_username_attribute = ldap_username_attribute
@@ -170,12 +169,12 @@ class SREGiteaServerComponent(ComponentResource):
         # Define a PostgreSQL server and default database
         db_gitea_repository_name = "gitea"
         db_server_gitea = PostgresqlDatabaseComponent(
-            f"{self._name}_db_gitea",
+            f"{self._name}_db_gitea_{props.gitea_server}",
             PostgresqlDatabaseProps(
                 database_names=[db_gitea_repository_name],
                 database_password=props.database_password,
                 database_resource_group_name=props.resource_group_name,
-                database_server_name=f"{stack_name}-db-server-gitea",
+                database_server_name=f"{stack_name}-db-server-gitea-{props.gitea_server}",
                 database_subnet_id=props.database_subnet_id,
                 database_username=props.database_username,
                 location=props.location,
@@ -187,7 +186,7 @@ class SREGiteaServerComponent(ComponentResource):
         # Define the container group with guacd, guacamole and caddy
         container_group = containerinstance.ContainerGroup(
             f"{self._name}_container_group",
-            container_group_name=f"{stack_name}-container-group-gitea",
+            container_group_name=f"{stack_name}-container-group-gitea-{self.props.gitea_server}",
             containers=[
                 containerinstance.ContainerArgs(
                     image="caddy:2.8.4",
