@@ -29,7 +29,7 @@ class SREGiteaServerProps:
         database_subnet_id: Input[str],
         dns_server_ip: Input[str],
         dockerhub_credentials: DockerHubCredentials,
-        external_git_mirror: Input[bool],
+        gitea_server: Input[str],
         ldap_server_hostname: Input[str],
         ldap_server_port: Input[int],
         ldap_username_attribute: Input[str],
@@ -50,7 +50,7 @@ class SREGiteaServerProps:
         )
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
-        self.external_git_mirror = external_git_mirror
+        self.gitea_server = gitea_server
         self.ldap_server_hostname = ldap_server_hostname
         self.ldap_server_port = ldap_server_port
         self.ldap_username_attribute = ldap_username_attribute
@@ -184,10 +184,10 @@ class SREGiteaServerComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Define the container group with guacd, guacamole and caddy
+        # Define the container group with gitea and caddy
         container_group = containerinstance.ContainerGroup(
             f"{self._name}_container_group",
-            container_group_name=f"{stack_name}-container-group-gitea-{self.props.gitea_server}",
+            container_group_name=f"{stack_name}-container-group-gitea-{props.gitea_server}",
             containers=[
                 containerinstance.ContainerArgs(
                     image="caddy:2.8.4",
@@ -343,7 +343,7 @@ class SREGiteaServerComponent(ComponentResource):
             LocalDnsRecordProps(
                 base_fqdn=props.sre_fqdn,
                 private_ip_address=get_ip_address_from_container_group(container_group),
-                record_name="gitea",
+                record_name=f"{props.gitea_server}-gitea",
                 resource_group_name=props.resource_group_name,
             ),
             opts=ResourceOptions.merge(
