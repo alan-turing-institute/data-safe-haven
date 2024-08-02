@@ -160,6 +160,19 @@
         state: started
         enabled: true
 
+    - name: Remove default freshclam mirrors
+      ansible.builtin.lineinfile:
+        path: /etc/clamav/freshclam.conf
+        regexp: '^DatabaseMirror.*clamav.net$'
+        state: absent
+
+    - name: Set custom freshclam mirror
+      ansible.builtin.lineinfile:
+        path: /etc/clamav/freshclam.conf
+        line: "{{lookup('file', '/etc/clamav/freshclam-mirror.conf')}}"
+        create: yes
+        state: present
+
     # This is required to fetch definitions for the clamav daemon to run
     - name: Initial freshclam run
       ansible.builtin.command:
