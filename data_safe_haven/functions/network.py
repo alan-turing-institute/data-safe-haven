@@ -6,7 +6,7 @@ import requests
 from data_safe_haven.exceptions import DataSafeHavenValueError
 
 
-def current_ip_address(*, as_cidr: bool = False) -> str:
+def current_ip_address() -> str:
     """
     Get the IP address of the current device.
 
@@ -19,10 +19,7 @@ def current_ip_address(*, as_cidr: bool = False) -> str:
     try:
         response = requests.get("https://api.ipify.org", timeout=300)
         response.raise_for_status()
-        ip_address = response.content.decode("utf8")
-        if as_cidr:
-            return str(ipaddress.IPv4Network(ip_address))
-        return ip_address
+        return response.content.decode("utf8")
     except requests.RequestException as exc:
         msg = "Could not determine IP address."
         raise DataSafeHavenValueError(msg) from exc
