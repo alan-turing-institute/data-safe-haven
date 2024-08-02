@@ -59,9 +59,9 @@ def deploy(
         # Check whether current IP address is authorised to take administrator actions
         if not ip_address_in_list(sre_config.sre.admin_ip_addresses):
             logger.warning(
-                "You may need to update 'admin_ip_addresses' in your SRE config file."
+                f"IP address '{current_ip_address()}' is not authorised to deploy SRE '{sre_config.description}'."
             )
-            msg = f"IP address '{current_ip_address()}' is not authorised to deploy SRE '{sre_config.description}'."
+            msg = "Check that 'admin_ip_addresses' is set correctly in your SRE config file."
             raise DataSafeHavenConfigError(msg)
 
         # Initialise Pulumi stack
@@ -158,9 +158,9 @@ def teardown(
         # Check whether current IP address is authorised to take administrator actions
         if not ip_address_in_list(sre_config.sre.admin_ip_addresses):
             logger.warning(
-                "You may need to update 'admin_ip_addresses' in your SRE config file."
+                f"IP address '{current_ip_address()}' is not authorised to teardown SRE '{sre_config.description}'."
             )
-            msg = f"IP address '{current_ip_address()}' is not authorised to teardown SRE '{sre_config.description}'."
+            msg = "Check that 'admin_ip_addresses' is set correctly in your SRE config file."
             raise DataSafeHavenConfigError(msg)
 
         # Remove infrastructure deployed with Pulumi
