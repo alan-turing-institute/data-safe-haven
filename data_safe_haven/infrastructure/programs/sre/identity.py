@@ -65,7 +65,7 @@ class SREIdentityComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:IdentityComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "identity"} | (tags if tags else {})
 
         # The port that the server will be hosted on
         self.server_port = 1389

@@ -53,7 +53,7 @@ class SREDnsServerComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:DnsServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "DNS server"} | (tags if tags else {})
 
         # Generate admin password
         password_admin = pulumi_random.RandomPassword(
