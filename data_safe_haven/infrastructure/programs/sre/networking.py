@@ -1559,7 +1559,7 @@ class SRENetworkingComponent(ComponentResource):
         # Note that these names for AzureFirewall subnets are required by Azure
         subnet_application_gateway_name = "ApplicationGatewaySubnet"
         subnet_apt_proxy_server_name = "AptProxyServerSubnet"
-        subnet_clamav_mirror_name = "UserServicesClamAVMirrorSubnet"
+        subnet_clamav_mirror_name = "ClamAVMirrorSubnet"
         subnet_data_configuration_name = "DataConfigurationSubnet"
         subnet_data_desired_state_name = "DataDesiredStateSubnet"
         subnet_data_private_name = "DataPrivateSubnet"
