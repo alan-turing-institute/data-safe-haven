@@ -7,7 +7,7 @@ from data_safe_haven.infrastructure.common import (
     DockerHubCredentials,
     get_id_from_subnet,
 )
-from data_safe_haven.types import DatabaseSystem, GiteaServers, SoftwarePackageCategory
+from data_safe_haven.types import DatabaseSystem, SoftwarePackageCategory
 
 from .database_servers import SREDatabaseServerComponent, SREDatabaseServerProps
 from .gitea_server import SREGiteaServerComponent, SREGiteaServerProps
@@ -28,7 +28,7 @@ class SREUserServicesProps:
         dns_server_ip: Input[str],
         dockerhub_credentials: DockerHubCredentials,
         gitea_database_password: Input[str],
-        gitea_servers: GiteaServers,
+        external_git_mirror: Input[bool],
         hedgedoc_database_password: Input[str],
         ldap_server_hostname: Input[str],
         ldap_server_port: Input[int],
@@ -52,7 +52,7 @@ class SREUserServicesProps:
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
         self.gitea_database_password = gitea_database_password
-        self.gitea_servers = gitea_servers
+        self.external_git_mirror = external_git_mirror
         self.hedgedoc_database_password = hedgedoc_database_password
         self.ldap_server_hostname = ldap_server_hostname
         self.ldap_server_port = ldap_server_port
@@ -96,10 +96,9 @@ class SREUserServicesComponent(ComponentResource):
         child_tags = tags if tags else {}
 
         # Deploy the Gitea servers
-        if props.gitea_servers == GiteaServers.BOTH:
-            gitea_servers = ["external", "internal"]
-        else:
-            gitea_servers = ["internal"]
+        gitea_servers = (
+            ["external", "internal"] if props.external_git_mirror else ["internal"]
+        )
         for gitea_server in gitea_servers:
             SREGiteaServerComponent(
                 f"sre_{gitea_server}_gitea_server",
