@@ -164,8 +164,11 @@
     - name: Set freshclam private mirror
       ansible.builtin.lineinfile:
         path: /etc/clamav/freshclam.conf
-        line: "{{lookup('file', '/etc/clamav/freshclam-mirror.conf')}}"
+        line: "{{ lookup('file', '/etc/clamav/freshclam-mirror.conf') }}"
         create: yes
+        owner: root
+        group: root
+        mode: '0644'
         state: present
       notify: Restart freshclam
 
