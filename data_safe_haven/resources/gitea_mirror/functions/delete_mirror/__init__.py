@@ -3,10 +3,15 @@ import logging
 import azure.functions as func
 import requests
 from requests.auth import HTTPBasicAuth
-
 from shared_code import (
-    get_args, check_args, missing_parameters_repsonse, timeout, gitea_host, api_root,
-    repos_path, handle_response
+    api_root,
+    check_args,
+    get_args,
+    gitea_host,
+    handle_response,
+    missing_parameters_repsonse,
+    repos_path,
+    timeout,
 )
 
 
