@@ -306,7 +306,7 @@ class DeclarativeSRE:
                 dns_server_ip=dns.ip_address,
                 dockerhub_credentials=dockerhub_credentials,
                 gitea_database_password=data.password_gitea_database_admin,
-                gitea_servers=self.config.sre.gitea_external_mirrors,
+                git_mirror=self.config.sre.external_git_mirror,
                 hedgedoc_database_password=data.password_hedgedoc_database_admin,
                 ldap_server_hostname=identity.hostname,
                 ldap_server_port=identity.server_port,
