@@ -6,6 +6,11 @@ write_files:
     content: |
       {{ database_service_admin_password }}
 
+  - path: "/etc/clamav/freshclam-mirror.conf"
+    permissions: "0400"
+    content: |
+      DatabaseMirror {{ clamav_mirror_hostname }}
+
   - path: "/etc/nslcd.conf"
     permissions: "0400"
     content: |

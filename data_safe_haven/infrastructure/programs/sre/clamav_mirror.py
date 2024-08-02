@@ -144,7 +144,7 @@ class SREClamAVMirrorComponent(ComponentResource):
         )
 
         # Register the container group in the SRE DNS zone
-        LocalDnsRecordComponent(
+        local_dns = LocalDnsRecordComponent(
             f"{self._name}_clamav_mirror_dns_record_set",
             LocalDnsRecordProps(
                 base_fqdn=props.sre_fqdn,
@@ -156,3 +156,6 @@ class SREClamAVMirrorComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=container_group)
             ),
         )
+
+        # Register outputs
+        self.hostname = local_dns.hostname

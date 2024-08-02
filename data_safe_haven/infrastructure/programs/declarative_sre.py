@@ -235,7 +235,7 @@ class DeclarativeSRE:
         )
 
         # Deploy the ClamAV mirror server
-        SREClamAVMirrorComponent(
+        clamav_mirror = SREClamAVMirrorComponent(
             "sre_clamav_mirror",
             self.stack_name,
             SREClamAVMirrorProps(
@@ -370,6 +370,7 @@ class DeclarativeSRE:
             SREWorkspacesProps(
                 admin_password=data.password_workspace_admin,
                 apt_proxy_server_hostname=apt_proxy_server.hostname,
+                clamav_mirror_hostname=clamav_mirror.hostname,
                 data_collection_rule_id=monitoring.data_collection_rule_vms.id,
                 data_collection_endpoint_id=monitoring.data_collection_endpoint.id,
                 database_service_admin_password=data.password_database_service_admin,
