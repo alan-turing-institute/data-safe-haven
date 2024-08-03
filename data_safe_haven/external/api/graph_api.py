@@ -19,10 +19,7 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.logging import get_logger, get_null_logger
 
-from .credentials import (
-    DeferredCredential,
-    GraphApiCredential,
-)
+from .credentials import DeferredCredential, GraphApiCredential
 
 
 class GraphApi:
@@ -71,7 +68,9 @@ class GraphApi:
         disable_logging: bool = False,
     ) -> "GraphApi":
         return cls(
-            credential=GraphApiCredential(tenant_id, scopes),
+            credential=GraphApiCredential(
+                scopes=scopes, tenant_id=tenant_id, skip_confirmation=disable_logging
+            ),
             disable_logging=disable_logging,
         )
 
@@ -435,7 +434,7 @@ class GraphApi:
                         json={"emailAddress": email_address},
                     )
             except DataSafeHavenMicrosoftGraphError as exc:
-                msg = f"Failed to add authentication email address'{email_address}'."
+                msg = f"Failed to add authentication email address '{email_address}'."
                 raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
             # Set the authentication phone number

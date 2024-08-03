@@ -77,7 +77,7 @@ class SREHedgeDocServerComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:HedgeDocServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "HedgeDoc server"} | (tags if tags else {})
 
         # Define configuration file shares
         file_share_hedgedoc_caddy = storage.FileShare(

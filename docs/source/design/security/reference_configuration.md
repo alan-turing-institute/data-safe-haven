@@ -35,7 +35,7 @@ The set of controls applied at the Alan Turing Institute are discussed here, tog
 ### Turing configuration setting:
 
 - Managed devices must be provided by an approved organisation and the user must not have administrator access to them.
-- Network rules for higher tier environments permit access only from IP ranges corresponding to `Restricted` networks that only permit managed devices to connect.
+- Network rules for higher tier environments permit access only from IP ranges corresponding to **Restricted** networks that only permit managed devices to connect.
 
 ### Implication:
 
@@ -49,7 +49,7 @@ The set of controls applied at the Alan Turing Institute are discussed here, tog
 - Medium security research spaces control the possibility of unauthorised viewing.
 - Card access or other means of restricting entry to only known researchers (such as the signing in of guests on a known list) is required.
 - Screen adaptations or desk partitions should be adopted in open-plan spaces if there is a high risk of unauthorised people viewing the user's screen.
-- Firewall rules for the SREs only permit access from `Restricted` network IP ranges corresponding to these research spaces.
+- Firewall rules for the SREs only permit access from **Restricted** network IP ranges corresponding to these research spaces.
 
 ### Implication:
 
@@ -103,7 +103,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 ### Turing configuration setting::
 
 - Users can write to the `/output` volume.
-- A {ref}`role_system_manager` can view and download data in the `/output` volume via `Azure Storage Explorer`.
+- A {ref}`role_system_manager` can view and download data in the `/output` volume via **Azure Storage Explorer**.
 
 ### Implication:
 
@@ -147,7 +147,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 ### Turing configuration setting:
 
-- An `Azure Firewall` ensures that all VMs within the safe haven have the minimal level of internet access required to function.
+- An **Azure Firewall** ensures that all VMs within the safe haven have the minimal level of internet access required to function.
 
 ### Implication:
 

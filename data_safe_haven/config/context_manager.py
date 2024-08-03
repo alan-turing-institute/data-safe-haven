@@ -1,9 +1,7 @@
 """Load global and local settings from dotfiles"""
 
 # For postponed evaluation of annotations https://peps.python.org/pep-0563
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 from logging import Logger
 from pathlib import Path
@@ -12,10 +10,7 @@ from typing import ClassVar
 from pydantic import Field, model_validator
 
 from data_safe_haven.directories import config_dir
-from data_safe_haven.exceptions import (
-    DataSafeHavenConfigError,
-    DataSafeHavenValueError,
-)
+from data_safe_haven.exceptions import DataSafeHavenConfigError, DataSafeHavenValueError
 from data_safe_haven.logging import get_logger
 from data_safe_haven.serialisers import YAMLSerialisableModel
 

@@ -13,10 +13,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.infrastructure import ImperativeSHM
 from data_safe_haven.logging import get_logger
-from data_safe_haven.validators import (
-    typer_aad_guid,
-    typer_fqdn,
-)
+from data_safe_haven.validators import typer_aad_guid, typer_fqdn
 
 shm_command_group = typer.Typer()
 

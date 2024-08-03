@@ -12,10 +12,7 @@ from data_safe_haven.infrastructure.common import (
     get_id_from_vnet,
     get_name_from_vnet,
 )
-from data_safe_haven.types import (
-    NetworkingPriorities,
-    Ports,
-)
+from data_safe_haven.types import NetworkingPriorities, Ports
 
 
 class SRENetworkingProps:
@@ -65,7 +62,7 @@ class SRENetworkingComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:NetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "networking"} | (tags if tags else {})
 
         # Define route table
         route_table = network.RouteTable(

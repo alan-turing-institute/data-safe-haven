@@ -6,12 +6,7 @@ from typing import Annotated
 import typer
 
 from data_safe_haven import console
-from data_safe_haven.config import (
-    ContextManager,
-    DSHPulumiConfig,
-    SHMConfig,
-    SREConfig,
-)
+from data_safe_haven.config import ContextManager, DSHPulumiConfig, SHMConfig, SREConfig
 from data_safe_haven.external import GraphApi
 from data_safe_haven.infrastructure import SREProjectManager
 

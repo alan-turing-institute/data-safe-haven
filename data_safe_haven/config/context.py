@@ -12,11 +12,7 @@ from data_safe_haven.directories import config_dir
 from data_safe_haven.external import AzureSdk
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.serialisers import ContextBase
-from data_safe_haven.types import (
-    AzureSubscriptionName,
-    EntraGroupName,
-    SafeString,
-)
+from data_safe_haven.types import AzureSubscriptionName, EntraGroupName, SafeString
 
 
 class Context(ContextBase, BaseModel, validate_assignment=True):
@@ -33,9 +29,9 @@ class Context(ContextBase, BaseModel, validate_assignment=True):
     @property
     def tags(self) -> dict[str, str]:
         return {
-            "deployment": self.description,
-            "deployed by": "Python",
+            "description": self.description,
             "project": "Data Safe Haven",
+            "shm_name": self.name,
             "version": __version__,
         }
 

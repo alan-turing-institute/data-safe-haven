@@ -12,10 +12,7 @@ from data_safe_haven.infrastructure.common import (
     get_name_from_subnet,
     get_name_from_vnet,
 )
-from data_safe_haven.infrastructure.components import (
-    LinuxVMComponentProps,
-    VMComponent,
-)
+from data_safe_haven.infrastructure.components import LinuxVMComponentProps, VMComponent
 from data_safe_haven.logging import get_logger
 from data_safe_haven.resources import resources_path
 
@@ -112,7 +109,7 @@ class SREWorkspacesComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:WorkspacesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "workspaces"} | (tags if tags else {})
 
         # Load cloud-init file
         cloudinit = Output.all(

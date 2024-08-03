@@ -3,11 +3,7 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import (
-    containerinstance,
-    network,
-    storage,
-)
+from pulumi_azure_native import containerinstance, network, storage
 
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.infrastructure.common import (
@@ -121,7 +117,7 @@ class SRERemoteDesktopComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:RemoteDesktopComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "remote desktop"} | (tags if tags else {})
 
         # Define Entra ID application
         entra_application = EntraApplication(

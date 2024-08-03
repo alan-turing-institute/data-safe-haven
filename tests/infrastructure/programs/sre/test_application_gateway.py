@@ -627,7 +627,7 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.tags.apply(
-            partial(assert_equal, {"key": "value"}),
+            partial(assert_equal, {"key": "value", "component": "application gateway"}),
             run_with_unknowns=True,
         )
 

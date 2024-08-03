@@ -12,10 +12,7 @@ from azure.core.exceptions import (
     ResourceNotFoundError,
     ServiceRequestError,
 )
-from azure.keyvault.certificates import (
-    CertificateClient,
-    KeyVaultCertificate,
-)
+from azure.keyvault.certificates import CertificateClient, KeyVaultCertificate
 from azure.keyvault.keys import KeyClient, KeyVaultKey
 from azure.keyvault.secrets import SecretClient
 from azure.mgmt.compute.v2021_07_01 import ComputeManagementClient
@@ -83,6 +80,7 @@ class AzureSdk:
         self, subscription_name: str, *, disable_logging: bool = False
     ) -> None:
         self._credentials: dict[AzureSdkCredentialScope, AzureSdkCredential] = {}
+        self.disable_logging = disable_logging
         self.logger = get_null_logger() if disable_logging else get_logger()
         self.subscription_name = subscription_name
         self.subscription_id_: str | None = None
@@ -171,7 +169,9 @@ class AzureSdk:
         self, scope: AzureSdkCredentialScope = AzureSdkCredentialScope.DEFAULT
     ) -> AzureSdkCredential:
         if scope not in self._credentials:
-            self._credentials[scope] = AzureSdkCredential(scope)
+            self._credentials[scope] = AzureSdkCredential(
+                scope, skip_confirmation=self.disable_logging
+            )
         return self._credentials[scope]
 
     def download_blob(

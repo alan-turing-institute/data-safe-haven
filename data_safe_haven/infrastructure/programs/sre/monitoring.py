@@ -3,18 +3,11 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import (
-    insights,
-    maintenance,
-    network,
-    operationalinsights,
-)
+from pulumi_azure_native import insights, maintenance, network, operationalinsights
 
 from data_safe_haven.functions import next_occurrence, replace_separators
 from data_safe_haven.infrastructure.common import get_id_from_subnet
-from data_safe_haven.infrastructure.components import (
-    WrappedLogAnalyticsWorkspace,
-)
+from data_safe_haven.infrastructure.components import WrappedLogAnalyticsWorkspace
 from data_safe_haven.types import AzureDnsZoneNames
 
 
@@ -49,7 +42,7 @@ class SREMonitoringComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:MonitoringComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
+        child_tags = {"component": "monitoring"} | (tags if tags else {})
 
         # Deploy maintenance configuration
         # See https://learn.microsoft.com/en-us/azure/update-manager/scheduled-patching

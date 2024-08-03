@@ -357,7 +357,7 @@ class ProjectManager:
             return str(result.stdout)
         except automation.CommandError as exc:
             self.log_exception(exc)
-            msg = "Failed to run command."
+            msg = f"Failed to run command '{command}'."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def secret(self, name: str) -> str:
