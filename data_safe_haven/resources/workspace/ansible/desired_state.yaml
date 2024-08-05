@@ -98,7 +98,7 @@
       notify: Restart sshd
 
     - name: Enable and start xrdp services
-      ansible.builtin.systemd_service:
+      ansible.builtin.systemd:
         name: "{{ item }}"
         enabled: true
         state: started
@@ -114,7 +114,7 @@
 
     - name: Enable and start auditd service
       tags: auditd
-      ansible.builtin.systemd_service:
+      ansible.builtin.systemd:
         name: auditd
         enabled: true
         state: started
@@ -156,7 +156,7 @@
 
     # This also generates a default freshclam.conf if one does not exist
     - name: Enable and start freshclam service
-      ansible.builtin.systemd_service:
+      ansible.builtin.systemd:
         name: clamav-freshclam
         state: started
         enabled: true
@@ -178,19 +178,19 @@
       notify: Systemd daemon reload
 
     - name: Enable and start ClamAV daemon
-      ansible.builtin.systemd_service:
+      ansible.builtin.systemd:
         name: clamav-daemon
         enabled: true
         state: started
 
     - name: Enable and start ClamAV on access scan
-      ansible.builtin.systemd_service:
+      ansible.builtin.systemd:
         name: clamav-clamonacc
         enabled: true
         state: started
 
     - name: Enable and start ClamAV timer
-      ansible.builtin.systemd_service:
+      ansible.builtin.systemd:
         name: clamav-clamdscan.timer
         enabled: true
         state: started
@@ -205,19 +205,19 @@
 
   handlers:
     - name: Restart auditd
-      ansible.builtin.systemd_service:
+      ansible.builtin.systemd:
         name: auditd
         enabled: true
         state: restarted
 
     - name: Restart freshclam
-      ansible.builtin.systemd_service:
+      ansible.builtin.systemd:
         name: clamav-freshclam
         enabled: true
         state: restarted
 
     - name: Restart sshd
-      ansible.builtin.systemd_service:
+      ansible.builtin.systemd:
         name: sshd
         enabled: true
         state: restarted
@@ -230,5 +230,5 @@
     # https://www.freedesktop.org/software/systemd/man/systemctl.html#daemon-reload
     # Should be called when changes are made to .service or .timer files
     - name: Systemd daemon reload
-      ansible.builtin.systemd_service:
+      ansible.builtin.systemd:
         daemon_reload: true
