@@ -54,8 +54,8 @@
             </div>
         </aside>
         <h2>
-            <span class="text">440 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">146<span class="text"> run</span></button>
+            <span class="text">441 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">147<span class="text"> run</span></button>
             <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">294<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
         </h2>
@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_642091359bf61341_credentials_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.0">coverage.py v7.6.0</a>,
-            created at 2024-08-05 08:00 +0000
+            created at 2024-08-05 09:53 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -1325,7 +1325,7 @@
     <p class="pln"><span class="n"><a id="t1243" href="#t1243">1243</a></span><span class="t">        <span class="nam">self</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1244" href="#t1244">1244</a></span><span class="t">        <span class="nam">storage_account_name</span><span class="op">:</span> <span class="nam">str</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1245" href="#t1245">1245</a></span><span class="t">    <span class="op">)</span> <span class="op">-></span> <span class="nam">bool</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1246" href="#t1246">1246</a></span><span class="t">        <span class="str">"""Find out whether a storage account exists in Azure storage</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1246" href="#t1246">1246</a></span><span class="t">        <span class="str">"""Find out whether a named storage account exists in the Azure subscription</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1247" href="#t1247">1247</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1248" href="#t1248">1248</a></span><span class="t"><span class="str">        Returns:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1249" href="#t1249">1249</a></span><span class="t"><span class="str">            bool: Whether or not the storage account exists</span>&nbsp;</span><span class="r"></span></p>
@@ -1334,39 +1334,40 @@
     <p class="run"><span class="n"><a id="t1252" href="#t1252">1252</a></span><span class="t">        <span class="nam">storage_client</span> <span class="op">=</span> <span class="nam">StorageManagementClient</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1253" href="#t1253">1253</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">credential</span><span class="op">(</span><span class="op">)</span><span class="op">,</span> <span class="nam">self</span><span class="op">.</span><span class="nam">subscription_id</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1254" href="#t1254">1254</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t1255" href="#t1255">1255</a></span><span class="t">        <span class="key">return</span> <span class="nam">storage_account_name</span> <span class="key">in</span> <span class="nam">storage_client</span><span class="op">.</span><span class="nam">storage_accounts</span><span class="op">.</span><span class="nam">list</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1256" href="#t1256">1256</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t1257" href="#t1257">1257</a></span><span class="t">    <span class="key">def</span> <span class="nam">upload_blob</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1258" href="#t1258">1258</a></span><span class="t">        <span class="nam">self</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1259" href="#t1259">1259</a></span><span class="t">        <span class="nam">blob_data</span><span class="op">:</span> <span class="nam">bytes</span> <span class="op">|</span> <span class="nam">str</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1260" href="#t1260">1260</a></span><span class="t">        <span class="nam">blob_name</span><span class="op">:</span> <span class="nam">str</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1261" href="#t1261">1261</a></span><span class="t">        <span class="nam">resource_group_name</span><span class="op">:</span> <span class="nam">str</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1262" href="#t1262">1262</a></span><span class="t">        <span class="nam">storage_account_name</span><span class="op">:</span> <span class="nam">str</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1263" href="#t1263">1263</a></span><span class="t">        <span class="nam">storage_container_name</span><span class="op">:</span> <span class="nam">str</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1264" href="#t1264">1264</a></span><span class="t">    <span class="op">)</span> <span class="op">-></span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1265" href="#t1265">1265</a></span><span class="t">        <span class="str">"""Upload a file to Azure blob storage</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1266" href="#t1266">1266</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1267" href="#t1267">1267</a></span><span class="t"><span class="str">        Returns:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1268" href="#t1268">1268</a></span><span class="t"><span class="str">            None</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1269" href="#t1269">1269</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1270" href="#t1270">1270</a></span><span class="t"><span class="str">        Raises:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1271" href="#t1271">1271</a></span><span class="t"><span class="str">            DataSafeHavenAzureError if the blob could not be uploaded</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1272" href="#t1272">1272</a></span><span class="t"><span class="str">        """</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t1273" href="#t1273">1273</a></span><span class="t">        <span class="key">try</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t1274" href="#t1274">1274</a></span><span class="t">            <span class="nam">blob_client</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">blob_client</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1275" href="#t1275">1275</a></span><span class="t">                <span class="nam">resource_group_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1276" href="#t1276">1276</a></span><span class="t">                <span class="nam">storage_account_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1277" href="#t1277">1277</a></span><span class="t">                <span class="nam">storage_container_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1278" href="#t1278">1278</a></span><span class="t">                <span class="nam">blob_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1279" href="#t1279">1279</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1280" href="#t1280">1280</a></span><span class="t">            <span class="com"># Upload the created file</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t1281" href="#t1281">1281</a></span><span class="t">            <span class="nam">blob_client</span><span class="op">.</span><span class="nam">upload_blob</span><span class="op">(</span><span class="nam">blob_data</span><span class="op">,</span> <span class="nam">overwrite</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t1282" href="#t1282">1282</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">debug</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1283" href="#t1283">1283</a></span><span class="t">                <span class="fst">f"</span><span class="fst">Uploaded file [green]</span><span class="op">{</span><span class="nam">blob_name</span><span class="op">}</span><span class="fst">[/] to blob storage.</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1284" href="#t1284">1284</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t1285" href="#t1285">1285</a></span><span class="t">        <span class="key">except</span> <span class="nam">AzureError</span> <span class="key">as</span> <span class="nam">exc</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t1286" href="#t1286">1286</a></span><span class="t">            <span class="nam">msg</span> <span class="op">=</span> <span class="fst">f"</span><span class="fst">Blob file '</span><span class="op">{</span><span class="nam">blob_name</span><span class="op">}</span><span class="fst">' could not be uploaded to '</span><span class="op">{</span><span class="nam">storage_account_name</span><span class="op">}</span><span class="fst">'.</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t1287" href="#t1287">1287</a></span><span class="t">            <span class="key">raise</span> <span class="nam">DataSafeHavenAzureError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span> <span class="key">from</span> <span class="nam">exc</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t1255" href="#t1255">1255</a></span><span class="t">        <span class="nam">storage_account_names</span> <span class="op">=</span> <span class="op">{</span><span class="nam">s</span><span class="op">.</span><span class="nam">name</span> <span class="key">for</span> <span class="nam">s</span> <span class="key">in</span> <span class="nam">storage_client</span><span class="op">.</span><span class="nam">storage_accounts</span><span class="op">.</span><span class="nam">list</span><span class="op">(</span><span class="op">)</span><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t1256" href="#t1256">1256</a></span><span class="t">        <span class="key">return</span> <span class="nam">storage_account_name</span> <span class="key">in</span> <span class="nam">storage_account_names</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1257" href="#t1257">1257</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t1258" href="#t1258">1258</a></span><span class="t">    <span class="key">def</span> <span class="nam">upload_blob</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1259" href="#t1259">1259</a></span><span class="t">        <span class="nam">self</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1260" href="#t1260">1260</a></span><span class="t">        <span class="nam">blob_data</span><span class="op">:</span> <span class="nam">bytes</span> <span class="op">|</span> <span class="nam">str</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1261" href="#t1261">1261</a></span><span class="t">        <span class="nam">blob_name</span><span class="op">:</span> <span class="nam">str</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1262" href="#t1262">1262</a></span><span class="t">        <span class="nam">resource_group_name</span><span class="op">:</span> <span class="nam">str</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1263" href="#t1263">1263</a></span><span class="t">        <span class="nam">storage_account_name</span><span class="op">:</span> <span class="nam">str</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1264" href="#t1264">1264</a></span><span class="t">        <span class="nam">storage_container_name</span><span class="op">:</span> <span class="nam">str</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1265" href="#t1265">1265</a></span><span class="t">    <span class="op">)</span> <span class="op">-></span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1266" href="#t1266">1266</a></span><span class="t">        <span class="str">"""Upload a file to Azure blob storage</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1267" href="#t1267">1267</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1268" href="#t1268">1268</a></span><span class="t"><span class="str">        Returns:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1269" href="#t1269">1269</a></span><span class="t"><span class="str">            None</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1270" href="#t1270">1270</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1271" href="#t1271">1271</a></span><span class="t"><span class="str">        Raises:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1272" href="#t1272">1272</a></span><span class="t"><span class="str">            DataSafeHavenAzureError if the blob could not be uploaded</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1273" href="#t1273">1273</a></span><span class="t"><span class="str">        """</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t1274" href="#t1274">1274</a></span><span class="t">        <span class="key">try</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t1275" href="#t1275">1275</a></span><span class="t">            <span class="nam">blob_client</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">blob_client</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1276" href="#t1276">1276</a></span><span class="t">                <span class="nam">resource_group_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1277" href="#t1277">1277</a></span><span class="t">                <span class="nam">storage_account_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1278" href="#t1278">1278</a></span><span class="t">                <span class="nam">storage_container_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1279" href="#t1279">1279</a></span><span class="t">                <span class="nam">blob_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1280" href="#t1280">1280</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1281" href="#t1281">1281</a></span><span class="t">            <span class="com"># Upload the created file</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t1282" href="#t1282">1282</a></span><span class="t">            <span class="nam">blob_client</span><span class="op">.</span><span class="nam">upload_blob</span><span class="op">(</span><span class="nam">blob_data</span><span class="op">,</span> <span class="nam">overwrite</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t1283" href="#t1283">1283</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">debug</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1284" href="#t1284">1284</a></span><span class="t">                <span class="fst">f"</span><span class="fst">Uploaded file [green]</span><span class="op">{</span><span class="nam">blob_name</span><span class="op">}</span><span class="fst">[/] to blob storage.</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1285" href="#t1285">1285</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t1286" href="#t1286">1286</a></span><span class="t">        <span class="key">except</span> <span class="nam">AzureError</span> <span class="key">as</span> <span class="nam">exc</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t1287" href="#t1287">1287</a></span><span class="t">            <span class="nam">msg</span> <span class="op">=</span> <span class="fst">f"</span><span class="fst">Blob file '</span><span class="op">{</span><span class="nam">blob_name</span><span class="op">}</span><span class="fst">' could not be uploaded to '</span><span class="op">{</span><span class="nam">storage_account_name</span><span class="op">}</span><span class="fst">'.</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t1288" href="#t1288">1288</a></span><span class="t">            <span class="key">raise</span> <span class="nam">DataSafeHavenAzureError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span> <span class="key">from</span> <span class="nam">exc</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -1376,7 +1377,7 @@
             <a class="nav" href="z_642091359bf61341_credentials_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.0">coverage.py v7.6.0</a>,
-            created at 2024-08-05 08:00 +0000
+            created at 2024-08-05 09:53 +0000
         </p>
     </div>
 </footer>
