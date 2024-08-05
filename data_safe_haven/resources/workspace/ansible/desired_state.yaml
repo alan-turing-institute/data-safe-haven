@@ -165,6 +165,24 @@
         line: "{{ lookup('file', '/etc/clamav/freshclam-mirror.conf') }}"
         state: present
       notify: Restart freshclam
+      register: freshclam_config
+
+    - name: Stop freshclam
+      ansible.builtin.systemd:
+        name: clamav-freshclam
+        state: stopped
+      when: freshclam_config.changed
+
+    - name: Initial freshclam run
+      ansible.builtin.command:
+        cmd: freshclam
+      when: freshclam_config.changed
+
+    - name: Start freshclam
+      ansible.builtin.systemd:
+        name: clamav-freshclam
+        state: started
+      when: freshclam_config.changed
 
     - name: Install ClamAV services and timer
       ansible.builtin.copy:
