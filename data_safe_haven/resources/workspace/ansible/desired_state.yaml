@@ -166,7 +166,6 @@
         path: /etc/clamav/freshclam.conf
         line: "{{ lookup('file', '/etc/clamav/freshclam-mirror.conf') }}"
         state: present
-      changed_when: true
       notify: Restart freshclam
 
     - name: Install ClamAV services and timer
