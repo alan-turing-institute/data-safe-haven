@@ -4,16 +4,16 @@
 :hidden:
 
 setup_context.md
-deploy_shm.md
 configure_entra_id.md
+deploy_shm.md
 deploy_sre.md
 :::
 
 Deploying an instance of the Data Safe Haven involves the following steps:
 
 - Configuring the context used to host the Pulumi backend infrastructure
-- Deploying the Safe Haven management component
 - Configuring the Microsoft Entra directory where you will manage users
+- Deploying the Safe Haven management component
 - Deploying a Secure Research Environment for each project
 
 ## Requirements

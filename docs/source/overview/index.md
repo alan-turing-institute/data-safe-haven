@@ -1,6 +1,6 @@
 # Overview
 
-```{toctree}
+:::{toctree}
 :hidden: true
 :maxdepth: 2
 
@@ -8,7 +8,7 @@ what_is_dsh.md
 why_use_dsh.md
 sensitivity_tiers.md
 using_dsh.md
-```
+:::
 
 ## Background and concepts
 

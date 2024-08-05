@@ -5,6 +5,26 @@
 These instructions will configure the [Microsoft Entra ID](https://www.microsoft.com/en-gb/security/business/identity-access/microsoft-entra-id) where you will manage your users.
 You only need one Microsoft Entra ID for your deployment of the Data Safe Haven.
 
+## Setting up your Microsoft Entra tenant
+
+:::{tip}
+We suggest using a dedicated Microsoft Entra tenant for your DSH deployment, but this is not a requirement.
+
+We also recommend using a separate tenant for managing your users from the one where your infrastructure subscriptions live, but this is not a requirement.
+:::
+
+If you decide to deploy a new tenant for user management, follow the instructions here:
+
+:::{admonition} How to deploy a new tenant
+:class: dropdown note
+Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/create-new-tenant).
+
+- set the **Organisation Name** to something appropriate for your deployment (_e.g._ _Contoso Production Safe Haven_)
+- set the **Initial Domain Name** to the lower-case version of the organisation name with spaces and special characters removed (_e.g._ _contosoproductionsafehaven_)
+- set the **Country or Region** to whichever country is appropriate for your deployment (_e.g._ _United Kingdom_)
+
+:::
+
 ## Create a native Microsoft Entra administrator account
 
 If you created a new Microsoft Entra tenant, an external administrator account will have been automatically created for you.
@@ -41,7 +61,7 @@ This is necessary both to secure logins and to allow users to set their own pass
     - Ensure the slider is set to **Enable** and the target to **All users**
     - Click the **{guilabel}`Save`** button
 
-## Activate a native Microsoft Entra account
+## Activate your native Microsoft Entra account
 
 In order to use this account you will need to activate it.
 Start by setting up authentication methods for this user, following the steps below.
@@ -67,7 +87,7 @@ Now you can reset the password for this user, following the steps below.
 ## Delete any external administrators
 
 :::{warning}
-In this step we will delete any external admin account which might belong to Microsoft Entra ID.
+In this step we will delete any external account with administrator privileges which might belong to Microsoft Entra ID.
 Before you do this, you **must** ensure that you can log into Entra using your **native** administrator account.
 :::
 
@@ -84,6 +104,10 @@ The **User principal name** field for external users will contain the external d
 - Click the **{guilabel}`Sign out`** button to log out of any accounts
 - Log in with your native administrator credentials
 - Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/how-to-create-delete-users#delete-a-user) to delete each external user
+
+:::{note}
+We recommend deleting **all** external users, but if these users are necessary, you can instead remove administrator privileges from them.
+:::
 
 ## Create additional administrators
 
@@ -104,7 +128,7 @@ Since this account will be exempt from normal login policies, it should not be u
 At least one user needs to have a [Microsoft Entra Licence](https://www.microsoft.com/en-gb/security/business/microsoft-entra-pricing) assigned in order to enable [self-service password reset](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-sspr-licensing) and conditional access policies.
 
 :::{tip}
-P1 Licences are sufficient but you may use another licence if you prefer.
+**P1 Licences** are sufficient but you may use another licence if you prefer.
 :::
 
 - Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
