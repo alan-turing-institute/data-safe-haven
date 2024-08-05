@@ -1243,7 +1243,7 @@ class AzureSdk:
         self,
         storage_account_name: str,
     ) -> bool:
-        """Find out whether a storage account exists in Azure storage
+        """Find out whether a named storage account exists in the Azure subscription
 
         Returns:
             bool: Whether or not the storage account exists
@@ -1252,7 +1252,8 @@ class AzureSdk:
         storage_client = StorageManagementClient(
             self.credential(), self.subscription_id
         )
-        return storage_account_name in storage_client.storage_accounts.list()
+        storage_account_names = {s.name for s in storage_client.storage_accounts.list()}
+        return storage_account_name in storage_account_names
 
     def upload_blob(
         self,
