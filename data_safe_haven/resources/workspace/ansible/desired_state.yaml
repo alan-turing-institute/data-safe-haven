@@ -206,19 +206,16 @@
     - name: Restart auditd
       ansible.builtin.systemd:
         name: auditd
-        enabled: true
         state: restarted
 
     - name: Restart freshclam
       ansible.builtin.systemd:
         name: clamav-freshclam
-        enabled: true
         state: restarted
 
     - name: Restart sshd
       ansible.builtin.systemd:
         name: sshd
-        enabled: true
         state: restarted
 
     - name: Update PAM auth  # noqa: no-changed-when
