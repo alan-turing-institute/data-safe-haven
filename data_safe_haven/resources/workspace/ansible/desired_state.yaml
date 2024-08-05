@@ -164,8 +164,6 @@
         path: /etc/clamav/freshclam.conf
         line: "{{ lookup('file', '/etc/clamav/freshclam-mirror.conf') }}"
         state: present
-      notify: Restart freshclam
-      register: freshclam_config
 
     # This is required to fetch definitions for the clamav daemon to run
     - name: Initial freshclam run
@@ -218,11 +216,6 @@
     - name: Restart auditd
       ansible.builtin.systemd:
         name: auditd
-        state: restarted
-
-    - name: Restart freshclam
-      ansible.builtin.systemd:
-        name: clamav-freshclam
         state: restarted
 
     - name: Restart sshd
