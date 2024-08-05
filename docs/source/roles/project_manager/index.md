@@ -2,13 +2,13 @@
 
 # Project Manager
 
-```{toctree}
+:::{toctree}
 :hidden:
 
 project_lifecycle.md
 data_ingress.md
 data_egress.md
-```
+:::
 
 A staff member with responsibility for running a particular project.
 This role could be filled by the {ref}`role_programme_manager`, or a different nominated member of staff within the research institution.

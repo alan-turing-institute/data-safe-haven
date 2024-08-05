@@ -2,12 +2,12 @@
 
 # Investigator
 
-```{toctree}
+:::{toctree}
 :hidden:
 
 data_ingress.md
 data_egress.md
-```
+:::
 
 As the research project lead, this individual is responsible for ensuring that project staff comply with the Environment's security policies.
 Multiple collaborating institutions may have their own lead staff members, and staff members might delegate responsibilities for the SRE to other researchers.

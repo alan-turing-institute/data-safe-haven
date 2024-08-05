@@ -2,11 +2,11 @@
 
 # Dataset Provider Representative
 
-```{toctree}
+:::{toctree}
 :hidden:
 
 data_ingress.md
-```
+:::
 
 The Dataset Provider is the organisation that provided the dataset under analysis.
 The **Dataset Provider Representative** is the contact person chosen by that organisation to liaise with the institution hosting the Data Safe Haven.

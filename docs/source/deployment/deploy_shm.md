@@ -16,25 +16,10 @@ However, you may choose to use multiple SHMs if, for example, you want to separa
 
 ## Requirements
 
-- A [Microsoft Entra](https://learn.microsoft.com/en-us/entra/fundamentals/) tenant
-- An account with [Global Administrator](https://learn.microsoft.com/en-us/entra/global-secure-access/reference-role-based-permissions#global-administrator) privileges on this tenant
-- An account with at least [Contributor](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/general#contributor) permissions on the Azure subscription where you will deploy your infrastructure
-
-:::{hint}
-We suggest using a dedicated Microsoft Entra tenant for your DSH deployment, but this is not a requirement.
-
-We recommend using a separate tenants for your users and your infrastructure subscriptions, but this is not a requirement.
-:::
-
-:::{admonition} How to deploy a new tenant
-:class: dropdown note
-Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/create-new-tenant).
-
-- set the **Organisation Name** to something appropriate for your deployment (_e.g._ _Contoso Production Safe Haven_)
-- set the **Initial Domain Name** to the lower-case version of the organisation name with spaces and special characters removed (_e.g._ _contosoproductionsafehaven_)
-- set the **Country or Region** to whichever country is appropriate for your deployment (_e.g._ _United Kingdom_)
-
-:::
+- A [Microsoft Entra](https://learn.microsoft.com/en-us/entra/fundamentals/) tenant for managing your users
+    - An account with [Global Administrator](https://learn.microsoft.com/en-us/entra/global-secure-access/reference-role-based-permissions#global-administrator) privileges on this tenant
+- An Azure subscription where you will deploy your infrastructure
+    - An account with at least [Contributor](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/general#contributor) permissions on this subscription
 
 ## Deployment
 
