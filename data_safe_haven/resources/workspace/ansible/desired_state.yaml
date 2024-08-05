@@ -167,18 +167,19 @@
       notify: Restart freshclam
       register: freshclam_config
 
-    - name: Stop freshclam
+    - name: Stop freshclam  # noqa: no-handler
       ansible.builtin.systemd:
         name: clamav-freshclam
         state: stopped
       when: freshclam_config.changed
 
-    - name: Initial freshclam run
+    - name: Initial freshclam run  # noqa: no-handler
       ansible.builtin.command:
         cmd: freshclam
+      changed_when: true
       when: freshclam_config.changed
 
-    - name: Start freshclam
+    - name: Start freshclam  # noqa: no-handler
       ansible.builtin.systemd:
         name: clamav-freshclam
         state: started
