@@ -24,6 +24,7 @@ class SREWorkspacesProps:
         self,
         admin_password: Input[str],
         apt_proxy_server_hostname: Input[str],
+        clamav_mirror_hostname: Input[str],
         data_collection_endpoint_id: Input[str],
         data_collection_rule_id: Input[str],
         database_service_admin_password: Input[str],
@@ -49,6 +50,7 @@ class SREWorkspacesProps:
         self.admin_password = Output.secret(admin_password)
         self.admin_username = "dshadmin"
         self.apt_proxy_server_hostname = apt_proxy_server_hostname
+        self.clamav_mirror_hostname = clamav_mirror_hostname
         self.data_collection_rule_id = data_collection_rule_id
         self.data_collection_endpoint_id = data_collection_endpoint_id
         self.database_service_admin_password = database_service_admin_password
@@ -112,6 +114,7 @@ class SREWorkspacesComponent(ComponentResource):
         # Load cloud-init file
         cloudinit = Output.all(
             apt_proxy_server_hostname=props.apt_proxy_server_hostname,
+            clamav_mirror_hostname=props.clamav_mirror_hostname,
             database_service_admin_password=props.database_service_admin_password,
             ldap_group_filter=props.ldap_group_filter,
             ldap_group_search_base=props.ldap_group_search_base,

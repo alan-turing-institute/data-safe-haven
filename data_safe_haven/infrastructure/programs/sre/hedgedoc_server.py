@@ -132,7 +132,7 @@ class SREHedgeDocServerComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Define the container group with guacd, guacamole and caddy
+        # Define the container group with caddy and HedgeDoc
         container_group = containerinstance.ContainerGroup(
             f"{self._name}_container_group",
             container_group_name=f"{stack_name}-container-group-hedgedoc",
