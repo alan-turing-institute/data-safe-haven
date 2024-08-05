@@ -1,7 +1,7 @@
 """Sections for use in configuration files"""
 
 from __future__ import annotations
-from ipaddress import ip_address
+from ipaddress import ip_network
 from itertools import combinations
 
 from pydantic import BaseModel, Field, fieldvalidator
@@ -66,7 +66,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     @classmethod
     def ensure_non_overlapping(cls, v: list[IpAddress]) -> list[IpAddress]:
         for a, b in combinations(v, 2):
-            a_ip, b_ip = ip_address(a), ip_address(b)
+            a_ip, b_ip = ip_network(a), ip_network(b)
             if a_ip.overlaps(b_ip):
                 raise ValueError("IP address must not overlap")
         return v
