@@ -2,7 +2,7 @@
 
 # Roles
 
-```{toctree}
+:::{toctree}
 :hidden: true
 :glob:
 :maxdepth: 2
@@ -13,7 +13,7 @@ programme_manager/index.md
 project_manager/index.md
 researcher/index.md
 system_manager/index.md
-```
+:::
 
 Several aspects of the Data Safe Haven rely on role-based access controls.
 You will encounter references to these roles at several points in the rest of this documentation.

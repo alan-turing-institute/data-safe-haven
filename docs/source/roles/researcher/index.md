@@ -2,12 +2,12 @@
 
 # Researcher
 
-```{toctree}
+:::{toctree}
 :hidden:
 
 user_guide.md
 available_software.md
-```
+:::
 
 A project member, who analyses data to produce results.
 We reserve the capitalised term **Researcher** for this role in our user model.

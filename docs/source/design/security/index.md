@@ -1,13 +1,13 @@
 # Security
 
-```{toctree}
+:::{toctree}
 :hidden: true
 :maxdepth: 2
 
 objectives.md
 technical_controls.md
 reference_configuration.md
-```
+:::
 
 [Security objectives](objectives.md)
 : Security objectives that the Data Safe Haven is trying to achieve

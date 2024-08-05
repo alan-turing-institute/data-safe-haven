@@ -1,11 +1,11 @@
 # Design
 
-```{toctree}
+:::{toctree}
 :hidden: true
 :maxdepth: 2
 
 security/index.md
-```
+:::
 
 ## Decisions and constraints
 
