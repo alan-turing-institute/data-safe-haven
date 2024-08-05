@@ -114,10 +114,17 @@ def mock_key_vault_management_client(monkeypatch):
 
 @fixture
 def mock_storage_management_client(monkeypatch):
+    class MockStorageAccount:
+        def __init__(self, name):
+            self.name = name
 
     class MockStorageAccountsOperations:
         def list(self):
-            return ["shmstorageaccount", "shmstorageaccounter", "shmstorageaccountest"]
+            return [
+                MockStorageAccount("shmstorageaccount"),
+                MockStorageAccount("shmstorageaccounter"),
+                MockStorageAccount("shmstorageaccountest"),
+            ]
 
         def list_keys(
             self, resource_group_name, account_name, **kwargs  # noqa: ARG002
