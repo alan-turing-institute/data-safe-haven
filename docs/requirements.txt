@@ -97,7 +97,7 @@ urllib3==2.2.2
     # via
     #   -c requirements-constraints.txt
     #   requests
-wheel==0.43.0
+wheel==0.44.0
     # via sphinx-togglebutton
 
 # The following packages are considered to be unsafe in a requirements file:
