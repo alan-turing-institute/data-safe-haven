@@ -166,7 +166,7 @@
         state: present
 
     # This is required to fetch definitions for the clamav daemon to run
-    - name: Initial freshclam run
+    - name: Initial freshclam run  # noqa: command-instead-of-module
       ansible.builtin.shell:
         cmd: |
           systemctl stop clamav-freshclam && freshclam && systemctl start clamav-freshclam
