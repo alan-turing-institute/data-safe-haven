@@ -155,14 +155,9 @@
       ansible.builtin.copy:
         src: etc/clamav/clamd.conf
         dest: /etc/clamav/clamd.conf
-        mode: '0644'
-
-    # This also generates a default freshclam.conf if one does not exist
-    - name: Enable and start freshclam service
-      ansible.builtin.systemd:
-        name: clamav-freshclam
-        state: started
-        enabled: true
+        mode: '0444'
+        owner: clamav
+        group: adm
 
     - name: Set freshclam private mirror
       ansible.builtin.lineinfile:
@@ -178,6 +173,12 @@
         mode: '0644'
       with_fileglob: 'etc/systemd/system/clamav*'
       notify: Systemd daemon reload
+
+    - name: Enable and start freshclam
+      ansible.builtin.systemd:
+        name: clamav-freshclam
+        state: started
+        enabled: true
 
     - name: Enable and start ClamAV daemon
       ansible.builtin.systemd:
