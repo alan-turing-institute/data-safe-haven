@@ -71,11 +71,11 @@
         state: link
         mode: '0755'
       loop:
-        - path: 'etc/skel/input'
+        - path: '/etc/skel/input'
           src: '/mnt/input'
-        - path: 'etc/skel/output'
+        - path: '/etc/skel/output'
           src: '/mnt/output'
-        - path: 'etc/skel/shared'
+        - path: '/etc/skel/shared'
           src: '/mnt/shared'
 
     - name: Add ldap to /etc/nsswitch.conf
