@@ -88,18 +88,18 @@ write_files:
     permissions: "0700"
     content: |
       #!/usr/bin/env bash
-      pushd /desired_state
-      ansible-playbook /desired_state/desired_state.yaml
+      pushd /var/local/ansible
+      ansible-playbook desired_state.yaml
       popd
 
 mounts:
   # Desired state configuration is in a blob container mounted as NFSv3
-  - ["{{storage_account_data_desired_state_name}}.blob.core.windows.net:/{{storage_account_data_desired_state_name}}/desiredstate", /desired_state, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
+  - ["{{storage_account_data_desired_state_name}}.blob.core.windows.net:/{{storage_account_data_desired_state_name}}/desiredstate", /var/local/ansible, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
   # Secure data is in a blob container mounted as NFSv3
-  - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/ingress", /data, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
-  - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/egress", /output, nfs, "rw,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
+  - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/ingress", /mnt/input, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
+  - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/egress", /mnt/output, nfs, "rw,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
   # User data is in a file share mounted as NFSv4
-  - ["{{storage_account_data_private_user_name}}.file.core.windows.net:/{{storage_account_data_private_user_name}}/shared", /shared, nfs, "_netdev,sec=sys,nconnect=4"]
+  - ["{{storage_account_data_private_user_name}}.file.core.windows.net:/{{storage_account_data_private_user_name}}/shared", /mnt/shared, nfs, "_netdev,sec=sys,nconnect=4"]
   - ["{{storage_account_data_private_user_name}}.file.core.windows.net:/{{storage_account_data_private_user_name}}/home", /home, nfs, "_netdev,sec=sys,nconnect=4"]
 
 # Add additional apt repositories
@@ -133,11 +133,11 @@ runcmd:
   - echo ">=== Mounting all external volumes... ===<"
   - grep -v -e '^[[:space:]]*$' /etc/fstab | sed 's|^|  /etc/fstab  |'
   - mount -fav
-  - while (! mountpoint -q /data); do sleep 5; mount /data; done
-  - while (! mountpoint -q /desired_state); do sleep 5; mount /desired_state; done
+  - while (! mountpoint -q /mnt/input); do sleep 5; mount /mnt/input; done
+  - while (! mountpoint -q /var/local/ansible); do sleep 5; mount /var/local/ansible; done
   - while (! mountpoint -q /home); do sleep 5; mount /home; done
-  - while (! mountpoint -q /output); do sleep 5; mount /output; done
-  - while (! mountpoint -q /shared); do sleep 5; mount /shared; done
+  - while (! mountpoint -q /mnt/output); do sleep 5; mount /mnt/output; done
+  - while (! mountpoint -q /mnt/shared); do sleep 5; mount /mnt/shared; done
   - findmnt
 
   # Enable and start desired state timer
