@@ -686,37 +686,39 @@ If you need to use a package that is not on the allowlist see the section on how
 
 There are several shared areas on the SRD that all collaborators within a research project team can see and access:
 
-- [input data](#input-data-data): `/data/`
-- [shared space](#shared-space-shared): `/shared/`
-- [scratch space](#scratch-space-scratch): `/scratch/`
-- [backup space](#backup-space-backup): `/backup/`
-- [output resources](#output-resources-output): `/output/`
+- [input data](#input-data): `/mnt/input/`
+- [shared space](#shared-space): `/mnt/shared`
+- [output resources](#output-resources): `/mnt/output`
 
-#### Input data: `/data/`
+<!-- - [scratch space](#scratch-space-scratch): `/scratch/` -->
+<!-- - [backup space](#backup-space-backup): `/backup/` -->
 
-Data that has been "ingressed" - approved and brought into the secure research environment - can be found in the `/data/` folder.
+#### Input data
+
+Data that has been "ingressed" - approved and brought into the secure research environment - can be found in the `/mnt/input` folder.
 
 Everyone in your group will be able to access it, but it is **read-only**.
 
 ```{important}
-You will not be able to change any of the files in `/data/` .
-If you want to make derived datasets, for example cleaned and reformatted data, please add those to the `/shared/` or `/output/` directories.
+You will not be able to change any of the files in `/mnt/input` .
+If you want to make derived datasets, for example cleaned and reformatted data, please add those to the `/mnt/shared` or `/mnt/output` directories.
 ```
 
-The contents of `/data/` will be **identical** on all SRDs in your SRE.
-For example, if your group requests a GPU-enabled machine, this will contain an identical `/data/` folder.
+The contents of `/mnt/input` will be **identical** on all SRDs in your SRE.
+For example, if your group requests a GPU-enabled machine, this will contain an identical `/mnt/input` folder.
 
 ```{tip}
-If you are using the Data Safe Haven as part of an organised event, you might find example slides or document templates in the `/data/` drive.
+If you are using the Data Safe Haven as part of an organised event, you might find example slides or document templates in the `/mnt/input` drive.
 ```
 
-#### Shared space: `/shared/`
+#### Shared space
 
-The `/shared/` folder should be used for any work that you want to share with your group.
+The `/mnt/shared` folder should be used for any work that you want to share with your group.
 Everyone in your group will be able to access it, and will have **read-and-write access**.
 
-The contents of `/shared/` will be **identical** on all SRDs in your SRE.
+The contents of `/mnt/shared` will be **identical** on all SRDs in your SRE.
 
+<!--
 #### Scratch space: `/scratch/`
 
 The `/scratch/` folder should be used for any work-in-progress that isn't ready to share yet.
@@ -727,7 +729,9 @@ You should not use `/scratch/` for long-term storage as it can be reset at any t
 ```
 
 The contents of `/scratch/` will be **different** on different VMs in your SRE.
+-->
 
+<!--
 #### Backup space: `/backup/`
 
 The `/backup/` folder should be used for any work-in-progress that you want to have backed up.
@@ -736,15 +740,16 @@ This **cannot** be used to recover individual files - only the complete contents
 Everyone in your group will have **read-and-write access** to all folders on `/backup`.
 
 The contents of `/backup/` will be **identical** on all SRDs in your SRE.
+-->
 
-#### Output resources: `/output/`
+#### Output resources
 
-Any outputs that you want to extract from the secure environment should be placed in the `/output/` folder on the SRD.
+Any outputs that you want to extract from the secure environment should be placed in the `/mnt/output` folder on the SRD.
 Everyone in your group will be able to access it, and will have **read-and-write access**.
 Anything placed in here will be considered for data egress - removal from the secure research environment - by the project's principal investigator together with the data provider.
 
 ```{tip}
-You may want to consider having subfolders of `/output/` to make the review of this directory easier.
+You may want to consider having subfolders of `/mnt/output` to make the review of this directory easier.
 ```
 
 ```{hint}
@@ -793,12 +798,12 @@ One of the benefits of having cloud based infastructure is that it can be delete
 Deleting the infrastructure ensures that neither sensitive data nor insights derived from the data or modelling techniques persist.
 
 While working on the project, make sure that every piece of code you think might be useful is stored in a GitLab repository within the secure environment.
-Any other work should be transferred to the `/shared/` drive so that it is accessible to other TRE users.
-You can also use the `/backup/` drive to store work that you want to keep safe from accidental deletion.
-Anything that you think should be considered for **egress** from the environment (eg. images or processed datasets) should be transferred to the shared `/output/` drive.
+Any other work should be transferred to the `/mnt/shared` drive so that it is accessible to other TRE users.
+<!-- You can also use the `/backup/` drive to store work that you want to keep safe from accidental deletion. -->
+Anything that you think should be considered for **egress** from the environment (eg. images or processed datasets) should be transferred to the shared `/mnt/output` drive.
 
 ```{caution}
-Anything that is not transferred to the `/output/` drive to be considered for egress will be deleted forever when the project is over.
+Anything that is not transferred to the `/mnt/output` drive to be considered for egress will be deleted forever when the project is over.
 ```
 
 ### {{unlock}} Access GitLab
@@ -943,7 +948,7 @@ Our example user, Ada Lovelace, participating in the `sandbox` project at a Turi
 ````
 
 - This will bring you to the normal login screen, where you use the same `username` and `password` credentials as before.
-- Any local files that you have created in the `/output/` folder on other VMs (e.g. analysis scripts, notes, derived data) will be automatically available in the new VM.
+- Any local files that you have created in the `/mnt/output` folder on other VMs (e.g. analysis scripts, notes, derived data) will be automatically available in the new VM.
 
 ```{tip}
 The naming pattern of the available desktop connections lets you know their compute capabilities.
