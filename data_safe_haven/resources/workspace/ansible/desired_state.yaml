@@ -23,6 +23,14 @@
       async: 3600
       poll: 30
 
+    - name: Install deb packages
+      tags: apt
+      ansible.builtin.script:
+        executable: /bin/bash
+        cmd: /desired_state/install_deb.sh "{{ item.source }}" "{{ item.filename }}" "{{ item.sha256 }}"
+        creates: "{{ item.creates }}"
+      loop: "{{ deb_packages[ansible_facts.distribution_release] }}"
+
     - name: Install snap packages
       community.general.snap:
         name: "{{ item.name }}"
