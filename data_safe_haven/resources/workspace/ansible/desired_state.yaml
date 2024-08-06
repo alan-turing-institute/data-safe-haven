@@ -164,6 +164,15 @@
       ansible.builtin.shell:
         cmd: if [ -f /usr/share/xfce4/terminal/colorschemes/{{ terminal_settings.colourscheme }}.theme ]; then grep -v -e Name -e Scheme /usr/share/xfce4/terminal/colorschemes/{{ terminal_settings.colourscheme }}.theme >> /etc/xdg/xfce4/terminal/terminalrc; fi
 
+    - name: Set default keyboard
+      ansible.builtin.replace:
+        path: /etc/default/keyboard
+        regexp: "^{{ item.key }}="
+        replace: "{{ item.key }}={{ item.value }}"
+      loop:
+        - {key: "XKBMODEL", value: "pc105"}
+        - {key: "XKBLAYOUT", value: "gb"}
+
     - name: Enable and start xrdp services
       ansible.builtin.systemd:
         name: "{{ item }}"
