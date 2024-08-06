@@ -52,17 +52,11 @@
             fi
           fi
 
-    - name: Copy bashrc skeleton
+    - name: Copy skeleton files
       ansible.builtin.copy:
-        src: etc/skel/bashrc
-        dest: /etc/skel/.bashrc
-        mode: '0755'
-
-    - name: Copy xsession skeleton
-      ansible.builtin.copy:
-        src: etc/skel/xsession
-        dest: /etc/skel/.xsession
-        mode: '0444'
+        src: "{{ item }}"
+        dest: /etc/skel/
+      with_fileglob: 'etc/skel/*'
 
     - name: Add ldap to /etc/nsswitch.conf
       ansible.builtin.replace:
