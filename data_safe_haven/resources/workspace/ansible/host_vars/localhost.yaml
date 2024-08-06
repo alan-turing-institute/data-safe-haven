@@ -151,6 +151,3 @@ snap_packages:
     classic: false
   - name: pycharm-community
     classic: true
-
-terminal_settings:
-  colourscheme: dark-pastels
