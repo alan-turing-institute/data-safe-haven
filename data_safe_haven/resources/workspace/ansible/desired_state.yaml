@@ -218,6 +218,9 @@
       loop:
         - gitea.desktop
         - hedgedoc.desktop
+        - input.desktop
+        - output.desktop
+        - shared.desktop
 
     - name: Set desktop file URLs
       ansible.builtin.lineinfile:
