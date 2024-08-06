@@ -268,6 +268,18 @@ class SREFirewallComponent(ComponentResource):
                             source_addresses=props.subnet_workspaces_prefixes,
                             target_fqdns=PermittedDomains.UBUNTU_SNAPCRAFT,
                         ),
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external RStudio deb downloads",
+                            name="AllowRStudioDeb",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTPS),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                                ),
+                            ],
+                            source_addresses=props.subnet_workspaces_prefixes,
+                            target_fqdns=PermittedDomains.RSTUDIO_DEB,
+                        ),
                     ],
                 ),
                 network.AzureFirewallApplicationRuleCollectionArgs(

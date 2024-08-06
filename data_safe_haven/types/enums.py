@@ -134,6 +134,7 @@ class PermittedDomains(tuple[str, ...], Enum):
     MICROSOFT_GRAPH_API = ("graph.microsoft.com",)
     MICROSOFT_LOGIN = ("login.microsoftonline.com",)
     MICROSOFT_IDENTITY = MICROSOFT_GRAPH_API + MICROSOFT_LOGIN
+    RSTUDIO_DEB = ("download1.rstudio.org",)
     SOFTWARE_REPOSITORIES_PYTHON = (
         "files.pythonhosted.org",
         "pypi.org",
@@ -153,6 +154,7 @@ class PermittedDomains(tuple[str, ...], Enum):
                 + CLAMAV_UPDATES
                 + MICROSOFT_GRAPH_API
                 + MICROSOFT_LOGIN
+                + RSTUDIO_DEB
                 + SOFTWARE_REPOSITORIES_PYTHON
                 + SOFTWARE_REPOSITORIES_R
                 + UBUNTU_KEYSERVER
