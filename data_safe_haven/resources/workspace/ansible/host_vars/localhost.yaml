@@ -13,6 +13,7 @@ package_categories:
       - clamav
       - clamav-daemon
       - clamav-unofficial-sigs
+      - ubuntu-drivers-common
     jammy: []
     noble: []
   - category: browsers

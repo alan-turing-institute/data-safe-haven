@@ -38,6 +38,13 @@
         state: present
       loop: "{{ snap_packages }}"
 
+    # https://ubuntu.com/server/docs/nvidia-drivers-installation#installing-the-drivers-on-servers-andor-for-computing-purposes
+    - name: Use ubuntu-drivers to install Nvidia drivers  # noqa: no-handler
+      tags: nvidia
+      ansible.builtin.command:
+        cmd: ubuntu-drivers install --gpgpu
+        creates: /usr/bin/nvidia-smi
+
     - name: Disable and stop Ubuntu Pro services
       ansible.builtin.systemd:
         name: "{{ item }}"
