@@ -176,6 +176,12 @@
         dest: /etc/xdg/xfce4/terminal/terminalrc
         mode: '0444'
 
+    - name: Use a blank screensaver
+      ansible.builtin.lineinfile:
+        path: /etc/X11/Xresources/x11-common
+        line: 'xscreensaver.mode: blank'
+        state: present
+
     - name: Set default keyboard
       ansible.builtin.replace:
         path: /etc/default/keyboard
