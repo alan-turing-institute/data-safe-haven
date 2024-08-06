@@ -32,19 +32,17 @@
 
     - name: Check for Nvidia drivers
       tags: nvidia
-      ansible.builtin.apt:
-        name: nvidia-utils
-        state: present
-      check_mode: true
-      ignore_errors: true
+      ansible.builtin.stat:
+        path: /usr/bin/nvidia-smi
       register: nvidia_utils
 
     # https://ubuntu.com/server/docs/nvidia-drivers-installation#installing-the-drivers-on-servers-andor-for-computing-purposes
     - name: Use ubuntu-drivers to install Nvidia drivers  # noqa: no-handler
+      tags: nvidia
       ansible.builtin.command:
         cmd: ubuntu-drivers install --gpgpu
-      when: nvidia_utils.changed
       changed_when: true
+      when: not nvidia_utils.stat.exists
 
     - name: Disable and stop Ubuntu Pro services
       ansible.builtin.systemd:
