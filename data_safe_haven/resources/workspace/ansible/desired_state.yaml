@@ -100,6 +100,18 @@
         validate: sshd -T -f %s
       notify: Restart sshd
 
+    - name: Copy xrdp settings
+      ansible.builtin.copy:
+        src: etc/xrdp/xrdp.ini
+        dest: /etc/xrdp/xrdp.ini
+        mode: '0644'
+
+    - name: Copy xrdp logo
+      ansible.builtin.copy:
+        src: usr/share/xrdp/dsh_logo_240x140_256color.bmp
+        dest: /usr/share/xrdp/dsh_logo_240x140_256color.bmp
+        mode: '0444'
+
     - name: Enable and start xrdp services
       ansible.builtin.systemd:
         name: "{{ item }}"
