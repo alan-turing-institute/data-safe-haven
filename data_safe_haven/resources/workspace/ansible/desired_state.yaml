@@ -109,6 +109,36 @@
         validate: sshd -T -f %s
       notify: Restart sshd
 
+    - name: Copy xrdp settings
+      ansible.builtin.copy:
+        src: etc/xrdp/xrdp.ini
+        dest: /etc/xrdp/xrdp.ini
+        mode: '0644'
+
+    - name: Copy xrdp logo
+      ansible.builtin.copy:
+        src: usr/local/share/xrdp/dsh_logo_240x140_256color.bmp
+        dest: /usr/local/share/xrdp/dsh_logo_240x140_256color.bmp
+        mode: '0444'
+
+    - name: Disable xrdp root login
+      ansible.builtin.lineinfile:
+        path: /etc/xrdp/sesman.ini
+        regexp: '^AllowRootLogin='
+        line: 'AllowRootLogin=false'
+
+    - name: Kill disconnected xrdp sessions
+      ansible.builtin.lineinfile:
+        path: /etc/xrdp/sesman.ini
+        regexp: '^DisconnectedTimeLimit='
+        line: 'DisconnectedTimeLimit=60'
+
+    - name: Set disconnected xrdp session time limit
+      ansible.builtin.lineinfile:
+        path: /etc/xrdp/sesman.ini
+        regexp: '^KillDisconnected='
+        line: 'KillDisconnected=true'
+
     - name: Enable and start xrdp services
       ansible.builtin.systemd:
         name: "{{ item }}"
