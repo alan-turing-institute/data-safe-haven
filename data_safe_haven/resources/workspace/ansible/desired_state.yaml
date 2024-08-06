@@ -138,6 +138,16 @@
         validate: sshd -T -f %s
       notify: Restart sshd
 
+    - name: Ensure xrdp directories exist
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /etc/xdg/xfce4/terminal
+        - /etc/xrdp
+        - /usr/local/share/xrdp
+
     - name: Copy xrdp settings
       ansible.builtin.copy:
         src: etc/xrdp/xrdp.ini
@@ -167,6 +177,33 @@
         path: /etc/xrdp/sesman.ini
         regexp: '^KillDisconnected='
         line: 'KillDisconnected=true'
+
+    - name: Set default terminal
+      ansible.builtin.lineinfile:
+        path: /etc/xdg/xfce4/helpers.rc
+        regexp: '^TerminalEmulator='
+        line: 'TerminalEmulator=xfce4-terminal'
+
+    - name: Set default terminal colourscheme
+      ansible.builtin.copy:
+        src: etc/xdg/xfce4/terminal/terminalrc
+        dest: /etc/xdg/xfce4/terminal/terminalrc
+        mode: '0444'
+
+    - name: Use a blank screensaver
+      ansible.builtin.lineinfile:
+        path: /etc/X11/Xresources/x11-common
+        line: 'xscreensaver.mode: blank'
+        state: present
+
+    - name: Set default keyboard
+      ansible.builtin.replace:
+        path: /etc/default/keyboard
+        regexp: "^{{ item.key }}="
+        replace: "{{ item.key }}={{ item.value }}"
+      loop:
+        - {key: "XKBMODEL", value: "pc105"}
+        - {key: "XKBLAYOUT", value: "gb"}
 
     - name: Enable and start xrdp services
       ansible.builtin.systemd:

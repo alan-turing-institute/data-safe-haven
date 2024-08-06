@@ -34,6 +34,7 @@ write_files:
 
       # All users that are members of the correct group
       filter passwd {{{ldap_user_filter}}}
+      map    passwd loginShell "/bin/bash"
 
       # One group for each security group belonging to this SRE and for each primary user group for users that belong to a group in this SRE
       filter group {{{ldap_group_filter}}}
