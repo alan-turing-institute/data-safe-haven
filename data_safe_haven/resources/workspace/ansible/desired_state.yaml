@@ -108,8 +108,8 @@
 
     - name: Copy xrdp logo
       ansible.builtin.copy:
-        src: usr/share/xrdp/dsh_logo_240x140_256color.bmp
-        dest: /usr/share/xrdp/dsh_logo_240x140_256color.bmp
+        src: usr/local/share/xrdp/dsh_logo_240x140_256color.bmp
+        dest: /usr/local/share/xrdp/dsh_logo_240x140_256color.bmp
         mode: '0444'
 
     - name: Disable xrdp root login
