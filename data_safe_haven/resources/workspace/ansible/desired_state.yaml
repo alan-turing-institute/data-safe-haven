@@ -30,6 +30,15 @@
         state: present
       loop: "{{ snap_packages }}"
 
+    - name: Disable and stop Ubuntu Pro services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: false
+      loop:
+        - apt-news
+        - esm-cache
+
     - name: Enable bash autocompletion globally
       ansible.builtin.blockinfile:
         path: /etc/bash.bashrc
