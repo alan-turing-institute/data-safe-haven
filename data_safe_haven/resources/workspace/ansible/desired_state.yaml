@@ -23,12 +23,13 @@
       async: 3600
       poll: 30
 
-    - name: Install RStudio
+    - name: Install deb packages
       tags: apt
       ansible.builtin.script:
         executable: /bin/bash
-        cmd: /desired_state/install_deb.sh https://download1.rstudio.org/electron/jammy/amd64 rstudio-2024.04.2-764-amd64.deb 1d0bd2f54215f514a8a78a4d035c7804218bb8fafa417aa5083d341e174e6452
-        creates: /usr/bin/rstudio
+        cmd: /desired_state/install_deb.sh {{ item.source }} {{ item.filename }} {{ item.sha256 }}
+        creates: "{{ item.creates }}"
+      loop: "{{ deb_packages }}"
 
     - name: Install snap packages
       community.general.snap:
