@@ -36,6 +36,7 @@
         name: nvidia-utils
         state: present
       check_mode: true
+      ignore_errors: true
       register: nvidia_utils
 
     # https://ubuntu.com/server/docs/nvidia-drivers-installation#installing-the-drivers-on-servers-andor-for-computing-purposes
