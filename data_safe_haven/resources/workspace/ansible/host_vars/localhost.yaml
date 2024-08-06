@@ -118,6 +118,7 @@ package_categories:
       - rsync
       - tmux
       - wget
+      - xfce4-terminal
     jammy: []
     noble:
       - eza

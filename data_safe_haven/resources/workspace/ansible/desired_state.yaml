@@ -154,6 +154,12 @@
         regexp: '^KillDisconnected='
         line: 'KillDisconnected=true'
 
+    - name: Set default terminal
+      ansible.builtin.lineinfile:
+        path: /etc/xdg/xfce4/helpers.rc
+        regexp: '^TerminalEmulator='
+        line: 'TerminalEmulator=xfce4-terminal'
+
     - name: Enable and start xrdp services
       ansible.builtin.systemd:
         name: "{{ item }}"
