@@ -160,6 +160,10 @@
         regexp: '^TerminalEmulator='
         line: 'TerminalEmulator=xfce4-terminal'
 
+    - name: Set terminal colourscheme
+      ansible.builtin.shell:
+        cmd: if [ -f /usr/share/xfce4/terminal/colorschemes/{{ terminal_settings.colourscheme }}.theme ]; then grep -v -e Name -e Scheme /usr/share/xfce4/terminal/colorschemes/{{ terminal_settings.colourscheme }}.theme >> /etc/xdg/xfce4/terminal/terminalrc; fi
+
     - name: Enable and start xrdp services
       ansible.builtin.systemd:
         name: "{{ item }}"
