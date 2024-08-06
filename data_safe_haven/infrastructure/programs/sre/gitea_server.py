@@ -336,7 +336,7 @@ class SREGiteaServerComponent(ComponentResource):
         )
 
         # Register the container group in the SRE DNS zone
-        LocalDnsRecordComponent(
+        local_dns = LocalDnsRecordComponent(
             f"{self._name}_gitea_dns_record_set",
             LocalDnsRecordProps(
                 base_fqdn=props.sre_fqdn,
@@ -348,3 +348,6 @@ class SREGiteaServerComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=container_group)
             ),
         )
+
+        # Register outputs
+        self.hostname = local_dns.hostname
