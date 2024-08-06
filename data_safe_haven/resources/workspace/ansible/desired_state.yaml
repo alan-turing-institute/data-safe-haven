@@ -124,6 +124,15 @@
         validate: sshd -T -f %s
       notify: Restart sshd
 
+    - name: Ensure xrdp directories exist
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+      loop:
+        - /etc/xdg/xfce4/terminal
+        - /etc/xrdp
+        - /usr/local/share/xrdp
+
     - name: Copy xrdp settings
       ansible.builtin.copy:
         src: etc/xrdp/xrdp.ini
@@ -160,9 +169,11 @@
         regexp: '^TerminalEmulator='
         line: 'TerminalEmulator=xfce4-terminal'
 
-    - name: Set terminal colourscheme
-      ansible.builtin.shell:
-        cmd: if [ -f /usr/share/xfce4/terminal/colorschemes/{{ terminal_settings.colourscheme }}.theme ]; then grep -v -e Name -e Scheme /usr/share/xfce4/terminal/colorschemes/{{ terminal_settings.colourscheme }}.theme >> /etc/xdg/xfce4/terminal/terminalrc; fi
+    - name: Set default terminal colourscheme
+      ansible.builtin.copy:
+        src: etc/xdg/xfce4/terminal/terminalrc
+        dest: /etc/xdg/xfce4/terminal/terminalrc
+        mode: '0444'
 
     - name: Set default keyboard
       ansible.builtin.replace:
