@@ -74,6 +74,6 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
         for a, b in combinations(v, 2):
             a_ip, b_ip = ip_network(a), ip_network(b)
             if a_ip.overlaps(b_ip):
-                msg = "IP address must not overlap"
+                msg = "IP addresses must not overlap."
                 raise ValueError(msg)
         return v

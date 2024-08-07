@@ -154,6 +154,13 @@ class TestConfigSectionSRE:
                 databases=[DatabaseSystem.POSTGRESQL, DatabaseSystem.POSTGRESQL],
             )
 
+    def test_ip_overlap(self):
+        with pytest.raises(ValueError, match="IP addresses must not overlap."):
+            ConfigSectionSRE(
+                admin_email_address="admin@example.com",
+                admin_ip_addresses=["1.2.3.4", "1.2.3.4"],
+            )
+
 
 class TestConfigSubsectionRemoteDesktopOpts:
     def test_constructor(self) -> None:
