@@ -79,20 +79,6 @@
         dest: /etc/skel/.xsession
         mode: '0444'
 
-    - name: Create skeleton symlinks
-      ansible.builtin.file:
-        src: "{{ item.src }}"
-        dest: "{{ item.path }}"
-        state: link
-        mode: '0755'
-      loop:
-        - path: '/etc/skel/input'
-          src: '/mnt/input'
-        - path: '/etc/skel/output'
-          src: '/mnt/output'
-        - path: '/etc/skel/shared'
-          src: '/mnt/shared'
-
     - name: Add ldap to /etc/nsswitch.conf
       ansible.builtin.replace:
         path: /etc/nsswitch.conf
