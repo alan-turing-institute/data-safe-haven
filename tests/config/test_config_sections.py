@@ -180,7 +180,7 @@ class TestConfigSectionSRE:
             ["10.0.0.0/8", "10.255.0.0"],
             ["10.0.0.0/16", "10.0.255.42"],
             ["10.0.0.0/28", "10.0.0.0/32"],
-        ]
+        ],
     )
     def test_ip_overlap(self, addresses):
         with pytest.raises(ValueError, match="IP addresses must not overlap."):
