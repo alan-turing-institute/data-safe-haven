@@ -27,7 +27,7 @@
       tags: apt
       ansible.builtin.script:
         executable: /bin/bash
-        cmd: /desired_state/install_deb.sh "{{ item.source }}" "{{ item.filename }}" "{{ item.sha256 }}"
+        cmd: "/desired_state/install_deb.sh {{ item.source }} {{ item.filename }} {{ item.sha256 }}"
         creates: "{{ item.creates }}"
       loop: "{{ deb_packages[ansible_facts.distribution_release] }}"
 
@@ -203,8 +203,8 @@
 
     - name: Copy icons
       ansible.builtin.copy:
-        src: usr/share/icons/{{ item }}
-        dest: /usr/share/icons/{{ item }}
+        src: "usr/local/share/icons/{{ item }}"
+        dest: "/usr/local/share/icons/{{ item }}"
         mode: '0444'
       loop:
         - gitea.png
@@ -212,8 +212,8 @@
 
     - name: Copy desktop files
       ansible.builtin.copy:
-        src: etc/skel/Desktop/{{ item }}
-        dest: /etc/skel/Desktop/{{ item }}
+        src: "etc/skel/Desktop/{{ item }}"
+        dest: "/etc/skel/Desktop/{{ item }}"
         mode: '0755'
       loop:
         - gitea.desktop
@@ -224,7 +224,7 @@
 
     - name: Set desktop file URLs
       ansible.builtin.lineinfile:
-        path: /etc/skel/Desktop/{{ item }}.desktop
+        path: "/etc/skel/Desktop/{{ item }}.desktop"
         line: "{{ lookup('file', '/root/{{ item }}.url') }}"
         state: present
       loop:
