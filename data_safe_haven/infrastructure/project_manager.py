@@ -79,7 +79,7 @@ class ProjectManager:
 
         extra_args["color"] = "always"
         extra_args["log_flow"] = True
-        extra_args["on_output"] = self.log_message
+        extra_args["on_output"] = self.logger.info
         return extra_args
 
     @property
@@ -316,10 +316,7 @@ class ProjectManager:
                     error_line.replace("error:", "").replace("stderr:", "")
                 ).strip()
                 if message:
-                    self.log_message(f"Pulumi error: {message}")
-
-    def log_message(self, message: str) -> None:
-        return from_ansi(self.logger, message)
+                    self.logger.critical(f"Pulumi error: {message}")
 
     def output(self, name: str) -> Any:
         """Get a named output value from a stack"""
