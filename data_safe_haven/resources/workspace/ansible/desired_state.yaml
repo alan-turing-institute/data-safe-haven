@@ -321,10 +321,6 @@
         name: sshd
         state: restarted
 
-    - name: Update PAM auth  # noqa: no-changed-when
-      ansible.builtin.command:
-        cmd: pam-auth-update --enable mkhomedir ldap
-
     # Run systemd daemon-reload.
     # https://www.freedesktop.org/software/systemd/man/systemctl.html#daemon-reload
     # Should be called when changes are made to .service or .timer files
