@@ -39,7 +39,7 @@ class SREWorkspacesProps:
         resource_group_name: Input[str],
         software_repository_hostname: Input[str],
         sre_name: Input[str],
-        storage_account_data_desired_state_name: Input[str],
+        storage_account_desired_state_name: Input[str],
         storage_account_data_private_sensitive_name: Input[str],
         storage_account_data_private_user_name: Input[str],
         subnet_workspaces: Input[network.GetSubnetResult],
@@ -65,9 +65,7 @@ class SREWorkspacesProps:
         self.resource_group_name = resource_group_name
         self.software_repository_hostname = software_repository_hostname
         self.sre_name = sre_name
-        self.storage_account_data_desired_state_name = (
-            storage_account_data_desired_state_name
-        )
+        self.storage_account_desired_state_name = storage_account_desired_state_name
         self.storage_account_data_private_user_name = (
             storage_account_data_private_user_name
         )
@@ -123,7 +121,7 @@ class SREWorkspacesComponent(ComponentResource):
             ldap_user_filter=props.ldap_user_filter,
             ldap_user_search_base=props.ldap_user_search_base,
             software_repository_hostname=props.software_repository_hostname,
-            storage_account_data_desired_state_name=props.storage_account_data_desired_state_name,
+            storage_account_desired_state_name=props.storage_account_desired_state_name,
             storage_account_data_private_user_name=props.storage_account_data_private_user_name,
             storage_account_data_private_sensitive_name=props.storage_account_data_private_sensitive_name,
         ).apply(lambda kwargs: self.template_cloudinit(**kwargs))

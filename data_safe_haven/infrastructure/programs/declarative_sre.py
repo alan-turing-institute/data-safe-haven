@@ -15,6 +15,7 @@ from .sre.apt_proxy_server import SREAptProxyServerComponent, SREAptProxyServerP
 from .sre.backup import SREBackupComponent, SREBackupProps
 from .sre.clamav_mirror import SREClamAVMirrorComponent, SREClamAVMirrorProps
 from .sre.data import SREDataComponent, SREDataProps
+from .sre.desired_state import SREDesiredStateComponent, SREDesiredStateProps
 from .sre.dns_server import SREDnsServerComponent, SREDnsServerProps
 from .sre.firewall import SREFirewallComponent, SREFirewallProps
 from .sre.identity import SREIdentityComponent, SREIdentityProps
@@ -178,13 +179,10 @@ class DeclarativeSRE:
                 dns_private_zones=dns.private_zones,
                 dns_record=networking.shm_ns_record,
                 dns_server_admin_password=dns.password_admin,
-                gitea_hostname=user_services.gitea_server.hostname,
-                hedgedoc_hostname=user_services.hedgedoc_server.hostname,
                 location=self.config.azure.location,
                 resource_group=resource_group,
                 sre_fqdn=networking.sre_fqdn,
                 subnet_data_configuration=networking.subnet_data_configuration,
-                subnet_data_desired_state=networking.subnet_data_desired_state,
                 subnet_data_private=networking.subnet_data_private,
                 subscription_id=self.config.azure.subscription_id,
                 subscription_name=self.context.subscription_name,
@@ -338,6 +336,22 @@ class DeclarativeSRE:
             tags=self.tags,
         )
 
+        # Deploy desired state
+        desired_state = SREDesiredStateComponent(
+            "sre_desired_state",
+            self.stack_name,
+            SREDesiredStateProps(
+                admin_ip_addresses=self.config.sre.admin_ip_addresses,
+                dns_private_zones=dns.private_zones,
+                gitea_hostname=user_services.gitea_hostname,
+                hedgedoc_hostname=user_services.hedgedoc_hostname,
+                location=self.config.azure.location,
+                resource_group=resource_group,
+                subnet_desired_state=networking.subnet_desired_state,
+                subscription_name=self.context.subscription_name,
+            ),
+        )
+
         # Deploy workspaces
         workspaces = SREWorkspacesComponent(
             "sre_workspaces",
@@ -360,7 +374,7 @@ class DeclarativeSRE:
                 resource_group_name=resource_group.name,
                 software_repository_hostname=user_services.software_repositories.hostname,
                 sre_name=self.config.name,
-                storage_account_data_desired_state_name=data.storage_account_data_desired_state_name,
+                storage_account_desired_state_name=desired_state.storage_account_name,
                 storage_account_data_private_user_name=data.storage_account_data_private_user_name,
                 storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
                 subnet_workspaces=networking.subnet_workspaces,
