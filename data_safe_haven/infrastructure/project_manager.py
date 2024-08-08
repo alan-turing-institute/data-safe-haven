@@ -22,7 +22,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureSdk, PulumiAccount
 from data_safe_haven.functions import get_key_vault_name, replace_separators, strip_ansi
-from data_safe_haven.logging import from_ansi, get_console_handler, get_logger
+from data_safe_haven.logging import get_console_handler, get_logger
 
 from .programs import DeclarativeSRE
 
