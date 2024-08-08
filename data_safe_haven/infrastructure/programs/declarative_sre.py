@@ -343,8 +343,8 @@ class DeclarativeSRE:
             SREDesiredStateProps(
                 admin_ip_addresses=self.config.sre.admin_ip_addresses,
                 dns_private_zones=dns.private_zones,
-                gitea_hostname=user_services.gitea_hostname,
-                hedgedoc_hostname=user_services.hedgedoc_hostname,
+                gitea_hostname=user_services.gitea_server.hostname,
+                hedgedoc_hostname=user_services.hedgedoc_server.hostname,
                 location=self.config.azure.location,
                 resource_group=resource_group,
                 subnet_desired_state=networking.subnet_desired_state,
