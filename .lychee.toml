@@ -97,7 +97,6 @@ exclude = [
   'opensource\.org',  # 403
   'portal\.azure\.com',  # 403
   'turing\.ac\.uk',  # DDOS protection
-  'web\.archive\.org', # DDOS protection
 ]
 
 # Exclude these filesystem paths from getting checked.
