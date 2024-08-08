@@ -1,0 +1,9 @@
+[Unit]
+Description=ClamAV full system scan
+Requires=clamav-daemon.service
+After=clamav-daemon.service
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/bin/clamdscan --fdpass --multiscan /

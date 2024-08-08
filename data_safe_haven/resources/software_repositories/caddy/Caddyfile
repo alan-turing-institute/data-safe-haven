@@ -1,0 +1,17 @@
+# Refer to the Caddy docs for more information:
+# https://caddyserver.com/docs/caddyfile
+{
+	log {
+		format console {
+			level_format upper
+		}
+		level DEBUG
+	}
+}
+
+:80 {
+	reverse_proxy http://localhost:8081 {
+		@error status 401
+		replace_status @error 403
+	}
+}

@@ -90,11 +90,13 @@ glob_ignore_case = false
 # Exclude URLs and mail addresses from checking (supports regex).
 # exclude = [ '.*\.github.com\.*' ]
 exclude = [
+  'doi\.org',  # 403
+  'entra.microsoft\.com',  # Requires authentication (403)
   'github\.com',  # Requires authentication (403)
-  'turing\.ac\.uk',  # DDOS protection
   'ipaddressguide\.com',  # 403
   'opensource\.org',  # 403
   'portal\.azure\.com',  # 403
+  'turing\.ac\.uk',  # DDOS protection
   'web\.archive\.org', # DDOS protection
 ]
 

@@ -2,7 +2,7 @@
 name: Documentation improvement
 about: Request changes to Data Safe Haven documentation
 title: "<short description of issue>"
-labels: "type: documentation"
+labels: "documentation"
 assignees: ""
 ---
 

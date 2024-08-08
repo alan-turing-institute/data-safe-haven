@@ -54,7 +54,7 @@ Non-technical restrictions related to information governance procedures may also
 Non-technical restrictions related to information governance procedures may also be applied according to your organisation's needs.
 
 ```{admonition} Organisational networks
-At the Turing connections to Tier 2 environments are only permitted from `Organisational` networks managed by the Turing or one of its organisational partners.
+At the Turing connections to Tier 2 environments are only permitted from **Organisational** networks managed by the Turing or one of its organisational partners.
 ```
 
 (policy_tier_3)=
@@ -68,7 +68,7 @@ At the Turing connections to Tier 2 environments are only permitted from `Organi
 Non-technical restrictions related to information governance procedures may also be applied according to your organisation's needs.
 
 ```{admonition} Restricted networks
-At the Turing connections to Tier 3 environments are only permitted from `Restricted` networks that are only accessible by known researchers.
+At the Turing connections to Tier 3 environments are only permitted from **Restricted** networks that are only accessible by known researchers.
 ```
 
 ```{admonition} Physical spaces

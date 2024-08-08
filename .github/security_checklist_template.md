@@ -2,7 +2,7 @@
 Running on SHM/SREs deployed using commit XXXXXXX
 
 ## Summary
-+ :white_check_mark:N tests passed
++ :white_check_mark: N tests passed
 - :partly_sunny: N tests partially passed (see below for more details)
 - :fast_forward: N tests skipped (see below for more details)
 - :x: N tests failed (see below for more details)
@@ -11,7 +11,6 @@ Running on SHM/SREs deployed using commit XXXXXXX
 Some security checks were skipped since:
 - No managed device was available
 - No access to a physical space with its own dedicated network was possible
-- No access to a secure email service was available
 
 ### Multifactor Authentication and Password strength
 + :white_check_mark:/:partly_sunny:/:fast_forward:/:x: Check that the SRE standard user cannot access the apps
@@ -117,7 +116,7 @@ Some security checks were skipped since:
 
 ### Data ingress
 + :white_check_mark:/:partly_sunny:/:fast_forward:/:x: **System administrator:** secure upload token successfully created with write-only permissions
-+ :white_check_mark:/:partly_sunny:/:fast_forward:/:x: **System administrator:** with no access to a secure email server the token was sent by unencrypted email
++ :white_check_mark:/:partly_sunny:/:fast_forward:/:x: **System administrator:** token was sent using a secure, out-of-band communication channel (e.g. secure email)
 + :white_check_mark:/:partly_sunny:/:fast_forward:/:x: **Data Provider:** uploading a file from an allow-listed IP address succeeds
 + :white_check_mark:/:partly_sunny:/:fast_forward:/:x: **Data Provider:** downloading a file from an allow-listed IP address fails
 + :white_check_mark:/:partly_sunny:/:fast_forward:/:x: **Data Provider:** uploading a file from an non-allowed IP address fails

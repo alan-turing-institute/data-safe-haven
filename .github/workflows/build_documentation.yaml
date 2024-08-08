@@ -1,0 +1,52 @@
+---
+name: Build documentation
+
+# Run workflow on pushes to matching branches
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [develop, latest]
+  pull_request:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Install hatch
+        run: pip install hatch
+
+      - name: Build documentation
+        run: hatch run docs:build
+
+  check_links:
+    name: Check links
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Install hatch
+        run: pip install hatch
+
+      - name: Build documentation
+        run: hatch run docs:build
+
+      - name: Link Checker
+        uses: lycheeverse/lychee-action@v1.10.0
+        with:
+          args: --config='./.lychee.toml' --no-progress './docs/build/html/**/*.html'
+          fail: true  # fail on broken links

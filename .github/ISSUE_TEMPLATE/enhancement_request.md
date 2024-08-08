@@ -2,7 +2,7 @@
 name: Enhancement request
 about: Request new features or upgrades to existing features
 title: "<short description of issue>"
-labels: "type: enhancement"
+labels: "enhancement"
 assignees: ""
 ---
 

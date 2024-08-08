@@ -1,43 +1,51 @@
 # Deployment
 
-```{toctree}
+:::{toctree}
 :hidden:
 
+setup_context.md
+configure_entra_id.md
 deploy_shm.md
-build_srd_image.md
 deploy_sre.md
-security_checklist.md
-```
+:::
 
 Deploying an instance of the Data Safe Haven involves the following steps:
 
+- Configuring the context used to host the Pulumi backend infrastructure
+- Configuring the Microsoft Entra directory where you will manage users
 - Deploying the Safe Haven management component
-- Building a secure research desktop virtual machine image to be used by all projects
 - Deploying a Secure Research Environment for each project
 
-Deployment might be carried out by members of an institutional IT team or external contractors.
-In either case, the deploying team should ensure that the system is working as expected before handing it over to the {ref}`System Managers <role_system_manager>`.
-We suggest developing a security checklist for deployers to work through - an example of one used at the Alan Turing Institute is shown below.
+## Requirements
 
-For instructions on removing deployed resources, refer to the guide for {ref}`System Managers <administrator_manage_deployments>`.
+Install the following requirements before starting
 
-[Safe Haven Management (SHM) deployment guide](deploy_shm.md)
-: deploy a single Safe Haven Management (SHM) segment. This will deploy infrastructure shared between projects such as user management and package mirrors/proxies.
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
+- [Hatch](https://hatch.pypa.io/1.9/install/)
+- [Pulumi](https://www.pulumi.com/docs/get-started/install/)
 
-[Secure Research Desktop (SRD) build instructions](build_srd_image.md)
-: build and publish our "batteries included" Secure Research Desktop (SRD) virtual machine image. Instructions about how to customise this are also available here.
+### Docker Hub
 
-[Secure Research Environment (SRE) deployment guide](deploy_sre.md)
-: deploy one Secure Research Environment (SRE) for each project you want to have its own independent, isolated analysis environment.
+The Data Safe Haven uses several public Docker images.
+As Docker Hub now imposes [rate limits](https://docs.docker.com/docker-hub/download-rate-limit/) on anonymous downloads, you will need to use a Docker Hub account to deploy the Data Safe Haven.
+You can create one following [the instructions here](https://hub.docker.com/) if you do not already have one.
 
-[Security checklist](security_checklist.md)
-: an example security checklist used at the Alan Turing Institute to help evaluate the security of our deployments.
+:::{important}
+We recommend using a personal access token (PAT) with **Public Repo Read-Only** permissions rather than your Docker account password.
+See [the instructions here](https://docs.docker.com/security/for-developers/access-tokens/) for details of how to create a PAT.
+:::
 
-````{warning}
-Microsoft have renamed Azure Active Directory to [Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/fundamentals/new-name).
-We have updated these guides in the light of this change.
-However, as of February 2024, Microsoft have not completed the renaming process.
-Some software and documentation retains the old Azure Active Directory name.
-Our documentation reflects the name that is currently in use, rather than the name that will be used once the renaming process is complete.
-Where we use the name "Azure Active Directory", if the corresponding software, menu option, or documentation cannot be found, look instead for a version using the Microsoft Entra ID name.
-````
+## Install the project
+
+Download or checkout this code from GitHub.
+
+:::{important}
+**{sub-ref}`today`**: you should use the `develop` branch as no stable v5 release has been tagged.
+Please contact the development team in case of any problems.
+:::
+
+Enter the base directory and install Python dependencies with `hatch` by doing the following:
+
+:::{code} shell
+$ hatch run true
+:::

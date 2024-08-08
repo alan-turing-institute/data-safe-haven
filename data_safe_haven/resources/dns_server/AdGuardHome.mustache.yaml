@@ -1,0 +1,24 @@
+users:
+  - name: {{admin_username}}
+    password: {{admin_password_encrypted}}
+dns:
+  blocking_mode: nxdomain
+  upstream_dns:
+    - "{{upstream_dns}}"
+  upstream_dns_file: ""
+  bootstrap_dns:
+    - "{{upstream_dns}}"
+querylog:
+  enabled: true
+filters:
+user_rules:
+  # https://github.com/AdguardTeam/AdGuardHome/wiki/Hosts-Blocklists#adblock-style-syntax
+  - "*.*"
+  {{#filter_allow}}
+  - "@@||{{.}}"
+  {{/filter_allow}}
+log:
+  verbose: true
+# Note that because we are only providing a partial config file we need the
+# `schema_version` key or the full set of YAML migrations will get run.
+schema_version: 24
