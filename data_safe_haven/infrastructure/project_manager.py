@@ -274,6 +274,7 @@ class ProjectManager:
                     ):
                         time.sleep(10)
                     else:
+                        self.log_exception(exc)
                         msg = "Pulumi resource destruction failed."
                         raise DataSafeHavenPulumiError(msg) from exc
         except DataSafeHavenError as exc:
@@ -309,9 +310,13 @@ class ProjectManager:
             raise DataSafeHavenPulumiError(msg) from exc
 
     def log_exception(self, exc: automation.CommandError) -> None:
-        with suppress(IndexError):
-            stderr = str(exc).split("\n")[3].replace(" stderr: ", "")
-            self.log_message(f"Pulumi output: {stderr}")
+        for error_line in str(exc).split("\n"):
+            if any(word in error_line for word in ["error:", "stderr:"]):
+                message = (
+                    error_line.replace("error:", "").replace("stderr:", "").strip()
+                )
+                if message:
+                    self.log_message(f"Pulumi error: {message}")
 
     def log_message(self, message: str) -> None:
         return from_ansi(self.logger, message)
@@ -383,7 +388,6 @@ class ProjectManager:
             self.destroy()
             self.cleanup()
         except Exception as exc:
-            self.log_exception(exc)
             msg = "Tearing down Pulumi infrastructure failed.."
             raise DataSafeHavenPulumiError(msg) from exc
 
