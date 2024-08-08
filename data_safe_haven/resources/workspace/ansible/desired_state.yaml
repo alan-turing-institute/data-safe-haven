@@ -294,6 +294,10 @@
         enabled: true
         state: started
 
+    - name: Wait for ClamAV daemon to finish initialising
+      ansible.builtin.wait_for:
+        path: /var/run/clamav/clamd.ctl
+
     - name: Enable and start ClamAV on access scan
       ansible.builtin.systemd:
         name: clamav-clamonacc
