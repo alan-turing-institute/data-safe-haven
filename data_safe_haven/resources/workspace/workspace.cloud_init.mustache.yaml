@@ -93,16 +93,6 @@ write_files:
       ansible-playbook /desired_state/desired_state.yaml
       popd
 
-  - path: "/root/gitea.url"
-    permissions: "0400"
-    content: |
-      URL=http://{{gitea_hostname}}
-
-  - path: "/root/hedgedoc.url"
-    permissions: "0400"
-    content: |
-      URL=http://{{hedgedoc_hostname}}
-
 mounts:
   # Desired state configuration is in a blob container mounted as NFSv3
   - ["{{storage_account_data_desired_state_name}}.blob.core.windows.net:/{{storage_account_data_desired_state_name}}/desiredstate", /desired_state, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]

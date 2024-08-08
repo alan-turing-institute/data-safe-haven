@@ -4,6 +4,7 @@ from collections.abc import Mapping, Sequence
 from typing import ClassVar
 
 import pulumi_random
+import yaml
 from pulumi import ComponentResource, FileAsset, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     authorization,
@@ -50,6 +51,8 @@ class SREDataProps:
         dns_private_zones: Input[dict[str, network.PrivateZone]],
         dns_record: Input[network.RecordSet],
         dns_server_admin_password: Input[pulumi_random.RandomPassword],
+        gitea_hostname: Input[str],
+        hedgedoc_hostname: Input[str],
         location: Input[str],
         resource_group: Input[resources.ResourceGroup],
         sre_fqdn: Input[str],
@@ -72,6 +75,8 @@ class SREDataProps:
         )
         self.dns_private_zones = dns_private_zones
         self.dns_record = dns_record
+        self.gitea_hostname = gitea_hostname
+        self.hedgedoc_hostname = hedgedoc_hostname
         self.password_dns_server_admin = dns_server_admin_password
         self.location = location
         self.resource_group_id = Output.from_input(resource_group).apply(get_id_from_rg)
@@ -559,6 +564,18 @@ class SREDataComponent(ComponentResource):
                 resource_group_name=props.resource_group_name,
                 source=file_asset,
             )
+        # Upload ansible vars file
+        storage.Blob(
+            f"{container_desired_state._name}_blob_pulumi_vars",
+            account_name=storage_account_data_desired_state.name,
+            blob_name="vars/pulumi_vars.yaml",
+            container_name=container_desired_state.name,
+            resource_group_name=props.resource_group_name,
+            source=Output.all(
+                gitea_hostname=props.gitea_hostname,
+                hedgedoc_hostname=props.hedgedoc_hostname,
+            ).apply(lambda kwargs: self.ansible_vars_file(**kwargs)),
+        )
         # Set up a private endpoint for the desired state storage account
         storage_account_data_desired_state_endpoint = network.PrivateEndpoint(
             f"{storage_account_data_desired_state._name}_private_endpoint",
@@ -940,3 +957,7 @@ class SREDataComponent(ComponentResource):
             "key_vault_name": key_vault.name,
             "password_user_database_admin_secret": kvs_password_user_database_admin.name,
         }
+
+    @staticmethod
+    def ansible_vars_file(**kwargs: str) -> str:
+        return yaml.safe_dump(kwargs, explicit_start=True, indent=2)
