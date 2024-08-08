@@ -6,7 +6,6 @@ bit
 bit64
 blob
 cli
-cli
 cpp11
 data.table
 generics
