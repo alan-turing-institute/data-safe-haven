@@ -2,6 +2,7 @@ backports.zoneinfo
 contourpy
 cycler
 fonttools
+joblib
 kiwisolver
 matplotlib
 numpy
