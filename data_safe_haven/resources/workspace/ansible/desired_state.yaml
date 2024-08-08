@@ -242,13 +242,26 @@
         creates: /etc/audit/rules.d/50-privileged.rules
       notify: Restart auditd
 
-    - name: Copy ClamAV configuration
+    - name: Copy ClamAV daemon configuration
       ansible.builtin.copy:
         src: etc/clamav/clamd.conf
         dest: /etc/clamav/clamd.conf
         mode: '0444'
         owner: clamav
         group: adm
+      register: clamd
+
+    - name: Enable and start ClamAV daemon
+      ansible.builtin.systemd:
+        name: clamav-daemon
+        enabled: true
+        state: started
+
+    - name: Restart ClamAV daemon  # noqa: no-handler
+      ansible.builtin.systemd:
+        name: clamav-daemon
+        state: restarted
+      when: clamd.changed
 
     - name: Set freshclam private mirror
       ansible.builtin.lineinfile:
@@ -276,12 +289,6 @@
         name: clamav-freshclam
         state: started
         enabled: true
-
-    - name: Enable and start ClamAV daemon
-      ansible.builtin.systemd:
-        name: clamav-daemon
-        enabled: true
-        state: started
 
     - name: Enable and start ClamAV on access scan
       ansible.builtin.systemd:
@@ -313,10 +320,6 @@
       ansible.builtin.systemd:
         name: sshd
         state: restarted
-
-    - name: Update PAM auth  # noqa: no-changed-when
-      ansible.builtin.command:
-        cmd: pam-auth-update --enable mkhomedir ldap
 
     # Run systemd daemon-reload.
     # https://www.freedesktop.org/software/systemd/man/systemctl.html#daemon-reload
