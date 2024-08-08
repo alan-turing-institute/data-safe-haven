@@ -20,5 +20,6 @@ pytz
 scikit-learn
 scipy
 six
+threadpoolctl
 typing-extensions
 tzdata
