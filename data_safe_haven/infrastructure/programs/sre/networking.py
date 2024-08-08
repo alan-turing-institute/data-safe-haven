@@ -486,7 +486,7 @@ class SRENetworkingComponent(ComponentResource):
         nsg_desired_state = network.NetworkSecurityGroup(
             f"{self._name}_nsg_desired_state",
             location=props.location,
-            network_security_group_name=f"{stack_name}-nsg-data-desired-state",
+            network_security_group_name=f"{stack_name}-nsg-desired-state",
             resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound

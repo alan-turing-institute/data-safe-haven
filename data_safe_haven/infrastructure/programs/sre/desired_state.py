@@ -192,11 +192,11 @@ class SREDesiredStateComponent(ComponentResource):
         storage_account_endpoint = network.PrivateEndpoint(
             f"{storage_account._name}_private_endpoint",
             location=props.location,
-            private_endpoint_name=f"{stack_name}-pep-storage-account-data-desired-state",
+            private_endpoint_name=f"{stack_name}-pep-storage-account-desired-state",
             private_link_service_connections=[
                 network.PrivateLinkServiceConnectionArgs(
                     group_ids=["blob"],
-                    name=f"{stack_name}-cnxn-pep-storage-account-data-private-sensitive",
+                    name=f"{stack_name}-cnxn-pep-storage-account-desired-state",
                     private_link_service_id=storage_account.id,
                 )
             ],
@@ -217,14 +217,14 @@ class SREDesiredStateComponent(ComponentResource):
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
                     name=replace_separators(
-                        f"{stack_name}-storage-account-data-desired-state-to-{dns_zone_name}",
+                        f"{stack_name}-storage-account-desired-state-to-{dns_zone_name}",
                         "-",
                     ),
                     private_dns_zone_id=props.dns_private_zones[dns_zone_name].id,
                 )
                 for dns_zone_name in AzureDnsZoneNames.STORAGE_ACCOUNT
             ],
-            private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-desired-state",
+            private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-desired-state",
             private_endpoint_name=storage_account_endpoint.name,
             resource_group_name=props.resource_group_name,
             opts=ResourceOptions.merge(
