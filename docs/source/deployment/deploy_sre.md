@@ -52,10 +52,18 @@ sre:
   research_user_ip_addresses: # List of IP addresses belonging to users
   software_packages: # any/pre-approved/none: which packages from external repositories to allow
   timezone: # Timezone in pytz format (eg. Europe/London)
-  workspace_skus: # List of Azure VM SKUs - see cloudprice.net for list of valid SKUs
+  workspace_skus: # List of Azure VM SKUs that will be used for data analysis.
 :::
 
 ::::
+
+:::{important}
+All VM SKUs you want to deploy must support premium SSDs.
+
+- See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-types#premium-ssds) for more details on premium SSD support.
+- See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/) for a full list of valid SKUs
+
+:::
 
 ## Upload the configuration file
 
