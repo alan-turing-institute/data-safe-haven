@@ -154,6 +154,40 @@ class TestConfigSectionSRE:
                 databases=[DatabaseSystem.POSTGRESQL, DatabaseSystem.POSTGRESQL],
             )
 
+    def test_ip_overlap_admin(self):
+        with pytest.raises(ValueError, match="IP addresses must not overlap."):
+            ConfigSectionSRE(
+                admin_ip_addresses=["1.2.3.4", "1.2.3.4"],
+            )
+
+    def test_ip_overlap_data_provider(self):
+        with pytest.raises(ValueError, match="IP addresses must not overlap."):
+            ConfigSectionSRE(
+                data_provider_ip_addresses=["1.2.3.4", "1.2.3.4"],
+            )
+
+    def test_ip_overlap_research_user(self):
+        with pytest.raises(ValueError, match="IP addresses must not overlap."):
+            ConfigSectionSRE(
+                research_user_ip_addresses=["1.2.3.4", "1.2.3.4"],
+            )
+
+    @pytest.mark.parametrize(
+        "addresses",
+        [
+            ["127.0.0.1", "127.0.0.1"],
+            ["127.0.0.0/30", "127.0.0.2"],
+            ["10.0.0.0/8", "10.255.0.0"],
+            ["10.0.0.0/16", "10.0.255.42"],
+            ["10.0.0.0/28", "10.0.0.0/32"],
+        ],
+    )
+    def test_ip_overlap(self, addresses):
+        with pytest.raises(ValueError, match="IP addresses must not overlap."):
+            ConfigSectionSRE(
+                research_user_ip_addresses=addresses,
+            )
+
 
 class TestConfigSubsectionRemoteDesktopOpts:
     def test_constructor(self) -> None:

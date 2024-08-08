@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from ipaddress import ip_network
+from itertools import combinations
+
+from pydantic import BaseModel, Field, field_validator
 
 from data_safe_haven.types import (
     AzureLocation,
@@ -59,3 +62,18 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
     timezone: TimeZone = "Etc/UTC"
     workspace_skus: list[AzureVmSku] = Field(..., default_factory=list[AzureVmSku])
+
+    @field_validator(
+        "admin_ip_addresses",
+        "data_provider_ip_addresses",
+        "research_user_ip_addresses",
+        mode="after",
+    )
+    @classmethod
+    def ensure_non_overlapping(cls, v: list[IpAddress]) -> list[IpAddress]:
+        for a, b in combinations(v, 2):
+            a_ip, b_ip = ip_network(a), ip_network(b)
+            if a_ip.overlaps(b_ip):
+                msg = "IP addresses must not overlap."
+                raise ValueError(msg)
+        return v
