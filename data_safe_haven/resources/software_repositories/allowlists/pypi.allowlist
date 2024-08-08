@@ -17,6 +17,7 @@ pyparsing
 python-dateutil
 pytz
 scikit-learn
+scipy
 six
 typing-extensions
 tzdata
