@@ -484,26 +484,26 @@ If you aren't sure about any of these then please return to the [**Set up your a
 
 ::::
 
-### {{penguin}} Log into a workspace
-
 You should now be able to see the SRE dashboard screen which will look like the following
 
 :::{image} user_guide/guacamole_dashboard.png
 :alt: Research environment dashboard
 :align: center
+:width: 90%
 :::
 
-You should see multiple different workspaces that you can access either via an interactive desktop environment (**Desktop**) or a terminal environment (**SSH**).
+### {{penguin}} Log into a workspace
 
-Each of these is a computer[^vm-footnote] with a wide variety of data analysis applications and programming languages pre-installed.
-You can use them to analyse the sensitive data belonging to your project while remaining isolated from the wider internet.
-
-[^vm-footnote]: Actually a virtual machine
+On the SRE dashboard, you should see multiple different workspaces that you can access either via an interactive desktop environment (**Desktop**) or a terminal environment (**SSH**).
 
 :::{important}
 If you do not see any available workspaces please contact your {ref}`System Manager <role_system_manager>`.
 :::
 
+Each of these is a computer[^vm-footnote] with a wide variety of data analysis applications and programming languages pre-installed.
+You can use them to analyse the sensitive data belonging to your project while remaining isolated from the wider internet.
+
+[^vm-footnote]: Actually a virtual machine
 
 ::::{admonition} 1. Select a workspace
 :class: dropdown note
@@ -552,26 +552,20 @@ These workspaces are shared between everyone on your project. Talk to your colla
   ::::
 :::::
 
+You should now be able to see the SRE dashboard screen which will look like the following
 
-
-- You should now be greeted by a Linux desktop.
-
-  :::{image} user_guide/srd_xfce_initial.png
-  :alt: SRD initial desktop
-  :align: center
-  :::
-::::
-
+:::{image} user_guide/workspace_xfce_initial.png
+:alt: Research environment dashboard
+:align: center
+:width: 90%
+:::
 
 ::::{note}
-The Linux desktops within our SRDs use the [Ubuntu operating system](https://ubuntu.com/).
-The desktop environment used by our SRDs is called [Xfce](https://www.xfce.org/).
-More detailed information on how to use the Xfce desktop can be found on the [Xfce website](https://docs.xfce.org/xfce/getting-started#the_desktop_environment).
-Particularly relevant documentation can be found for the [desktop manager](https://docs.xfce.org/xfce/xfdesktop/usage) and [window manager](https://docs.xfce.org/xfce/xfwm4/getting-started)
+- The Linux desktops within our SRDs use the [Ubuntu operating system](https://ubuntu.com/).
+- The desktop environment used by our SRDs is called [Xfce](https://docs.xfce.org/xfce/).
 ::::
 
-You are now logged into the Data Safe Haven SRE!
-Welcome {{wave}}
+**Welcome to the Data Safe Haven SRE! {{wave}}**
 
 ## {{computer}} Analysing sensitive data
 
