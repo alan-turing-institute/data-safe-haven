@@ -22,7 +22,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureSdk, PulumiAccount
 from data_safe_haven.functions import get_key_vault_name, replace_separators
-from data_safe_haven.logging import from_ansi, get_console_handler, get_logger
+from data_safe_haven.logging import get_console_handler, get_logger
 
 from .programs import DeclarativeSRE
 
@@ -79,7 +79,7 @@ class ProjectManager:
 
         extra_args["color"] = "always"
         extra_args["log_flow"] = True
-        extra_args["on_output"] = self.log_message
+        extra_args["on_output"] = self.logger.info
         return extra_args
 
     @property
@@ -312,14 +312,7 @@ class ProjectManager:
     def log_exception(self, exc: automation.CommandError) -> None:
         for error_line in str(exc).split("\n"):
             if any(word in error_line for word in ["error:", "stderr:"]):
-                message = (
-                    error_line.replace("error:", "").replace("stderr:", "").strip()
-                )
-                if message:
-                    self.log_message(f"Pulumi error: {message}")
-
-    def log_message(self, message: str) -> None:
-        return from_ansi(self.logger, message)
+                self.logger.critical(f"Pulumi error: {error_line}")
 
     def output(self, name: str) -> Any:
         """Get a named output value from a stack"""
