@@ -2,6 +2,7 @@
 
 from collections.abc import Mapping, Sequence
 
+import yaml
 from pulumi import ComponentResource, FileAsset, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     network,
@@ -234,3 +235,7 @@ class SREDesiredStateComponent(ComponentResource):
         )
 
         self.storage_account_name = storage_account.name
+
+    @staticmethod
+    def ansible_vars_file(**kwargs: str) -> str:
+        return yaml.safe_dump(kwargs, explicit_start=True, indent=2)

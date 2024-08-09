@@ -4,7 +4,6 @@ from collections.abc import Mapping, Sequence
 from typing import ClassVar
 
 import pulumi_random
-import yaml
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     authorization,
@@ -785,7 +784,3 @@ class SREDataComponent(ComponentResource):
             "key_vault_name": key_vault.name,
             "password_user_database_admin_secret": kvs_password_user_database_admin.name,
         }
-
-    @staticmethod
-    def ansible_vars_file(**kwargs: str) -> str:
-        return yaml.safe_dump(kwargs, explicit_start=True, indent=2)
