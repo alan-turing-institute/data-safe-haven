@@ -22,7 +22,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureSdk, PulumiAccount
 from data_safe_haven.functions import get_key_vault_name, replace_separators
-from data_safe_haven.logging import from_ansi, get_console_handler, get_logger
+from data_safe_haven.logging import get_console_handler, get_logger
 
 from .programs import DeclarativeSRE
 
@@ -79,7 +79,7 @@ class ProjectManager:
 
         extra_args["color"] = "always"
         extra_args["log_flow"] = True
-        extra_args["on_output"] = self.log_message
+        extra_args["on_output"] = self.logger.info
         return extra_args
 
     @property
@@ -274,6 +274,7 @@ class ProjectManager:
                     ):
                         time.sleep(10)
                     else:
+                        self.log_exception(exc)
                         msg = "Pulumi resource destruction failed."
                         raise DataSafeHavenPulumiError(msg) from exc
         except DataSafeHavenError as exc:
@@ -309,12 +310,9 @@ class ProjectManager:
             raise DataSafeHavenPulumiError(msg) from exc
 
     def log_exception(self, exc: automation.CommandError) -> None:
-        with suppress(IndexError):
-            stderr = str(exc).split("\n")[3].replace(" stderr: ", "")
-            self.log_message(f"Pulumi output: {stderr}")
-
-    def log_message(self, message: str) -> None:
-        return from_ansi(self.logger, message)
+        for error_line in str(exc).split("\n"):
+            if any(word in error_line for word in ["error:", "stderr:"]):
+                self.logger.critical(f"Pulumi error: {error_line}")
 
     def output(self, name: str) -> Any:
         """Get a named output value from a stack"""
@@ -383,7 +381,6 @@ class ProjectManager:
             self.destroy()
             self.cleanup()
         except Exception as exc:
-            self.log_exception(exc)
             msg = "Tearing down Pulumi infrastructure failed.."
             raise DataSafeHavenPulumiError(msg) from exc
 
