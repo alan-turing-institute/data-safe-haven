@@ -8,7 +8,6 @@ import uuid
 from collections.abc import Sequence
 
 import pytz
-from rich.text import Text
 
 from data_safe_haven.exceptions import DataSafeHavenValueError
 
@@ -113,11 +112,6 @@ def seeded_uuid(seed: str) -> uuid.UUID:
 def sha256hash(input_string: str) -> str:
     """Return the SHA256 hash of a string as a string."""
     return hashlib.sha256(input_string.encode("utf-8")).hexdigest()
-
-
-def strip_ansi(text: str) -> str:
-    """Strip all ANSI formatting from a string"""
-    return str(Text.from_ansi(text))
 
 
 def truncate_tokens(tokens: Sequence[str], max_length: int) -> list[str]:

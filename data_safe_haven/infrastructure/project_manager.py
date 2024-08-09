@@ -21,7 +21,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenPulumiError,
 )
 from data_safe_haven.external import AzureSdk, PulumiAccount
-from data_safe_haven.functions import get_key_vault_name, replace_separators, strip_ansi
+from data_safe_haven.functions import get_key_vault_name, replace_separators
 from data_safe_haven.logging import get_console_handler, get_logger
 
 from .programs import DeclarativeSRE
@@ -312,11 +312,7 @@ class ProjectManager:
     def log_exception(self, exc: automation.CommandError) -> None:
         for error_line in str(exc).split("\n"):
             if any(word in error_line for word in ["error:", "stderr:"]):
-                message = strip_ansi(
-                    error_line.replace("error:", "").replace("stderr:", "")
-                ).strip()
-                if message:
-                    self.logger.critical(f"Pulumi error: {message}")
+                self.logger.critical(f"Pulumi error: {error_line}")
 
     def output(self, name: str) -> Any:
         """Get a named output value from a stack"""

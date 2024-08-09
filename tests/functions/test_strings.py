@@ -6,7 +6,6 @@ from data_safe_haven.functions import (
     get_key_vault_name,
     json_safe,
     next_occurrence,
-    strip_ansi,
 )
 
 
@@ -79,19 +78,3 @@ def test_get_key_vault_name(value, expected):
 )
 def test_json_safe(value, expected):
     assert json_safe(value) == expected
-
-
-@pytest.mark.parametrize(
-    "value,expected",
-    [
-        ("\x1b[38;5;13m\x1b[1mBold pink\x1b[0m text", "Bold pink text"),
-        ("Plain text", "Plain text"),
-        ("\033[3;mItalic\033[0m text", "Italic text"),
-        ("\033[4;mUnderlined\033[0m text", "Underlined text"),
-        ("\033[7;mReversed\033[0m text", "Reversed text"),
-        ("\033[32;mGreen\033[0m text", "Green text"),
-        ("\033[41;mRed bkg\033[0m text", "Red bkg text"),
-    ],
-)
-def test_strip_ansi(value, expected):
-    assert strip_ansi(value) == expected
