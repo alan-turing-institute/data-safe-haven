@@ -1,4 +1,4 @@
-(role_researcher_user_guide_guacamole)=
+(role_researcher_user_guide)=
 
 # User Guide
 
