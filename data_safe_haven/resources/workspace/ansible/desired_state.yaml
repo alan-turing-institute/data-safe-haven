@@ -203,8 +203,8 @@
 
     - name: Copy icons
       ansible.builtin.copy:
-        src: usr/share/icons/{{ item }}
-        dest: /usr/share/icons/{{ item }}
+        src: "usr/local/share/icons/{{ item }}"
+        dest: "/usr/local/share/icons/{{ item }}"
         mode: '0444'
       loop:
         - gitea.png
