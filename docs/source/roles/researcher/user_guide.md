@@ -178,11 +178,11 @@ Look out for usernames or passwords that are automatically completed, and make s
 
 - Fill out the requested CAPTCHA (your username should be pre-filled) then click on the **{guilabel}`Next`** button.
 
-  :::{image} user_guide/account_setup_captcha.png
-  :alt: Password CAPTCHA
-  :align: center
-  :width: 90%
-  :::
+    :::{image} user_guide/account_setup_captcha.png
+    :alt: Password CAPTCHA
+    :align: center
+    :width: 90%
+    :::
 ::::
 
 ::::{admonition} 4. Confirm your contact details
@@ -190,11 +190,11 @@ Look out for usernames or passwords that are automatically completed, and make s
 
 - Confirm your phone number or email address, which you provided to the {ref}`System Manager <role_system_manager>` when you registered for access to the environment.
 
-  :::{image} user_guide/account_setup_verify_phone.png
-  :alt: Verify phone number
-  :align: center
-  :width: 90%
-  :::
+    :::{image} user_guide/account_setup_verify_phone.png
+    :alt: Verify phone number
+    :align: center
+    :width: 90%
+    :::
 ::::
 
 ::::{admonition} 5. Set your password
@@ -203,47 +203,48 @@ Look out for usernames or passwords that are automatically completed, and make s
 - Select a password that complies with the [Microsoft Entra requirements](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-sspr-policy#microsoft-entra-password-policies):
 
 
-  :::{tip}
-  We suggest the following:
+    :::{tip}
+    We suggest the following:
 
-  - minimum 12 characters
-  - only alphanumeric characters
-  - at least one each of:
-    - {{input_latin_uppercase}} uppercase character
-    - {{input_latin_lowercase}} lowercase character
-    - {{input_numbers}} number
-  - not used anywhere else
-  - use a [password generator](https://bitwarden.com/password-generator/) to ensure you meet these requirements
-  :::
+    - minimum 12 characters
+    - only alphanumeric characters
+    - at least one each of:
+      - {{input_latin_uppercase}} uppercase character
+      - {{input_latin_lowercase}} lowercase character
+      - {{input_numbers}} number
+    - not used anywhere else
+    - use a [password generator](https://bitwarden.com/password-generator/) to ensure you meet these requirements
+    :::
 
-  :::{caution}
-  We recommend avoiding special characters or symbols in your password!
-  The virtual keyboard inside the SRE may not be the same as your physical keyboard and this can make it difficult to type some symbols.
-  :::
+    :::{caution}
+    We recommend avoiding special characters or symbols in your password!
+    The virtual keyboard inside the SRE may not be the same as your physical keyboard and this can make it difficult to type some symbols.
+    :::
 
 - Enter your password into the **Enter new password** and **Confirm new password** fields.
 
-  :::{image} user_guide/account_setup_new_password.png
-  :alt: New password
-  :align: center
-  :width: 90%
+    :::{image} user_guide/account_setup_new_password.png
+    :alt: New password
+    :align: center
+    :width: 90%
   :::
 
 - Click on the **{guilabel}`Finish`** button and you should get this notice
 
-  :::{image} user_guide/account_setup_new_password_sign_in.png
-  :alt: Click to continue
-  :align: center
-  :width: 90%
-  :::
+    :::{image} user_guide/account_setup_new_password_sign_in.png
+    :alt: Click to continue
+    :align: center
+    :width: 90%
+    :::
 
 - Click on this link and provide your username and password when prompted.
 - At this point you will be asked for additional security verification.
 
-  :::{image} user_guide/account_setup_more_information_required.png
-  :alt: Click to continue
-  :align: center
-  :::
+    :::{image} user_guide/account_setup_more_information_required.png
+    :alt: Click to continue
+    :align: center
+    :width: 90%
+    :::
 ::::
 
 ### {{door}} Set up multi-factor authentication
