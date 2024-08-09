@@ -19,10 +19,10 @@ The level of sensitivity of your data determines whether you have access to the 
 This means you may be limited in which data science tools you are allowed to install.
 You will find that many software packages are already available, and the administrator of the SRE will ingress - bring into the environment - as many additional resources as possible.
 
-```{important}
+:::{important}
 Please read this user guide carefully and remember to refer back to it when you have questions.
 In many cases the answer is already here, but if you think this resource could be clearer, please let us know so we can improve the documentation for future users.
-```
+:::
 
 ### Definitions
 
@@ -68,30 +68,30 @@ You should also know who the **designated contact** for your SRE is.
 This might be an administrator or one of the people working on the project with you.
 They will be your primary point of contact if you have any issues in connecting to or using the SRE.
 
-```{note}
+:::{note}
 For example, during the Turing Data Study Groups, the **facilitator** of each SRE is the designated contact
-```
+:::
 
 #### Username
 
 Your username will usually be in the format `firstname.lastname`.
 In some places, you will need to enter it in the form `username@<username domain>`
 
-```{tip}
+:::{tip}
 You can find your username in the email you received from your {ref}`System Manager <role_system_manager>`.
-```
+:::
 
-```{caution}
+:::{caution}
 If you have a hyphenated last name, or multiple surnames, or a long family name, your assigned username may not follow the same pattern of `firstname.lastname`.
 Please check with the designated contact for your SRE if you are unsure about your username.
-```
+:::
 
-```{note}
+:::{note}
 In this document we will use **Ada Lovelace** as our example user.
 Her username is:
 - short-form: `ada.lovelace`
 - long-form: `ada.lovelace@projects.turingsafehaven.ac.uk`
-```
+:::
 
 #### Network access
 
@@ -100,43 +100,43 @@ This may involve being connected to a specific wired or wireless network or usin
 You also may be required to connect from a specific, secure location.
 You will be told what these requirements are for your particular environment.
 
-```{tip}
+:::{tip}
 Make sure you know the networks from which you must connect to your SRE.
 This information will be available in the email you received with your connection information.
-```
+:::
 
 #### Data security training requirements
 
 Depending on your project, you may be required to undertake data security awareness training.
 
-```{tip}
+:::{tip}
 Check with your designated contact to see whether this is the case for you.
-```
+:::
 
 #### Your phone for multi-factor authentication
 
 Multi-factor authentication (MFA) is one of the most powerful ways of verifying user identity online.
 We therefore use MFA to protect the project data - specifically, we will use your phone number.
 
-```{important}
+:::{important}
 Make sure to have your phone with you and that you have good signal connectivity when you are connecting to the SRE.
-```
+:::
 
-```{caution}
+:::{caution}
 You may encounter some connectivity challenges if your phone network has poor connectivity.
 The SRE is not set up to allow you to authenticate through other methods.
-```
+:::
 
 #### Domain names
 
 You should be given the {ref}`username domain <user_guide_username_domain>` in the initial email from your {ref}`System Manager <role_system_manager>`.
 You might receive the {ref}`SRE URL <user_guide_sre_url>` at this time, or you might be assigned to a particular SRE at a later point.
 
-```{note}
+:::{note}
 In this document Ada Lovelace - our example user - will be participating in the `sandbox` project at a Turing Data Study Group.
 - Her **{ref}`username domain <user_guide_username_domain>`** is `projects.turingsafehaven.ac.uk` .
 - Her **{ref}`SRE URL <user_guide_sre_url>`** is `https://sandbox.projects.turingsafehaven.ac.uk`
-```
+:::
 
 (user_setup_password_mfa)=
 
@@ -147,14 +147,14 @@ Please follow these steps carefully.
 
 - Open a private/incognito browser session on your computer.
 
-  ```{tip}
+  :::{tip}
   One of the most common problems that users have in connecting to the SRE is automatic completion of usernames and passwords from other accounts on their computer.
   This can be quite confusing, particularly for anyone who logs into Microsoft services for work or personal use.
-  ```
+  :::
 
-  ```{caution}
+  :::{caution}
   Look out for usernames or passwords that are automatically completed, and make sure that you're using the correct details needed to access the SRE.
-  ```
+  :::
 
 - Navigate to the following URL in your browser: `https://aka.ms/mfasetup` .
   This short link starts the process of logging into your account.
@@ -162,42 +162,42 @@ Please follow these steps carefully.
 - At the login prompt enter `username@<username domain>` and confirm/proceed.
   Remember that your username will probably be in the format `firstname.lastname` .
 
-  ```{note}
+  :::{note}
   Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would enter `ada.lovelace@projects.turingsafehaven.ac.uk`
-  ```
+  :::
 
 - There will then be a password prompt.
 
   The first time you log in you need to click **"Forgotten my password"**.
 
-  ```{image} user_guide/account_setup_forgotten_password.png
+  :::{image} user_guide/account_setup_forgotten_password.png
   :alt: Forgotten my password
   :align: center
-  ```
+  :::
 
-  ```{caution}
+  :::{caution}
   If you reset your password, you will need to wait 5-10 mins before logging in again, to allow the user management system to sync up with the new password.
-  ```
+  :::
 
 - Fill out the requested CAPTCHA (your username should be pre-filled).
 
-  ```{image} user_guide/account_setup_captcha.png
+  :::{image} user_guide/account_setup_captcha.png
   :alt: CAPTCHA
   :align: center
-  ```
+  :::
 
 - Confirm your phone number, which you provided to the {ref}`System Manager <role_system_manager>` when you registered for access to the environment.
 
-  ```{image} user_guide/account_setup_verify_phone.png
+  :::{image} user_guide/account_setup_verify_phone.png
   :alt: Verify phone number
   :align: center
-  ```
+  :::
 
 - Select a password.
 
   Your password must comply with the following requirements:
 
-  ```{important}
+  :::{important}
   - alphanumeric
   - minimum 12 characters
   - at least one each of:
@@ -205,42 +205,42 @@ Please follow these steps carefully.
     - {{input_latin_lowercase}} lowercase character
     - {{input_numbers}} number
   - you should choose a unique password for the SRE to ensure it is secure
-  ```
+  :::
 
-  ```{caution}
+  :::{caution}
   Do not use special characters or symbols in your password!
   The virtual keyboard inside the SRE may not be the same as your physical keyboard and this can make it difficult to type some symbols.
-  ```
+  :::
 
   Note that this will also ensure that it passes the [Microsoft Entra password requirements](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-sspr-policy).
 
-  ```{tip}
+  :::{tip}
   We recommend using a password generator [like this one](https://bitwarden.com/password-generator/) to create a password that meets these requirements.
   This will ensure that the password is different from any others that you might use and that it is unlikely to be on any list of commonly used passwords.
-  ```
+  :::
 
   If your password is too difficult to memorise, we recommend using a password manager, for example [BitWarden](https://bitwarden.com) or [LastPass](https://www.lastpass.com/), to store it securely.
 
 - Enter your password into the `Enter new password` and `Confirm new password` fields.
 
-  ```{image} user_guide/account_setup_new_password.png
+  :::{image} user_guide/account_setup_new_password.png
   :alt: New password
   :align: center
-  ```
+  :::
 
 - Then continue to the next step
 
-  ```{image} user_guide/account_setup_new_password_sign_in.png
+  :::{image} user_guide/account_setup_new_password_sign_in.png
   :alt: Click to continue
   :align: center
-  ```
+  :::
 
 - Log into your account when prompted and at this point you will be asked for additional security verification.
 
-  ```{image} user_guide/account_setup_more_information_required.png
+  :::{image} user_guide/account_setup_more_information_required.png
   :alt: Click to continue
   :align: center
-  ```
+  :::
 
 ### {{door}} Set up multi-factor authentication
 
@@ -252,58 +252,58 @@ This is known as multi-factor authentication (MFA).
 
 - In order to set up MFA you will need to enter your phone number
 
-  ```{image} user_guide/account_setup_mfa_additional_security_verification.png
+  :::{image} user_guide/account_setup_mfa_additional_security_verification.png
   :alt: Additional security verification
   :align: center
-  ```
+  :::
 
 - Once you click next you will receive a phone call straight away.
 
-  ```{image} user_guide/account_setup_mfa_verifying_phone.png
+  :::{image} user_guide/account_setup_mfa_verifying_phone.png
   :alt: Verifying phone number
   :align: center
-  ```
+  :::
 
-  ```{tip}
+  :::{tip}
   The call might say _press the pound key_ or _press the hash key_. Both mean hit the `#` button.
-  ```
+  :::
 
 - After following the instructions you will see the following screen
 
-  ```{image} user_guide/account_setup_mfa_verified_phone.png
+  :::{image} user_guide/account_setup_mfa_verified_phone.png
   :alt: Verified phone number
   :align: center
-  ```
+  :::
 
 - Click `Next` to register this phone number for MFA
 
-  ```{image} user_guide/account_setup_mfa_registered_phone.png
+  :::{image} user_guide/account_setup_mfa_registered_phone.png
   :alt: Registered phone number
   :align: center
-  ```
+  :::
 
 - You should now see the Security Information dashboard that lists all your verified MFA methods
 
-  ```{image} user_guide/account_setup_mfa_dashboard_phone_only.png
+  :::{image} user_guide/account_setup_mfa_dashboard_phone_only.png
   :alt: Registered phone number
   :align: center
-  ```
+  :::
 
 #### {{iphone}} Authenticator app registration
 
 - If you want to use the Microsoft Authenticator app for MFA (which will work if you have wifi but no phone signal) then click on `+ Add sign-in method` and select `Authenticator app`
 
-  ```{image} user_guide/account_setup_mfa_add_authenticator_app.png
+  :::{image} user_guide/account_setup_mfa_add_authenticator_app.png
   :alt: Add Authenticator app
   :align: center
-  ```
+  :::
 
 - This will prompt you to download the `Microsoft Authenticator` phone app.
 
-  ```{image} user_guide/account_setup_mfa_download_authenticator_app.png
+  :::{image} user_guide/account_setup_mfa_download_authenticator_app.png
   :alt: Add Authenticator app
   :align: center
-  ```
+  :::
 
 You can click on the link in the prompt or follow the appropriate link for your phone here:
 
@@ -317,43 +317,43 @@ You will now be prompted to open the app and:
 - Select `Add an account`
 - Select `Work or School account`
 
-  ```{image} user_guide/account_setup_mfa_allow_notifications.png
+  :::{image} user_guide/account_setup_mfa_allow_notifications.png
   :alt: Allow Authenticator notifications
   :align: center
-  ```
+  :::
 
-  ```{important}
+  :::{important}
   You must give permission for the authenticator app to send you notifications for the app to work as an MFA method.
-  ```
+  :::
 
 - The next prompt will give you a QR code to scan, like the one shown below
 - Scan the QR code on the screen
 
-  ```{image} user_guide/account_setup_mfa_app_qrcode.png
+  :::{image} user_guide/account_setup_mfa_app_qrcode.png
   :alt: Setup Authenticator app
   :align: center
-  ```
+  :::
 
 - Once this is completed, Microsoft will send you a test notification to respond to
 
-  ```{image} user_guide/account_setup_mfa_authenticator_app_test.png
+  :::{image} user_guide/account_setup_mfa_authenticator_app_test.png
   :alt: Authenticator app test notification
   :align: center
-  ```
+  :::
 
 - When you click `Approve` on the phone notification, you will get the following message in your browser
 
-  ```{image} user_guide/account_setup_mfa_authenticator_app_approved.png
+  :::{image} user_guide/account_setup_mfa_authenticator_app_approved.png
   :alt: Authenticator app test approved
   :align: center
-  ```
+  :::
 
 - You should now be returned to the Security Information dashboard that lists two verified MFA methods
 
-  ```{image} user_guide/account_setup_mfa_dashboard_two_methods.png
+  :::{image} user_guide/account_setup_mfa_dashboard_two_methods.png
   :alt: Registered MFA methods
   :align: center
-  ```
+  :::
 
 - Choose whichever you prefer to be your `Default sign-in methods`.
 
@@ -380,9 +380,9 @@ After going through the account setup procedure, you should have access to:
 - The {ref}`SRE URL <user_guide_sre_url>`
 - Multifactor authentication
 
-```{tip}
+:::{tip}
 If you aren't sure about any of these then please return to the [**Set up your account**](#-set-up-your-account) section above.
-```
+:::
 
 ### {{house}} Log into the research environment
 
@@ -390,47 +390,47 @@ If you aren't sure about any of these then please return to the [**Set up your a
 
 - Go to the {ref}`SRE URL <user_guide_sre_url>` given by your {ref}`System Manager <role_system_manager>`.
 
-  ```{note}
+  :::{note}
   Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would navigate to `https://sandbox.projects.turingsafehaven.ac.uk`.
-  ```
+  :::
 
-  ```{important}
+  :::{important}
   Don't forget the **https://** as you will not be able to login without it!
-  ```
+  :::
 
 - You should arrive at a login page that looks like the image below:
 
-  ````{note}
+  ::::{note}
   Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would enter `ada.lovelace@projects.turingsafehaven.ac.uk` in the `Email address, phone number or Skype` box, then click Next
-  ```{image} user_guide/guacamole_ms_login.png
+  :::{image} user_guide/guacamole_ms_login.png
   :alt: Research environment log in
   :align: center
-  ```
-  ````
+  :::
+  ::::
 
 - After clicking `Next`, you will then be asked to provide your password.
 
 - You will now **receive a call or mobile app notification** to authenticate using multifactor authentication (MFA).
 
-  ```{image} user_guide/guacamole_mfa.png
+  :::{image} user_guide/guacamole_mfa.png
   :alt: MFA trigger
   :align: center
-  ```
+  :::
 
   {{telephone_receiver}} For the call, you may have to move to an area with good reception and/or press the hash (`#`) key multiple times in-call.
 
   {{iphone}} For the app you will see a notification saying _"You have received a sign in verification request"_. Go to the app to approve the request.
 
-  ```{caution}
+  :::{caution}
   If you don't respond to the MFA request quickly enough, or if it fails, you may get an error. If this happens, please retry
-  ```
+  :::
 
 - If you are successful, you'll see a screen similar to the one below.
 
-  ```{image} user_guide/guacamole_dashboard.png
+  :::{image} user_guide/guacamole_dashboard.png
   :alt: Research environment dashboard
   :align: center
-  ```
+  :::
 
 This is the Guacamole remote desktop home screen.
 From there, you can access Secure Research Desktops.
@@ -450,43 +450,43 @@ Once connected to it, you can analyse the sensitive data belonging to your proje
 
 - Insert your username and password.
 
-  ````{note}
+  ::::{note}
   Our example user, Ada Lovelace, would enter `ada.lovelace` and her password.
-  ```{image} user_guide/srd_login_screen.png
+  :::{image} user_guide/srd_login_screen.png
   :alt: SRD login screen
   :align: center
-  ```
-  ````
+  :::
+  ::::
 
-  ````{error}
+  ::::{error}
   If you enter your username and/or password incorrectly you will see a warning like the one below.
   If this happens, please try again, entering your username and password carefully.
 
-  ```{image} user_guide/srd_login_failure.png
+  :::{image} user_guide/srd_login_failure.png
   :alt: SRD login failure
   :align: center
-  ```
-  ````
+  :::
+  ::::
 
-  ```{caution}
+  :::{caution}
   We recommend _not_ including special characters in your password as the keyboard layout expected by the login screen may be different from the one you're using.
   - if you want to reset your password, follow the steps defined in the [Password and MFA](#-password-and-mfa) section above.
   - if you want to continue with special characters in your password, please test that they are being entered correctly by typing them in the username field.
-  ```
+  :::
 
 - You should now be greeted by a Linux desktop.
 
-  ```{image} user_guide/srd_xfce_initial.png
+  :::{image} user_guide/srd_xfce_initial.png
   :alt: SRD initial desktop
   :align: center
-  ```
+  :::
 
-````{note}
+::::{note}
 The Linux desktops within our SRDs use the [Ubuntu operating system](https://ubuntu.com/).
 The desktop environment used by our SRDs is called [Xfce](https://www.xfce.org/).
 More detailed information on how to use the Xfce desktop can be found on the [Xfce website](https://docs.xfce.org/xfce/getting-started#the_desktop_environment).
 Particularly relevant documentation can be found for the [desktop manager](https://docs.xfce.org/xfce/xfdesktop/usage) and [window manager](https://docs.xfce.org/xfce/xfwm4/getting-started)
-````
+::::
 
 You are now logged into the Data Safe Haven SRE!
 Welcome {{wave}}
@@ -499,54 +499,54 @@ The SRD has several pre-installed applications and programming languages to help
 
 #### Programming languages / compilers
 
-```{include} snippets/software_languages.partial.md
+:::{include} snippets/software_languages.partial.md
 :relative-images:
-```
+:::
 
 #### Editors / IDEs
 
-```{include} snippets/software_editors.partial.md
+:::{include} snippets/software_editors.partial.md
 :relative-images:
-```
+:::
 
 #### Writing / presentation tools
 
-```{include} snippets/software_presentation.partial.md
+:::{include} snippets/software_presentation.partial.md
 :relative-images:
-```
+:::
 
 #### Database access tools
 
-```{include} snippets/software_database.partial.md
+:::{include} snippets/software_database.partial.md
 :relative-images:
-```
+:::
 
 #### Other useful software
 
-```{include} snippets/software_other.partial.md
+:::{include} snippets/software_other.partial.md
 :relative-images:
-```
+:::
 
 If you need anything that is not already installed, please discuss this with the designated contact for your SRE.
 
-```{attention}
+:::{attention}
 This secure research desktop SRD is your interface to a single computer running in the cloud.
 You may have access to [additional SRDs](#-access-additional-srds) so be careful to check which machine you are working in as files and installed packages may not be the same across the machines.
-```
+:::
 
 ### {{musical_keyboard}} Keyboard mapping
 
 When you access the SRD you are actually connecting through the cloud to another computer - via a few intermediate computers/servers that monitor and maintain the security of the SRE.
 
-```{caution}
+:::{caution}
 You may find that the keyboard mapping on your computer is not the same as the one set for the SRD.
-```
+:::
 
 Click on `Desktop` and `Applications > Settings > Keyboard` to change the layout.
 
-```{tip}
+:::{tip}
 We recommend opening an application that allows text entry (such as `Libre Office Writer` , see [Access applications](#-access-applications) below) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
-```
+:::
 
 ### {{unlock}} Access applications
 
@@ -566,10 +566,10 @@ For example:
 
 - Open `Terminal` and run `jupyter notebook &` if you want to use `Python` within a jupyter notebook.
 
-```{image} user_guide/access_desktop_applications.png
+:::{image} user_guide/access_desktop_applications.png
 :alt: How to access applications from the desktop
 :align: center
-```
+:::
 
 ### {{snake}} Available Python and R versions
 
@@ -578,18 +578,18 @@ Typing `R` at the command line will give you the system version of `R` with many
 There are several versions of `Python` installed, which are managed through [pyenv](https://github.com/pyenv/pyenv).
 You can see the default version (indicated by a '\*') and all other installed versions using the following command:
 
-```none
+:::none
 > pyenv versions
-```
+:::
 
 This will give output like:
 
-```none
+:::none
   system
   3.8.12
 * 3.9.10 (set by /home/ada.lovelace/.pyenv_version)
   3.10.2
-```
+:::
 
 You can change your preferred Python version globally or on a folder-by-folder basis using
 
@@ -601,30 +601,30 @@ You can change your preferred Python version globally or on a folder-by-folder b
 We recommend that you use a dedicated [virtual environment](https://docs.python.org/3/tutorial/venv.html) for developing your code in `Python`.
 You can easily create a new virtual environment based on any of the available `Python` versions
 
-```none
+:::none
 > pyenv virtualenv 3.8.12 myvirtualenv
-```
+:::
 
 You can then activate it with:
 
-```none
+:::none
 > pyenv shell myvirtualenv
-```
+:::
 
 or if you want to automatically switch to it whenever you are in the current directory
 
-```none
+:::none
 > pyenv local myvirtualenv
-```
+:::
 
 ### {{gift}} Install R and python packages
 
 There are local copies of the `PyPI` and `CRAN` package repositories available within the SRE.
 You can install packages you need from these copies in the usual way, for example `pip install` and `install.packages` for Python and R respectively.
 
-```{caution}
+:::{caution}
 You **will not** have access to install packages system-wide and will therefore need to install packages in a user directory.
-```
+:::
 
 - For `CRAN` you will be prompted to make a user package directory when you [install your first package](#r-packages).
 - For `PyPI` you will need to [install using the `--user` argument to `pip`](#python-packages).
@@ -633,27 +633,27 @@ You **will not** have access to install packages system-wide and will therefore 
 
 You can install `R` packages from inside `R` (or `RStudio`):
 
-```R
+:::R
 > install.packages(<package-name>)
-```
+:::
 
 You will see something like the following:
 
-```R
+:::R
 Installing package into '/usr/local/lib/R/site-library'
 (as 'lib' is unspecified)
 Warning in install.packages("cluster") :
   'lib = "/usr/local/lib/R/site-library"' is not writable
 Would you like to use a personal library instead? (yes/No/cancel)
-```
+:::
 
 Enter `yes`, which prompts you to confirm the name of the library:
 
-```R
+:::R
 Would you like to create a personal library
 '~/R/x86_64-pc-linux-gnu-library/3.5'
 to install packages into? (yes/No/cancel)
-```
+:::
 
 Enter `yes`, to install the packages.
 
@@ -661,13 +661,13 @@ Enter `yes`, to install the packages.
 
 You can install `python` packages from a terminal.
 
-```bash
+:::bash
 pip install --user <package-name>
-```
+:::
 
-```{tip}
+:::{tip}
 If you are using a virtual environment as recommended above, you will not need the `--user` flag.
-```
+:::
 
 #### Package availability
 
@@ -698,17 +698,17 @@ Data that has been "ingressed" - approved and brought into the secure research e
 
 Everyone in your group will be able to access it, but it is **read-only**.
 
-```{important}
+:::{important}
 You will not be able to change any of the files in `/data/` .
 If you want to make derived datasets, for example cleaned and reformatted data, please add those to the `/shared/` or `/output/` directories.
-```
+:::
 
 The contents of `/data/` will be **identical** on all SRDs in your SRE.
 For example, if your group requests a GPU-enabled machine, this will contain an identical `/data/` folder.
 
-```{tip}
+:::{tip}
 If you are using the Data Safe Haven as part of an organised event, you might find example slides or document templates in the `/data/` drive.
-```
+:::
 
 #### Shared space: `/shared/`
 
@@ -722,9 +722,9 @@ The contents of `/shared/` will be **identical** on all SRDs in your SRE.
 The `/scratch/` folder should be used for any work-in-progress that isn't ready to share yet.
 Although everyone in your group will have **read-and-write access**, you can create your own folders inside `/scratch` and choose your own permissions for them.
 
-```{caution}
+:::{caution}
 You should not use `/scratch/` for long-term storage as it can be reset at any time without warning (_e.g._ when the VM is restarted).
-```
+:::
 
 The contents of `/scratch/` will be **different** on different VMs in your SRE.
 
@@ -743,18 +743,18 @@ Any outputs that you want to extract from the secure environment should be place
 Everyone in your group will be able to access it, and will have **read-and-write access**.
 Anything placed in here will be considered for data egress - removal from the secure research environment - by the project's principal investigator together with the data provider.
 
-```{tip}
+:::{tip}
 You may want to consider having subfolders of `/output/` to make the review of this directory easier.
-```
+:::
 
-```{hint}
+:::{hint}
 For the Turing Data Study Groups, we recommend the following categories:
 - Presentation
 - Transformed data/derived data
 - Report
 - Code
 - Images
-```
+:::
 
 ### {{newspaper}} Bring in new files to the SRE
 
@@ -764,27 +764,27 @@ Bringing new data into the SRE may mean that the environment needs to be updated
 The review of the "ingress" of new code or data will be coordinated by the designated contact for your SRE.
 They will have to discuss whether this is an acceptable risk to the data security with the project's principle investigator and data provider and the decision might be "no".
 
-```{hint}
+:::{hint}
 You can make the process as easy as possible by providing as much information as possible about the code or data you'd like to bring into the environment and about how it is to be used.
-```
+:::
 
 ## {{pill}} Versioning code using GitLab
 
 `GitLab` is a code hosting platform for version control and collaboration - similar to `GitHub`.
 It allows you to use `git` to **version control** your work, coordinate tasks using `GitLab` **issues** and review work using `GitLab` **merge requests**.
 
-```{note}
+:::{note}
 `GitLab` is a fully open source project.
 This information doesn't matter at all for how you use `GitLab` within the SRE, but we do want to thank the community for maintaining free and open source software for us to use and reuse.
 You can read more about `GitLab` at [their code repository](<https://gitlab.com/gitlab-org/gitlab>).
-```
+:::
 
 The `GitLab` instance within the SRE can contain code, documentation and results from your team's analyses.
 You do not need to worry about the security of the information you upload there as it is fully contained within the SRE and there is no access to the internet and/or external servers.
 
-```{important}
+:::{important}
 The `GitLab` instance within the SRE is entirely separate from the `https://gitlab.com` service.
-```
+:::
 
 ### {{books}} Maintaining an archive of the project
 
@@ -797,30 +797,30 @@ Any other work should be transferred to the `/shared/` drive so that it is acces
 You can also use the `/backup/` drive to store work that you want to keep safe from accidental deletion.
 Anything that you think should be considered for **egress** from the environment (eg. images or processed datasets) should be transferred to the shared `/output/` drive.
 
-```{caution}
+:::{caution}
 Anything that is not transferred to the `/output/` drive to be considered for egress will be deleted forever when the project is over.
-```
+:::
 
 ### {{unlock}} Access GitLab
 
 You can access `GitLab` from an internet browser in the SRD using the desktop shortcut.
 Login with username `firstname.lastname` (the domain is not needed) and `password` .
 
-````{note}
+::::{note}
 Our example user, Ada Lovelace would enter `ada.lovelace` in the `LDAP Username` box, enter her password and then click `Sign in` .
 
-```{image} user_guide/gitlab_screenshot_login.png
+:::{image} user_guide/gitlab_screenshot_login.png
 :alt: GitLab login
 :align: center
-```
-````
+:::
+::::
 
 Accessing `GitLab` from the browser on the SRD is an easy way to switch between analysis work and documenting the process or results.
 
-```{warning}
+:::{warning}
 Do not use your username and password from a pre-existing `GitLab` account!
 The `GitLab` instance within the SRE is entirely separate from the `https://gitlab.com` service and is expecting the same username and password that you used to log into the SRE.
-```
+:::
 
 ### {{open_hands}} Public repositories within the SRE
 
@@ -829,9 +829,9 @@ The `GitLab` instance inside the secure research environment is entirely contain
 When you make a repository inside the SRE "public" it is visible to your collaborators who also have access to the SRE.
 A "public" repository within the SRE is only visible to others with the same data access approval, it is not open to the general public via the internet.
 
-```{tip}
+:::{tip}
 We recommend that you make your repositories public to facilitate collaboration within the secure research environment.
-```
+:::
 
 ### {{construction_worker}} Support for GitLab use
 
@@ -848,11 +848,11 @@ If you have not used GitLab before:
 `CodiMD` is a locally installed tool that allows you to collaboratively write reports.
 It uses `Markdown` which is a simple way to format your text so that it renders nicely in full HTML.
 
-```{note}
+:::{note}
 `CodiMD` is a fully open source version of the `HackMD` software.
 This information doesn't matter at all for how you use `CodiMD` within the SRE, but we do want to thank the community for maintaining free and open source software for us to use and reuse.
 You can read more about `CodiMD` at [their GitHub repository](<https://github.com/hackmdio/codimd#codimd>).
-```
+:::
 
 We recommend [this Markdown cheat sheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
 
@@ -861,14 +861,14 @@ We recommend [this Markdown cheat sheet](https://github.com/adam-p/markdown-here
 You can access `CodiMD` from an internet browser from the SRD using the desktop shortcut.
 Login with username `firstname.lastname` (the domain is not needed) and `password` .
 
-````{note}
+::::{note}
 Our example user, Ada Lovelace would enter `ada.lovelace` in the `Username` box, enter her password and then click `Sign in` .
 
-```{image} user_guide/codimd_logon.png
+:::{image} user_guide/codimd_logon.png
 :alt: CodiMD login
 :align: center
-```
-````
+:::
+::::
 
 Accessing CodiMD from the browser on the SRD is an easy way to switch between analysis work and documenting the process or results.
 
@@ -881,15 +881,15 @@ They will have the right to change the file if they are signed into the CodiMD i
 
 The link will only work for people who have the same data access approval, it is not open to the general public via the internet.
 
-```{image} user_guide/codimd_access_options.png
+:::{image} user_guide/codimd_access_options.png
 :alt: CodiMD access options
 :align: center
-```
+:::
 
-```{tip}
+:::{tip}
 We recommend that you make your documents **editable** to facilitate collaboration within the secure research environment.
 Alternatively, the **locked** option allows others to read but not edit the document.
-```
+:::
 
 The default URL is quite long and difficult to share with your collaborators.
 We recommend **publishing** the document to get a much shorter URL which is easier to share with others.
@@ -897,35 +897,35 @@ We recommend **publishing** the document to get a much shorter URL which is easi
 Click the `Publish` button to publish the document and generate the short URL.
 Click the pen button (shown in the image below) to return to the editable markdown view.
 
-```{image} user_guide/codimd_publishing.png
+:::{image} user_guide/codimd_publishing.png
 :alt: CodiMD publishing
 :align: center
-```
+:::
 
-```{important}
+:::{important}
 Remember that the document is not published to the internet, it is only available to others within the SRE.
-```
+:::
 
-```{tip}
+:::{tip}
 If you are attending a Turing Data Study Group you will be asked to write a report describing the work your team undertook over the five days of the projects.
 Store a copy of the CodiMD URL in a text file in the outputs folder.
 You will find some example report templates that outline the recommended structure.
 We recommend writing the report in CodiMD - rather than GitLab - so that everyone can edit and contribute quickly.
-```
+:::
 
 ### {{microscope}} Troubleshooting CodiMD
 
 We have noticed that a lower case `L` and an upper case `I` look very similar and often trip up users in the SRE.
 
-```{tip}
+:::{tip}
 Double check the characters in the URL, and if there are ambiguous ones try the one you haven't tried yet!
-```
+:::
 
 Rather than proliferate lots of documents, we recommend that one person is tasked with creating the file and sharing the URL with other team members.
 
-```{tip}
+:::{tip}
 You could use the GitLab wiki or `README` file to share links to collaboratively written documents.
-```
+:::
 
 ## {{unlock}} Access additional SRDs
 
@@ -934,21 +934,21 @@ Usually this is because of a requirement for a different type of computing resou
 
 You will access this machine in a similar way to the main shared desktop, by selecting a different `Desktop` connection.
 
-````{note}
+::::{note}
 Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, might select `Ubuntu1_CPU2_8GB (Desktop)` instead of `Ubuntu0_CPU2_8GB (Desktop)`
-```{image} user_guide/guacamole_dashboard.png
+:::{image} user_guide/guacamole_dashboard.png
 :alt: Research environment dashboard
 :align: center
-```
-````
+:::
+::::
 
 - This will bring you to the normal login screen, where you use the same `username` and `password` credentials as before.
 - Any local files that you have created in the `/output/` folder on other VMs (e.g. analysis scripts, notes, derived data) will be automatically available in the new VM.
 
-```{tip}
+:::{tip}
 The naming pattern of the available desktop connections lets you know their compute capabilities.
 For example `Ubuntu1_CPU2_8GB` has 2 CPUs and 8GB of RAM.
-```
+:::
 
 ## {{green_book}} Access databases
 
@@ -980,19 +980,19 @@ The instructions for using other graphical interfaces or programming languages w
 
 `Azure Data Studio` is currently only able to connect to `Microsoft SQL` databases.
 
-````{note}
+::::{note}
 Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.turingsafehaven.ac.uk` Safe Haven, would connect using Azure Data Studio as follows:
 
 
-```{image} user_guide/db_azure_data_studio.png
+:::{image} user_guide/db_azure_data_studio.png
 :alt: Azure Data Studio connection details
 :align: center
-```
-````
+:::
+::::
 
-```{important}
+:::{important}
 Be sure to select `Windows authentication` here so that your username and password will be passed through to the database.
-```
+:::
 
 ### {{bear}} Connecting using DBeaver
 
@@ -1004,81 +1004,81 @@ Click on the `New database connection` button (which looks a bit like an electri
 - Enter the necessary information in the `Host` and `Port` boxes and set `Authentication` to `Kerberos`
 - Tick `Show All Schemas` otherwise you will not be able to see the input data
 
-````{note}
+::::{note}
 Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.turingsafehaven.ac.uk` Safe Haven, would connect using DBeaver as follows:
 
-```{image} user_guide/db_dbeaver_mssql.png
+:::{image} user_guide/db_dbeaver_mssql.png
 :alt: DBeaver connection details for Microsoft SQL
 :align: center
-```
-````
+:::
+::::
 
-```{important}
+:::{important}
 Be sure to select `Kerberos authentication` so that your username and password will be passed through to the database
-```
+:::
 
-````{note}
+::::{note}
 After clicking finish, you may be prompted to download missing driver files.
 Drivers have already been provided on the SRD for Microsoft SQL databases.
 Clicking `Download` will make DBeaver use these pre-downloaded drivers without requiring internet access.
 Thus, even on SRDs with no external internet access (Tier 2 or above), click `Download`.
 Note that the prompt may appear multiple times.
-```{image} user_guide/db_dbeaver_mssql_download.png
+:::{image} user_guide/db_dbeaver_mssql_download.png
 :alt: DBeaver driver download for Microsoft SQL
 :align: center
-```
-````
+:::
+::::
 
 #### PostgreSQL
 
 - Select `PostgreSQL` as the database type
 - Enter the necessary information in the `Host` and `Port` boxes and set `Authentication` to `Database Native`
 
-```{important}
+:::{important}
 You do not need to enter any information in the `Username` or `Password` fields
-```
+:::
 
-````{note}
+::::{note}
 Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.turingsafehaven.ac.uk` Safe Haven, would connect using DBeaver as follows:
 
-```{image} user_guide/db_dbeaver_postgres_connection.png
+:::{image} user_guide/db_dbeaver_postgres_connection.png
 :alt: DBeaver connection details for PostgreSQL
 :align: center
-```
-````
+:::
+::::
 
-````{tip}
+::::{tip}
 If you are prompted for `Username` or `Password` when connecting, you can leave these blank and the correct username and password will be automatically passed through to the database
-```{image} user_guide/db_dbeaver_postgres_ignore.png
+:::{image} user_guide/db_dbeaver_postgres_ignore.png
 :alt: DBeaver username/password prompt
 :align: center
-```
-````
+:::
+::::
 
-````{note}
+::::{note}
 After clicking finish, you may be prompted to download missing driver files.
 Drivers have already been provided on the SRD for PostgreSQL databases.
 Clicking `Download` will make DBeaver use these pre-downloaded drivers without requiring internet access.
 Thus, even on SRDs with no external internet access (Tier 2 or above), click `Download`.
 Note that the prompt may appear multiple times.
-```{image} user_guide/db_dbeaver_pstgrs_download.png
+:::{image} user_guide/db_dbeaver_pstgrs_download.png
 :alt: DBeaver driver download for Microsoft SQL
 :align: center
-```
-````
+:::
+::::
 
 ### {{snake}} Connecting using Python
 
 Database connections can be made using `pyodbc` or `psycopg2` depending on which database flavour is being used.
 The data can be read into a dataframe for local analysis.
 
-```{note}
+:::{note}
 Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.turingsafehaven.ac.uk` Safe Haven, would connect using DBeaver as follows:
-```
+:::
 
 #### Microsoft SQL
 
-```python
+:::python
 import pyodbc
 import pandas as pd
 
@@ -1090,11 +1090,11 @@ cnxn = pyodbc.connect("DRIVER={ODBC Driver 17 for SQL Server};SERVER=" + server 
 
 df = pd.read_sql("SELECT * FROM information_schema.tables;", cnxn)
 print(df.head(3))
-```
+:::
 
 #### PostgreSQL
 
-```python
+:::python
 import psycopg2
 import pandas as pd
 
@@ -1105,20 +1105,20 @@ db_name = "postgres"
 cnxn = psycopg2.connect(host=server, port=port, database=db_name)
 df = pd.read_sql("SELECT * FROM information_schema.tables;", cnxn)
 print(df.head(3))
-```
+:::
 
 ### {{rose}} Connecting using R
 
 Database connections can be made using `odbc` or `RPostgres` depending on which database flavour is being used.
 The data can be read into a dataframe for local analysis.
 
-```{note}
+:::{note}
 Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.turingsafehaven.ac.uk` Safe Haven, would connect using DBeaver as follows:
-```
+:::
 
 #### Microsoft SQL
 
-```R
+:::R
 library(DBI)
 library(odbc)
 
@@ -1134,11 +1134,11 @@ cnxn <- DBI::dbConnect(
 # Run a query and save the output into a dataframe
 df <- dbGetQuery(cnxn, "SELECT * FROM information_schema.tables;")
 head(df, 3)
-```
+:::
 
 #### PostgreSQL
 
-```R
+:::R
 library(DBI)
 library(RPostgres)
 
@@ -1153,7 +1153,7 @@ cnxn <- DBI::dbConnect(
 # Run a query and save the output into a dataframe
 df <- dbGetQuery(cnxn, "SELECT * FROM information_schema.tables;")
 head(df, 3)
-```
+:::
 
 ## {{bug}} Report a bug
 
@@ -1162,9 +1162,9 @@ The Data Safe Haven SRE has been developed in close collaboration with our users
 We try to make the user experience as smooth as possible and this document has been greatly improved by feedback from project participants and researchers going through the process for the first time.
 We are constantly working to improve the SRE and we really appreciate your input and support as we develop the infrastructure.
 
-```{important}
+:::{important}
 If you find problems with the IT infrastructure, please contact the designated contact for your SRE.
-```
+:::
 
 ### {{wrench}} Help us to help you
 
@@ -1189,11 +1189,11 @@ To help us fix your issues please do the following:
 
 - Send the bug report to the designated contact for your SRE.
 
-```{hint}
+:::{hint}
 We very strongly recommend "rubber ducking" this process before you talk to the designated contact for your SRE.
 Either talk through to your imaginary rubber duck, or find a team member to describe the error to, as you write down the steps you have taken.
 It is amazing how often working through your problem out loud helps you realise what the answer might be.
-```
+:::
 
 ## {{pray}} Acknowledgments
 
@@ -1213,57 +1213,57 @@ If you have never used a Linux desktop before, you might find some of the follow
 
 Go into a project directory to work in it
 
-```bash
+:::bash
 cd NAME-OF-PROJECT
-```
+:::
 
 Go back one directory
 
-```bash
+:::bash
 cd ..
-```
+:::
 
 List what’s in the current directory
 
-```bash
+:::bash
 ls
-```
+:::
 
 Create a new directory
 
-```bash
+:::bash
 mkdir NAME-OF-YOUR-DIRECTORY
-```
+:::
 
 Remove a file
 
-```bash
+:::bash
 rm NAME-OF-FILE
-```
+:::
 
 Remove a directory and all of its contents
 
-```bash
+:::bash
 rm -r NAME-OF-DIRECTORY
-```
+:::
 
 View command history
 
-```bash
+:::bash
 history
-```
+:::
 
 Show which directory I am in
 
-```bash
+:::bash
 pwd
-```
+:::
 
 Clear the shell window
 
-```bash
+:::bash
 clear
-```
+:::
 
 For a more detailed introduction, visit the official Ubuntu tutorial, [The Linux command line for beginners](https://ubuntu.com/tutorials/command-line-for-beginners)
 
@@ -1296,27 +1296,27 @@ Over the course of the work that you do in your SRE, you will often be accessing
 It is important to configure your `git` username and email address, since every `git` commit will use this information to identify you as the author.
 On your shell, type the following command to add your username:
 
-```bash
+:::bash
 git config --global user.name "YOUR_USERNAME"
-```
+:::
 
 Then verify that you have the correct username:
 
-```bash
+:::bash
 git config --global user.name
-```
+:::
 
 To set your email address, type the following command:
 
-```bash
+:::bash
 git config --global user.email "your_email_address@example.com"
-```
+:::
 
 To verify that you entered your email correctly, type:
 
-```bash
+:::bash
 git config --global user.email
-```
+:::
 
 You'll need to do this only once, since you are using the `--global` option.
 It tells Git to always use this information for anything you do on that system.
@@ -1333,16 +1333,16 @@ To work in the project, you can copy a link to the `git` repository through a SS
 SSH is easier to use after it’s been set up, [you can find the details here](https://docs.gitlab.com/ee/user/ssh.html).
 While you are at the Project tab, select HTTPS or SSH from the dropdown menu and copy the link using the Copy URL to clipboard button (you’ll have to paste it on your shell in the next step>).
 
-```{image} user_guide/gitlab_clone_url.png
+:::{image} user_guide/gitlab_clone_url.png
 :alt: Clone GitLab project
 :align: center
-```
+:::
 
 Go to your computer’s shell and type the following command with your SSH or HTTPS URL:
 
-```bash
+:::bash
 git clone <PASTE HTTPS OR SSH HERE>
-```
+:::
 
 ### Branches
 
@@ -1355,29 +1355,29 @@ If someone else made changes to the `main` branch while you were working on your
 
 To create a branch:
 
-```bash
+:::bash
 git checkout -b NAME-OF-BRANCH
-```
+:::
 
 Work on an existing branch:
 
-```bash
+:::bash
 git checkout NAME-OF-BRANCH
-```
+:::
 
 To merge the `main` branch into a created branch you need to be on the created branch.
 
-```bash
+:::bash
 git checkout NAME-OF-BRANCH
 git merge main
-```
+:::
 
 To merge a created branch into the `main` branch you need to be on the created branch.
 
-```bash
+:::bash
 git checkout main
 git merge NAME-OF-BRANCH
-```
+:::
 
 ### Downloading the latest changes in a project
 
@@ -1385,9 +1385,9 @@ This is for you to work on an up-to-date copy (it is important to do this every 
 You pull from remote repositories to get all the changes made by users since the last time you cloned or pulled the project.
 Later, you can push your local commits to the remote repositories.
 
-```bash
+:::bash
 git pull REMOTE NAME-OF-BRANCH
-```
+:::
 
 When you first clone a repository, REMOTE is typically `origin`.
 This is where the repository came from, and it indicates the SSH or HTTPS URL of the repository on the remote server.
@@ -1400,35 +1400,35 @@ These changes may be new, modified, or deleted files/folders.
 Use `git add` to stage a local file/folder for committing.
 Then use `git commit` to commit the staged files:
 
-```bash
+:::bash
 git add FILE OR FOLDER
 git commit -m "COMMENT TO DESCRIBE THE INTENTION OF THE COMMIT"
-```
+:::
 
 To add and commit all local changes in one command:
 
-```bash
+:::bash
 git add .
 git commit -m "COMMENT TO DESCRIBE THE INTENTION OF THE COMMIT"
-```
+:::
 
 To push all local commits to the remote repository:
 
-```bash
+:::bash
 git push REMOTE NAME-OF-BRANCH
-```
+:::
 
 For example, to push your local commits to the `main` branch of the origin remote:
 
-```bash
+:::bash
 git push origin main
-```
+:::
 
 To delete all local changes in the repository that have not been added to the staging area, and leave unstaged files/folders, type:
 
-```bash
+:::bash
 git checkout .
-```
+:::
 
 **Note:** The . character typically means all in Git.
 
@@ -1445,19 +1445,19 @@ For more information, check the [merge requests documentation](https://docs.gitl
 
 The default target project is the upstream repository, but you can choose to compare across any of its forks.
 
-```{image} user_guide/gitlab_new_merge_request.png
+:::{image} user_guide/gitlab_new_merge_request.png
 :alt: New GitLab merge request
 :align: center
-```
+:::
 
 - When ready, click on the Compare branches and continue button.
 - At a minimum, add a title and a description to your merge request.
 - Optionally, select a user to review your merge request and to accept or close it. You may also select a milestone and labels.
 
-```{image} user_guide/gitlab_merge_request_details.png
+:::{image} user_guide/gitlab_merge_request_details.png
 :alt: GitLab merge request details
 :align: center
-```
+:::
 
 - When ready, click on the `Submit merge request` button.
 
