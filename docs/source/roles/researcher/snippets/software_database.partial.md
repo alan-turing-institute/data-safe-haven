@@ -1,4 +1,3 @@
-- `Azure Data Studio`
-- `DBeaver`
-- `psql`
-- `sqlcmd`
+- `DBeaver` desktop database management software
+- `psql` a command line PostgreSQL client
+- `unixodbc-dev` driver for interacting with Microsoft SQL databases

@@ -573,42 +573,47 @@ The SRD has several pre-installed applications and programming languages to help
 
 ### {{package}} Pre-installed applications
 
-#### Programming languages / compilers
+::::{admonition} Programming languages / compilers
+:class: dropdown note
 
 :::{include} snippets/software_languages.partial.md
 :relative-images:
 :::
+::::
 
-#### Editors / IDEs
+::::{admonition} Editors / IDEs
+:class: dropdown note
 
 :::{include} snippets/software_editors.partial.md
 :relative-images:
 :::
+::::
 
-#### Writing / presentation tools
+::::{admonition} Writing / presentation tools
+:class: dropdown note
 
 :::{include} snippets/software_presentation.partial.md
 :relative-images:
 :::
+::::
 
-#### Database access tools
+::::{admonition} Database access tools
+:class: dropdown note
 
 :::{include} snippets/software_database.partial.md
 :relative-images:
 :::
+::::
 
-#### Other useful software
+::::{admonition} Other useful software
+:class: dropdown note
 
 :::{include} snippets/software_other.partial.md
 :relative-images:
 :::
+::::
 
 If you need anything that is not already installed, please discuss this with the designated contact for your SRE.
-
-:::{attention}
-This secure research desktop SRD is your interface to a single computer running in the cloud.
-You may have access to [additional SRDs](#-access-additional-srds) so be careful to check which machine you are working in as files and installed packages may not be the same across the machines.
-:::
 
 ### {{musical_keyboard}} Keyboard mapping
 

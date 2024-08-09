@@ -1,3 +1,2 @@
-- `TeXStudio` for technical writing
-- `LaTeX` / `pdflatex` / `xelatex` for producing different document outputs
-- `LibreOffice` for creating presentations
+- `LaTeX` / `pdflatex` / `xelatex` for technical writing
+- `LibreOffice` for creating documents and presentations
