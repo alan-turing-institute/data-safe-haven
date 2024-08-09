@@ -14,7 +14,7 @@ class TestSREIpRanges:
         assert SREIpRanges.data_configuration == AzureIPv4Range(
             "10.0.1.16", "10.0.1.23"
         )
-        assert SREIpRanges.data_desired_state == AzureIPv4Range(
+        assert SREIpRanges.desired_state == AzureIPv4Range(
             "10.0.1.24", "10.0.1.31"
         )
         assert SREIpRanges.data_private == AzureIPv4Range("10.0.1.32", "10.0.1.39")
