@@ -51,23 +51,21 @@ This section of the user guide will help you set up your new account on the SRE 
 
 ### {{seedling}} Prerequisites
 
-Make sure you have all of the following in front of you when connecting to the SRE.
+Make sure you have all of the following when connecting to the SRE.
 
-- {{email}} The email from your {ref}`System Manager <role_system_manager>` with your account details.
-- {{wrench}} Your [username](#username), given in an email from your {ref}`System Manager <role_system_manager>`.
-- {{european_castle}} The [domain name and URL](#domain-names) for the SRE, given in an email from your {ref}`System Manager <role_system_manager>`.
 - {{computer}} Your computer.
-- {{satellite}} [Access](#network-access) to the specific wired or wireless network detailed in the email from your {ref}`System Manager <role_system_manager>`.
-- {{lock}} [Data security training](#data-security-training-requirements) for those working on health datasets.
+- {{wrench}} Your [username](#username) and the {ref}`username domain <user_guide_username_domain>` for your SRE.
+- {{european_castle}} The {ref}`URL <user_guide_sre_url>` for your SRE.
+- {{satellite}} [Access](#network-access) to a specific wired or wireless network (if this is required for your project).
 - {{iphone}} Your [phone](#your-phone-for-multi-factor-authentication), with good signal connectivity.
+
+:::{important}
+You should have received an email from your {ref}`System Manager <role_system_manager>` with your account details, the URL for your SRE, and any necessary network or [training requirements](#data-security-training-requirements) for your project.
+:::
 
 You should also know who the **designated contact** for your SRE is.
 This might be an administrator or one of the people working on the project with you.
 They will be your primary point of contact if you have any issues in connecting to or using the SRE.
-
-:::{note}
-For example, during the Turing Data Study Groups, the **facilitator** of each SRE is the designated contact
-:::
 
 #### Username
 
