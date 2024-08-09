@@ -25,23 +25,23 @@ In many cases the answer is already here, but if you think this resource could b
 
 The following definitions might be useful during the rest of this guide
 
-Secure Research Environment (SRE)
-: the environment that you will be using to access the sensitive data.
-
 Data Safe Haven
-: the overall project that details how to create and manage one or more SREs.
+: the overall TRE which supports multiple projects
+
+Secure Research Environment (SRE)
+: the environment set up for your project that you will use to access the sensitive data.
 
 (user_guide_username_domain)=
 Username domain
-: the domain (for example `projects.turingsafehaven.ac.uk`) which your user account will belong to. Multiple SREs can share the same domain for managing users in common.
+: the domain (for example **projects.example.org**) which your user account will belong to. Multiple projects can share the same domain.
 
 (user_guide_sre_id)=
 SRE ID
-: each SRE has a unique short ID, for example `sandbox` which your {ref}`System Manager <role_system_manager>` will use to distinguish different SREs in the same Data Safe Haven.
+: each SRE has a unique short ID, for example **sandbox** which your {ref}`System Manager <role_system_manager>` will use to distinguish different SREs in the same Data Safe Haven.
 
 (user_guide_sre_url)=
 SRE URL
-: each SRE has a unique URL (for example `sandbox.projects.turingsafehaven.ac.uk`) which is used to access the data.
+: each SRE has a unique URL (for example **sandbox.projects.example.org**) which is used to access the data.
 
 (roles_researcher_user_guide_setup_mfa)=
 
