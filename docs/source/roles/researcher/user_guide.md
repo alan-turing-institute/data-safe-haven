@@ -69,11 +69,13 @@ They will be your primary point of contact if you have any issues in connecting 
 
 #### Username
 
-Your username will usually be in the format **_GIVEN\_NAME.LAST\_NAME_**.
-In some places, you will need to enter it in the form **_USERNAME@USERNAME\_DOMAIN_**
+Your username comes in both a **short-form** and a **long-form**
+
+- **short-form**: usually be in the format **_GIVEN\_NAME.LAST\_NAME_**
+- **long-form**: **_USERNAME@USERNAME\_DOMAIN_**
 
 :::{caution}
-If you have a hyphenated last name, or multiple surnames, or a long family name, your assigned username may differ from this pattern.
+If you have a hyphenated last name, or multiple surnames, or a long family name, your short-form username may differ from this pattern.
 Please check with the designated contact for your SRE if you are unsure about your username.
 :::
 
@@ -126,9 +128,9 @@ You should be given the {ref}`username domain <user_guide_username_domain>` in t
 You might receive the {ref}`SRE URL <user_guide_sre_url>` at this time, or you might be assigned to a particular SRE at a later point.
 
 :::{note}
-In this document Ada Lovelace - our example user - will be participating in the `sandbox` project at a Turing Data Study Group.
-- Her **{ref}`username domain <user_guide_username_domain>`** is `projects.example.org` .
-- Her **{ref}`SRE URL <user_guide_sre_url>`** is `https://sandbox.projects.example.org`
+In this document Ada Lovelace - our example user - will be participating in the **sandbox** project.
+- Her **{ref}`username domain <user_guide_username_domain>`** is **projects.example.org**.
+- Her **{ref}`SRE URL <user_guide_sre_url>`** is **https://sandbox.projects.example.org**.
 :::
 
 (user_setup_password_mfa)=
@@ -138,102 +140,111 @@ In this document Ada Lovelace - our example user - will be participating in the 
 For security reasons, you must reset your password before you log in for the first time.
 Please follow these steps carefully.
 
-- Open a private/incognito browser session on your computer.
+::::{admonition} 1. Start the password reset process
+:class: dropdown note
 
-  :::{tip}
-  One of the most common problems that users have in connecting to the SRE is automatic completion of usernames and passwords from other accounts on their computer.
-  This can be quite confusing, particularly for anyone who logs into Microsoft services for work or personal use.
-  :::
+Go to `https://aka.ms/mfasetup` in a **private/incognito** browser session on your computer.
 
-  :::{caution}
-  Look out for usernames or passwords that are automatically completed, and make sure that you're using the correct details needed to access the SRE.
-  :::
+:::{tip}
+One of the most common problems that users have in connecting to the SRE is automatic completion of usernames and passwords from other accounts on their computer.
+This can be quite confusing, particularly for anyone who logs into Microsoft services for work or personal use.
+:::
 
-- Navigate to the following URL in your browser: `https://aka.ms/mfasetup` .
-  This short link starts the process of logging into your account.
+:::{caution}
+Look out for usernames or passwords that are automatically completed, and make sure that you're using the correct details needed to access the SRE.
+:::
+::::
 
-- At the login prompt enter `username@<username domain>` and confirm/proceed.
-  Remember that your username will probably be in the format `firstname.lastname` .
+::::{admonition} 2. Follow the password recovery steps
+:class: dropdown note
 
-  :::{note}
-  Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would enter `ada.lovelace@projects.example.org`
-  :::
+- At the login prompt enter your **[long-form username](#username)** and click on the **{guilabel}`Next`** button
 
-- There will then be a password prompt.
+    :::{note}
+    Our example user, Ada Lovelace, participating in the **sandbox** project, would enter **ada.lovelace@projects.example.org**
+    :::
 
-  The first time you log in you need to click **"Forgotten my password"**.
+- At the password prompt click the **Forgotten my password** link.
 
-  :::{image} user_guide/account_setup_forgotten_password.png
-  :alt: Forgotten my password
-  :align: center
-  :::
+    :::{image} user_guide/account_setup_forgotten_password.png
+    :alt: Forgotten my password
+    :align: center
+    :width: 90%
+    :::
+::::
 
-  :::{caution}
-  If you reset your password, you will need to wait 5-10 mins before logging in again, to allow the user management system to sync up with the new password.
-  :::
+::::{admonition} 3. Fill out the CAPTCHA
+:class: dropdown note
 
-- Fill out the requested CAPTCHA (your username should be pre-filled).
+- Fill out the requested CAPTCHA (your username should be pre-filled) then click on the **{guilabel}`Next`** button.
 
   :::{image} user_guide/account_setup_captcha.png
-  :alt: CAPTCHA
+  :alt: Password CAPTCHA
   :align: center
+  :width: 90%
   :::
+::::
 
-- Confirm your phone number, which you provided to the {ref}`System Manager <role_system_manager>` when you registered for access to the environment.
+::::{admonition} 4. Confirm your contact details
+:class: dropdown note
+
+- Confirm your phone number or email address, which you provided to the {ref}`System Manager <role_system_manager>` when you registered for access to the environment.
 
   :::{image} user_guide/account_setup_verify_phone.png
   :alt: Verify phone number
   :align: center
+  :width: 90%
   :::
+::::
 
-- Select a password.
+::::{admonition} 5. Set your password
+:class: dropdown note
 
-  Your password must comply with the following requirements:
+- Select a password that complies with the [Microsoft Entra requirements](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-sspr-policy#microsoft-entra-password-policies):
 
-  :::{important}
-  - alphanumeric
+
+  :::{tip}
+  We suggest the following:
+
   - minimum 12 characters
+  - only alphanumeric characters
   - at least one each of:
     - {{input_latin_uppercase}} uppercase character
     - {{input_latin_lowercase}} lowercase character
     - {{input_numbers}} number
-  - you should choose a unique password for the SRE to ensure it is secure
+  - not used anywhere else
+  - use a [password generator](https://bitwarden.com/password-generator/) to ensure you meet these requirements
   :::
 
   :::{caution}
-  Do not use special characters or symbols in your password!
+  We recommend avoiding special characters or symbols in your password!
   The virtual keyboard inside the SRE may not be the same as your physical keyboard and this can make it difficult to type some symbols.
   :::
 
-  Note that this will also ensure that it passes the [Microsoft Entra password requirements](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-sspr-policy).
-
-  :::{tip}
-  We recommend using a password generator [like this one](https://bitwarden.com/password-generator/) to create a password that meets these requirements.
-  This will ensure that the password is different from any others that you might use and that it is unlikely to be on any list of commonly used passwords.
-  :::
-
-  If your password is too difficult to memorise, we recommend using a password manager, for example [BitWarden](https://bitwarden.com) or [LastPass](https://www.lastpass.com/), to store it securely.
-
-- Enter your password into the `Enter new password` and `Confirm new password` fields.
+- Enter your password into the **Enter new password** and **Confirm new password** fields.
 
   :::{image} user_guide/account_setup_new_password.png
   :alt: New password
   :align: center
+  :width: 90%
   :::
 
-- Then continue to the next step
+- Click on the **{guilabel}`Finish`** button and you should get this notice
 
   :::{image} user_guide/account_setup_new_password_sign_in.png
   :alt: Click to continue
   :align: center
+  :width: 90%
   :::
 
-- Log into your account when prompted and at this point you will be asked for additional security verification.
+- Click on this link and provide your username and password when prompted.
+- At this point you will be asked for additional security verification.
 
   :::{image} user_guide/account_setup_more_information_required.png
   :alt: Click to continue
   :align: center
   :::
+::::
 
 ### {{door}} Set up multi-factor authentication
 
