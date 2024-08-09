@@ -484,47 +484,75 @@ If you aren't sure about any of these then please return to the [**Set up your a
 
 ::::
 
-This is the Guacamole remote desktop home screen.
-From there, you can access Secure Research Desktops.
+### {{penguin}} Log into a workspace
 
-For more detailed information on how to use Guacamole, you can find guidance in the [Guacamole manual](https://guacamole.apache.org/doc/1.5.4/gug/using-guacamole.html).
+You should now be able to see the SRE dashboard screen which will look like the following
 
-  Welcome to the Data Safe Haven! {{wave}}
+:::{image} user_guide/guacamole_dashboard.png
+:alt: Research environment dashboard
+:align: center
+:::
 
-### {{penguin}} Log into the Secure Research Desktop
+You should see multiple different workspaces that you can access either via an interactive desktop environment (**Desktop**) or a terminal environment (**SSH**).
 
-The primary method of performing data analysis in the SRE is using the Secure Research Desktop (SRD).
+Each of these is a computer[^vm-footnote] with a wide variety of data analysis applications and programming languages pre-installed.
+You can use them to analyse the sensitive data belonging to your project while remaining isolated from the wider internet.
 
-This is a virtual machine (VM) with many different applications and programming languages pre-installed on it.
-Once connected to it, you can analyse the sensitive data belonging to your project while remaining completely isolated from the internet.
+[^vm-footnote]: Actually a virtual machine
 
-- Click on one of the `Desktop` connections (for example `Ubuntu0_CPU2_8GB (Desktop)` to connect to the desktop.
+:::{important}
+If you do not see any available workspaces please contact your {ref}`System Manager <role_system_manager>`.
+:::
 
-- Insert your username and password.
 
-  ::::{note}
-  Our example user, Ada Lovelace, would enter `ada.lovelace` and her password.
-  :::{image} user_guide/srd_login_screen.png
-  :alt: SRD login screen
+::::{admonition} 1. Select a workspace
+:class: dropdown note
+
+- Click on one of the **Desktop** connections from the list in **All Connections**
+
+:::{note}
+Each workspace should have an annotation which indicates its available resources:
+- CPUs
+- GPUs
+- RAM
+:::
+
+:::{caution}
+These workspaces are shared between everyone on your project. Talk to your collaborators to ensure that you're not all using the same one.
+:::
+
+::::
+
+:::::{admonition} 2. Login with your user credentials
+:class: dropdown note
+
+- Enter your **[short-form username](#username)** and **password** at the prompt.
+
+  :::{image} user_guide/workspace_login_screen.png
+  :alt: Workspace login screen
   :align: center
+  :width: 90%
   :::
-  ::::
+
+  :::{note}
+  Our example user, Ada Lovelace, would enter **ada.lovelace** and her password.
+  :::
 
   ::::{error}
   If you enter your username and/or password incorrectly you will see a warning like the one below.
   If this happens, please try again, entering your username and password carefully.
 
-  :::{image} user_guide/srd_login_failure.png
-  :alt: SRD login failure
+  :::{image} user_guide/workspace_login_failure.png
+  :alt: Workspace login failure
   :align: center
+  :width: 90%
   :::
-  ::::
 
-  :::{caution}
-  We recommend _not_ including special characters in your password as the keyboard layout expected by the login screen may be different from the one you're using.
-  - if you want to reset your password, follow the steps defined in the [Password and MFA](#-password-and-mfa) section above.
-  - if you want to continue with special characters in your password, please test that they are being entered correctly by typing them in the username field.
-  :::
+  If you want to reset your password, follow the steps defined in the [Password and MFA](#-password-and-mfa) section above.
+  ::::
+:::::
+
+
 
 - You should now be greeted by a Linux desktop.
 
@@ -532,6 +560,8 @@ Once connected to it, you can analyse the sensitive data belonging to your proje
   :alt: SRD initial desktop
   :align: center
   :::
+::::
+
 
 ::::{note}
 The Linux desktops within our SRDs use the [Ubuntu operating system](https://ubuntu.com/).
