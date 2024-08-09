@@ -27,7 +27,7 @@
       tags: apt
       ansible.builtin.script:
         executable: /bin/bash
-        cmd: /desired_state/install_deb.sh "{{ item.source }}" "{{ item.filename }}" "{{ item.sha256 }}"
+        cmd: "/desired_state/install_deb.sh {{ item.source }} {{ item.filename }} {{ item.sha256 }}"
         creates: "{{ item.creates }}"
       loop: "{{ deb_packages[ansible_facts.distribution_release] }}"
 
@@ -130,6 +130,7 @@
         state: directory
         mode: '0755'
       loop:
+        - /etc/skel/Desktop
         - /etc/xdg/xfce4/terminal
         - /etc/xrdp
         - /usr/local/share/xrdp
@@ -199,6 +200,36 @@
       loop:
         - xrdp
         - xrdp-sesman
+
+    - name: Copy icons
+      ansible.builtin.copy:
+        src: "usr/local/share/icons/{{ item }}"
+        dest: "/usr/local/share/icons/{{ item }}"
+        mode: '0444'
+      loop:
+        - gitea.png
+        - hedgedoc.png
+
+    - name: Copy desktop files
+      ansible.builtin.copy:
+        src: "etc/skel/Desktop/{{ item }}"
+        dest: "/etc/skel/Desktop/{{ item }}"
+        mode: '0755'
+      loop:
+        - gitea.desktop
+        - hedgedoc.desktop
+        - input.desktop
+        - output.desktop
+        - shared.desktop
+
+    - name: Set desktop file URLs
+      ansible.builtin.lineinfile:
+        path: "/etc/skel/Desktop/{{ item }}.desktop"
+        line: "{{ lookup('file', '/root/{{ item }}.url') }}"
+        state: present
+      loop:
+        - gitea
+        - hedgedoc
 
     - name: Add polkit rule to allow colord
       ansible.builtin.copy:

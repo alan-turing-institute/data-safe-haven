@@ -94,7 +94,7 @@ class SREUserServicesComponent(ComponentResource):
         child_tags = {"component": "user services"} | (tags if tags else {})
 
         # Deploy the Gitea server
-        SREGiteaServerComponent(
+        self.gitea_server = SREGiteaServerComponent(
             "sre_gitea_server",
             stack_name,
             SREGiteaServerProps(
@@ -119,7 +119,7 @@ class SREUserServicesComponent(ComponentResource):
         )
 
         # Deploy the HedgeDoc server
-        SREHedgeDocServerComponent(
+        self.hedgedoc_server = SREHedgeDocServerComponent(
             "sre_hedgedoc_server",
             stack_name,
             SREHedgeDocServerProps(
