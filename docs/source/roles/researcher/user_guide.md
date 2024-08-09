@@ -69,23 +69,21 @@ They will be your primary point of contact if you have any issues in connecting 
 
 #### Username
 
-Your username will usually be in the format `firstname.lastname`.
-In some places, you will need to enter it in the form `username@<username domain>`
-
-:::{tip}
-You can find your username in the email you received from your {ref}`System Manager <role_system_manager>`.
-:::
+Your username will usually be in the format **_GIVEN\_NAME.LAST\_NAME_**.
+In some places, you will need to enter it in the form **_USERNAME@USERNAME\_DOMAIN_**
 
 :::{caution}
-If you have a hyphenated last name, or multiple surnames, or a long family name, your assigned username may not follow the same pattern of `firstname.lastname`.
+If you have a hyphenated last name, or multiple surnames, or a long family name, your assigned username may differ from this pattern.
 Please check with the designated contact for your SRE if you are unsure about your username.
 :::
 
 :::{note}
 In this document we will use **Ada Lovelace** as our example user.
 Her username is:
-- short-form: `ada.lovelace`
-- long-form: `ada.lovelace@projects.turingsafehaven.ac.uk`
+
+- short-form: **ada.lovelace**
+- long-form: **ada.lovelace@projects.example.org**
+
 :::
 
 #### Network access
@@ -93,7 +91,7 @@ Her username is:
 The SRE that you're using may be configured to allow access only from a specific set of IP addresses.
 This may involve being connected to a specific wired or wireless network or using a VPN.
 You also may be required to connect from a specific, secure location.
-You will be told what these requirements are for your particular environment.
+If your SRE has any network requirements, you will be told what these are.
 
 :::{tip}
 Make sure you know the networks from which you must connect to your SRE.
@@ -129,8 +127,8 @@ You might receive the {ref}`SRE URL <user_guide_sre_url>` at this time, or you m
 
 :::{note}
 In this document Ada Lovelace - our example user - will be participating in the `sandbox` project at a Turing Data Study Group.
-- Her **{ref}`username domain <user_guide_username_domain>`** is `projects.turingsafehaven.ac.uk` .
-- Her **{ref}`SRE URL <user_guide_sre_url>`** is `https://sandbox.projects.turingsafehaven.ac.uk`
+- Her **{ref}`username domain <user_guide_username_domain>`** is `projects.example.org` .
+- Her **{ref}`SRE URL <user_guide_sre_url>`** is `https://sandbox.projects.example.org`
 :::
 
 (user_setup_password_mfa)=
@@ -158,7 +156,7 @@ Please follow these steps carefully.
   Remember that your username will probably be in the format `firstname.lastname` .
 
   :::{note}
-  Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would enter `ada.lovelace@projects.turingsafehaven.ac.uk`
+  Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would enter `ada.lovelace@projects.example.org`
   :::
 
 - There will then be a password prompt.
@@ -386,7 +384,7 @@ If you aren't sure about any of these then please return to the [**Set up your a
 - Go to the {ref}`SRE URL <user_guide_sre_url>` given by your {ref}`System Manager <role_system_manager>`.
 
   :::{note}
-  Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would navigate to `https://sandbox.projects.turingsafehaven.ac.uk`.
+  Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would navigate to `https://sandbox.projects.example.org`.
   :::
 
   :::{important}
@@ -1068,7 +1066,7 @@ Database connections can be made using `pyodbc` or `psycopg2` depending on which
 The data can be read into a dataframe for local analysis.
 
 :::{note}
-Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.turingsafehaven.ac.uk` Safe Haven, would connect using DBeaver as follows:
+Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.example.org` Safe Haven, would connect using DBeaver as follows:
 :::
 
 #### Microsoft SQL
@@ -1077,7 +1075,7 @@ Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.tur
 import pyodbc
 import pandas as pd
 
-server = "MSSQL-SANDBOX.projects.turingsafehaven.ac.uk"
+server = "MSSQL-SANDBOX.projects.example.org"
 port = "1433"
 db_name = "master"
 
@@ -1093,7 +1091,7 @@ print(df.head(3))
 import psycopg2
 import pandas as pd
 
-server = "PSTGRS-SANDBOX.projects.turingsafehaven.ac.uk"
+server = "PSTGRS-SANDBOX.projects.example.org"
 port = 5432
 db_name = "postgres"
 
@@ -1108,7 +1106,7 @@ Database connections can be made using `odbc` or `RPostgres` depending on which 
 The data can be read into a dataframe for local analysis.
 
 :::{note}
-Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.turingsafehaven.ac.uk` Safe Haven, would connect using DBeaver as follows:
+Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.example.org` Safe Haven, would connect using DBeaver as follows:
 :::
 
 #### Microsoft SQL
@@ -1121,7 +1119,7 @@ library(odbc)
 cnxn <- DBI::dbConnect(
     odbc::odbc(),
     Driver = "ODBC Driver 17 for SQL Server",
-    Server = "MSSQL-SANDBOX.projects.turingsafehaven.ac.uk,1433",
+    Server = "MSSQL-SANDBOX.projects.example.org,1433",
     Database = "master",
     Trusted_Connection = "yes"
 )
@@ -1140,7 +1138,7 @@ library(RPostgres)
 # Connect to the databases
 cnxn <- DBI::dbConnect(
     RPostgres::Postgres(),
-    host = "PSTGRS-SANDBOX.projects.turingsafehaven.ac.uk",
+    host = "PSTGRS-SANDBOX.projects.example.org",
     port = 5432,
     dbname = "postgres"
 )
