@@ -255,84 +255,123 @@ This is known as multi-factor authentication (MFA).
 
 #### {{telephone_receiver}} Phone number registration
 
+::::{admonition} 1. Enter your phone number
+:class: dropdown note
+
 - In order to set up MFA you will need to enter your phone number
 
-  :::{image} user_guide/account_setup_mfa_additional_security_verification.png
-  :alt: Additional security verification
-  :align: center
-  :::
+    :::{image} user_guide/account_setup_mfa_additional_security_verification.png
+    :alt: Additional security verification
+    :align: center
+    :width: 90%
+    :::
+::::
 
-- Once you click next you will receive a phone call straight away.
+::::{admonition} 2. Answer a phone call
+:class: dropdown note
 
-  :::{image} user_guide/account_setup_mfa_verifying_phone.png
-  :alt: Verifying phone number
-  :align: center
-  :::
+- Once you click **{guilabel}`Next`** you will receive a phone call straight away.
 
-  :::{tip}
-  The call might say _press the pound key_ or _press the hash key_. Both mean hit the `#` button.
-  :::
+    :::{image} user_guide/account_setup_mfa_verifying_phone.png
+    :alt: Verifying phone number
+    :align: center
+    :width: 90%
+    :::
+
+    :::{tip}
+    The call might say _press the pound key_ or _press the hash key_. Both mean hit the `#` button.
+    :::
+::::
+
+::::{admonition} 3. Register phone number
+:class: dropdown note
 
 - After following the instructions you will see the following screen
 
-  :::{image} user_guide/account_setup_mfa_verified_phone.png
-  :alt: Verified phone number
-  :align: center
-  :::
+    :::{image} user_guide/account_setup_mfa_verified_phone.png
+    :alt: Verified phone number
+    :align: center
+    :width: 90%
+    :::
 
-- Click `Next` to register this phone number for MFA
+- Click **{guilabel}`Next`** to register this phone number for MFA
 
-  :::{image} user_guide/account_setup_mfa_registered_phone.png
-  :alt: Registered phone number
-  :align: center
-  :::
+    :::{image} user_guide/account_setup_mfa_registered_phone.png
+    :alt: Registered phone number
+    :align: center
+    :width: 90%
+    :::
+
+- Click **{guilabel}`Done`**
+::::
+
+::::{admonition} 4. Check the Security Information dashboard
+:class: dropdown note
 
 - You should now see the Security Information dashboard that lists all your verified MFA methods
 
-  :::{image} user_guide/account_setup_mfa_dashboard_phone_only.png
-  :alt: Registered phone number
-  :align: center
-  :::
+    :::{image} user_guide/account_setup_mfa_dashboard_phone_only.png
+    :alt: Registered phone number
+    :align: center
+    :width: 90%
+    :::
+
+- Choose whichever you prefer to be your **Default sign-in method**.
+
+::::
 
 #### {{iphone}} Authenticator app registration
 
-- If you want to use the Microsoft Authenticator app for MFA (which will work if you have wifi but no phone signal) then click on `+ Add sign-in method` and select `Authenticator app`
+::::{admonition} 1. Download the Microsoft Authenticator app
+:class: dropdown note
 
-  :::{image} user_guide/account_setup_mfa_add_authenticator_app.png
-  :alt: Add Authenticator app
-  :align: center
-  :::
-
-- This will prompt you to download the `Microsoft Authenticator` phone app.
-
-  :::{image} user_guide/account_setup_mfa_download_authenticator_app.png
-  :alt: Add Authenticator app
-  :align: center
-  :::
-
-You can click on the link in the prompt or follow the appropriate link for your phone here:
+Search for **Microsoft Authenticator** in your phone's app store or follow the appropriate link for your phone here:
 
 - {{apple}} iOS: `https://bit.ly/iosauthenticator`
 - {{robot}} Android: `https://bit.ly/androidauthenticator`
 - {{bento_box}} Windows mobile: `https://bit.ly/windowsauthenticator`
+::::
 
-You will now be prompted to open the app and:
 
-- To allow notifications
-- Select `Add an account`
-- Select `Work or School account`
+::::{admonition} 2. Open authenticator app
+:class: dropdown note
 
-  :::{image} user_guide/account_setup_mfa_allow_notifications.png
-  :alt: Allow Authenticator notifications
-  :align: center
-  :::
+- Click on **{guilabel}`+ Add sign-in method`** and select **Authenticator app**.
 
-  :::{important}
-  You must give permission for the authenticator app to send you notifications for the app to work as an MFA method.
-  :::
+    :::{image} user_guide/account_setup_mfa_add_authenticator_app.png
+    :alt: Add Authenticator app
+    :align: center
+    :width: 90%
+    :::
+
+- At the **Getting the app** click on **{guilabel}`Next`**.
+
+    :::{image} user_guide/account_setup_mfa_download_authenticator_app.png
+    :alt: Add Authenticator app
+    :align: center
+    :::
+
+- Open the app
+::::
+
+::::{admonition} 3. Register your app
+:class: dropdown note
+
+- From the app
+    - Select **Add an account**
+    - Select **Work or School account**
+
+    :::{image} user_guide/account_setup_mfa_allow_notifications.png
+    :alt: Allow Authenticator notifications
+    :align: center
+    :::
+
+    :::{important}
+    You must give permission for the authenticator app to send you notifications for the app to work as an MFA method.
+    :::
 
 - The next prompt will give you a QR code to scan, like the one shown below
-- Scan the QR code on the screen
+- Scan the QR code on the screen then click **{guilabel}`Next`**
 
   :::{image} user_guide/account_setup_mfa_app_qrcode.png
   :alt: Setup Authenticator app
@@ -346,12 +385,16 @@ You will now be prompted to open the app and:
   :align: center
   :::
 
-- When you click `Approve` on the phone notification, you will get the following message in your browser
+- When you click **{guilabel}`Approve`** on the phone notification, you will get the following message in your browser
 
   :::{image} user_guide/account_setup_mfa_authenticator_app_approved.png
   :alt: Authenticator app test approved
   :align: center
   :::
+::::
+
+::::{admonition} 4. Check the Security Information dashboard
+:class: dropdown note
 
 - You should now be returned to the Security Information dashboard that lists two verified MFA methods
 
@@ -360,9 +403,9 @@ You will now be prompted to open the app and:
   :align: center
   :::
 
-- Choose whichever you prefer to be your `Default sign-in methods`.
+- Choose whichever you prefer to be your **Default sign-in method**.
 
-- You have now finished setting up MFA and you can close your browser
+::::
 
 #### Troubleshooting MFA
 
@@ -370,8 +413,8 @@ Sometimes setting up MFA can be problematic.
 You may find the following tips helpful:
 
 - {{inbox_tray}} Make sure you allow notifications on your authenticator app.
-- {{sleeping}} Check you don't have _Do not Disturb_ mode on.
-- {{zap}} You have to be SUPER FAST at acknowledging the notification on your app, since the access codes update every 30 seconds.
+- {{sleeping}} Check you don't have **Do not Disturb** mode on.
+- {{zap}} You have to be FAST at acknowledging the notification on your app, since the access codes update every 30 seconds.
 - {{confused}} Sometimes just going through the steps again solves the problem
 
 ## {{unlock}} Access the Secure Research Environment
