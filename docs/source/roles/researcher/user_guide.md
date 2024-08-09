@@ -423,10 +423,10 @@ You may find the following tips helpful:
 
 After going through the account setup procedure, you should have access to:
 
-- Your `username`
-- Your `password`
+- Your **username**
+- Your **password**
 - The {ref}`SRE URL <user_guide_sre_url>`
-- Multifactor authentication
+- [Multifactor authentication](#-set-up-multi-factor-authentication)
 
 :::{tip}
 If you aren't sure about any of these then please return to the [**Set up your account**](#-set-up-your-account) section above.
@@ -434,51 +434,55 @@ If you aren't sure about any of these then please return to the [**Set up your a
 
 ### {{house}} Log into the research environment
 
+::::{admonition} 1. Browse to the SRE URL
+:class: dropdown note
+
 - Open a **private/incognito** browser session, so that you don't pick up any existing Microsoft logins
 
 - Go to the {ref}`SRE URL <user_guide_sre_url>` given by your {ref}`System Manager <role_system_manager>`.
 
-  :::{note}
-  Our example user, Ada Lovelace, participating in the **sandbox** project, would navigate to `https://sandbox.projects.example.org`.
-  :::
+    :::{note}
+    Our example user, Ada Lovelace, participating in the **sandbox** project, would navigate to **https://sandbox.projects.example.org**.
+    :::
 
-  :::{important}
-  Don't forget the **https://** as you will not be able to login without it!
-  :::
+::::
 
-- You should arrive at a login page that looks like the image below:
+::::{admonition} 2. Enter your username and password at the prompt
+:class: dropdown note
 
-  ::::{note}
-  Our example user, Ada Lovelace, participating in the **sandbox** project, would enter **ada.lovelace@projects.example.org** in the **Email address, phone number or Skype** box, then click Next
-  :::{image} user_guide/guacamole_ms_login.png
-  :alt: Research environment log in
-  :align: center
-  :::
-  ::::
+- At the login prompt enter your **[long-form username](#username)** and click on the **{guilabel}`Next`** button
 
-- After clicking `Next`, you will then be asked to provide your password.
+    :::{image} user_guide/guacamole_oauth_login.png
+    :alt: Research environment log in
+    :align: center
+    ::::
+
+    ::::{tip}
+    Our example user, Ada Lovelace, would use **ada.lovelace@projects.example.org** here.
+    :::
+
+- Enter your password at the prompt and click on the **{guilabel}`Next`** button
+::::
+
+::::{admonition} 3. Login with MFA
+:class: dropdown note
 
 - You will now **receive a call or mobile app notification** to authenticate using multifactor authentication (MFA).
 
-  :::{image} user_guide/guacamole_mfa.png
-  :alt: MFA trigger
-  :align: center
-  :::
+    :::{image} user_guide/guacamole_mfa.png
+    :alt: MFA trigger
+    :align: center
+    :::
 
-  {{telephone_receiver}} For the call, you may have to move to an area with good reception and/or press the hash (`#`) key multiple times in-call.
+  {{telephone_receiver}} For the call, you may have to move to an area with good reception and/or press the hash (**#**) key multiple times in-call.
 
-  {{iphone}} For the app you will see a notification saying _"You have received a sign in verification request"_. Go to the app to approve the request.
+  {{iphone}} For the app you will see a notification saying **"You have received a sign in verification request"**. Go to the app to approve the request.
 
-  :::{caution}
-  If you don't respond to the MFA request quickly enough, or if it fails, you may get an error. If this happens, please retry
-  :::
+    :::{caution}
+    If you don't respond to the MFA request quickly enough, or if it fails, you may get an error. If this happens, please retry
+    :::
 
-- If you are successful, you'll see a screen similar to the one below.
-
-  :::{image} user_guide/guacamole_dashboard.png
-  :alt: Research environment dashboard
-  :align: center
-  :::
+::::
 
 This is the Guacamole remote desktop home screen.
 From there, you can access Secure Research Desktops.
