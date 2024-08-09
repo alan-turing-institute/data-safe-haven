@@ -14,7 +14,7 @@ from .plain_file_handler import PlainFileHandler
 
 
 def from_ansi(logger: logging.Logger, text: str) -> None:
-    logger.info(Text.from_ansi(text))
+    logger.info(Text.from_ansi(text).markup)
 
 
 def get_console_handler() -> RichHandler:
