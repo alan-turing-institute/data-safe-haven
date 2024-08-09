@@ -623,33 +623,26 @@ When you access the SRD you are actually connecting through the cloud to another
 You may find that the keyboard mapping on your computer is not the same as the one set for the SRD.
 :::
 
-Click on `Desktop` and `Applications > Settings > Keyboard` to change the layout.
+::::{admonition} Changing the keyboard layout
+:class: dropdown note
+
+From the workspace desktop, click on **{menuselection}`Applications --> Settings --> Keyboard`** to change the layout.
 
 :::{tip}
-We recommend opening an application that allows text entry (such as `Libre Office Writer` , see [Access applications](#-access-applications) below) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
+We recommend opening an application that allows text entry (such as **Libre Office Writer** or a text editor) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
 :::
+::::
 
 ### {{unlock}} Access applications
 
-You can access applications from the desktop using either the terminal or via a drop down menu.
+You can access applications from the desktop using either:
+- the **Terminal** app accessible frmo the dock at the bottom of the screen
+- via a drop-down menu when you right-click on the desktop or click the **{menuselection}`Applications`** button on the top left of the screen
 
-Applications can be accessed from the dropdown menu.
-For example:
-
-- `Applications > Development > Jupyter Notebook`
-- `Applications > Development > PyCharm`
-- `Applications > Development > RStudio`
-- `Applications > Education > QGIS Desktop`
-- `Applications > Office > Libre Office Writer`
-
-Applications can be accessed from a terminal.
-For example:
-
-- Open `Terminal` and run `jupyter notebook &` if you want to use `Python` within a jupyter notebook.
-
-:::{image} user_guide/access_desktop_applications.png
+:::{image} user_guide/workspace_desktop_applications.png
 :alt: How to access applications from the desktop
 :align: center
+:width: 90%
 :::
 
 ### {{snake}} Available Python and R versions
