@@ -395,7 +395,7 @@ If you aren't sure about any of these then please return to the [**Set up your a
 - Go to the {ref}`SRE URL <user_guide_sre_url>` given by your {ref}`System Manager <role_system_manager>`.
 
   :::{note}
-  Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would navigate to `https://sandbox.projects.example.org`.
+  Our example user, Ada Lovelace, participating in the **sandbox** project, would navigate to `https://sandbox.projects.example.org`.
   :::
 
   :::{important}
@@ -405,7 +405,7 @@ If you aren't sure about any of these then please return to the [**Set up your a
 - You should arrive at a login page that looks like the image below:
 
   ::::{note}
-  Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would enter `ada.lovelace@projects.turingsafehaven.ac.uk` in the `Email address, phone number or Skype` box, then click Next
+  Our example user, Ada Lovelace, participating in the **sandbox** project, would enter **ada.lovelace@projects.example.org** in the **Email address, phone number or Skype** box, then click Next
   :::{image} user_guide/guacamole_ms_login.png
   :alt: Research environment log in
   :align: center
@@ -751,15 +751,6 @@ Anything placed in here will be considered for data egress - removal from the se
 You may want to consider having subfolders of `/output/` to make the review of this directory easier.
 :::
 
-:::{hint}
-For the Turing Data Study Groups, we recommend the following categories:
-- Presentation
-- Transformed data/derived data
-- Report
-- Code
-- Images
-:::
-
 ### {{newspaper}} Bring in new files to the SRE
 
 Bringing software into a secure research environment may constitute a security risk.
@@ -845,7 +836,7 @@ If you have not used GitLab before:
 - You can find the official documentation on the [GitLab website](https://docs.gitlab.com/ee/user/index.html).
 - Ask your team mates for help.
 - Ask the designated contact for your SRE.
-- There may be a dedicated discussion channel, for example during Turing Data Study Groups you can ask in the Slack channel.
+- There may be a dedicated discussion channel, for example a Slack/Teams/Discord channel or an email list.
 
 ## {{book}} Collaborate on documents using CodiMD
 
@@ -910,13 +901,6 @@ Click the pen button (shown in the image below) to return to the editable markdo
 Remember that the document is not published to the internet, it is only available to others within the SRE.
 :::
 
-:::{tip}
-If you are attending a Turing Data Study Group you will be asked to write a report describing the work your team undertook over the five days of the projects.
-Store a copy of the CodiMD URL in a text file in the outputs folder.
-You will find some example report templates that outline the recommended structure.
-We recommend writing the report in CodiMD - rather than GitLab - so that everyone can edit and contribute quickly.
-:::
-
 ### {{microscope}} Troubleshooting CodiMD
 
 We have noticed that a lower case `L` and an upper case `I` look very similar and often trip up users in the SRE.
@@ -939,7 +923,7 @@ Usually this is because of a requirement for a different type of computing resou
 You will access this machine in a similar way to the main shared desktop, by selecting a different `Desktop` connection.
 
 ::::{note}
-Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, might select `Ubuntu1_CPU2_8GB (Desktop)` instead of `Ubuntu0_CPU2_8GB (Desktop)`
+Our example user, Ada Lovelace, participating in the **sandbox** project, might select `Ubuntu1_CPU2_8GB (Desktop)` instead of `Ubuntu0_CPU2_8GB (Desktop)`
 :::{image} user_guide/guacamole_dashboard.png
 :alt: Research environment dashboard
 :align: center
@@ -985,7 +969,7 @@ The instructions for using other graphical interfaces or programming languages w
 `Azure Data Studio` is currently only able to connect to `Microsoft SQL` databases.
 
 ::::{note}
-Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.turingsafehaven.ac.uk` Safe Haven, would connect using Azure Data Studio as follows:
+Our example user Ada Lovelace, working in the **sandbox** SRE on the **projects.example.org** Data Safe Haven, would connect using Azure Data Studio as follows:
 
 
 :::{image} user_guide/db_azure_data_studio.png
@@ -1009,7 +993,7 @@ Click on the `New database connection` button (which looks a bit like an electri
 - Tick `Show All Schemas` otherwise you will not be able to see the input data
 
 ::::{note}
-Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.turingsafehaven.ac.uk` Safe Haven, would connect using DBeaver as follows:
+Our example user Ada Lovelace, working in the **sandbox** SRE on the **projects.example.org** Data Safe Haven, would connect using DBeaver as follows:
 
 :::{image} user_guide/db_dbeaver_mssql.png
 :alt: DBeaver connection details for Microsoft SQL
@@ -1043,7 +1027,7 @@ You do not need to enter any information in the `Username` or `Password` fields
 :::
 
 ::::{note}
-Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.turingsafehaven.ac.uk` Safe Haven, would connect using DBeaver as follows:
+Our example user Ada Lovelace, working in the **sandbox** SRE on the **projects.example.org** Data Safe Haven, would connect using DBeaver as follows:
 
 :::{image} user_guide/db_dbeaver_postgres_connection.png
 :alt: DBeaver connection details for PostgreSQL
@@ -1077,7 +1061,7 @@ Database connections can be made using `pyodbc` or `psycopg2` depending on which
 The data can be read into a dataframe for local analysis.
 
 :::{note}
-Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.example.org` Safe Haven, would connect using DBeaver as follows:
+Our example user Ada Lovelace, working in the **sandbox** SRE on the **projects.example.org** Data Safe Haven, would connect using DBeaver as follows:
 :::
 
 #### Microsoft SQL
@@ -1117,7 +1101,7 @@ Database connections can be made using `odbc` or `RPostgres` depending on which 
 The data can be read into a dataframe for local analysis.
 
 :::{note}
-Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.example.org` Safe Haven, would connect using DBeaver as follows:
+Our example user Ada Lovelace, working in the **sandbox** SRE on the **projects.example.org** Data Safe Haven, would connect using DBeaver as follows:
 :::
 
 #### Microsoft SQL
