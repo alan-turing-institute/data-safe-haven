@@ -51,6 +51,7 @@ package_categories:
       - octave  # Open source Matlab implementation
       - python-is-python3  # symlinks python to python3
       - python3  # System Python3 distribution
+      - python3-pip  # Python3 package management tool
       - python3-venv  # Python3 venv module
       - r-base  # R programming language
       - racket  # Racket functional programming language implementation
