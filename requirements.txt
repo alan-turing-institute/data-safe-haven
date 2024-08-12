@@ -12,7 +12,7 @@ appdirs==1.4.4
     # via data-safe-haven (pyproject.toml)
 arpeggio==2.0.2
     # via parver
-attrs==24.1.0
+attrs==24.2.0
     # via parver
 azure-common==1.1.28
     # via
@@ -80,7 +80,7 @@ azure-mgmt-resource==23.1.1
     # via data-safe-haven (pyproject.toml)
 azure-mgmt-storage==21.2.1
     # via data-safe-haven (pyproject.toml)
-azure-storage-blob==12.21.0
+azure-storage-blob==12.22.0
     # via
     #   azure-storage-file-datalake
     #   data-safe-haven (pyproject.toml)
@@ -92,7 +92,7 @@ certifi==2024.7.4
     # via
     #   msrest
     #   requests
-cffi==1.16.0
+cffi==1.17.0
     # via cryptography
 charset-normalizer==3.3.2
     # via requests
@@ -121,7 +121,7 @@ dnspython==2.6.1
     #   simple-acme-dns
 fqdn==1.5.1
     # via data-safe-haven (pyproject.toml)
-grpcio==1.60.1
+grpcio==1.60.2
     # via pulumi
 idna==3.7
     # via
@@ -174,13 +174,13 @@ protobuf==4.25.4
     # via pulumi
 psycopg==3.2.1
     # via data-safe-haven (pyproject.toml)
-pulumi==3.127.0
+pulumi==3.128.0
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi-azure-native
     #   pulumi-random
     #   pulumi-tls
-pulumi-azure-native==2.52.0
+pulumi-azure-native==2.55.0
     # via data-safe-haven (pyproject.toml)
 pulumi-random==4.16.3
     # via data-safe-haven (pyproject.toml)
@@ -209,7 +209,7 @@ pytz==2024.1
     #   acme
     #   data-safe-haven (pyproject.toml)
     #   pyrfc3339
-pyyaml==6.0.1
+pyyaml==6.0.2
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi
