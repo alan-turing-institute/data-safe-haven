@@ -54,18 +54,6 @@
         - apt-news
         - esm-cache
 
-    - name: Ensure necessary directories exist
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: directory
-        mode: '0755'
-      loop:
-        - /etc/skel/Desktop
-        - /etc/xdg/xfce4/terminal
-        - /etc/xrdp
-        - /usr/local/share/icons
-        - /usr/local/share/xrdp
-
     - name: Enable bash autocompletion globally
       ansible.builtin.blockinfile:
         path: /etc/bash.bashrc
@@ -136,16 +124,18 @@
         validate: sshd -T -f %s
       notify: Restart sshd
 
+    # This will create directories if src or dest ends in '/'
     - name: Copy xrdp settings
       ansible.builtin.copy:
-        src: etc/xrdp/xrdp.ini
-        dest: /etc/xrdp/xrdp.ini
+        src: etc/xrdp/
+        dest: /etc/xrdp/
         mode: '0644'
 
+    # This will create directories if src or dest ends in '/'
     - name: Copy xrdp logo
       ansible.builtin.copy:
-        src: usr/local/share/xrdp/dsh_logo_240x140_256color.bmp
-        dest: /usr/local/share/xrdp/dsh_logo_240x140_256color.bmp
+        src: usr/local/share/xrdp/
+        dest: /usr/local/share/xrdp/
         mode: '0444'
 
     - name: Disable xrdp root login
@@ -172,10 +162,11 @@
         regexp: '^TerminalEmulator='
         line: 'TerminalEmulator=xfce4-terminal'
 
+    # This will create directories if src or dest ends in '/'
     - name: Copy default terminal colourscheme
       ansible.builtin.copy:
-        src: etc/xdg/xfce4/terminal/terminalrc
-        dest: /etc/xdg/xfce4/terminal/terminalrc
+        src: etc/xdg/xfce4/terminal/
+        dest: /etc/xdg/xfce4/terminal/
         mode: '0444'
 
     - name: Use a blank screensaver
