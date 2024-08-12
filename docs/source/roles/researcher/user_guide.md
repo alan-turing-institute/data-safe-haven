@@ -645,75 +645,81 @@ You can access applications from the desktop using either:
 :width: 90%
 :::
 
-### {{snake}} Available Python and R versions
+### {{woman_technologist}} Development using VSCodium
 
-Typing `R` at the command line will give you the system version of `R` with many custom packages pre-installed.
+You can start **VSCodium** from the **{menuselection}`Applications --> Development`** menu.
 
-There are several versions of `Python` installed, which are managed through [pyenv](https://github.com/pyenv/pyenv).
-You can see the default version (indicated by a '\*') and all other installed versions using the following command:
-
-:::none
-> pyenv versions
+:::{image} user_guide/workspace_desktop_vscodium.png
+:alt: Running VSCodium
+:align: center
+:width: 90%
 :::
 
-This will give output like:
+### {{arrow_double_up}} Development using R
 
-:::none
-  system
-  3.8.12
-* 3.9.10 (set by /home/ada.lovelace/.pyenv_version)
-  3.10.2
+Typing `R` at the command line will give you a pre-installed version of **R**.
+
+:::{image} user_guide/workspace_terminal_r.png
+:alt: Running R from a terminal
+:align: center
+:width: 90%
 :::
 
-You can change your preferred Python version globally or on a folder-by-folder basis using
+Or you can use **RStudio** or **VSCodium** from the **{menuselection}`Applications --> Development`** menu.
 
-- `pyenv global <version number>` (to change the version globally)
-- `pyenv local <version number>` (to change the version for the folder you are currently in)
-
-#### Creating virtual environments
-
-We recommend that you use a dedicated [virtual environment](https://docs.python.org/3/tutorial/venv.html) for developing your code in `Python`.
-You can easily create a new virtual environment based on any of the available `Python` versions
-
-:::none
-> pyenv virtualenv 3.8.12 myvirtualenv
+:::{image} user_guide/workspace_desktop_rstudio.png
+:alt: Running RStudio
+:align: center
+:width: 90%
 :::
 
-You can then activate it with:
+### {{snake}} Development using Python
 
-:::none
-> pyenv shell myvirtualenv
+Typing `python` at the command line will give you a pre-installed version of **Python**.
+
+:::{image} user_guide/workspace_terminal_python.png
+:alt: Running Python from a terminal
+:align: center
+:width: 90%
 :::
 
-or if you want to automatically switch to it whenever you are in the current directory
+Or you can use **Pycharm** from the **{menuselection}`Applications --> Development`** menu.
 
-:::none
-> pyenv local myvirtualenv
+:::{image} user_guide/workspace_desktop_pycharm.png
+:alt: Running RStudio
+:align: center
+:width: 90%
 :::
 
-### {{gift}} Install R and python packages
+## {{gift}} Installing software packages for R and Python
 
-There are local copies of the `PyPI` and `CRAN` package repositories available within the SRE.
-You can install packages you need from these copies in the usual way, for example `pip install` and `install.packages` for Python and R respectively.
+You have access to packages from the **PyPI** and **CRAN** repositories from the SRE.
+You can install packages you need from these copies in the usual way, for example `pip install` (Python) and `install.packages` (R).
 
-:::{caution}
-You **will not** have access to install packages system-wide and will therefore need to install packages in a user directory.
+Depending on the sensitivity level of your SRE, only a subset of **R** and **Python** packages will be available to you:
+
+- {ref}`Tier 2 <policy_tier_2>` (medium security) environments have access to all packages on **PyPI** and **CRAN**.
+- {ref}`Tier 3 <policy_tier_3>` (high security) environments only have pre-authorised packages available.
+
+:::{tip}
+If you need to use a package that is not on the allowlist see the section on how to [bring software or data into the environment](#-bring-in-new-files-to-the-sre) below.
 :::
 
-- For `CRAN` you will be prompted to make a user package directory when you [install your first package](#r-packages).
-- For `PyPI` you will need to [install using the `--user` argument to `pip`](#python-packages).
+### R packages
 
-#### R packages
+:::{note}
+You will not have permissions to install packages system-wide. You will need to use a **user package directory**.
+:::
 
-You can install `R` packages from inside `R` (or `RStudio`):
+You can install **R** packages from inside **R** (or **RStudio**):
 
-:::R
-> install.packages(<package-name>)
+:::{code} R
+> install.packages(NAME_OF_PACKAGE)
 :::
 
 You will see something like the following:
 
-:::R
+:::{code} R
 Installing package into '/usr/local/lib/R/site-library'
 (as 'lib' is unspecified)
 Warning in install.packages("cluster") :
@@ -721,36 +727,34 @@ Warning in install.packages("cluster") :
 Would you like to use a personal library instead? (yes/No/cancel)
 :::
 
-Enter `yes`, which prompts you to confirm the name of the library:
+Type `yes`, which prompts you to confirm the name of the library:
 
-:::R
+:::{code} R
 Would you like to create a personal library
-'~/R/x86_64-pc-linux-gnu-library/3.5'
+'~/R/x86_64-pc-linux-gnu-library/4.1'
 to install packages into? (yes/No/cancel)
 :::
 
-Enter `yes`, to install the packages.
+Type `yes` to install the packages.
 
-#### Python packages
+### Python packages
 
-You can install `python` packages from a terminal.
+:::{note}
+You will not have permissions to install packages system-wide. We recommend using a **virtual environment**.
 
-:::bash
-pip install --user <package-name>
+You can create one:
+
+- using [VSCodium](https://code.visualstudio.com/docs/python/environments)
+- using [PyCharm](https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html)
+- using **Python** [in a terminal](https://docs.python.org/3/library/venv.html)
+
 :::
 
-:::{tip}
-If you are using a virtual environment as recommended above, you will not need the `--user` flag.
+You can install **Python** packages into your virtual environment from a terminal.
+
+:::{code} bash
+pip install NAME_OF_PACKAGE
 :::
-
-#### Package availability
-
-Depending on the type of data you are accessing, different `R` and `python` packages will be available to you (in addition to the ones that are pre-installed):
-
-- {ref}`Tier 2 <policy_tier_2>` (medium security) environments have full mirrors of `PyPI` and `CRAN` available.
-- {ref}`Tier 3 <policy_tier_3>` (high security) environments only have pre-authorised packages available.
-
-If you need to use a package that is not on the allowlist see the section on how to [bring software or data into the environment](#-bring-in-new-files-to-the-sre) below.
 
 (role_researcher_user_guide_shared_storage)=
 
