@@ -54,6 +54,18 @@
         - apt-news
         - esm-cache
 
+    - name: Ensure necessary directories exist
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /etc/skel/Desktop
+        - /etc/xdg/xfce4/terminal
+        - /etc/xrdp
+        - /usr/local/share/icons
+        - /usr/local/share/xrdp
+
     - name: Enable bash autocompletion globally
       ansible.builtin.blockinfile:
         path: /etc/bash.bashrc
@@ -123,17 +135,6 @@
         line: 'UsePAM yes'
         validate: sshd -T -f %s
       notify: Restart sshd
-
-    - name: Ensure xrdp directories exist
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: directory
-        mode: '0755'
-      loop:
-        - /etc/skel/Desktop
-        - /etc/xdg/xfce4/terminal
-        - /etc/xrdp
-        - /usr/local/share/xrdp
 
     - name: Copy xrdp settings
       ansible.builtin.copy:
