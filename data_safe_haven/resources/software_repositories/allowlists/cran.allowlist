@@ -16,6 +16,7 @@ lubridate
 odbc
 pkgconfig
 plogr
+remotes
 rlang
 timechange
 vctrs
