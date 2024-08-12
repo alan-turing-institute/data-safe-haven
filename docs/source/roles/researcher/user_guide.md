@@ -561,15 +561,15 @@ You should now be able to see the SRE dashboard screen which will look like the 
 :::
 
 ::::{note}
-- The Linux desktops within our SRDs use the [Ubuntu operating system](https://ubuntu.com/).
-- The desktop environment used by our SRDs is called [Xfce](https://docs.xfce.org/xfce/).
+- The Linux desktops within our workspaces use the [Ubuntu operating system](https://ubuntu.com/).
+- The desktop environment used by our workspaces is called [Xfce](https://docs.xfce.org/xfce/).
 ::::
 
 **Welcome to the Data Safe Haven SRE! {{wave}}**
 
 ## {{computer}} Analysing sensitive data
 
-The SRD has several pre-installed applications and programming languages to help with your data analysis.
+The workspace has several pre-installed applications and programming languages to help with your data analysis.
 
 ### {{package}} Pre-installed applications
 
@@ -617,10 +617,10 @@ If you need anything that is not already installed, please discuss this with the
 
 ### {{musical_keyboard}} Keyboard mapping
 
-When you access the SRD you are actually connecting through the cloud to another computer - via a few intermediate computers/servers that monitor and maintain the security of the SRE.
+When you access the workspace you are actually connecting through the cloud to another computer - via a few intermediate computers/servers that monitor and maintain the security of the SRE.
 
 :::{caution}
-You may find that the keyboard mapping on your computer is not the same as the one set for the SRD.
+You may find that the keyboard mapping on your computer is not the same as the one set for the workspace.
 :::
 
 ::::{admonition} Changing the keyboard layout
@@ -696,13 +696,13 @@ Or you can use **Pycharm** from the **{menuselection}`Applications --> Developme
 You have access to packages from the **PyPI** and **CRAN** repositories from the SRE.
 You can install packages you need from these copies in the usual way, for example `pip install` (Python) and `install.packages` (R).
 
-Depending on the sensitivity level of your SRE, only a subset of **R** and **Python** packages will be available to you:
+Depending on the sensitivity level of your SRE, you may only have access to a subset of **R** and **Python** packages:
 
 - {ref}`Tier 2 <policy_tier_2>` (medium security) environments have access to all packages on **PyPI** and **CRAN**.
 - {ref}`Tier 3 <policy_tier_3>` (high security) environments only have pre-authorised packages available.
 
 :::{tip}
-If you need to use a package that is not on the allowlist see the section on how to [bring software or data into the environment](#-bring-in-new-files-to-the-sre) below.
+If you need to use a package that is not on the allowlist see the section on how to [bring software or data into the environment](#-bringing-new-files-into-the-sre) below.
 :::
 
 ### R packages
@@ -762,39 +762,38 @@ pip install NAME_OF_PACKAGE
 
 ### {{open_file_folder}} Shared directories within the SRE
 
-There are several shared areas on the SRD that all collaborators within a research project team can see and access:
+There are several shared areas on the workspace that all collaborators within a research project team can see and access:
 
-- [input data](#input-data-data): `/data/`
-- [shared space](#shared-space-shared): `/shared/`
-- [scratch space](#scratch-space-scratch): `/scratch/`
-- [backup space](#backup-space-backup): `/backup/`
-- [output resources](#output-resources-output): `/output/`
+- [input data](#input-data): in the **/data/** folder
+- [shared space](#shared-space): in the **/shared/** folder
+- [output resources](#output-resources): in the **/output/** folder
+<!-- - [scratch space](#scratch-space-scratch): `/scratch/` -->
+<!-- - [backup space](#backup-space-backup): `/backup/` -->
 
-#### Input data: `/data/`
+#### Input data
 
-Data that has been "ingressed" - approved and brought into the secure research environment - can be found in the `/data/` folder.
+Data that has been "ingressed" - approved and brought into the secure research environment - can be found in the **/data/** folder.
 
-Everyone in your group will be able to access it, but it is **read-only**.
+- The contents of **/data/** will be identical on all workspaces in your SRE.
+- Everyone working on your project will be able to access it.
+- Everyone has **read-only access** to the files stored here.
+
+If you are using the Data Safe Haven as part of an organised event, you might find additional resources in the **/data/** folder, such as example slides or document templates.
 
 :::{important}
-You will not be able to change any of the files in `/data/` .
-If you want to make derived datasets, for example cleaned and reformatted data, please add those to the `/shared/` or `/output/` directories.
+You will not be able to change any of the files in **/data/**.
+If you want to make derived datasets, for example cleaned and reformatted data, please add those to the **/shared/** or **/output/** folders.
 :::
 
-The contents of `/data/` will be **identical** on all SRDs in your SRE.
-For example, if your group requests a GPU-enabled machine, this will contain an identical `/data/` folder.
+#### Shared space
 
-:::{tip}
-If you are using the Data Safe Haven as part of an organised event, you might find example slides or document templates in the `/data/` drive.
-:::
+The **/shared/** folder should be used for any work that you want to share with your group.
 
-#### Shared space: `/shared/`
+- The contents of **/shared/** will be identical on all workspaces in your SRE.
+- Everyone working on your project will be able to access it
+- Everyone has **read-and-write access** to the files stored here.
 
-The `/shared/` folder should be used for any work that you want to share with your group.
-Everyone in your group will be able to access it, and will have **read-and-write access**.
-
-The contents of `/shared/` will be **identical** on all SRDs in your SRE.
-
+<!--
 #### Scratch space: `/scratch/`
 
 The `/scratch/` folder should be used for any work-in-progress that isn't ready to share yet.
@@ -805,7 +804,9 @@ You should not use `/scratch/` for long-term storage as it can be reset at any t
 :::
 
 The contents of `/scratch/` will be **different** on different VMs in your SRE.
+-->
 
+<!--
 #### Backup space: `/backup/`
 
 The `/backup/` folder should be used for any work-in-progress that you want to have backed up.
@@ -813,23 +814,26 @@ In the event of any data loss due to accidental data deletion by a TRE user, you
 This **cannot** be used to recover individual files - only the complete contents of the folder.
 Everyone in your group will have **read-and-write access** to all folders on `/backup`.
 
-The contents of `/backup/` will be **identical** on all SRDs in your SRE.
+The contents of `/backup/` will be **identical** on all workspaces in your SRE.
+-->
 
-#### Output resources: `/output/`
+#### Output resources
 
-Any outputs that you want to extract from the secure environment should be placed in the `/output/` folder on the SRD.
-Everyone in your group will be able to access it, and will have **read-and-write access**.
+Any outputs that you want to extract from the secure environment should be placed in the **/output/** folder on the workspace.
+
+- The contents of **/output/** will be identical on all workspaces in your SRE.
+- Everyone working on your project will be able to access it
+- Everyone has **read-and-write access** to the files stored here.
+
 Anything placed in here will be considered for data egress - removal from the secure research environment - by the project's principal investigator together with the data provider.
 
 :::{tip}
-You may want to consider having subfolders of `/output/` to make the review of this directory easier.
+You may want to consider having subfolders of **/output/** to make the review of this directory easier.
 :::
 
-### {{newspaper}} Bring in new files to the SRE
+### {{newspaper}} Bringing new files into the SRE
 
-Bringing software into a secure research environment may constitute a security risk.
-Bringing new data into the SRE may mean that the environment needs to be updated to a more secure tier.
-
+Each time a request is made to bring data or software into the SRE, it needs to be reviewed in case it represents a security risk.
 The review of the "ingress" of new code or data will be coordinated by the designated contact for your SRE.
 They will have to discuss whether this is an acceptable risk to the data security with the project's principle investigator and data provider and the decision might be "no".
 
@@ -872,7 +876,7 @@ Anything that is not transferred to the `/output/` drive to be considered for eg
 
 ### {{unlock}} Access GitLab
 
-You can access `GitLab` from an internet browser in the SRD using the desktop shortcut.
+You can access `GitLab` from an internet browser in the workspace using the desktop shortcut.
 Login with username `firstname.lastname` (the domain is not needed) and `password` .
 
 ::::{note}
@@ -884,7 +888,7 @@ Our example user, Ada Lovelace would enter `ada.lovelace` in the `LDAP Username`
 :::
 ::::
 
-Accessing `GitLab` from the browser on the SRD is an easy way to switch between analysis work and documenting the process or results.
+Accessing `GitLab` from the browser on the workspace is an easy way to switch between analysis work and documenting the process or results.
 
 :::{warning}
 Do not use your username and password from a pre-existing `GitLab` account!
@@ -927,7 +931,7 @@ We recommend [this Markdown cheat sheet](https://github.com/adam-p/markdown-here
 
 ### {{unlock}} Access CodiMD
 
-You can access `CodiMD` from an internet browser from the SRD using the desktop shortcut.
+You can access `CodiMD` from an internet browser from the workspace using the desktop shortcut.
 Login with username `firstname.lastname` (the domain is not needed) and `password` .
 
 ::::{note}
@@ -939,7 +943,7 @@ Our example user, Ada Lovelace would enter `ada.lovelace` in the `Username` box,
 :::
 ::::
 
-Accessing CodiMD from the browser on the SRD is an easy way to switch between analysis work and documenting the process or results.
+Accessing CodiMD from the browser on the workspace is an easy way to switch between analysis work and documenting the process or results.
 
 ### {{busts_in_silhouette}} Editing other people's documents
 
@@ -989,9 +993,9 @@ Rather than proliferate lots of documents, we recommend that one person is taske
 You could use the GitLab wiki or `README` file to share links to collaboratively written documents.
 :::
 
-## {{unlock}} Access additional SRDs
+## {{unlock}} Access additional workspaces
 
-Your project might make use of further SRDs in addition to the main shared desktop.
+Your project might make use of further workspaces in addition to the main shared desktop.
 Usually this is because of a requirement for a different type of computing resource, such as access to one or more GPUs (graphics processing units).
 
 You will access this machine in a similar way to the main shared desktop, by selecting a different `Desktop` connection.
@@ -1081,9 +1085,9 @@ Be sure to select `Kerberos authentication` so that your username and password w
 
 ::::{note}
 After clicking finish, you may be prompted to download missing driver files.
-Drivers have already been provided on the SRD for Microsoft SQL databases.
+Drivers have already been provided on the workspace for Microsoft SQL databases.
 Clicking `Download` will make DBeaver use these pre-downloaded drivers without requiring internet access.
-Thus, even on SRDs with no external internet access (Tier 2 or above), click `Download`.
+Thus, even on workspaces with no external internet access (Tier 2 or above), click `Download`.
 Note that the prompt may appear multiple times.
 :::{image} user_guide/db_dbeaver_mssql_download.png
 :alt: DBeaver driver download for Microsoft SQL
@@ -1119,9 +1123,9 @@ If you are prompted for `Username` or `Password` when connecting, you can leave 
 
 ::::{note}
 After clicking finish, you may be prompted to download missing driver files.
-Drivers have already been provided on the SRD for PostgreSQL databases.
+Drivers have already been provided on the workspace for PostgreSQL databases.
 Clicking `Download` will make DBeaver use these pre-downloaded drivers without requiring internet access.
-Thus, even on SRDs with no external internet access (Tier 2 or above), click `Download`.
+Thus, even on workspaces with no external internet access (Tier 2 or above), click `Download`.
 Note that the prompt may appear multiple times.
 :::{image} user_guide/db_dbeaver_pstgrs_download.png
 :alt: DBeaver driver download for Microsoft SQL
@@ -1387,7 +1391,7 @@ If you want to override this with a different username or email address for spec
 ### Cloning projects
 
 In `git`, when you copy a project you say you "clone" it.
-To work on a `git` project in the SRD, you will need to clone it.
+To work on a `git` project in the workspace, you will need to clone it.
 To do this, sign in to `GitLab`.
 
 When you are on your Dashboard, click on the project that you’d like to clone.
