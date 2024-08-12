@@ -841,63 +841,59 @@ They will have to discuss whether this is an acceptable risk to the data securit
 You can make the process as easy as possible by providing as much information as possible about the code or data you'd like to bring into the environment and about how it is to be used.
 :::
 
-## {{pill}} Versioning code using GitLab
+## {{pill}} Versioning code using Gitea
 
-`GitLab` is a code hosting platform for version control and collaboration - similar to `GitHub`.
-It allows you to use `git` to **version control** your work, coordinate tasks using `GitLab` **issues** and review work using `GitLab` **merge requests**.
+**Gitea** is an open-source code hosting platform for version control and collaboration - similar to **GitHub**.
+It allows you to use [git](https://git-scm.com/about) to **version control** your work, coordinate tasks using **issues** and review work using **pull requests**.
 
-:::{note}
-`GitLab` is a fully open source project.
-This information doesn't matter at all for how you use `GitLab` within the SRE, but we do want to thank the community for maintaining free and open source software for us to use and reuse.
-You can read more about `GitLab` at [their code repository](<https://gitlab.com/gitlab-org/gitlab>).
+:::{admonition} Read more about Gitea
+:class: dropdown note
+**Gitea** is an open source project.
+We want to thank the community for maintaining free and open source software for us to use and reuse.
+You can read more about **Gitea** at [their website](<https://about.gitea.com/>).
 :::
 
-The `GitLab` instance within the SRE can contain code, documentation and results from your team's analyses.
-You do not need to worry about the security of the information you upload there as it is fully contained within the SRE and there is no access to the internet and/or external servers.
+The **Gitea** server within the SRE can hold code, documentation and results from your team's analyses.
+This **Gitea** server is entirely within the SRE - you do not need to worry about the security of the information you upload there as there is no access to the internet from this server.
 
 :::{important}
-The `GitLab` instance within the SRE is entirely separate from the `https://gitlab.com` service.
+The **Gitea** instance within the SRE is entirely separate from the **https://gitea.com** service.
 :::
 
-### {{books}} Maintaining an archive of the project
+### {{unlock}} Access Gitea
 
-The Data Safe Haven SRE is hosted on the Microsoft Azure cloud platform.
-One of the benefits of having cloud based infastructure is that it can be deleted forever when the project is over.
-Deleting the infrastructure ensures that neither sensitive data nor insights derived from the data or modelling techniques persist.
+You can access **Gitea** from an internet browser in the workspace using the desktop shortcut.
+Use your **[short-form username](#username)** and **password** to login.
 
-While working on the project, make sure that every piece of code you think might be useful is stored in a GitLab repository within the secure environment.
-Any other work should be transferred to the `/shared/` drive so that it is accessible to other TRE users.
-You can also use the `/backup/` drive to store work that you want to keep safe from accidental deletion.
-Anything that you think should be considered for **egress** from the environment (eg. images or processed datasets) should be transferred to the shared `/output/` drive.
+::::{admonition} Connecting to Gitea
+:class: dropdown note
 
-:::{caution}
-Anything that is not transferred to the `/output/` drive to be considered for egress will be deleted forever when the project is over.
-:::
+Click the **{guilabel}`Sign in`** button on the top-right of the page.
 
-### {{unlock}} Access GitLab
-
-You can access `GitLab` from an internet browser in the workspace using the desktop shortcut.
-Login with username `firstname.lastname` (the domain is not needed) and `password` .
-
-::::{note}
-Our example user, Ada Lovelace would enter `ada.lovelace` in the `LDAP Username` box, enter her password and then click `Sign in` .
-
-:::{image} user_guide/gitlab_screenshot_login.png
-:alt: GitLab login
+:::{image} user_guide/gitea_homepage.png
+:alt: Gitea homepage
 :align: center
+:width: 90%
 :::
+
+Enter your **[short-form username](#username)** and **password**.
+
+:::{image} user_guide/gitea_login.png
+:alt: Gitea login
+:align: center
+:width: 90%
+:::
+
+Then click the **{guilabel}`Sign in`** button
 ::::
 
-Accessing `GitLab` from the browser on the workspace is an easy way to switch between analysis work and documenting the process or results.
+You can use the **Gitea** browser to look at code written by you or others working on your project.
 
 :::{warning}
-Do not use your username and password from a pre-existing `GitLab` account!
-The `GitLab` instance within the SRE is entirely separate from the `https://gitlab.com` service and is expecting the same username and password that you used to log into the SRE.
+The **Gitea** instance in the SRE is completely separate from **gitea.com**. Only your SRE username and password will work.
 :::
 
 ### {{open_hands}} Public repositories within the SRE
-
-The `GitLab` instance inside the secure research environment is entirely contained _inside_ the SRE.
 
 When you make a repository inside the SRE "public" it is visible to your collaborators who also have access to the SRE.
 A "public" repository within the SRE is only visible to others with the same data access approval, it is not open to the general public via the internet.
@@ -906,12 +902,12 @@ A "public" repository within the SRE is only visible to others with the same dat
 We recommend that you make your repositories public to facilitate collaboration within the secure research environment.
 :::
 
-### {{construction_worker}} Support for GitLab use
+### {{construction_worker}} Support for Gitea use
 
-If you have not used GitLab before:
+If you have not used Gitea before:
 
-- There is a small tutorial available as an [Appendix](#-appendix-b-gitlab-tutorial-notes) to this user guide.
-- You can find the official documentation on the [GitLab website](https://docs.gitlab.com/ee/user/index.html).
+- There is a small tutorial available as an [Appendix](#-appendix-b-gitea-tutorial-notes) to this user guide.
+- You can find the official documentation on the [Gitea website](https://docs.gitea.com/category/usage).
 - Ask your team mates for help.
 - Ask the designated contact for your SRE.
 - There may be a dedicated discussion channel, for example a Slack/Teams/Discord channel or an email list.
@@ -990,8 +986,23 @@ Double check the characters in the URL, and if there are ambiguous ones try the 
 Rather than proliferate lots of documents, we recommend that one person is tasked with creating the file and sharing the URL with other team members.
 
 :::{tip}
-You could use the GitLab wiki or `README` file to share links to collaboratively written documents.
+You could use the Gitea wiki or `README` file to share links to collaboratively written documents.
 :::
+
+## {{books}} Maintaining an archive of the project
+
+At the end of each project, the entire SRE is deleted.
+Anything that has not been transferred to the **/output/** folder to be considered for egress will be deleted forever at this point.
+
+:::{important}
+You are responsible for deciding what is worth archiving.
+:::
+
+While working on the project:
+
+- store all your code in a **Gitea** repository.
+- store all resources that might be useful to the rest of the project in the **/shared/** folder.
+- store anything that might form an output from the project (_e.g._ images, documents or output datasets) in the **/output/** folder.
 
 ## {{unlock}} Access additional workspaces
 
@@ -1333,9 +1344,9 @@ clear
 
 For a more detailed introduction, visit the official Ubuntu tutorial, [The Linux command line for beginners](https://ubuntu.com/tutorials/command-line-for-beginners)
 
-## {{notebook}} Appendix B: Gitlab tutorial notes
+## {{notebook}} Appendix B: Gitea tutorial notes
 
-`GitLab` can be thought of as a local version of `GitHub` - that is a git server along with useful features such as:
+**Gitea** can be thought of as a local version of `GitHub` - that is a git server along with useful features such as:
 
 - **Project wiki** - exactly what it says
 - **Project pastebin** - share bits of code
@@ -1343,7 +1354,7 @@ For a more detailed introduction, visit the official Ubuntu tutorial, [The Linux
 - **Pull requests** - Way to keep track of changes individuals have made to be included in master
 
 Some teams design their entire workflows around these things.
-A comparison in terms of features can be found [here](https://usersnap.com/blog/gitlab-github/).
+A comparison in terms of features can be found [here](https://usersnap.com/blog/Gitea-github/).
 
 ### Getting started with Git
 
@@ -1392,15 +1403,15 @@ If you want to override this with a different username or email address for spec
 
 In `git`, when you copy a project you say you "clone" it.
 To work on a `git` project in the workspace, you will need to clone it.
-To do this, sign in to `GitLab`.
+To do this, sign in to **Gitea**.
 
 When you are on your Dashboard, click on the project that you’d like to clone.
 To work in the project, you can copy a link to the `git` repository through a SSH or a HTTPS protocol.
-SSH is easier to use after it’s been set up, [you can find the details here](https://docs.gitlab.com/ee/user/ssh.html).
+SSH is easier to use after it’s been set up, [you can find the details here](https://docs.Gitea.com/ee/user/ssh.html).
 While you are at the Project tab, select HTTPS or SSH from the dropdown menu and copy the link using the Copy URL to clipboard button (you’ll have to paste it on your shell in the next step>).
 
 :::{image} user_guide/gitlab_clone_url.png
-:alt: Clone GitLab project
+:alt: Clone Gitea project
 :align: center
 :::
 
@@ -1502,9 +1513,9 @@ git checkout .
 
 Merge requests are useful to integrate separate changes that you’ve made to a project, on different branches.
 This is a brief guide on how to create a merge request.
-For more information, check the [merge requests documentation](https://docs.gitlab.com/ee/user/project/merge_requests/index.html).
+For more information, check the [merge requests documentation](https://docs.Gitea.com/ee/user/project/merge_requests/index.html).
 
-- Before you start, you should have already created a branch and pushed your changes to `GitLab`.
+- Before you start, you should have already created a branch and pushed your changes to **Gitea**.
 - Go to the project where you’d like to merge your changes and click on the `Merge requests` tab.
 - Click on `New merge request` on the right side of the screen.
 - From there on, you have the option to select the source branch and the target branch you’d like to compare to.
@@ -1512,7 +1523,7 @@ For more information, check the [merge requests documentation](https://docs.gitl
 The default target project is the upstream repository, but you can choose to compare across any of its forks.
 
 :::{image} user_guide/gitlab_new_merge_request.png
-:alt: New GitLab merge request
+:alt: New Gitea merge request
 :align: center
 :::
 
@@ -1521,7 +1532,7 @@ The default target project is the upstream repository, but you can choose to com
 - Optionally, select a user to review your merge request and to accept or close it. You may also select a milestone and labels.
 
 :::{image} user_guide/gitlab_merge_request_details.png
-:alt: GitLab merge request details
+:alt: Gitea merge request details
 :align: center
 :::
 
