@@ -1018,22 +1018,24 @@ While working on the project:
 Your project might make use of further workspaces in addition to the main shared desktop.
 Usually this is because of a requirement for a different type of computing resource, such as access to one or more GPUs (graphics processing units).
 
-You will access this machine in a similar way to the main shared desktop, by selecting a different `Desktop` connection.
+You will access this machine in a similar way to the main shared desktop, by selecting a different **Desktop** connection.
 
-::::{note}
-Our example user, Ada Lovelace, participating in the **sandbox** project, might select `Ubuntu1_CPU2_8GB (Desktop)` instead of `Ubuntu0_CPU2_8GB (Desktop)`
-:::{image} user_guide/guacamole_dashboard.png
+::::{admonition} Selecting a different workspace
+:class: dropdown note
+
+Our example user, Ada Lovelace, participating in the **sandbox** project, might select **Workspace 2** instead of **Workspace 1** since it has additional CPUs and RAM.
+
+:::{image} user_guide/guacamole_dashboard_multiple_workspaces.png
 :alt: Research environment dashboard
 :align: center
+:width: 90%
 :::
+
+This will bring her to the normal login screen, where she will use the username **ada.lovelace** and her password as before.
 ::::
 
-- This will bring you to the normal login screen, where you use the same `username` and `password` credentials as before.
-- Any local files that you have created in the `/output/` folder on other VMs (e.g. analysis scripts, notes, derived data) will be automatically available in the new VM.
-
 :::{tip}
-The naming pattern of the available desktop connections lets you know their compute capabilities.
-For example `Ubuntu1_CPU2_8GB` has 2 CPUs and 8GB of RAM.
+Any files that you have created in the **/output/**, **/home/** or **/shared** folders on other VMs will be automatically available in the new VM.
 :::
 
 ## {{green_book}} Access databases
