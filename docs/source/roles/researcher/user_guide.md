@@ -752,8 +752,8 @@ You can create one:
 
 You can install **Python** packages into your virtual environment from a terminal.
 
-:::{code} bash
-pip install NAME_OF_PACKAGE
+:::{code} console
+> pip install NAME_OF_PACKAGE
 :::
 
 (role_researcher_user_guide_shared_storage)=
@@ -887,10 +887,12 @@ Enter your **[short-form username](#username)** and **password**.
 Then click the **{guilabel}`Sign in`** button
 ::::
 
-You can use the **Gitea** browser to look at code written by you or others working on your project.
+From the **Gitea** dashboard, you can create new repositories or look at repositories created by you or others.
 
-:::{warning}
-The **Gitea** instance in the SRE is completely separate from **gitea.com**. Only your SRE username and password will work.
+:::{image} user_guide/gitea_dashboard.png
+:alt: Gitea dashboard
+:align: center
+:width: 90%
 :::
 
 ### {{open_hands}} Public repositories within the SRE
@@ -912,81 +914,88 @@ If you have not used Gitea before:
 - Ask the designated contact for your SRE.
 - There may be a dedicated discussion channel, for example a Slack/Teams/Discord channel or an email list.
 
-## {{book}} Collaborate on documents using CodiMD
+## {{book}} Collaborate on documents using HedgeDoc
 
-`CodiMD` is a locally installed tool that allows you to collaboratively write reports.
-It uses `Markdown` which is a simple way to format your text so that it renders nicely in full HTML.
+**HedgeDoc** is an open-source document hosting platform for collaboration - similar to **HackMD**.
+It uses [Markdown](https://www.markdownguide.org/) which is a simple way to format your text so that it renders nicely in HTML.
 
-:::{note}
-`CodiMD` is a fully open source version of the `HackMD` software.
-This information doesn't matter at all for how you use `CodiMD` within the SRE, but we do want to thank the community for maintaining free and open source software for us to use and reuse.
-You can read more about `CodiMD` at [their GitHub repository](<https://github.com/hackmdio/codimd#codimd>).
-:::
+The **HedgeDoc** server within the SRE can hold documents relating to your team's analyses.
+This **HedgeDoc** server is entirely within the SRE - you do not need to worry about the security of the information you upload there as there is no access to the internet from this server.
 
-We recommend [this Markdown cheat sheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
-
-### {{unlock}} Access CodiMD
-
-You can access `CodiMD` from an internet browser from the workspace using the desktop shortcut.
-Login with username `firstname.lastname` (the domain is not needed) and `password` .
-
-::::{note}
-Our example user, Ada Lovelace would enter `ada.lovelace` in the `Username` box, enter her password and then click `Sign in` .
-
-:::{image} user_guide/codimd_logon.png
-:alt: CodiMD login
-:align: center
-:::
-::::
-
-Accessing CodiMD from the browser on the workspace is an easy way to switch between analysis work and documenting the process or results.
-
-### {{busts_in_silhouette}} Editing other people's documents
-
-The CodiMD instance inside the secure research environment is entirely contained _inside_ the SRE.
-
-When you make a markdown document inside the SRE "editable" your collaborators who also have access to the SRE can access it via the URL at the top of the page.
-They will have the right to change the file if they are signed into the CodiMD instance.
-
-The link will only work for people who have the same data access approval, it is not open to the general public via the internet.
-
-:::{image} user_guide/codimd_access_options.png
-:alt: CodiMD access options
-:align: center
+:::{admonition} Read more about HedgeDoc
+:class: dropdown note
+**HedgeDoc** is an open source project.
+We want to thank the community for maintaining free and open source software for us to use and reuse.
+You can read more about **HedgeDoc** at [their website](<https://hedgedoc.org/>).
 :::
 
 :::{tip}
-We recommend that you make your documents **editable** to facilitate collaboration within the secure research environment.
+If you've never used Markdown before, we recommend reading this [Markdown cheat sheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
+:::
+
+### {{unlock}} Access HedgeDoc
+
+You can access **HedgeDoc** from an internet browser from the workspace using the desktop shortcut.
+Use your **[short-form username](#username)** and **password** to login.
+
+::::{admonition} Connecting to HedgeDoc
+:class: dropdown note
+
+Click the **{guilabel}`Sign in`** button on the top-right of the page.
+
+:::{image} user_guide/hedgedoc_homepage.png
+:alt: HedgeDoc homepage
+:align: center
+:width: 90%
+:::
+
+Enter your **[short-form username](#username)** and **password**.
+
+:::{image} user_guide/hedgedoc_login.png
+:alt: HedgeDoc login
+:align: center
+:width: 90%
+:::
+
+Then click the **{guilabel}`Sign in`** button
+::::
+
+You can use the **HedgeDoc** server to work collaboratively on documents with other project team members.
+
+### {{busts_in_silhouette}} Editing other people's documents
+
+When you make a Markdown document inside the SRE "editable" your collaborators who also have access to the SRE can access it via the URL at the top of the page.
+They will have the right to change the file if they are signed into the **HedgeDoc** server.
+
+The link will only work for people who have the same data access approval, it is not open to the general public via the internet.
+
+:::{image} user_guide/hedgedoc_access_options.png
+:alt: HedgeDoc access options
+:align: center
+:width: 90%
+:::
+
+:::{tip}
+We recommend that you make your documents **editable** to facilitate collaboration within the SRE.
 Alternatively, the **locked** option allows others to read but not edit the document.
 :::
+
+### {{book}} Publishing your documents
 
 The default URL is quite long and difficult to share with your collaborators.
 We recommend **publishing** the document to get a much shorter URL which is easier to share with others.
 
-Click the `Publish` button to publish the document and generate the short URL.
-Click the pen button (shown in the image below) to return to the editable markdown view.
+Click the **{guilabel}`Publish`** button to publish the document and generate the short URL.
+Click the pen icon to return to the editable markdown view.
 
-:::{image} user_guide/codimd_publishing.png
-:alt: CodiMD publishing
+:::{image} user_guide/hedgedoc_publish.png
+:alt: Publish with HedgeDoc
 :align: center
+:width: 90%
 :::
 
 :::{important}
 Remember that the document is not published to the internet, it is only available to others within the SRE.
-:::
-
-### {{microscope}} Troubleshooting CodiMD
-
-We have noticed that a lower case `L` and an upper case `I` look very similar and often trip up users in the SRE.
-
-:::{tip}
-Double check the characters in the URL, and if there are ambiguous ones try the one you haven't tried yet!
-:::
-
-Rather than proliferate lots of documents, we recommend that one person is tasked with creating the file and sharing the URL with other team members.
-
-:::{tip}
-You could use the Gitea wiki or `README` file to share links to collaboratively written documents.
 :::
 
 ## {{books}} Maintaining an archive of the project
