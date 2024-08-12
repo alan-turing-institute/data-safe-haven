@@ -3,7 +3,7 @@
 # - *not* pre-installed
 # - on the tier-3 list (so we can test all tiers)
 # - alphabetically early and late (so we can test the progress of the mirror synchronisation)
-packages=("askpass" "zeallot")
+packages=("cli" "withr")
 uninstallable_packages=("aws.s3")
 
 # Create a temporary library directory
