@@ -67,12 +67,14 @@
             fi
           fi
 
+    # This will create directories if src or dest ends in '/'
     - name: Copy bashrc skeleton
       ansible.builtin.copy:
         src: etc/skel/bashrc
         dest: /etc/skel/.bashrc
         mode: '0755'
 
+    # This will create directories if src or dest ends in '/'
     - name: Copy xsession skeleton
       ansible.builtin.copy:
         src: etc/skel/xsession
@@ -216,6 +218,7 @@
         - gitea
         - hedgedoc
 
+    # This will create directories if src or dest ends in '/'
     - name: Add polkit rule to allow colord
       ansible.builtin.copy:
         src: etc/polkit-1/localauthority/50-local.d/50-colord.pkla
@@ -244,6 +247,7 @@
         mode: '0640'
       notify: Restart auditd
 
+    # This will create directories if src or dest ends in '/'
     - name: Copy auditd privileged executable rules script
       tags: auditd
       ansible.builtin.copy:
@@ -258,6 +262,7 @@
         creates: /etc/audit/rules.d/50-privileged.rules
       notify: Restart auditd
 
+    # This will create directories if src or dest ends in '/'
     - name: Copy ClamAV daemon configuration
       ansible.builtin.copy:
         src: etc/clamav/clamd.conf
