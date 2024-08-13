@@ -5,6 +5,7 @@
 :::{toctree}
 :hidden:
 
+new_user_setup.md
 user_guide.md
 available_software.md
 :::
@@ -12,6 +13,9 @@ available_software.md
 A project member, who analyses data to produce results.
 We reserve the capitalised term **Researcher** for this role in our user model.
 We use the lower case term when considering the population of researchers more widely.
+
+[New user setup](new_user_setup.md)
+: Step-by-step instructions for new **Researchers** who want to start using an existing Data Safe Haven.
 
 [User guide](user_guide.md)
 : Step-by-step instructions for **Researchers** who want to start using an existing Data Safe Haven.
