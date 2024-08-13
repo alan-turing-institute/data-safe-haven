@@ -1,6 +1,6 @@
 import pulumi.automation as automation
 import pulumi.dynamic as dynamic
-from pulumi.asset import FileAsset
+from pulumi.asset import FileAsset, StringAsset
 from pulumi.config import (
     Config,
 )
@@ -27,5 +27,6 @@ __all__ = [
     "Output",
     "Resource",
     "ResourceOptions",
+    "StringAsset",
     "UNKNOWN",
 ]

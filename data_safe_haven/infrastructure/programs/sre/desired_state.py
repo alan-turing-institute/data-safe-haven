@@ -194,9 +194,7 @@ class SREDesiredStateComponent(ComponentResource):
             source=Output.all(
                 gitea_hostname=props.gitea_hostname,
                 hedgedoc_hostname=props.hedgedoc_hostname,
-            ).apply(
-                lambda kwargs: StringAsset(self.ansible_vars_file(**kwargs))
-            ),
+            ).apply(lambda kwargs: StringAsset(self.ansible_vars_file(**kwargs))),
         )
         # Set up a private endpoint for the desired state storage account
         storage_account_endpoint = network.PrivateEndpoint(
