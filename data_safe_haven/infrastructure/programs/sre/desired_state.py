@@ -3,7 +3,14 @@
 from collections.abc import Mapping, Sequence
 
 import yaml
-from pulumi import ComponentResource, FileAsset, Input, Output, ResourceOptions
+from pulumi import (
+    ComponentResource,
+    FileAsset,
+    Input,
+    Output,
+    ResourceOptions,
+    StringAsset,
+)
 from pulumi_azure_native import (
     network,
     resources,
@@ -184,10 +191,12 @@ class SREDesiredStateComponent(ComponentResource):
             blob_name="vars/pulumi_vars.yaml",
             container_name=container_desired_state.name,
             resource_group_name=props.resource_group_name,
-            source=Output.all(
-                gitea_hostname=props.gitea_hostname,
-                hedgedoc_hostname=props.hedgedoc_hostname,
-            ).apply(lambda kwargs: self.ansible_vars_file(**kwargs)),
+            source=StringAsset(
+                Output.all(
+                    gitea_hostname=props.gitea_hostname,
+                    hedgedoc_hostname=props.hedgedoc_hostname,
+                ).apply(lambda kwargs: self.ansible_vars_file(**kwargs))
+            ),
         )
         # Set up a private endpoint for the desired state storage account
         storage_account_endpoint = network.PrivateEndpoint(
