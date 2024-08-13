@@ -1310,55 +1310,55 @@ If you have never used a Linux desktop before, you might find some of the follow
 
 Go into a project directory to work in it
 
-:::bash
+:::{code} bash
 cd NAME-OF-PROJECT
 :::
 
 Go back one directory
 
-:::bash
+:::{code} bash
 cd ..
 :::
 
 List what’s in the current directory
 
-:::bash
+:::{code} bash
 ls
 :::
 
 Create a new directory
 
-:::bash
+:::{code} bash
 mkdir NAME-OF-YOUR-DIRECTORY
 :::
 
 Remove a file
 
-:::bash
+:::{code} bash
 rm NAME-OF-FILE
 :::
 
 Remove a directory and all of its contents
 
-:::bash
+:::{code} bash
 rm -r NAME-OF-DIRECTORY
 :::
 
 View command history
 
-:::bash
+:::{code} bash
 history
 :::
 
 Show which directory I am in
 
-:::bash
+:::{code} bash
 pwd
 :::
 
 Clear the shell window
 
-:::bash
+:::{code} bash
 clear
 :::
 
@@ -1393,25 +1393,25 @@ Over the course of the work that you do in your SRE, you will often be accessing
 It is important to configure your `git` username and email address, since every `git` commit will use this information to identify you as the author.
 On your shell, type the following command to add your username:
 
-:::bash
+:::{code} bash
 git config --global user.name "YOUR_USERNAME"
 :::
 
 Then verify that you have the correct username:
 
-:::bash
+:::{code} bash
 git config --global user.name
 :::
 
 To set your email address, type the following command:
 
-:::bash
+:::{code} bash
 git config --global user.email "your_email_address@example.com"
 :::
 
 To verify that you entered your email correctly, type:
 
-:::bash
+:::{code} bash
 git config --global user.email
 :::
 
@@ -1437,7 +1437,7 @@ While you are at the Project tab, select HTTPS or SSH from the dropdown menu and
 
 Go to your computer’s shell and type the following command with your SSH or HTTPS URL:
 
-:::bash
+:::{code} bash
 git clone <PASTE HTTPS OR SSH HERE>
 :::
 
@@ -1452,26 +1452,26 @@ If someone else made changes to the `main` branch while you were working on your
 
 To create a branch:
 
-:::bash
+:::{code} bash
 git checkout -b NAME-OF-BRANCH
 :::
 
 Work on an existing branch:
 
-:::bash
+:::{code} bash
 git checkout NAME-OF-BRANCH
 :::
 
 To merge the `main` branch into a created branch you need to be on the created branch.
 
-:::bash
+:::{code} bash
 git checkout NAME-OF-BRANCH
 git merge main
 :::
 
 To merge a created branch into the `main` branch you need to be on the created branch.
 
-:::bash
+:::{code} bash
 git checkout main
 git merge NAME-OF-BRANCH
 :::
@@ -1482,7 +1482,7 @@ This is for you to work on an up-to-date copy (it is important to do this every 
 You pull from remote repositories to get all the changes made by users since the last time you cloned or pulled the project.
 Later, you can push your local commits to the remote repositories.
 
-:::bash
+:::{code} bash
 git pull REMOTE NAME-OF-BRANCH
 :::
 
@@ -1497,33 +1497,33 @@ These changes may be new, modified, or deleted files/folders.
 Use `git add` to stage a local file/folder for committing.
 Then use `git commit` to commit the staged files:
 
-:::bash
+:::{code} bash
 git add FILE OR FOLDER
 git commit -m "COMMENT TO DESCRIBE THE INTENTION OF THE COMMIT"
 :::
 
 To add and commit all local changes in one command:
 
-:::bash
+:::{code} bash
 git add .
 git commit -m "COMMENT TO DESCRIBE THE INTENTION OF THE COMMIT"
 :::
 
 To push all local commits to the remote repository:
 
-:::bash
+:::{code} bash
 git push REMOTE NAME-OF-BRANCH
 :::
 
 For example, to push your local commits to the `main` branch of the origin remote:
 
-:::bash
+:::{code} bash
 git push origin main
 :::
 
 To delete all local changes in the repository that have not been added to the staging area, and leave unstaged files/folders, type:
 
-:::bash
+:::{code} bash
 git checkout .
 :::
 
