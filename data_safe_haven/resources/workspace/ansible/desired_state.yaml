@@ -96,7 +96,6 @@
         new_module_path: pam_mkhomedir.so
         module_arguments: 'skel=/etc/skel umask=0022'
         state: after
-      notify: Update PAM auth
 
     - name: Don't prompt to change expired passwords via ldap
       community.general.pamd:
