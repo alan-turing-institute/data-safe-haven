@@ -84,3 +84,20 @@ If you want to make changes to the config, edit this file and then run `dsh conf
 :::{code} shell
 $ dsh sre deploy YOUR_SRE_NAME
 :::
+
+::::{important}
+After deployment, you may need to manually ensure that backups function.
+
+- In the Azure Portal, navigate to the resource group for the SRE: **shm-_SHM\_NAME_-sre-_SRE\_NAME_-rg**
+- Navigate to the backup vault for the SRE: **shm-_SHM\_NAME_-sre-_SRE\_NAME_-bv-backup**
+- From the side menu, select **{menuselection}`Manage --> Backup Instances`**
+- Change **Datasource type** to  **Azure Blobs (Azure Storage)**
+- Select the **BlobBackupSensitiveData** instance
+
+If you see the message **Fix protection error for the backup instance**, as pictured below, then click the **{guilabel}`Fix protection error`** button.
+
+:::{image} images/backup_fix_protection_error.png
+:alt: Fix protection error for the backup instance
+:align: center
+:::
+::::
