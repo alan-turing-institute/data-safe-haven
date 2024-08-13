@@ -174,21 +174,3 @@ This will bring her to the normal login screen, where she will use the short-for
 :::{tip}
 Any files in the **/output/**, **/home/** or **/shared** folders on other workspaces will be available in this workspace too.
 :::
-
-## {{musical_keyboard}} Keyboard mapping
-
-When you access the workspace you are actually connecting through the cloud to another computer - via a few intermediate computers/servers that monitor and maintain the security of the SRE.
-
-:::{caution}
-You may find that the keyboard mapping on your computer is not the same as the one set for the workspace.
-:::
-
-::::{admonition} Changing the keyboard layout
-:class: dropdown note
-
-From the workspace desktop, click on **{menuselection}`Applications --> Settings --> Keyboard`** to change the layout.
-
-:::{tip}
-We recommend opening an application that allows text entry (such as **Libre Office Writer** or a text editor) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
-:::
-::::

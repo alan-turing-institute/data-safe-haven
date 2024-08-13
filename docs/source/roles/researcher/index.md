@@ -8,6 +8,7 @@
 new_user_setup.md
 accessing_the_sre.md
 using_the_sre.md
+troubleshooting.md
 available_software.md
 :::
 
@@ -23,6 +24,9 @@ We use the lower case term when considering the population of researchers more w
 
 [Using the SRE](using_the_sre.md)
 : Instructions on how to use the tools available in a Secure Research Environment.
+
+[Troubleshooting](troubleshooting.md)
+: Instructions on how to fix some common problems encountered in a Secure Research Environment.
 
 [Available software](available_software.md)
 : Overview of the software available in a Secure Research Environment.
