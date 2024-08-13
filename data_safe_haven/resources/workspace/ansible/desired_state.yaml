@@ -204,7 +204,7 @@
     - name: Template Gitea and Hedgedoc desktop files
       ansible.builtin.template:
         src: "etc/skel/Desktop/{{ item }}.desktop.j2"
-        path: /etc/skel/Desktop/
+        dest: /etc/skel/Desktop/
         mode: '0755'
       loop:
         - gitea
