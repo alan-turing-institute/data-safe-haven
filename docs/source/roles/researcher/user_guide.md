@@ -1166,64 +1166,64 @@ If drivers are not available contact your {ref}`System Manager <role_system_mana
 
 ### {{snake}} Connecting using Python
 
-Database connections can be made using `pyodbc` or `psycopg2` depending on which database flavour is being used.
+Database connections can be made using **pyodbc** (Microsoft SQL) or **psycopg2** (PostgreSQL).
 The data can be read into a dataframe for local analysis.
-
-:::{note}
-Our example user Ada Lovelace, working in the **sandbox** SRE on the **projects.example.org** Data Safe Haven, would connect using DBeaver as follows:
-:::
 
 #### Microsoft SQL
 
-:::python
+:::{code} python
 import pyodbc
 import pandas as pd
 
-server = "MSSQL-SANDBOX.projects.example.org"
+# Connect to the database server
+server = "mssql.sandbox.projects.example.org"
 port = "1433"
 db_name = "master"
+cnxn = pyodbc.connect(
+    "DRIVER={ODBC Driver 17 for SQL Server};" + \
+    f"SERVER={server},{port};" + \
+    f"DATABASE={db_name};" + \
+    "Trusted_Connection=yes;"
+)
 
-cnxn = pyodbc.connect("DRIVER={ODBC Driver 17 for SQL Server};SERVER=" + server + "," + port + ";DATABASE=" + db_name + ";Trusted_Connection=yes;")
-
+# Run a query and save the output into a dataframe
 df = pd.read_sql("SELECT * FROM information_schema.tables;", cnxn)
 print(df.head(3))
 :::
 
 #### PostgreSQL
 
-:::python
+:::{code} python
 import psycopg2
 import pandas as pd
 
-server = "PSTGRS-SANDBOX.projects.example.org"
+# Connect to the database server
+server = "postgresql.sandbox.projects.example.org"
 port = 5432
 db_name = "postgres"
-
 cnxn = psycopg2.connect(host=server, port=port, database=db_name)
+
+# Run a query and save the output into a dataframe
 df = pd.read_sql("SELECT * FROM information_schema.tables;", cnxn)
 print(df.head(3))
 :::
 
 ### {{rose}} Connecting using R
 
-Database connections can be made using `odbc` or `RPostgres` depending on which database flavour is being used.
+Database connections can be made using **odbc** (Microsoft SQL) or **RPostgres** (PostgreSQL).
 The data can be read into a dataframe for local analysis.
-
-:::{note}
-Our example user Ada Lovelace, working in the **sandbox** SRE on the **projects.example.org** Data Safe Haven, would connect using DBeaver as follows:
-:::
 
 #### Microsoft SQL
 
-:::R
+:::{code} R
 library(DBI)
 library(odbc)
 
-# Connect to the databases
+# Connect to the database server
 cnxn <- DBI::dbConnect(
     odbc::odbc(),
     Driver = "ODBC Driver 17 for SQL Server",
-    Server = "MSSQL-SANDBOX.projects.example.org,1433",
+    Server = "mssql.sandbox.projects.example.org,1433",
     Database = "master",
     Trusted_Connection = "yes"
 )
@@ -1235,14 +1235,14 @@ head(df, 3)
 
 #### PostgreSQL
 
-:::R
+:::{code} R
 library(DBI)
 library(RPostgres)
 
-# Connect to the databases
+# Connect to the database server
 cnxn <- DBI::dbConnect(
     RPostgres::Postgres(),
-    host = "PSTGRS-SANDBOX.projects.example.org",
+    host = "postgresql.sandbox.projects.example.org",
     port = 5432,
     dbname = "postgres"
 )
