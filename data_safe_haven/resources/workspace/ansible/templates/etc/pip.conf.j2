@@ -1,0 +1,5 @@
+# Use the PyPI proxy for package installation
+[global]
+index = http://{{ software_repository_hostname }}/repository/pypi-proxy
+index-url = http://{{ software_repository_hostname }}/repository/pypi-proxy/simple
+trusted-host = {{ software_repository_hostname }}
