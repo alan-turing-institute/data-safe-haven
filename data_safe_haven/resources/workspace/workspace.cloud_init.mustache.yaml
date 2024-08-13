@@ -95,7 +95,7 @@ write_files:
 
 mounts:
   # Desired state configuration is in a blob container mounted as NFSv3
-  - ["{{storage_account_data_desired_state_name}}.blob.core.windows.net:/{{storage_account_data_desired_state_name}}/desiredstate", /desired_state, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
+  - ["{{storage_account_desired_state_name}}.blob.core.windows.net:/{{storage_account_desired_state_name}}/desiredstate", /desired_state, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
   # Secure data is in a blob container mounted as NFSv3
   - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/ingress", /data, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
   - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/egress", /output, nfs, "rw,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
