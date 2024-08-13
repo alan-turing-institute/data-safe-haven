@@ -124,14 +124,12 @@
         validate: sshd -T -f %s
       notify: Restart sshd
 
-    # This will create directories if src or dest ends in '/'
     - name: Copy xrdp settings
       ansible.builtin.copy:
         src: etc/xrdp/
         dest: /etc/xrdp/
         mode: '0644'
 
-    # This will create directories if src or dest ends in '/'
     - name: Copy xrdp logo
       ansible.builtin.copy:
         src: usr/local/share/xrdp/
@@ -162,7 +160,6 @@
         regexp: '^TerminalEmulator='
         line: 'TerminalEmulator=xfce4-terminal'
 
-    # This will create directories if src or dest ends in '/'
     - name: Copy default terminal colourscheme
       ansible.builtin.copy:
         src: etc/xdg/xfce4/terminal/
@@ -193,18 +190,16 @@
         - xrdp
         - xrdp-sesman
 
-    # This will create directories if src or dest ends in '/'
     - name: Copy desktop icons directory
       ansible.builtin.copy:
-        src: "usr/local/share/icons/"
-        dest: "/usr/local/share/icons/"
+        src: usr/local/share/icons/
+        dest: /usr/local/share/icons/
         mode: '0444'
 
-    # This will create directories if src or dest ends in '/'
     - name: Copy desktop files directory
       ansible.builtin.copy:
-        src: "etc/skel/Desktop/"
-        dest: "/etc/skel/Desktop/"
+        src: etc/skel/Desktop/
+        dest: /etc/skel/Desktop/
         mode: '0755'
 
     - name: Template Gitea and Hedgedoc desktop files
@@ -279,10 +274,9 @@
           systemctl stop clamav-freshclam && freshclam && systemctl start clamav-freshclam
         creates: '/var/lib/clamav/main.{c[vl]d,inc}'
 
-    # This will create directories if src or dest ends in '/'
     - name: Copy ClamAV services directory
       ansible.builtin.copy:
-        src: "etc/systemd/system/"
+        src: etc/systemd/system/
         dest: /etc/systemd/system/
         mode: '0644'
       notify: Systemd daemon reload
@@ -311,10 +305,9 @@
         enabled: true
         state: started
 
-    # This will create directories if src or dest ends in '/'
     - name: Copy smoke test files directory
       ansible.builtin.copy:
-        src: "usr/local/smoke_tests/"
+        src: usr/local/smoke_tests/
         dest: /usr/local/smoke_tests/
         mode: '0755'
 
