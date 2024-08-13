@@ -1042,117 +1042,126 @@ Any files that you have created in the **/output/**, **/home/** or **/shared** f
 
 Your project might use a database for holding the input data.
 You might also/instead be provided with a database for use in analysing the data.
-The database server will use either `Microsoft SQL` or `PostgreSQL`.
+The database server will use either **Microsoft SQL** or **PostgreSQL**.
 
-If you have access to one or more databases, you can access them using the following details, replacing `<SRE ID>` with the {ref}`SRE ID <user_guide_sre_id>` for your project.
+If you have access to one or more databases, you can access them using the following details, replacing _SRE\_URL_ with the {ref}`SRE URL <user_guide_sre_url>` for your project.
 
 For guidance on how to use the databases, many resources are available on the internet.
 Official tutorials for [MSSQL](https://learn.microsoft.com/en-us/sql/sql-server/tutorials-for-sql-server-2016?view=sql-server-ver16) and [PostgreSQL](https://www.postgresql.org/docs/current/tutorial.html) may be good starting points.
 
 ### {{bento_box}} Microsoft SQL
 
-- Server name: `MSSQL-<SRE ID>` (e.g. `MSSQL-SANDBOX` )
-- Database name: \<provided by your {ref}`System Manager <role_system_manager>`>
-- Port: 1433
+- **Server name** : mssql._SRE\_URL_ (e.g. mssql.sandbox.projects.example.org)
+- **Username**: databaseadmin
+- **Password**: provided by your {ref}`System Manager <role_system_manager>`
+- **Database name**: provided by your {ref}`System Manager <role_system_manager>`
+- **Port**: 1433
 
 ### {{postbox}} PostgreSQL
 
-- Server name: `PSTGRS-<SRE ID>` (e.g. `PSTGRS-SANDBOX` )
-- Database name: \<provided by your {ref}`System Manager <role_system_manager>`>
-- Port: 5432
+- **Server name**: postgresql._SRE\_URL_ (e.g. postgresql.sandbox.projects.example.org)
+- **Username**: databaseadmin
+- **Password**: provided by your {ref}`System Manager <role_system_manager>`
+- **Database name**: provided by your {ref}`System Manager <role_system_manager>`
+- **Port**: 5432
 
-Examples are given below for connecting using `Azure Data Studio`, `DBeaver`, `Python` and `R`.
+Examples are given below for connecting using **DBeaver**, **Python** and **R**.
 The instructions for using other graphical interfaces or programming languages will be similar.
-
-### {{art}} Connecting using Azure Data Studio
-
-`Azure Data Studio` is currently only able to connect to `Microsoft SQL` databases.
-
-::::{note}
-Our example user Ada Lovelace, working in the **sandbox** SRE on the **projects.example.org** Data Safe Haven, would connect using Azure Data Studio as follows:
-
-
-:::{image} user_guide/db_azure_data_studio.png
-:alt: Azure Data Studio connection details
-:align: center
-:::
-::::
-
-:::{important}
-Be sure to select `Windows authentication` here so that your username and password will be passed through to the database.
-:::
 
 ### {{bear}} Connecting using DBeaver
 
-Click on the `New database connection` button (which looks a bit like an electrical plug with a plus sign next to it)
-
 #### Microsoft SQL
 
-- Select `SQL Server` as the database type
-- Enter the necessary information in the `Host` and `Port` boxes and set `Authentication` to `Kerberos`
-- Tick `Show All Schemas` otherwise you will not be able to see the input data
+::::{admonition} 1. Create new Microsoft SQL server connection
+:class: dropdown note
 
-::::{note}
-Our example user Ada Lovelace, working in the **sandbox** SRE on the **projects.example.org** Data Safe Haven, would connect using DBeaver as follows:
+Click on the **{guilabel}`New database connection`** button (which looks a bit like an electrical plug with a plus sign next to it)
 
-:::{image} user_guide/db_dbeaver_mssql.png
-:alt: DBeaver connection details for Microsoft SQL
+- Select **SQL Server** as the database type
+
+:::{image} user_guide/db_dbeaver_select_mssql.png
+:alt: DBeaver select Microsoft SQL
 :align: center
 :::
+
 ::::
 
-:::{important}
-Be sure to select `Kerberos authentication` so that your username and password will be passed through to the database
+::::{admonition} 2. Provide connection details
+:class: dropdown note
+
+- **Host**: as above
+- **Database**: as above
+- **Authentication**: SQL Server Authentication
+- **Username**: as above
+- **Password**: as above
+- Tick **Show All Schemas**
+- Tick **Trust server certificate**
+
+:::{image} user_guide/db_dbeaver_connect_mssql.png
+:alt: DBeaver connect with Microsoft SQL
+:align: center
 :::
 
-::::{note}
-After clicking finish, you may be prompted to download missing driver files.
-Drivers have already been provided on the workspace for Microsoft SQL databases.
-Clicking `Download` will make DBeaver use these pre-downloaded drivers without requiring internet access.
-Thus, even on workspaces with no external internet access (Tier 2 or above), click `Download`.
-Note that the prompt may appear multiple times.
-:::{image} user_guide/db_dbeaver_mssql_download.png
+::::
+
+::::{admonition} 3. Download drivers if needed
+:class: dropdown note
+
+- After clicking finish, you may be prompted to download driver files even though they should be pre-installed.
+- Click on the **{guilabel}`Download`** button if this happens.
+
+:::{image} user_guide/db_dbeaver_driver_download.png
 :alt: DBeaver driver download for Microsoft SQL
 :align: center
 :::
+
+If drivers are not available contact your {ref}`System Manager <role_system_manager>`
 ::::
 
 #### PostgreSQL
 
-- Select `PostgreSQL` as the database type
-- Enter the necessary information in the `Host` and `Port` boxes and set `Authentication` to `Database Native`
+::::{admonition} 1. Create new PostgreSQL server connection
+:class: dropdown note
 
-:::{important}
-You do not need to enter any information in the `Username` or `Password` fields
-:::
+Click on the **{guilabel}`New database connection`** button (which looks a bit like an electrical plug with a plus sign next to it)
 
-::::{note}
-Our example user Ada Lovelace, working in the **sandbox** SRE on the **projects.example.org** Data Safe Haven, would connect using DBeaver as follows:
+- Select **PostgreSQL** as the database type
 
-:::{image} user_guide/db_dbeaver_postgres_connection.png
-:alt: DBeaver connection details for PostgreSQL
+:::{image} user_guide/db_dbeaver_select_postgresql.png
+:alt: DBeaver select PostgreSQL
 :align: center
 :::
+
 ::::
 
-::::{tip}
-If you are prompted for `Username` or `Password` when connecting, you can leave these blank and the correct username and password will be automatically passed through to the database
-:::{image} user_guide/db_dbeaver_postgres_ignore.png
-:alt: DBeaver username/password prompt
+::::{admonition} 2. Provide connection details
+:class: dropdown note
+
+- **Host**: as above
+- **Database**: as above
+- **Authentication**: Database Native
+- **Username**: as above
+- **Password**: as above
+
+:::{image} user_guide/db_dbeaver_connect_postgresql.png
+:alt: DBeaver connect with PostgreSQL
 :align: center
 :::
+
 ::::
 
-::::{note}
-After clicking finish, you may be prompted to download missing driver files.
-Drivers have already been provided on the workspace for PostgreSQL databases.
-Clicking `Download` will make DBeaver use these pre-downloaded drivers without requiring internet access.
-Thus, even on workspaces with no external internet access (Tier 2 or above), click `Download`.
-Note that the prompt may appear multiple times.
-:::{image} user_guide/db_dbeaver_pstgrs_download.png
-:alt: DBeaver driver download for Microsoft SQL
+::::{admonition} 3. Download drivers if needed
+:class: dropdown note
+
+- After clicking finish, you may be prompted to download driver files even though they should be pre-installed.
+- Click on the **{guilabel}`Download`** button if this happens.
+
+:::{image} user_guide/db_dbeaver_driver_download.png
+:alt: DBeaver driver download for PostgreSQL
 :align: center
 :::
+
+If drivers are not available contact your {ref}`System Manager <role_system_manager>`
 ::::
 
 ### {{snake}} Connecting using Python
