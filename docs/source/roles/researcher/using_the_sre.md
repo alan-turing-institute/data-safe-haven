@@ -1,162 +1,41 @@
-(roles_researcher_access_sre)=
+(roles_researcher_using_the_sre)=
 
-# User Guide
+# Using the Secure Research Environment
 
-## {{unlock}} Access the Secure Research Environment
+## {{newspaper}} Transferring files into or out of the SRE
 
-### {{seedling}} Prerequisites
+Each time a request is made to bring data or software into ("ingress") or out of ("egress") the SRE, it needs to be reviewed in case it represents a security risk.
+These reviews will be coordinated by the designated contact for your SRE.
+They will have to discuss whether this is an acceptable risk to the data security with the project's principle investigator and data provider and the decision might be "no".
 
-After going through the account setup procedure, you should have access to:
-
-- Your **username**
-- Your **password**
-- The {ref}`SRE URL <roles_researcher_sre_url>`
-- {ref}`Multifactor authentication <roles_researcher_password_and_mfa>`
-
-:::{tip}
-If you aren't sure about any of these then please return to the **`{ref}Set up your account <roles_researcher_setup_your_account>`** section.
+:::{hint}
+You can make the process as easy as possible by providing as much information as possible about the code or data.
+For instance, describing in detail what a dataset contains and how it will be use will help speed up decision making.
 :::
 
-### {{house}} Log into the research environment
-
-::::{admonition} 1. Browse to the SRE URL
-:class: dropdown note
-
-- Open a **private/incognito** browser session, so that you don't pick up any existing Microsoft logins
-
-- Go to the {ref}`SRE URL <roles_researcher_sre_url>` given by your {ref}`System Manager <role_system_manager>`.
-
-    :::{note}
-    Our example user, Ada Lovelace, participating in the **sandbox** project, would navigate to **https://sandbox.projects.example.org**.
-    :::
-
-::::
-
-::::{admonition} 2. Enter your username and password at the prompt
-:class: dropdown note
-
-- At the login prompt enter your **{ref}`long-form username <roles_researcher_username>`** and click on the **{guilabel}`Next`** button
-
-    :::{image} user_guide/guacamole_oauth_login.png
-    :alt: Research environment log in
-    :align: center
-    ::::
-
-    ::::{tip}
-    Our example user, Ada Lovelace, would use **ada.lovelace@projects.example.org** here.
-    :::
-
-- Enter your password at the prompt and click on the **{guilabel}`Next`** button
-::::
-
-::::{admonition} 3. Login with MFA
-:class: dropdown note
-
-- You will now **receive a call or mobile app notification** to authenticate using multifactor authentication (MFA).
-
-    :::{image} user_guide/guacamole_mfa.png
-    :alt: MFA trigger
-    :align: center
-    :::
-
-  {{telephone_receiver}} For the call, you may have to move to an area with good reception and/or press the hash (**#**) key multiple times in-call.
-
-  {{iphone}} For the app you will see a notification saying **"You have received a sign in verification request"**. Go to the app to approve the request.
-
-    :::{caution}
-    If you don't respond to the MFA request quickly enough, or if it fails, you may get an error. If this happens, please retry
-    :::
-
-::::
-
-You should now be able to see the SRE dashboard screen which will look like the following
-
-:::{image} user_guide/guacamole_dashboard.png
-:alt: Research environment dashboard
-:align: center
-:width: 90%
-:::
-
-### {{penguin}} Log into a workspace
-
-On the SRE dashboard, you should see multiple different workspaces that you can access either via an interactive desktop environment (**Desktop**) or a terminal environment (**SSH**).
-
-:::{important}
-If you do not see any available workspaces please contact your {ref}`System Manager <role_system_manager>`.
-:::
-
-Each of these is a computer[^vm-footnote] with a wide variety of data analysis applications and programming languages pre-installed.
-You can use them to analyse the sensitive data belonging to your project while remaining isolated from the wider internet.
-
-[^vm-footnote]: Actually a virtual machine
-
-::::{admonition} 1. Select a workspace
-:class: dropdown note
-
-- Click on one of the **Desktop** connections from the list in **All Connections**
-
-:::{note}
-Each workspace should have an annotation which indicates its available resources:
-- CPUs
-- GPUs
-- RAM
-:::
+## {{books}} Maintaining an archive of the project
 
 :::{caution}
-These workspaces are shared between everyone on your project. Talk to your collaborators to ensure that you're not all using the same one.
+At the end of each project, the entire SRE is deleted.
 :::
 
-::::
+Anything that has not been transferred to the **/output/** folder to be considered for egress will be deleted forever at this point.
 
-:::::{admonition} 2. Login with your user credentials
-:class: dropdown note
-
-- Enter your **{ref}`short-form username <roles_researcher_username>`** and **password** at the prompt.
-
-  :::{image} user_guide/workspace_login_screen.png
-  :alt: Workspace login screen
-  :align: center
-  :width: 90%
-  :::
-
-  :::{note}
-  Our example user, Ada Lovelace, would enter **ada.lovelace** and her password.
-  :::
-
-  ::::{error}
-  If you enter your username and/or password incorrectly you will see a warning like the one below.
-  If this happens, please try again, entering your username and password carefully.
-
-  :::{image} user_guide/workspace_login_failure.png
-  :alt: Workspace login failure
-  :align: center
-  :width: 90%
-  :::
-
-  If you want to reset your password, follow the steps defined in the {ref}`Password and MFA <roles_researcher_password_and_mfa>` section.
-  ::::
-:::::
-
-You should now be able to see the SRE dashboard screen which will look like the following
-
-:::{image} user_guide/workspace_xfce_initial.png
-:alt: Research environment dashboard
-:align: center
-:width: 90%
+:::{important}
+You are responsible for deciding what is worth archiving.
 :::
 
-::::{note}
-- The Linux desktops within our workspaces use the [Ubuntu operating system](https://ubuntu.com/).
-- The desktop environment used by our workspaces is called [Xfce](https://docs.xfce.org/xfce/).
-::::
+While working on the project:
 
-**Welcome to the Data Safe Haven SRE! {{wave}}**
+- store all your code in a **Gitea** repository.
+- store all resources that might be useful to the rest of the project in the **/shared/** folder.
+- store anything that might form an output from the project (_e.g._ images, documents or output datasets) in the **/output/** folder.
 
-## {{computer}} Analysing sensitive data
+See {ref}`the section on sharing files <role_researcher_shared_storage>` to find out more about where to store your files.
+
+## {{package}} Pre-installed applications
 
 The workspace has several pre-installed applications and programming languages to help with your data analysis.
-
-### {{package}} Pre-installed applications
 
 ::::{admonition} Programming languages / compilers
 :class: dropdown note
@@ -200,28 +79,8 @@ The workspace has several pre-installed applications and programming languages t
 
 If you need anything that is not already installed, please discuss this with the designated contact for your SRE.
 
-### {{musical_keyboard}} Keyboard mapping
-
-When you access the workspace you are actually connecting through the cloud to another computer - via a few intermediate computers/servers that monitor and maintain the security of the SRE.
-
-:::{caution}
-You may find that the keyboard mapping on your computer is not the same as the one set for the workspace.
-:::
-
-::::{admonition} Changing the keyboard layout
-:class: dropdown note
-
-From the workspace desktop, click on **{menuselection}`Applications --> Settings --> Keyboard`** to change the layout.
-
-:::{tip}
-We recommend opening an application that allows text entry (such as **Libre Office Writer** or a text editor) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
-:::
-::::
-
-### {{unlock}} Access applications
-
 You can access applications from the desktop using either:
-- the **Terminal** app accessible frmo the dock at the bottom of the screen
+- the **Terminal** app accessible from the dock at the bottom of the screen
 - via a drop-down menu when you right-click on the desktop or click the **{menuselection}`Applications`** button on the top left of the screen
 
 :::{image} user_guide/workspace_desktop_applications.png
@@ -230,7 +89,9 @@ You can access applications from the desktop using either:
 :width: 90%
 :::
 
-### {{woman_technologist}} Development using VSCodium
+A few specific examples are given below.
+
+### {{woman_technologist}} VSCodium
 
 You can start **VSCodium** from the **{menuselection}`Applications --> Development`** menu.
 
@@ -240,7 +101,7 @@ You can start **VSCodium** from the **{menuselection}`Applications --> Developme
 :width: 90%
 :::
 
-### {{arrow_double_up}} Development using R
+### {{arrow_double_up}} R and RStudio
 
 Typing `R` at the command line will give you a pre-installed version of **R**.
 
@@ -258,7 +119,7 @@ Or you can use **RStudio** or **VSCodium** from the **{menuselection}`Applicatio
 :width: 90%
 :::
 
-### {{snake}} Development using Python
+### {{snake}} Python and Pycharm
 
 Typing `python` at the command line will give you a pre-installed version of **Python**.
 
@@ -276,7 +137,7 @@ Or you can use **Pycharm** from the **{menuselection}`Applications --> Developme
 :width: 90%
 :::
 
-## {{gift}} Installing software packages for R and Python
+## {{gift}} Installing software packages
 
 You have access to packages from the **PyPI** and **CRAN** repositories from the SRE.
 You can install packages you need from these copies in the usual way, for example `pip install` (Python) and `install.packages` (R).
@@ -287,7 +148,26 @@ Depending on the sensitivity level of your SRE, you may only have access to a su
 - {ref}`Tier 3 <policy_tier_3>` (high security) environments only have pre-authorised packages available.
 
 :::{tip}
-If you need to use a package that is not on the allowlist see the section on how to [bring software or data into the environment](#-bringing-new-files-into-the-sre) below.
+If you need to use a package that is not on the allowlist see the section on how to [bring software or data into the environment](#-transferring-files-into-or-out-of the-sre) below.
+:::
+
+### Python packages
+
+:::{note}
+You will not have permissions to install packages system-wide. We recommend using a **virtual environment**.
+
+You can create one:
+
+- using [VSCodium](https://code.visualstudio.com/docs/python/environments)
+- using [PyCharm](https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html)
+- using **Python** [in a terminal](https://docs.python.org/3/library/venv.html)
+
+:::
+
+You can install **Python** packages into your virtual environment from a terminal.
+
+:::{code} console
+> pip install NAME_OF_PACKAGE
 :::
 
 ### R packages
@@ -322,32 +202,11 @@ to install packages into? (yes/No/cancel)
 
 Type `yes` to install the packages.
 
-### Python packages
+(role_researcher_shared_storage)=
 
-:::{note}
-You will not have permissions to install packages system-wide. We recommend using a **virtual environment**.
+## {{open_file_folder}} Sharing files inside the SRE
 
-You can create one:
-
-- using [VSCodium](https://code.visualstudio.com/docs/python/environments)
-- using [PyCharm](https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html)
-- using **Python** [in a terminal](https://docs.python.org/3/library/venv.html)
-
-:::
-
-You can install **Python** packages into your virtual environment from a terminal.
-
-:::{code} console
-> pip install NAME_OF_PACKAGE
-:::
-
-(role_researcher_user_guide_shared_storage)=
-
-## {{link}} Share files with collaborators
-
-### {{open_file_folder}} Shared directories within the SRE
-
-There are several shared areas on the workspace that all collaborators within a research project team can see and access:
+There are several shared folder on each workspace that all collaborators within a research project team can see and access:
 
 - [input data](#input-data): in the **/data/** folder
 - [shared space](#shared-space): in the **/shared/** folder
@@ -355,9 +214,9 @@ There are several shared areas on the workspace that all collaborators within a 
 <!-- - [scratch space](#scratch-space-scratch): `/scratch/` -->
 <!-- - [backup space](#backup-space-backup): `/backup/` -->
 
-#### Input data
+### Input data
 
-Data that has been "ingressed" - approved and brought into the secure research environment - can be found in the **/data/** folder.
+Data that has been approved and brought into the secure research environment can be found in the **/data/** folder.
 
 - The contents of **/data/** will be identical on all workspaces in your SRE.
 - Everyone working on your project will be able to access it.
@@ -370,7 +229,7 @@ You will not be able to change any of the files in **/data/**.
 If you want to make derived datasets, for example cleaned and reformatted data, please add those to the **/shared/** or **/output/** folders.
 :::
 
-#### Shared space
+### Shared space
 
 The **/shared/** folder should be used for any work that you want to share with your group.
 
@@ -402,7 +261,7 @@ Everyone in your group will have **read-and-write access** to all folders on `/b
 The contents of `/backup/` will be **identical** on all workspaces in your SRE.
 -->
 
-#### Output resources
+### Output resources
 
 Any outputs that you want to extract from the secure environment should be placed in the **/output/** folder on the workspace.
 
@@ -416,17 +275,7 @@ Anything placed in here will be considered for data egress - removal from the se
 You may want to consider having subfolders of **/output/** to make the review of this directory easier.
 :::
 
-### {{newspaper}} Bringing new files into the SRE
-
-Each time a request is made to bring data or software into the SRE, it needs to be reviewed in case it represents a security risk.
-The review of the "ingress" of new code or data will be coordinated by the designated contact for your SRE.
-They will have to discuss whether this is an acceptable risk to the data security with the project's principle investigator and data provider and the decision might be "no".
-
-:::{hint}
-You can make the process as easy as possible by providing as much information as possible about the code or data you'd like to bring into the environment and about how it is to be used.
-:::
-
-## {{pill}} Versioning code using Gitea
+## {{pill}} Version control using Gitea
 
 **Gitea** is an open-source code hosting platform for version control and collaboration - similar to **GitHub**.
 It allows you to use [git](https://git-scm.com/about) to **version control** your work, coordinate tasks using **issues** and review work using **pull requests**.
@@ -499,7 +348,7 @@ If you have not used Gitea before:
 - Ask the designated contact for your SRE.
 - There may be a dedicated discussion channel, for example a Slack/Teams/Discord channel or an email list.
 
-## {{book}} Collaborate on documents using HedgeDoc
+## {{book}} Collaborative writing using HedgeDoc
 
 **HedgeDoc** is an open-source document hosting platform for collaboration - similar to **HackMD**.
 It uses [Markdown](https://www.markdownguide.org/) which is a simple way to format your text so that it renders nicely in HTML.
@@ -583,47 +432,7 @@ Click the pen icon to return to the editable markdown view.
 Remember that the document is not published to the internet, it is only available to others within the SRE.
 :::
 
-## {{books}} Maintaining an archive of the project
-
-At the end of each project, the entire SRE is deleted.
-Anything that has not been transferred to the **/output/** folder to be considered for egress will be deleted forever at this point.
-
-:::{important}
-You are responsible for deciding what is worth archiving.
-:::
-
-While working on the project:
-
-- store all your code in a **Gitea** repository.
-- store all resources that might be useful to the rest of the project in the **/shared/** folder.
-- store anything that might form an output from the project (_e.g._ images, documents or output datasets) in the **/output/** folder.
-
-## {{unlock}} Access additional workspaces
-
-Your project might make use of further workspaces in addition to the main shared desktop.
-Usually this is because of a requirement for a different type of computing resource, such as access to one or more GPUs (graphics processing units).
-
-You will access this machine in a similar way to the main shared desktop, by selecting a different **Desktop** connection.
-
-::::{admonition} Selecting a different workspace
-:class: dropdown note
-
-Our example user, Ada Lovelace, participating in the **sandbox** project, might select **Workspace 2** instead of **Workspace 1** since it has additional CPUs and RAM.
-
-:::{image} user_guide/guacamole_dashboard_multiple_workspaces.png
-:alt: Research environment dashboard
-:align: center
-:width: 90%
-:::
-
-This will bring her to the normal login screen, where she will use the short-form username **ada.lovelace** and her password as before.
-::::
-
-:::{tip}
-Any files that you have created in the **/output/**, **/home/** or **/shared** folders on other VMs will be automatically available in the new VM.
-:::
-
-## {{green_book}} Access databases
+## {{green_book}} Database access
 
 Your project might use a database for holding the input data.
 You might also/instead be provided with a database for use in analysing the data.

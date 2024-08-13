@@ -1,6 +1,6 @@
 (roles_researcher_new_user_setup)=
 
-# New User setup
+# New user setup
 
 ## {{beginner}} Introduction
 
