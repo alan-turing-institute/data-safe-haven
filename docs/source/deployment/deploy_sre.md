@@ -88,8 +88,8 @@ $ dsh sre deploy YOUR_SRE_NAME
 :::{important}
 After deployment, you may need to manually ensure that backups function.
 
-- In the Azure Portal, navigate to the resource group for the `SRE`, `shm-{SHM}-sre-{SRE}-rg`
-- Navigate to the backup vault for the SRE, `shm-{SHM}-sre-{SRE}-bv-backup`
+- In the Azure Portal, navigate to the resource group for the `SRE`, `shm-{SHM_NAME}-sre-{SRE_NAME}-rg`
+- Navigate to the backup vault for the SRE, `shm-{SHM_NAME}-sre-{SRE_NAME}-bv-backup`
 - From the side menu, select `Manage > Backup Instances`
 - Change `Datasource type == Azure Disks` to `Datasource type == Azure Blobs (Azure Storage)`
 - Select the `BlobBackupSensitiveData` instance
