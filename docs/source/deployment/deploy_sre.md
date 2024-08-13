@@ -96,7 +96,7 @@ After deployment, you may need to manually ensure that backups function.
 
 If you see the message **Fix protection error for the backup instance**, as pictured below, then click the **{guilabel}`Fix protection error`** button.
 
-:::{image} backup_fix_protection_error.png
+:::{image} images/backup_fix_protection_error.png
 :alt: Fix protection error for the backup instance
 :align: center
 :::
