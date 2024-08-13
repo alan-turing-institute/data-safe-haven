@@ -2,6 +2,8 @@
 - name: Desired state configuration
   hosts: localhost
   become: true
+  vars_files:
+    - vars/pulumi_vars.yaml
 
   tasks:
     - name: Update package cache
