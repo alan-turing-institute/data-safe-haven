@@ -15,11 +15,11 @@ For instance, describing in detail what a dataset contains and how it will be us
 
 ## {{books}} Maintaining an archive of the project
 
-:::{caution}
-At the end of each project, the entire SRE is deleted.
-:::
+SREs are designed to be ephemeral and only deployed for as long as necessary.
+It is likely that the infrastructure, and data, will be permanently deleted when work has concluded.
 
-Anything that has not been transferred to the **/output/** folder to be considered for egress will be deleted forever at this point.
+The `/output/` directory is designed for storing output to be kept after a project concludes.
+You should move such data to the `/output/` directory and contact your designated contact about data egress.
 
 :::{important}
 You are responsible for deciding what is worth archiving.
