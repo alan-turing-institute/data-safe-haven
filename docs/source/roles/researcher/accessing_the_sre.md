@@ -146,13 +146,6 @@ You should now be able to see the SRE dashboard screen which will look like the 
 :width: 90%
 :::
 
-::::{note}
-
-- The Linux desktops within our workspaces use the [Ubuntu operating system](https://ubuntu.com/).
-- The desktop environment used by our workspaces is called [Xfce](https://docs.xfce.org/xfce/).
-
-::::
-
 Welcome to the Data Safe Haven SRE! {{wave}}
 
 ## {{unlock}} Access additional workspaces

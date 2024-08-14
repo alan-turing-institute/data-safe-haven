@@ -2,6 +2,41 @@
 
 # Using the Secure Research Environment
 
+(roles_researcher_linux_basics)=
+
+## {{penguin}} Linux Basics
+
+If you have never used a Linux computer before, you may find some of the following resources helpful:
+
+::::{admonition} Using the Linux desktop
+:class: dropdown note
+
+- The official guide to [Xubuntu (Ubuntu + Xfce)](https://docs.xubuntu.org/current/user/C/index.html).
+- Ubuntu guide for [Windows users](https://help.ubuntu.com/community/SwitchingToUbuntu/FromWindows).
+- The official guide to the [Xfce desktop environment](https://docs.xfce.org/xfce/).
+
+::::
+
+::::{admonition} Using the command line
+:class: dropdown note
+
+- Learn the command-line basics [through a game](https://gitlab.com/slackermedia/bashcrawl).
+- Carpentries lesson on [The Unix Shell](https://swcarpentry.github.io/shell-novice/).
+- How to use the command line [article](https://www.taniarascia.com/how-to-use-the-command-line-for-apple-macos-and-linux/).
+- An [introduction to the Bash command line](https://programminghistorian.org/en/lessons/intro-to-bash).
+- Ubuntu guide to the [Linux command line for beginners](https://ubuntu.com/tutorials/command-line-for-beginners).
+
+::::
+
+::::{admonition} Using Git
+:class: dropdown note
+
+- The Turing Way [guide to version control](https://book.the-turing-way.org/reproducible-research/vcs#version-control).
+- Carpentries lesson on [Version Control with Git](https://swcarpentry.github.io/git-novice/).
+- Atlassian guide to [getting Git right](https://www.atlassian.com/git).
+
+::::
+
 ## {{newspaper}} Transferring files into or out of the SRE
 
 Each time a request is made to bring data or software into ("ingress") or out of ("egress") the SRE, it needs to be reviewed in case it represents a security risk.
@@ -235,7 +270,6 @@ The **/shared/** folder should be used for any work that you want to share with 
 - The contents of **/shared/** will be identical on all workspaces in your SRE.
 - Everyone working on your project will be able to access it
 - Everyone has **read-and-write access** to the files stored here.
-
 
 ### Output resources
 
