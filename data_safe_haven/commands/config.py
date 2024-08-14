@@ -12,6 +12,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenError,
 )
+from data_safe_haven.external.api.azure_sdk import AzureSdk
 from data_safe_haven.logging import get_logger
 
 config_command_group = typer.Typer()
@@ -51,6 +52,40 @@ def show_shm(
 
 
 # Commands related to an SRE
+@config_command_group.command()
+def available() -> None:
+    """List the available SRE configurations for the selected Data Safe Haven context"""
+    logger = get_logger()
+    try:
+        context = ContextManager.from_file().assert_context()
+    except DataSafeHavenConfigError as exc:
+        logger.critical(
+            "No context is selected. Use `dsh context add` to create a context "
+            "or `dsh context switch` to select one."
+        )
+        raise typer.Exit(1) from exc
+    azure_sdk = AzureSdk(context.subscription_name)
+    blobs = azure_sdk.list_blobs(
+        container_name=context.storage_container_name,
+        prefix="sre",
+        resource_group_name=context.resource_group_name,
+        storage_account_name=context.storage_account_name,
+    )
+    console.print(f"Available SRE configurations for context '{context.name}':")
+    for blob in blobs:
+        console.print(blob)
+    # try:
+    #     sre_configs = SREConfig.available(context)
+    # except DataSafeHavenAzureStorageError as exc:
+    #     logger.critical("Ensure SHM is deployed before attempting to use SRE configs.")
+    #     raise typer.Exit(1) from exc
+    # except DataSafeHavenError as exc:
+    #     logger.critical("No configurations found for the selected context.")
+    #     raise typer.Exit(1) from exc
+    # for sre_config in sre_configs:
+    #     console.print(sre_config.name)
+
+
 @config_command_group.command()
 def show(
     name: Annotated[str, typer.Argument(help="Name of SRE to show")],
