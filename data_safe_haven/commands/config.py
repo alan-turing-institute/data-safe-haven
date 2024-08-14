@@ -6,13 +6,14 @@ from typing import Annotated, Optional
 import typer
 
 from data_safe_haven import console
-from data_safe_haven.config import ContextManager, SHMConfig, SREConfig
+from data_safe_haven.config import ContextManager, DSHPulumiConfig, SHMConfig, SREConfig
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureStorageError,
     DataSafeHavenConfigError,
     DataSafeHavenError,
 )
 from data_safe_haven.external.api.azure_sdk import AzureSdk
+from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.logging import get_logger
 
 config_command_group = typer.Typer()
@@ -78,9 +79,23 @@ def available() -> None:
     if not blobs:
         logger.critical(f"No configurations found for context '{context.name}'.")
         raise typer.Exit(1)
+    pulumi_config = DSHPulumiConfig.from_remote(context)
     console.print(f"Available SRE configurations for context '{context.name}':")
     for blob in blobs:
-        console.print(blob)
+        sre_config = SREConfig.from_remote_by_name(
+            context, blob.removeprefix("sre-").removesuffix(".yaml")
+        )
+        stack = SREProjectManager(
+                    context=context,
+                    config=sre_config,
+                    pulumi_config=pulumi_config,
+                    create_project=True,
+            )
+        stack_outputs = stack.run_pulumi_command("stack output")
+        if "(0)" in stack_outputs:
+            console.print(f"SRE {sre_config.name} not deployed")
+        else:
+            console.print(f"SRE {sre_config.name} deployed")
 
 
 @config_command_group.command()
