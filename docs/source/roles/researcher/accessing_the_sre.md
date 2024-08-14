@@ -171,7 +171,7 @@ You will access this machine in a similar way to the main shared desktop, by sel
 ::::
 
 :::{tip}
-When you are connected to a workspace, you may switch to another by bringing up the [Guacamole menu](https://guacamole.apache.org/doc/gug/using-guacamole.html#the-guacamole-menu) with **{kbd}`Ctrl + Alt + Shift`** and navigating to the [home screen](https://guacamole.apache.org/doc/gug/using-guacamole.html#client-user-menu).
+When you are connected to a workspace, you may switch to another by bringing up the [Guacamole menu](https://guacamole.apache.org/doc/gug/using-guacamole.html#the-guacamole-menu) with **{kbd}`Ctrl+Alt+Shift`** and navigating to the [home screen](https://guacamole.apache.org/doc/gug/using-guacamole.html#client-user-menu).
 :::
 
 :::{tip}
