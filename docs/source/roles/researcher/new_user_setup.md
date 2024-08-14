@@ -352,6 +352,7 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
     :::{image} images/account_setup_mfa_download_authenticator_app.png
     :alt: Add Authenticator app
     :align: center
+    :width: 90%
     :::
 
 - Open the app
@@ -367,6 +368,7 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
     :::{image} images/account_setup_mfa_allow_notifications.png
     :alt: Allow Authenticator notifications
     :align: center
+    :width: 90%
     :::
 
     :::{important}
@@ -379,6 +381,7 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
   :::{image} images/account_setup_mfa_app_qrcode.png
   :alt: Setup Authenticator app
   :align: center
+  :width: 90%
   :::
 
 - Once this is completed, Microsoft will send you a test notification to respond to
@@ -386,6 +389,7 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
   :::{image} images/account_setup_mfa_authenticator_app_test.png
   :alt: Authenticator app test notification
   :align: center
+  :width: 90%
   :::
 
 - When you click **{guilabel}`Approve`** on the phone notification, you will get the following message in your browser
@@ -393,6 +397,7 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
   :::{image} images/account_setup_mfa_authenticator_app_approved.png
   :alt: Authenticator app test approved
   :align: center
+  :width: 90%
   :::
 ::::
 
@@ -404,6 +409,7 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
   :::{image} images/account_setup_mfa_dashboard_two_methods.png
   :alt: Registered MFA methods
   :align: center
+  :width: 90%
   :::
 
 - Choose whichever you prefer to be your **Default sign-in method**.

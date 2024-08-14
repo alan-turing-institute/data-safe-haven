@@ -13,11 +13,11 @@ You may find that the keyboard mapping on your computer is not the same as the o
 ::::{admonition} Changing the keyboard layout
 :class: dropdown note
 
-From the workspace desktop, click on **{menuselection}`Applications --> Settings --> Keyboard`** to change the layout.
+- From the workspace desktop, click on **{menuselection}`Applications --> Settings --> Keyboard`** to change the layout.
 
-:::{tip}
-We recommend opening an application that allows text entry (such as **Libre Office Writer** or a text editor) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
-:::
+    :::{tip}
+    We recommend opening an application that allows text entry (such as **Libre Office Writer** or a text editor) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
+    :::
 ::::
 
 ## {{fox_face}} Firefox not responding
@@ -27,6 +27,7 @@ If you get an error message like this one about Firefox not responding, it is li
 :::{image} images/firefox_not_responding.png
 :alt: Firefox not responding
 :align: center
+:width: 90%
 :::
 
 Either log into that workspace and close Firefox, or follow the instructions [here](https://support.mozilla.org/en-US/kb/firefox-already-running-not-responding#w_remove-the-profile-lock-file) and delete your profile lock file.
@@ -37,103 +38,114 @@ Your profile is likely stored under **~/snap/firefox/common/.mozilla/firefox**.
 
 ## {{passport_control}} Command Line Basics
 
-If you have never used a Linux desktop before, you might find some of the following commands useful if you are using a terminal.
+If you have never used a Linux desktop before, you might find some of the following commands useful when you are use a terminal.
 
 ::::{admonition} Changing directory
 :class: dropdown note
 
-Go into a project directory to work in it
+- Go into a project directory to work in it
 
-:::{code} bash
-cd NAME_OF_DIRECTORY
-:::
+    :::{code} bash
+    cd NAME_OF_DIRECTORY
+    :::
 
-Go back one directory
+- Go up one directory
 
-:::{code} bash
-cd ..
-:::
+    :::{code} bash
+    cd ..
+    :::
 ::::
 
 ::::{admonition} Finding out current status
 :class: dropdown note
 
-Show which directory I am in
+- Show which directory I am in
 
-:::{code} bash
-pwd
-:::
+    :::{code} bash
+    pwd
+    :::
 
-List what’s in the current directory
+- List what’s in the current directory
 
-:::{code} bash
-ls
-:::
+    :::{code} bash
+    ls
+    :::
 
 ::::
 
 ::::{admonition} Creating/removing files and directories
 :class: dropdown note
 
-Create a new directory
+- Create a new directory
 
-:::{code} bash
-mkdir NAME_OF_DIRECTORY
-:::
+    :::{code} bash
+    mkdir NAME_OF_DIRECTORY
+    :::
 
-Remove a file
+- Remove a file
 
-:::{code} bash
-rm NAME_OF_FILE
-:::
+    :::{code} bash
+    rm NAME_OF_FILE
+    :::
 
-Remove a directory and all of its contents
+- Remove a directory and all of its contents
 
-:::{code} bash
-rm -r NAME_OF_DIRECTORY
-:::
+    :::{code} bash
+    rm -r NAME_OF_DIRECTORY
+    :::
 ::::
 
 
 ::::{admonition} Miscellaneous
 :class: dropdown note
 
-View command history
+- View command history
 
-:::{code} bash
-history
-:::
+    :::{code} bash
+    history
+    :::
 
-Clear text from the terminal window
+- Clear text from the terminal window
 
-:::{code} bash
-clear
-:::
+    :::{code} bash
+    clear
+    :::
 ::::
 
 For a more detailed introduction, visit the official Ubuntu tutorial, [The Linux command line for beginners](https://ubuntu.com/tutorials/command-line-for-beginners)
 
 
-(roles_researcher_gitea_basics)=
+(roles_researcher_git_basics)=
 
-## {{notebook}} Gitea basics
-
-**Gitea** can be thought of as a local version of **GitHub** - that is a git server along with useful features such as:
-
-- **Project issue tracker** - track things TODO and bugs
-- **Pull requests** - Way to keep track of changes individuals have made to be included in master
-
-### Getting started with Git
+### {{notebook}} Git basics
 
 If you have never used **git** before, you might want to take a look at an introductory guide.
 There are multiple **git** cheat sheets such as [this one from the JIRA authors](https://www.atlassian.com/git/tutorials/atlassian-git-cheatsheet).
 
-### Add your Git username and set your email
+The following definitions might be useful:
 
-It is important to configure your username and email address, since every `git` commit will use this information to identify you as the author.
+Repository
+: A repository is usually used to organize a single project.
+  Repositories can contain folders and files, images, videos, spreadsheets, and data sets – anything your project needs.
+  We recommend including a README, or a file with information about your project.
+  Over the course of the work that you do in your SRE, you will often be accessing and adding files to the same project repository.
 
-::::{admonition} Set your username
+Branch
+: Branching is the way to work on different versions of a repository at one time.
+  By default your repository has one branch usually named **main** which is considered to be the definitive branch.
+  We use branches to experiment and make edits before committing them to **main**.
+
+  When you create a branch off the **main** branch, you’re making a copy, or snapshot, of **main** as it was at that point in time.
+  If someone else made changes to the **main** branch while you were working on your branch, you could pull in those updates.
+
+Pull request
+: A pull request is a proposal to merge a set of changes from one branch into another.
+  They give your collaborators a chance to review your proposed changes before they are integrated into the main codebase.
+
+::::{admonition} Setting up your Git details
 :class: dropdown note
+
+- Before starting to work with **git**, it is important to configure your username and email address, since every `git` commit will use this information to identify you as the author.
 
 - In your terminal, type the following command to add your username:
 
@@ -151,11 +163,6 @@ It is important to configure your username and email address, since every `git` 
     git config --global user.name
     :::
 
-::::
-
-::::{admonition} Set your email address
-:class: dropdown note
-
 - To set your email address, type the following command:
 
     :::{code} bash
@@ -169,72 +176,9 @@ It is important to configure your username and email address, since every `git` 
     :::
 ::::
 
-### Repositories
-
-A repository is usually used to organize a single project.
-Repositories can contain folders and files, images, videos, spreadsheets, and data sets – anything your project needs.
-We recommend including a README, or a file with information about your project.
-Over the course of the work that you do in your SRE, you will often be accessing and adding files to the same project repository.
-
-
-::::{admonition} Create a new repository
-:class: dropdown note
-
-- From the **Gitea** dashboard click on the **{guilabel}`+`** button next to the **Repositories** label.
-
-    :::{image} images/gitea_new_repository.png
-    :alt: Clone Gitea project
-    :align: center
-    :::
-
-- Fill out the required information, with the following guidelines:
-    - leave **Make repository private** unchecked
-    - leave **Initialize repository** checked
-
-::::
-
-::::{admonition} Work on an existing repository
-:class: dropdown note
-
-- Sign into **Gitea** and click the **{guilabel}`Explore`** button in the top bar.
-
-    :::{image} images/gitea_explore.png
-    :alt: Explore Gitea repositories
-    :align: center
-    :::
-
-- Click on the name of the repository you want to work on.
-
-    :::{image} images/gitea_repository_view.png
-    :alt: View Gitea repository
-    :align: center
-    :::
-
-- From the repository view, click the **{guilabel}`HTTP`** button and copy the URL using the copy icon.
-- From the terminal, type the following command
-
-    :::{code} bash
-    git clone URL_YOU_COPIED_FROM_GITEA
-    :::
-
-- This will start the process of copying the repository to the folder you are using in the terminal.
-
-    :::{note}
-    In **git**, copying a project is known as "cloning".
-    :::
-::::
-
-### Branches
-
-Branching is the way to work on different versions of a repository at one time.
-By default your repository has one branch usually named **main** which is considered to be the definitive branch.
-We use branches to experiment and make edits before committing them to **main**.
-
-When you create a branch off the **main** branch, you’re making a copy, or snapshot, of **main** as it was at that point in time.
-If someone else made changes to the **main** branch while you were working on your branch, you could pull in those updates.
-
 ::::{admonition} Working with branches
 :class: dropdown note
+
 
 - To create a new branch
 
@@ -256,13 +200,11 @@ If someone else made changes to the **main** branch while you were working on yo
     :::
 ::::
 
-### Collaborating with others
+In order for you to be sure that your work is up-to-date with changes made by others, you will want to synchronise their changes.
+This is important to do regularly, so you get all the changes made others since the last time you cloned or pulled the project.
+You can also push your local commits to the remote repositories to make them available to others.
 
-This is for you to work on an up-to-date copy (it is important to do this every time you start working on a project), while you set up tracking branches.
-You pull from remote repositories to get all the changes made by users since the last time you cloned or pulled the project.
-Later, you can push your local commits to the remote repositories.
-
-::::{admonition} Working with branches
+::::{admonition} Synchronising your changes
 :class: dropdown note
 
 - To get the latest changes on a branch
@@ -291,37 +233,14 @@ Later, you can push your local commits to the remote repositories.
     :::
 ::::
 
-Pull requests are a way to integrate your changes into a collaborative project.
-For more information, check the **Gitea** [pull requests documentation](https://docs.gitea.com/next/usage/pull-request).
+### {{construction_worker}} Support for users
 
-::::{admonition} Create a pull request in Gitea
-:class: dropdown note
+If you encounter problems while using the Data Safe Haven:
 
-- Before you start, you should have already created a branch and pushed your changes.
-- From the repository view in **Gitea**, click the **{guilabel}`Pull requests`** button.
-- Click the **{guilabel}`New Pull Request`** button on the right side of the screen.
-
-    :::{image} images/gitea_pull_request_start.png
-    :alt: Gitea pull request
-    :align: center
-    :::
-
-- Select the source branch and the target branch then click the **{guilabel}`New Pull Request`** button.
-
-    :::{image} images/gitea_pull_request_diff.png
-    :alt: Gitea pull request
-    :align: center
-    :::
-
-- Add a title and description to your pull request then click the **{guilabel}`Create Pull Request`** button.
-
-    :::{image} images/gitea_pull_request_finish.png
-    :alt: Gitea pull request
-    :align: center
-    :::
-
-Your pull request is now ready to be approved and merged.
-::::
+- Ask your team mates for help.
+- Ask the designated contact for your SRE.
+- There may be a dedicated discussion channel, for example a Slack/Teams/Discord channel or an email list.
+- Consider reporting a bug if you think you've found a problem with the environment.
 
 ## {{bug}} Report a bug
 

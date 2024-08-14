@@ -148,7 +148,7 @@ Depending on the sensitivity level of your SRE, you may only have access to a su
 - {ref}`Tier 3 <policy_tier_3>` (high security) environments only have pre-authorised packages available.
 
 :::{tip}
-If you need to use a package that is not on the allowlist see the section on how to [bring software or data into the environment](#-transferring-files-into-or-out-of the-sre) below.
+If you need to use a package that is not on the allowlist see the section on how to [bring software or data into the environment](#-transferring-files-into-or-out-of-the-sre).
 :::
 
 ### Python packages
@@ -166,7 +166,7 @@ You can create one:
 
 You can install **Python** packages into your virtual environment from a terminal.
 
-:::{code} console
+:::{code} bash
 > pip install NAME_OF_PACKAGE
 :::
 
@@ -288,65 +288,136 @@ You can read more about **Gitea** at [their website](<https://about.gitea.com/>)
 :::
 
 The **Gitea** server within the SRE can hold code, documentation and results from your team's analyses.
-This **Gitea** server is entirely within the SRE - you do not need to worry about the security of the information you upload there as there is no access to the internet from this server.
 
 :::{important}
-The **Gitea** instance within the SRE is entirely separate from the **https://gitea.com** service.
+This **Gitea** server is entirely within the SRE - you do not need to worry about the security of the information you upload there as it is inaccessible from the public internet.
 :::
-
-### {{unlock}} Access Gitea
 
 You can access **Gitea** from an internet browser in the workspace using the desktop shortcut.
 Use your **{ref}`short-form username <roles_researcher_username>`** and **password** to login.
 
-::::{admonition} Connecting to Gitea
+::::{admonition} Logging in to Gitea
 :class: dropdown note
 
-Click the **{guilabel}`Sign in`** button on the top-right of the page.
+- Click the **{guilabel}`Sign in`** button on the top-right of the page.
 
-:::{image} images/gitea_homepage.png
-:alt: Gitea homepage
-:align: center
-:width: 90%
-:::
+    :::{image} images/gitea_homepage.png
+    :alt: Gitea homepage
+    :align: center
+    :width: 90%
+    :::
 
-Enter your **{ref}`short-form username <roles_researcher_username>`** and **password**.
+- Enter your **{ref}`short-form username <roles_researcher_username>`** and **password**.
 
-:::{image} images/gitea_login.png
-:alt: Gitea login
-:align: center
-:width: 90%
-:::
+    :::{image} images/gitea_login.png
+    :alt: Gitea login
+    :align: center
+    :width: 90%
+    :::
 
-Then click the **{guilabel}`Sign in`** button
+- Then click the **{guilabel}`Sign in`** button
 ::::
 
-From the **Gitea** dashboard, you can create new repositories or look at repositories created by you or others.
+::::{admonition} Create a new repository
+:class: dropdown note
 
-:::{image} images/gitea_dashboard.png
-:alt: Gitea dashboard
-:align: center
-:width: 90%
-:::
+- Log in to the **Gitea** dashboard
 
-### {{open_hands}} Public repositories within the SRE
+    :::{image} images/gitea_dashboard.png
+    :alt: Gitea dashboard
+    :align: center
+    :width: 90%
+    :::
 
-When you make a repository inside the SRE "public" it is visible to your collaborators who also have access to the SRE.
-A "public" repository within the SRE is only visible to others with the same data access approval, it is not open to the general public via the internet.
+- Click on the **{guilabel}`+`** button next to the **Repositories** label.
 
-:::{tip}
-We recommend that you make your repositories public to facilitate collaboration within the secure research environment.
-:::
+    :::{image} images/gitea_new_repository.png
+    :alt: Clone Gitea project
+    :align: center
+    :width: 90%
+    :::
 
-### {{construction_worker}} Support for Gitea use
+- Fill out the required information, with the following guidelines:
+    - leave **Make repository private** unchecked
+    - leave **Initialize repository** checked
 
-If you have not used Gitea before:
+    :::{tip}
+    When you make a repository inside the SRE "public" it is visible to your collaborators who also have access to the SRE but is still inaccessible to the general public via the internet.
+    We recommend that you make your repositories public to facilitate collaboration within the secure research environment.
+    :::
 
-- There is a small tutorial {ref}`at the end of this user guide <roles_researcher_gitea_basics>`.
-- You can find the official documentation on the [Gitea website](https://docs.gitea.com/category/usage).
-- Ask your team mates for help.
-- Ask the designated contact for your SRE.
-- There may be a dedicated discussion channel, for example a Slack/Teams/Discord channel or an email list.
+::::
+
+::::{admonition} Work on an existing repository
+:class: dropdown note
+
+- Sign into **Gitea** and click the **{guilabel}`Explore`** button in the top bar.
+
+    :::{image} images/gitea_explore.png
+    :alt: Explore Gitea repositories
+    :align: center
+    :width: 90%
+    :::
+
+- Click on the name of the repository you want to work on.
+
+    :::{image} images/gitea_repository_view.png
+    :alt: View Gitea repository
+    :align: center
+    :width: 90%
+    :::
+
+- From the repository view, click the **{guilabel}`HTTP`** button and copy the URL using the copy icon.
+- From the terminal, type the following command
+
+    :::{code} bash
+    git clone URL_YOU_COPIED_FROM_GITEA
+    :::
+
+- This will start the process of copying the repository to the folder you are using in the terminal.
+
+    :::{note}
+    In **git**, copying a project is known as "cloning".
+    :::
+
+::::
+
+
+(roles_researcher_gitea_create_pull_request)=
+
+::::{admonition} Create a pull request in Gitea
+:class: dropdown note
+
+- Before you start, you should have already created a branch and pushed your changes.
+- From the repository view in **Gitea**, click the **{guilabel}`Pull requests`** button.
+- Click the **{guilabel}`New Pull Request`** button on the right side of the screen.
+
+    :::{image} images/gitea_pull_request_start.png
+    :alt: Start Gitea pull request
+    :align: center
+    :width: 90%
+    :::
+
+- Select the source branch and the target branch then click the **{guilabel}`New Pull Request`** button.
+
+    :::{image} images/gitea_pull_request_diff.png
+    :alt: Choose pull request branches
+    :align: center
+    :width: 90%
+    :::
+
+- Add a title and description to your pull request then click the **{guilabel}`Create Pull Request`** button.
+
+    :::{image} images/gitea_pull_request_finish.png
+    :alt: Finalise Gitea pull request
+    :align: center
+    :width: 90%
+    :::
+
+- Your pull request is now ready to be approved and merged.
+- For more information, check the **Gitea** [pull requests documentation](https://docs.gitea.com/next/usage/pull-request).
+
+::::
 
 ## {{book}} Collaborative writing using HedgeDoc
 
@@ -354,7 +425,11 @@ If you have not used Gitea before:
 It uses [Markdown](https://www.markdownguide.org/) which is a simple way to format your text so that it renders nicely in HTML.
 
 The **HedgeDoc** server within the SRE can hold documents relating to your team's analyses.
-This **HedgeDoc** server is entirely within the SRE - you do not need to worry about the security of the information you upload there as there is no access to the internet from this server.
+Use the **HedgeDoc** server to work collaboratively on documents with other project team members.
+
+:::{important}
+This **HedgeDoc** server is entirely within the SRE - you do not need to worry about the security of the information you upload there as it is inaccessible from the public internet.
+:::
 
 :::{admonition} Read more about HedgeDoc
 :class: dropdown note
@@ -367,70 +442,70 @@ You can read more about **HedgeDoc** at [their website](<https://hedgedoc.org/>)
 If you've never used Markdown before, we recommend reading this [Markdown cheat sheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
 :::
 
-### {{unlock}} Access HedgeDoc
-
 You can access **HedgeDoc** from an internet browser from the workspace using the desktop shortcut.
 Use your **{ref}`short-form username <roles_researcher_username>`** and **password** to login.
 
 ::::{admonition} Connecting to HedgeDoc
 :class: dropdown note
 
-Click the **{guilabel}`Sign in`** button on the top-right of the page.
+- Click the **{guilabel}`Sign in`** button on the top-right of the page.
 
-:::{image} images/hedgedoc_homepage.png
-:alt: HedgeDoc homepage
-:align: center
-:width: 90%
-:::
+    :::{image} images/hedgedoc_homepage.png
+    :alt: HedgeDoc homepage
+    :align: center
+    :width: 90%
+    :::
 
-Enter your **{ref}`short-form username <roles_researcher_username>`** and **password**.
+- Enter your **{ref}`short-form username <roles_researcher_username>`** and **password**.
 
-:::{image} images/hedgedoc_login.png
-:alt: HedgeDoc login
-:align: center
-:width: 90%
-:::
+    :::{image} images/hedgedoc_login.png
+    :alt: HedgeDoc login
+    :align: center
+    :width: 90%
+    :::
 
-Then click the **{guilabel}`Sign in`** button
+- Then click the **{guilabel}`Sign in`** button
 ::::
 
-You can use the **HedgeDoc** server to work collaboratively on documents with other project team members.
+::::{admonition} Editing other people's documents
+:class: dropdown note
 
-### {{busts_in_silhouette}} Editing other people's documents
+- When you create a Markdown document inside the SRE you decide on its access permissions.
 
-When you make a Markdown document inside the SRE "editable" your collaborators who also have access to the SRE can access it via the URL at the top of the page.
-They will have the right to change the file if they are signed into the **HedgeDoc** server.
+    :::{image} images/hedgedoc_access_options.png
+    :alt: HedgeDoc access options
+    :align: center
+    :width: 90%
+    :::
 
-The link will only work for people who have the same data access approval, it is not open to the general public via the internet.
+- If you make your documents **editable**, your collaborators will be able to change the file.
+- If you make your documents **locked**, your collaborators will be able to read but not edit the file.
 
-:::{image} images/hedgedoc_access_options.png
-:alt: HedgeDoc access options
-:align: center
-:width: 90%
-:::
+    :::{note}
+    The document can only be accessed by your collaborators inside the SRE, it is inaccessible from the public internet.
+    ::::
 
-:::{tip}
-We recommend that you make your documents **editable** to facilitate collaboration within the SRE.
-Alternatively, the **locked** option allows others to read but not edit the document.
-:::
+::::
 
-### {{book}} Publishing your documents
+::::{admonition} Publishing your documents
+:class: dropdown note
 
 The default URL is quite long and difficult to share with your collaborators.
 We recommend **publishing** the document to get a much shorter URL which is easier to share with others.
 
-Click the **{guilabel}`Publish`** button to publish the document and generate the short URL.
-Click the pen icon to return to the editable markdown view.
+- Click the **{guilabel}`Publish`** button to publish the document and generate the short URL.
+- Click the pen icon to return to the editable markdown view.
 
-:::{image} images/hedgedoc_publish.png
-:alt: Publish with HedgeDoc
-:align: center
-:width: 90%
-:::
+    :::{image} images/hedgedoc_publish.png
+    :alt: Publish with HedgeDoc
+    :align: center
+    :width: 90%
+    :::
 
-:::{important}
-Remember that the document is not published to the internet, it is only available to others within the SRE.
-:::
+    :::{important}
+    Remember that the document is not published to the internet, it is only available to others within the SRE.
+    :::
+::::
 
 ## {{green_book}} Database access
 
@@ -443,21 +518,25 @@ If you have access to one or more databases, you can access them using the follo
 For guidance on how to use the databases, many resources are available on the internet.
 Official tutorials for [MSSQL](https://learn.microsoft.com/en-us/sql/sql-server/tutorials-for-sql-server-2016?view=sql-server-ver16) and [PostgreSQL](https://www.postgresql.org/docs/current/tutorial.html) may be good starting points.
 
-### {{bento_box}} Microsoft SQL
+:::{admonition} Microsoft SQL server connection details
+:class: dropdown note
 
 - **Server name** : mssql._SRE\_URL_ (e.g. mssql.sandbox.projects.example.org)
 - **Username**: databaseadmin
 - **Password**: provided by your {ref}`System Manager <role_system_manager>`
 - **Database name**: provided by your {ref}`System Manager <role_system_manager>`
 - **Port**: 1433
+:::
 
-### {{postbox}} PostgreSQL
+:::{admonition} PostgreSQL server connection details
+:class: dropdown note
 
 - **Server name**: postgresql._SRE\_URL_ (e.g. postgresql.sandbox.projects.example.org)
 - **Username**: databaseadmin
 - **Password**: provided by your {ref}`System Manager <role_system_manager>`
 - **Database name**: provided by your {ref}`System Manager <role_system_manager>`
 - **Port**: 5432
+:::
 
 Examples are given below for connecting using **DBeaver**, **Python** and **R**.
 The instructions for using other graphical interfaces or programming languages will be similar.
@@ -473,10 +552,11 @@ Click on the **{guilabel}`New database connection`** button (which looks a bit l
 
 - Select **SQL Server** as the database type
 
-:::{image} images/db_dbeaver_select_mssql.png
-:alt: DBeaver select Microsoft SQL
-:align: center
-:::
+    :::{image} images/db_dbeaver_select_mssql.png
+    :alt: DBeaver select Microsoft SQL
+    :align: center
+    :width: 90%
+    :::
 
 ::::
 
@@ -491,10 +571,11 @@ Click on the **{guilabel}`New database connection`** button (which looks a bit l
 - Tick **Show All Schemas**
 - Tick **Trust server certificate**
 
-:::{image} images/db_dbeaver_connect_mssql.png
-:alt: DBeaver connect with Microsoft SQL
-:align: center
-:::
+    :::{image} images/db_dbeaver_connect_mssql.png
+    :alt: DBeaver connect with Microsoft SQL
+    :align: center
+    :width: 90%
+    :::
 
 ::::
 
@@ -504,12 +585,13 @@ Click on the **{guilabel}`New database connection`** button (which looks a bit l
 - After clicking finish, you may be prompted to download driver files even though they should be pre-installed.
 - Click on the **{guilabel}`Download`** button if this happens.
 
-:::{image} images/db_dbeaver_driver_download.png
-:alt: DBeaver driver download for Microsoft SQL
-:align: center
-:::
+    :::{image} images/db_dbeaver_driver_download.png
+    :alt: DBeaver driver download for Microsoft SQL
+    :align: center
+    :width: 90%
+    :::
 
-If drivers are not available contact your {ref}`System Manager <role_system_manager>`
+- If drivers are not available contact your {ref}`System Manager <role_system_manager>`
 ::::
 
 #### PostgreSQL
@@ -521,10 +603,11 @@ Click on the **{guilabel}`New database connection`** button (which looks a bit l
 
 - Select **PostgreSQL** as the database type
 
-:::{image} images/db_dbeaver_select_postgresql.png
-:alt: DBeaver select PostgreSQL
-:align: center
-:::
+    :::{image} images/db_dbeaver_select_postgresql.png
+    :alt: DBeaver select PostgreSQL
+    :align: center
+    :width: 90%
+    :::
 
 ::::
 
@@ -537,10 +620,11 @@ Click on the **{guilabel}`New database connection`** button (which looks a bit l
 - **Username**: as above
 - **Password**: as above
 
-:::{image} images/db_dbeaver_connect_postgresql.png
-:alt: DBeaver connect with PostgreSQL
-:align: center
-:::
+    :::{image} images/db_dbeaver_connect_postgresql.png
+    :alt: DBeaver connect with PostgreSQL
+    :align: center
+    :width: 90%
+    :::
 
 ::::
 
@@ -550,12 +634,13 @@ Click on the **{guilabel}`New database connection`** button (which looks a bit l
 - After clicking finish, you may be prompted to download driver files even though they should be pre-installed.
 - Click on the **{guilabel}`Download`** button if this happens.
 
-:::{image} images/db_dbeaver_driver_download.png
-:alt: DBeaver driver download for PostgreSQL
-:align: center
-:::
+    :::{image} images/db_dbeaver_driver_download.png
+    :alt: DBeaver driver download for PostgreSQL
+    :align: center
+    :width: 90%
+    :::
 
-If drivers are not available contact your {ref}`System Manager <role_system_manager>`
+- If drivers are not available contact your {ref}`System Manager <role_system_manager>`
 ::::
 
 ### {{snake}} Connecting using Python
@@ -563,85 +648,101 @@ If drivers are not available contact your {ref}`System Manager <role_system_mana
 Database connections can be made using **pyodbc** (Microsoft SQL) or **psycopg2** (PostgreSQL).
 The data can be read into a dataframe for local analysis.
 
-#### Microsoft SQL
+::::{admonition} Microsoft SQL
+:class: dropdown note
 
-:::{code} python
-import pyodbc
-import pandas as pd
+- Example of how to connect to the database server
 
-# Connect to the database server
-server = "mssql.sandbox.projects.example.org"
-port = "1433"
-db_name = "master"
-cnxn = pyodbc.connect(
-    "DRIVER={ODBC Driver 17 for SQL Server};" + \
-    f"SERVER={server},{port};" + \
-    f"DATABASE={db_name};" + \
-    "Trusted_Connection=yes;"
-)
+    :::{code} python
+    import pyodbc
+    import pandas as pd
 
-# Run a query and save the output into a dataframe
-df = pd.read_sql("SELECT * FROM information_schema.tables;", cnxn)
-print(df.head(3))
-:::
+    # Connect to the database server
+    server = "mssql.sandbox.projects.example.org"
+    port = "1433"
+    db_name = "master"
+    cnxn = pyodbc.connect(
+        "DRIVER={ODBC Driver 17 for SQL Server};" + \
+        f"SERVER={server},{port};" + \
+        f"DATABASE={db_name};" + \
+        "Trusted_Connection=yes;"
+    )
 
-#### PostgreSQL
+    # Run a query and save the output into a dataframe
+    df = pd.read_sql("SELECT * FROM information_schema.tables;", cnxn)
+    print(df.head(3))
+    :::
+::::
 
-:::{code} python
-import psycopg2
-import pandas as pd
+::::{admonition} PostgreSQL
+:class: dropdown note
 
-# Connect to the database server
-server = "postgresql.sandbox.projects.example.org"
-port = 5432
-db_name = "postgres"
-cnxn = psycopg2.connect(host=server, port=port, database=db_name)
+- Example of how to connect to the database server
 
-# Run a query and save the output into a dataframe
-df = pd.read_sql("SELECT * FROM information_schema.tables;", cnxn)
-print(df.head(3))
-:::
+    :::{code} python
+    import psycopg2
+    import pandas as pd
+
+    # Connect to the database server
+    server = "postgresql.sandbox.projects.example.org"
+    port = 5432
+    db_name = "postgres"
+    cnxn = psycopg2.connect(host=server, port=port, database=db_name)
+
+    # Run a query and save the output into a dataframe
+    df = pd.read_sql("SELECT * FROM information_schema.tables;", cnxn)
+    print(df.head(3))
+    :::
+::::
 
 ### {{rose}} Connecting using R
 
 Database connections can be made using **odbc** (Microsoft SQL) or **RPostgres** (PostgreSQL).
 The data can be read into a dataframe for local analysis.
 
-#### Microsoft SQL
+::::{admonition} Microsoft SQL
+:class: dropdown note
 
-:::{code} R
-library(DBI)
-library(odbc)
+- Example of how to connect to the database server
 
-# Connect to the database server
-cnxn <- DBI::dbConnect(
-    odbc::odbc(),
-    Driver = "ODBC Driver 17 for SQL Server",
-    Server = "mssql.sandbox.projects.example.org,1433",
-    Database = "master",
-    Trusted_Connection = "yes"
-)
+    :::{code} R
+    library(DBI)
+    library(odbc)
 
-# Run a query and save the output into a dataframe
-df <- dbGetQuery(cnxn, "SELECT * FROM information_schema.tables;")
-head(df, 3)
-:::
+    # Connect to the database server
+    cnxn <- DBI::dbConnect(
+        odbc::odbc(),
+        Driver = "ODBC Driver 17 for SQL Server",
+        Server = "mssql.sandbox.projects.example.org,1433",
+        Database = "master",
+        Trusted_Connection = "yes"
+    )
 
-#### PostgreSQL
+    # Run a query and save the output into a dataframe
+    df <- dbGetQuery(cnxn, "SELECT * FROM information_schema.tables;")
+    head(df, 3)
+    :::
+::::
 
-:::{code} R
-library(DBI)
-library(RPostgres)
+::::{admonition} PostgreSQL
+:class: dropdown note
 
-# Connect to the database server
-cnxn <- DBI::dbConnect(
-    RPostgres::Postgres(),
-    host = "postgresql.sandbox.projects.example.org",
-    port = 5432,
-    dbname = "postgres"
-)
+- Example of how to connect to the database server
 
-# Run a query and save the output into a dataframe
-df <- dbGetQuery(cnxn, "SELECT * FROM information_schema.tables;")
-head(df, 3)
-:::
+    :::{code} R
+    library(DBI)
+    library(RPostgres)
+
+    # Connect to the database server
+    cnxn <- DBI::dbConnect(
+        RPostgres::Postgres(),
+        host = "postgresql.sandbox.projects.example.org",
+        port = 5432,
+        dbname = "postgres"
+    )
+
+    # Run a query and save the output into a dataframe
+    df <- dbGetQuery(cnxn, "SELECT * FROM information_schema.tables;")
+    head(df, 3)
+    :::
+::::

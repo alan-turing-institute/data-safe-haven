@@ -38,6 +38,7 @@ If you aren't sure about any of these then please return to the **{ref}`Set up y
     :::{image} images/guacamole_oauth_login.png
     :alt: Research environment log in
     :align: center
+    :width: 90%
     ::::
 
     ::::{tip}
@@ -55,6 +56,7 @@ If you aren't sure about any of these then please return to the **{ref}`Set up y
     :::{image} images/guacamole_mfa.png
     :alt: MFA trigger
     :align: center
+    :width: 90%
     :::
 
   {{telephone_receiver}} For the call, you may have to move to an area with good reception and/or press the hash (**#**) key multiple times in-call.
@@ -93,16 +95,16 @@ You can use them to analyse the sensitive data belonging to your project while r
 
 - Click on one of the **Desktop** connections from the list in **All Connections**
 
-:::{note}
-Each workspace should have an annotation which indicates its available resources:
-- CPUs
-- GPUs
-- RAM
-:::
+    :::{note}
+    Each workspace should have an annotation which indicates its available resources:
+    - CPUs
+    - GPUs
+    - RAM
+    :::
 
-:::{caution}
-These workspaces are shared between everyone on your project. Talk to your collaborators to ensure that you're not all using the same one.
-:::
+    :::{caution}
+    These workspaces are shared between everyone on your project. Talk to your collaborators to ensure that you're not all using the same one.
+    :::
 
 ::::
 
@@ -160,15 +162,15 @@ You will access this machine in a similar way to the main shared desktop, by sel
 ::::{admonition} Selecting a different workspace
 :class: dropdown note
 
-Our example user, Ada Lovelace, participating in the **sandbox** project, might select **Workspace 2** instead of **Workspace 1** since it has additional CPUs and RAM.
+- Our example user, Ada Lovelace, participating in the **sandbox** project, might select **Workspace 2** instead of **Workspace 1** since it has additional CPUs and RAM.
 
-:::{image} images/guacamole_dashboard_multiple_workspaces.png
-:alt: Research environment dashboard
-:align: center
-:width: 90%
-:::
+    :::{image} images/guacamole_dashboard_multiple_workspaces.png
+    :alt: Research environment dashboard
+    :align: center
+    :width: 90%
+    :::
 
-This will bring her to the normal login screen, where she will use the short-form username **ada.lovelace** and her password as before.
+- This will bring her to the normal login screen, where she will use the short-form username **ada.lovelace** and her password as before.
 ::::
 
 :::{tip}
