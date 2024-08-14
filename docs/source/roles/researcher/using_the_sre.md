@@ -213,9 +213,6 @@ There are several shared folder on each workspace that all collaborators within 
 - [shared space](#shared-space): in the **/shared/** folder
 - [output resources](#output-resources): in the **/output/** folder
 
-<!-- - [scratch space](#scratch-space-scratch): `/scratch/` -->
-<!-- - [backup space](#backup-space-backup): `/backup/` -->
-
 ### Input data
 
 Data that has been approved and brought into the secure research environment can be found in the **/data/** folder.
@@ -239,29 +236,6 @@ The **/shared/** folder should be used for any work that you want to share with 
 - Everyone working on your project will be able to access it
 - Everyone has **read-and-write access** to the files stored here.
 
-<!--
-#### Scratch space: `/scratch/`
-
-The `/scratch/` folder should be used for any work-in-progress that isn't ready to share yet.
-Although everyone in your group will have **read-and-write access**, you can create your own folders inside `/scratch` and choose your own permissions for them.
-
-:::{caution}
-You should not use `/scratch/` for long-term storage as it can be reset at any time without warning (_e.g._ when the VM is restarted).
-:::
-
-The contents of `/scratch/` will be **different** on different VMs in your SRE.
--->
-
-<!--
-#### Backup space: `/backup/`
-
-The `/backup/` folder should be used for any work-in-progress that you want to have backed up.
-In the event of any data loss due to accidental data deletion by a TRE user, your system administrator can restore the `/backup/` folder to the state it was in at an earlier point in time (up to 12 weeks in the past).
-This **cannot** be used to recover individual files - only the complete contents of the folder.
-Everyone in your group will have **read-and-write access** to all folders on `/backup`.
-
-The contents of `/backup/` will be **identical** on all workspaces in your SRE.
--->
 
 ### Output resources
 
