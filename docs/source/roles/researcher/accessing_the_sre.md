@@ -46,6 +46,7 @@ If you aren't sure about any of these then please return to the **{ref}`Set up y
     :::
 
 - Enter your password at the prompt and click on the **{guilabel}`Next`** button
+
 ::::
 
 ::::{admonition} 3. Login with MFA
@@ -146,11 +147,13 @@ You should now be able to see the SRE dashboard screen which will look like the 
 :::
 
 ::::{note}
+
 - The Linux desktops within our workspaces use the [Ubuntu operating system](https://ubuntu.com/).
 - The desktop environment used by our workspaces is called [Xfce](https://docs.xfce.org/xfce/).
+
 ::::
 
-**Welcome to the Data Safe Haven SRE! {{wave}}**
+Welcome to the Data Safe Haven SRE! {{wave}}
 
 ## {{unlock}} Access additional workspaces
 
@@ -171,6 +174,7 @@ You will access this machine in a similar way to the main shared desktop, by sel
     :::
 
 - This will bring her to the normal login screen, where she will use the short-form username **ada.lovelace** and her password as before.
+
 ::::
 
 :::{tip}

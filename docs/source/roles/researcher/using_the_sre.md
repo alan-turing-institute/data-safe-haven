@@ -80,6 +80,7 @@ The workspace has several pre-installed applications and programming languages t
 If you need anything that is not already installed, please discuss this with the designated contact for your SRE.
 
 You can access applications from the desktop using either:
+
 - the **Terminal** app accessible from the dock at the bottom of the screen
 - via a drop-down menu when you right-click on the desktop or click the **{menuselection}`Applications`** button on the top left of the screen
 
@@ -211,6 +212,7 @@ There are several shared folder on each workspace that all collaborators within 
 - [input data](#input-data): in the **/data/** folder
 - [shared space](#shared-space): in the **/shared/** folder
 - [output resources](#output-resources): in the **/output/** folder
+
 <!-- - [scratch space](#scratch-space-scratch): `/scratch/` -->
 <!-- - [backup space](#backup-space-backup): `/backup/` -->
 
@@ -312,6 +314,7 @@ Use your **{ref}`short-form username <roles_researcher_username>`** and **passwo
     :::
 
 - Then click the **{guilabel}`Sign in`** button
+
 ::::
 
 ::::{admonition} Create a new repository
@@ -377,7 +380,6 @@ Use your **{ref}`short-form username <roles_researcher_username>`** and **passwo
     :::
 
 ::::
-
 
 (roles_researcher_gitea_create_pull_request)=
 
@@ -454,6 +456,7 @@ Use your **{ref}`short-form username <roles_researcher_username>`** and **passwo
     :::
 
 - Then click the **{guilabel}`Sign in`** button
+
 ::::
 
 ::::{admonition} Editing other people's documents
@@ -515,6 +518,7 @@ Official tutorials for [MSSQL](https://learn.microsoft.com/en-us/sql/sql-server/
 - **Password**: provided by your {ref}`System Manager <role_system_manager>`
 - **Database name**: provided by your {ref}`System Manager <role_system_manager>`
 - **Port**: 1433
+
 :::
 
 :::{admonition} PostgreSQL server connection details
@@ -525,6 +529,7 @@ Official tutorials for [MSSQL](https://learn.microsoft.com/en-us/sql/sql-server/
 - **Password**: provided by your {ref}`System Manager <role_system_manager>`
 - **Database name**: provided by your {ref}`System Manager <role_system_manager>`
 - **Port**: 5432
+
 :::
 
 Examples are given below for connecting using **DBeaver**, **Python** and **R**.
@@ -581,6 +586,7 @@ Click on the **{guilabel}`New database connection`** button (which looks a bit l
     :::
 
 - If drivers are not available contact your {ref}`System Manager <role_system_manager>`
+
 ::::
 
 #### PostgreSQL
@@ -630,6 +636,7 @@ Click on the **{guilabel}`New database connection`** button (which looks a bit l
     :::
 
 - If drivers are not available contact your {ref}`System Manager <role_system_manager>`
+
 ::::
 
 ### {{snake}} Connecting using Python

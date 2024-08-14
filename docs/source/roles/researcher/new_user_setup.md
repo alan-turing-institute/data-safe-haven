@@ -43,7 +43,6 @@ SRE ID
 SRE URL
 : each SRE has a unique URL (for example **sandbox.projects.example.org**) which is used to access the data.
 
-
 (roles_researcher_setup_your_account)=
 
 ## {{rocket}} Set up your account
@@ -132,8 +131,10 @@ You might receive the {ref}`SRE URL <roles_researcher_sre_url>` at this time, or
 
 :::{note}
 In this document Ada Lovelace - our example user - will be participating in the **sandbox** project.
+
 - Her **{ref}`username domain <roles_researcher_username_domain>`** is **projects.example.org**.
 - Her **{ref}`SRE URL <roles_researcher_sre_url>`** is **https://sandbox.projects.example.org**.
+
 :::
 
 (roles_researcher_password_and_mfa)=
@@ -205,16 +206,15 @@ Please follow these steps carefully.
 
 - Select a password that complies with the [Microsoft Entra requirements](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-sspr-policy#microsoft-entra-password-policies):
 
-
     :::{tip}
     We suggest the following:
 
     - minimum 12 characters
     - only alphanumeric characters
     - at least one each of:
-      - {{input_latin_uppercase}} uppercase character
-      - {{input_latin_lowercase}} lowercase character
-      - {{input_numbers}} number
+        - {{input_latin_uppercase}} uppercase character
+        - {{input_latin_lowercase}} lowercase character
+        - {{input_numbers}} number
     - not used anywhere else
     - use a [password generator](https://bitwarden.com/password-generator/) to ensure you meet these requirements
     :::
@@ -306,6 +306,7 @@ This is known as multi-factor authentication (MFA).
     :::
 
 - Click **{guilabel}`Done`**
+
 ::::
 
 ::::{admonition} 4. Check the Security Information dashboard
@@ -333,8 +334,8 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
 - {{apple}} iOS: `https://bit.ly/iosauthenticator`
 - {{robot}} Android: `https://bit.ly/androidauthenticator`
 - {{bento_box}} Windows mobile: `https://bit.ly/windowsauthenticator`
-::::
 
+::::
 
 ::::{admonition} 2. Open authenticator app
 :class: dropdown note
@@ -356,6 +357,7 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
     :::
 
 - Open the app
+
 ::::
 
 ::::{admonition} 3. Register your app

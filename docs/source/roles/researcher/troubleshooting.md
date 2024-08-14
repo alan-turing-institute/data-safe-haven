@@ -95,7 +95,6 @@ If you have never used a Linux desktop before, you might find some of the follow
     :::
 ::::
 
-
 ::::{admonition} Miscellaneous
 :class: dropdown note
 
@@ -113,7 +112,6 @@ If you have never used a Linux desktop before, you might find some of the follow
 ::::
 
 For a more detailed introduction, visit the official Ubuntu tutorial, [The Linux command line for beginners](https://ubuntu.com/tutorials/command-line-for-beginners)
-
 
 (roles_researcher_git_basics)=
 
@@ -178,7 +176,6 @@ Pull request
 
 ::::{admonition} Working with branches
 :class: dropdown note
-
 
 - To create a new branch
 
