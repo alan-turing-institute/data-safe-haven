@@ -23,5 +23,5 @@ The **Investigator** must be able and willing to accept responsibility for the c
 [Data egress](data_egress.md)
 : What an **Investigator** needs to know about bringing data or software out of the environment.
 
-{ref}`User guide <role_researcher_user_guide_guacamole>`
+{ref}`Researcher guide <role_researcher>`
 : Step-by-step instructions for using an existing Safe Haven.
