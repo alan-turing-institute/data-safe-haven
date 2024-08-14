@@ -818,8 +818,17 @@ class AzureSdk:
             raise DataSafeHavenAzureError(msg) from exc
 
     def list_blobs(
-        self, container_name, prefix: str, resource_group_name, storage_account_name
+        self,
+        container_name: str,
+        prefix: str,
+        resource_group_name: str,
+        storage_account_name: str,
     ) -> list[str]:
+        """List all blobs with a given prefix in a container
+
+        Returns:
+            List[str]: The list of blob names
+        """
         storage_account_keys = self.get_storage_account_keys(
             resource_group_name, storage_account_name
         )
