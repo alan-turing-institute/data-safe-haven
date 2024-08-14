@@ -94,6 +94,7 @@ exclude = [
   'entra.microsoft\.com',  # Requires authentication (403)
   'example\.org',  # domain used for examples only
   'github\.com',  # Requires authentication (403)
+  'hedgedoc\.org',  # 403
   'ipaddressguide\.com',  # 403
   'opensource\.org',  # 403
   'portal\.azure\.com',  # 403
