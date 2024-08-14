@@ -65,25 +65,22 @@ def available() -> None:
         )
         raise typer.Exit(1) from exc
     azure_sdk = AzureSdk(context.subscription_name)
-    blobs = azure_sdk.list_blobs(
-        container_name=context.storage_container_name,
-        prefix="sre",
-        resource_group_name=context.resource_group_name,
-        storage_account_name=context.storage_account_name,
-    )
+    try:
+        blobs = azure_sdk.list_blobs(
+            container_name=context.storage_container_name,
+            prefix="sref",
+            resource_group_name=context.resource_group_name,
+            storage_account_name=context.storage_account_name,
+        )
+    except DataSafeHavenAzureStorageError as exc:
+        logger.critical("Ensure SHM is deployed before attempting to use SRE configs.")
+        raise typer.Exit(1) from exc
+    if not blobs:
+        logger.critical(f"No configurations found for context '{context.name}'.")
+        raise typer.Exit(1)
     console.print(f"Available SRE configurations for context '{context.name}':")
     for blob in blobs:
         console.print(blob)
-    # try:
-    #     sre_configs = SREConfig.available(context)
-    # except DataSafeHavenAzureStorageError as exc:
-    #     logger.critical("Ensure SHM is deployed before attempting to use SRE configs.")
-    #     raise typer.Exit(1) from exc
-    # except DataSafeHavenError as exc:
-    #     logger.critical("No configurations found for the selected context.")
-    #     raise typer.Exit(1) from exc
-    # for sre_config in sre_configs:
-    #     console.print(sre_config.name)
 
 
 @config_command_group.command()
