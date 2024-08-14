@@ -68,7 +68,7 @@ def available() -> None:
     try:
         blobs = azure_sdk.list_blobs(
             container_name=context.storage_container_name,
-            prefix="sref",
+            prefix="sre",
             resource_group_name=context.resource_group_name,
             storage_account_name=context.storage_account_name,
         )
