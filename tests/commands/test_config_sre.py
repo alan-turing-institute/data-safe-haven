@@ -79,6 +79,13 @@ class TestShowSRE:
         assert "No configuration exists for an SRE" in result.stdout
         assert result.exit_code == 1
 
+    def test_available(self, mocker, runner):
+        mocker.patch.object(AzureSdk, "list_blobs", return_value=["sandbox"])
+        result = runner.invoke(config_command_group, ["available"])
+        assert result.exit_code == 0
+        assert "Available SRE configurations" in result.stdout
+        assert "sandbox" in result.stdout
+
 
 class TestTemplateSRE:
     def test_template(self, runner):
