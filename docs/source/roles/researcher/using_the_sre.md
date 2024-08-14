@@ -355,7 +355,7 @@ Use your **{ref}`short-form username <roles_researcher_username>`** and **passwo
 
 ::::
 
-::::{admonition} Work on an existing repository
+::::{admonition} Clone an existing repository
 :class: dropdown note
 
 - Sign into **Gitea** and click the **{guilabel}`Explore`** button in the top bar.
@@ -422,6 +422,13 @@ Use your **{ref}`short-form username <roles_researcher_username>`** and **passwo
 
 - Your pull request is now ready to be approved and merged.
 - For more information, check the **Gitea** [pull requests documentation](https://docs.gitea.com/next/usage/pull-request).
+
+::::
+
+::::{admonition} Create a project board
+:class: dropdown note
+
+**Gitea** supports the concept of [projects](https://blog.gitea.com/introducing-new-features-of-labels-and-projects/) which can be used to organise tasks.
 
 ::::
 
