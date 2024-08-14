@@ -86,6 +86,28 @@ class TestShowSRE:
         assert "Available SRE configurations" in result.stdout
         assert "sandbox" in result.stdout
 
+    def test_available_no_sres(self, mocker, runner):
+        mocker.patch.object(AzureSdk, "list_blobs", return_value=[])
+        result = runner.invoke(config_command_group, ["available"])
+        assert result.exit_code == 1
+        assert "No configurations found" in result.stdout
+
+    def test_available_no_context(self, mocker, runner):
+        mocker.patch.object(
+            ContextManager, "from_file", side_effect=DataSafeHavenConfigError(" ")
+        )
+        result = runner.invoke(config_command_group, ["available"])
+        assert result.exit_code == 1
+        assert "No context is selected" in result.stdout
+
+    def test_available_no_storage(self, mocker, runner):
+        mocker.patch.object(
+            AzureSdk, "list_blobs", side_effect=DataSafeHavenAzureStorageError(" ")
+        )
+        result = runner.invoke(config_command_group, ["available"])
+        assert result.exit_code == 1
+        assert "Ensure SHM is deployed" in result.stdout
+
 
 class TestTemplateSRE:
     def test_template(self, runner):
