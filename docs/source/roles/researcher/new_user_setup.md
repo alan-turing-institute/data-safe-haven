@@ -146,16 +146,16 @@ Please follow these steps carefully.
 ::::{admonition} 1. Start the password reset process
 :class: dropdown note
 
-Go to `https://aka.ms/mfasetup` in a **private/incognito** browser session on your computer.
+- Go to `https://aka.ms/mfasetup` in a **private/incognito** browser session on your computer.
 
-:::{tip}
-One of the most common problems that users have in connecting to the SRE is automatic completion of usernames and passwords from other accounts on their computer.
-This can be quite confusing, particularly for anyone who logs into Microsoft services for work or personal use.
-:::
+    :::{tip}
+    One of the most common problems that users have in connecting to the SRE is automatic completion of usernames and passwords from other accounts on their computer.
+    This can be quite confusing, particularly for anyone who logs into Microsoft services for work or personal use.
+    :::
 
-:::{caution}
-Look out for usernames or passwords that are automatically completed, and make sure that you're using the correct details needed to access the SRE.
-:::
+    :::{caution}
+    Look out for usernames or passwords that are automatically completed, and make sure that you're using the correct details needed to access the SRE.
+    :::
 ::::
 
 ::::{admonition} 2. Follow the password recovery steps

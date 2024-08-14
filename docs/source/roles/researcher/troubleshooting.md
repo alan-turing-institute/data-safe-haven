@@ -126,7 +126,48 @@ For a more detailed introduction, visit the official Ubuntu tutorial, [The Linux
 ### Getting started with Git
 
 If you have never used **git** before, you might want to take a look at an introductory guide.
-There are multiple **git** cheat sheets such as[this one from the JIRA authors](https://www.atlassian.com/git/tutorials/atlassian-git-cheatsheet).
+There are multiple **git** cheat sheets such as [this one from the JIRA authors](https://www.atlassian.com/git/tutorials/atlassian-git-cheatsheet).
+
+### Add your Git username and set your email
+
+It is important to configure your username and email address, since every `git` commit will use this information to identify you as the author.
+
+::::{admonition} Set your username
+:class: dropdown note
+
+- In your terminal, type the following command to add your username:
+
+    :::{code} bash
+    git config --global user.name "YOUR_USERNAME"
+    :::
+
+    :::{important}
+    Use your **{ref}`short-form username <roles_researcher_username>`** here.
+    :::
+
+- Then verify that you have the correct username:
+
+    :::{code} bash
+    git config --global user.name
+    :::
+
+::::
+
+::::{admonition} Set your email address
+:class: dropdown note
+
+- To set your email address, type the following command:
+
+    :::{code} bash
+    git config --global user.email "your_email_address@example.com"
+    :::
+
+- To verify that you entered your email correctly, type:
+
+    :::{code} bash
+    git config --global user.email
+    :::
+::::
 
 ### Repositories
 
@@ -135,189 +176,152 @@ Repositories can contain folders and files, images, videos, spreadsheets, and da
 We recommend including a README, or a file with information about your project.
 Over the course of the work that you do in your SRE, you will often be accessing and adding files to the same project repository.
 
-### Add your Git username and set your email
 
-It is important to configure your username and email address, since every `git` commit will use this information to identify you as the author.
-On your shell, type the following command to add your username:
-
-::::{admonition} Set your username
+::::{admonition} Create a new repository
 :class: dropdown note
 
-:::{code} bash
-git config --global user.name "YOUR_USERNAME"
-:::
+- From the **Gitea** dashboard click on the **{guilabel}`+`** button next to the **Repositories** label.
 
-:::{important}
-Use your **{ref}`short-form username <roles_researcher_username>`** here.
-:::
+    :::{image} user_guide/gitea_new_repository.png
+    :alt: Clone Gitea project
+    :align: center
+    :::
 
-Then verify that you have the correct username:
-
-:::{code} bash
-git config --global user.name
-:::
+- Fill out the required information, with the following guidelines:
+    - leave **Make repository private** unchecked
+    - leave **Initialize repository** checked
 
 ::::
 
-::::{admonition} Set your email address
+::::{admonition} Work on an existing repository
 :class: dropdown note
 
-To set your email address, type the following command:
+- Sign into **Gitea** and click the **{guilabel}`Explore`** button in the top bar.
 
-:::{code} bash
-git config --global user.email "your_email_address@example.com"
-:::
+    :::{image} user_guide/gitea_explore.png
+    :alt: Explore Gitea repositories
+    :align: center
+    :::
 
-To verify that you entered your email correctly, type:
+- Click on the name of the repository you want to work on.
 
-:::{code} bash
-git config --global user.email
-:::
+    :::{image} user_guide/gitea_repository_view.png
+    :alt: View Gitea repository
+    :align: center
+    :::
+
+- From the repository view, click the **{guilabel}`HTTP`** button and copy the URL using the copy icon.
+- From the terminal, type the following command
+
+    :::{code} bash
+    git clone URL_YOU_COPIED_FROM_GITEA
+    :::
+
+- This will start the process of copying the repository to the folder you are using in the terminal.
+
+    :::{note}
+    In **git**, copying a project is known as "cloning".
+    :::
 ::::
-
-### Work on an existing project
-
-In **git**, copying a project is known as "cloning".
-To work on a **git** project in the workspace, you will need to clone it.
-
-
-To do this, sign in to **Gitea**.
-
-When you are on your Dashboard, click on the project that you’d like to clone.
-To work in the project, you can copy a link to the `git` repository through a SSH or a HTTPS protocol.
-SSH is easier to use after it’s been set up, [you can find the details here](https://docs.Gitea.com/ee/user/ssh.html).
-While you are at the Project tab, select HTTPS or SSH from the dropdown menu and copy the link using the Copy URL to clipboard button (you’ll have to paste it on your shell in the next step>).
-
-:::{image} user_guide/gitlab_clone_url.png
-:alt: Clone Gitea project
-:align: center
-:::
-
-Go to your computer’s shell and type the following command with your SSH or HTTPS URL:
-
-:::{code} bash
-git clone <PASTE HTTPS OR SSH HERE>
-:::
 
 ### Branches
 
 Branching is the way to work on different versions of a repository at one time.
-By default your repository has one branch usually named `master` or `main` which is considered to be the definitive branch.
-We use branches to experiment and make edits before committing them to `main`.
+By default your repository has one branch usually named **main** which is considered to be the definitive branch.
+We use branches to experiment and make edits before committing them to **main**.
 
-When you create a branch off the `main` branch, you’re making a copy, or snapshot, of `main` as it was at that point in time.
-If someone else made changes to the `main` branch while you were working on your branch, you could pull in those updates.
+When you create a branch off the **main** branch, you’re making a copy, or snapshot, of **main** as it was at that point in time.
+If someone else made changes to the **main** branch while you were working on your branch, you could pull in those updates.
 
-To create a branch:
+::::{admonition} Working with branches
+:class: dropdown note
 
-:::{code} bash
-git checkout -b NAME-OF-BRANCH
-:::
+- To create a new branch
 
-Work on an existing branch:
+    :::{code} bash
+    git checkout -b BRANCH_NAME
+    :::
 
-:::{code} bash
-git checkout NAME-OF-BRANCH
-:::
+- To switch to an existing branch
 
-To merge the `main` branch into a created branch you need to be on the created branch.
+    :::{code} bash
+    git checkout BRANCH_NAME
+    :::
 
-:::{code} bash
-git checkout NAME-OF-BRANCH
-git merge main
-:::
+- To merge the **main** branch into a created branch (you need to first switch to the created branch).
 
-To merge a created branch into the `main` branch you need to be on the created branch.
+    :::{code} bash
+    git checkout BRANCH_NAME
+    git merge main
+    :::
+::::
 
-:::{code} bash
-git checkout main
-git merge NAME-OF-BRANCH
-:::
-
-### Downloading the latest changes in a project
+### Collaborating with others
 
 This is for you to work on an up-to-date copy (it is important to do this every time you start working on a project), while you set up tracking branches.
 You pull from remote repositories to get all the changes made by users since the last time you cloned or pulled the project.
 Later, you can push your local commits to the remote repositories.
 
-:::{code} bash
-git pull REMOTE NAME-OF-BRANCH
-:::
+::::{admonition} Working with branches
+:class: dropdown note
 
-When you first clone a repository, REMOTE is typically `origin`.
-This is where the repository came from, and it indicates the SSH or HTTPS URL of the repository on the remote server.
-NAME-OF-BRANCH is usually `main`, but it may be any existing branch.
+- To get the latest changes on a branch
 
-### Add and commit local changes
+    :::{code} bash
+    git pull BRANCH_NAME
+    :::
 
-You’ll see your local changes in red when you type `git status`.
-These changes may be new, modified, or deleted files/folders.
-Use `git add` to stage a local file/folder for committing.
-Then use `git commit` to commit the staged files:
+- To "commit" your local changes to your copy of the branch
 
-:::{code} bash
-git add FILE OR FOLDER
-git commit -m "COMMENT TO DESCRIBE THE INTENTION OF THE COMMIT"
-:::
+    :::{code} bash
+    git add FILES_OR_FOLDERS
+    git commit -m "COMMENT TO DESCRIBE THE INTENTION OF THE COMMIT"
+    :::
 
-To add and commit all local changes in one command:
+- To make your locally committed changes available to others using this branch
 
-:::{code} bash
-git add .
-git commit -m "COMMENT TO DESCRIBE THE INTENTION OF THE COMMIT"
-:::
+    :::{code} bash
+    git push
+    :::
 
-To push all local commits to the remote repository:
+- To delete all local changes in the repository that you have not yet committed
 
-:::{code} bash
-git push REMOTE NAME-OF-BRANCH
-:::
+    :::{code} bash
+    git checkout -- .
+    :::
+::::
 
-For example, to push your local commits to the `main` branch of the origin remote:
+Pull requests are a way to integrate your changes into a collaborative project.
+For more information, check the **Gitea** [pull requests documentation](https://docs.gitea.com/next/usage/pull-request).
 
-:::{code} bash
-git push origin main
-:::
+::::{admonition} Create a pull request in Gitea
+:class: dropdown note
 
-To delete all local changes in the repository that have not been added to the staging area, and leave unstaged files/folders, type:
+- Before you start, you should have already created a branch and pushed your changes.
+- From the repository view in **Gitea**, click the **{guilabel}`Pull requests`** button.
+- Click the **{guilabel}`New Pull Request`** button on the right side of the screen.
 
-:::{code} bash
-git checkout .
-:::
+    :::{image} user_guide/gitea_pull_request_start.png
+    :alt: Gitea pull request
+    :align: center
+    :::
 
-**Note:** The . character typically means all in Git.
+- Select the source branch and the target branch then click the **{guilabel}`New Pull Request`** button.
 
-### How to create a Merge Request
+    :::{image} user_guide/gitea_pull_request_diff.png
+    :alt: Gitea pull request
+    :align: center
+    :::
 
-Merge requests are useful to integrate separate changes that you’ve made to a project, on different branches.
-This is a brief guide on how to create a merge request.
-For more information, check the [merge requests documentation](https://docs.Gitea.com/ee/user/project/merge_requests/index.html).
+- Add a title and description to your pull request then click the **{guilabel}`Create Pull Request`** button.
 
-- Before you start, you should have already created a branch and pushed your changes to **Gitea**.
-- Go to the project where you’d like to merge your changes and click on the `Merge requests` tab.
-- Click on `New merge request` on the right side of the screen.
-- From there on, you have the option to select the source branch and the target branch you’d like to compare to.
+    :::{image} user_guide/gitea_pull_request_finish.png
+    :alt: Gitea pull request
+    :align: center
+    :::
 
-The default target project is the upstream repository, but you can choose to compare across any of its forks.
-
-:::{image} user_guide/gitlab_new_merge_request.png
-:alt: New Gitea merge request
-:align: center
-:::
-
-- When ready, click on the Compare branches and continue button.
-- At a minimum, add a title and a description to your merge request.
-- Optionally, select a user to review your merge request and to accept or close it. You may also select a milestone and labels.
-
-:::{image} user_guide/gitlab_merge_request_details.png
-:alt: Gitea merge request details
-:align: center
-:::
-
-- When ready, click on the `Submit merge request` button.
-
-Your merge request will be ready to be approved and merged.
-
+Your pull request is now ready to be approved and merged.
+::::
 
 ## {{bug}} Report a bug
 
@@ -358,18 +362,3 @@ We very strongly recommend "rubber ducking" this process before you talk to the 
 Either talk through to your imaginary rubber duck, or find a team member to describe the error to, as you write down the steps you have taken.
 It is amazing how often working through your problem out loud helps you realise what the answer might be.
 :::
-
-## {{pray}} Acknowledgments
-
-This user guide is based on an initial document written in March/April 2018 by Kirstie Whitaker.
-
-Updates:
-
-- December 2018 by Catherine Lawrence, Franz Király, Martin O'Reilly, and Sebastian Vollmer.
-- March/April 2019 by Miguel Morin, Catherine Lawrence, Alvaro Cabrejas Egea, Kirstie Whitaker, James Robinson and Martin O'Reilly.
-- November 2019 by Ben Walden, James Robinson and Daisy Parry.
-- April 2020 by Jules Manser, James Robinson and Kirstie Whitaker.
-- November 2021 by James Robinson
-
-
-

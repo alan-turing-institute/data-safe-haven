@@ -12,7 +12,7 @@ After going through the account setup procedure, you should have access to:
 - {ref}`Multifactor authentication <roles_researcher_password_and_mfa>`
 
 :::{tip}
-If you aren't sure about any of these then please return to the **`{ref}Set up your account <roles_researcher_setup_your_account>`** section.
+If you aren't sure about any of these then please return to the **{ref}`Set up your account <roles_researcher_setup_your_account>`** section.
 :::
 
 ## {{unlock}} Log into the research environment
