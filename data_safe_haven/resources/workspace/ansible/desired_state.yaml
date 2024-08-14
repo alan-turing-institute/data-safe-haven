@@ -170,6 +170,12 @@
         dest: /etc/xdg/xfce4/terminal/
         mode: '0444'
 
+    - name: Disable light locker (screen lock)
+      ansible.builtin.copy:
+        content: "Hidden=true"
+        dest: /etc/xdg/autostart/light-locker.desktop
+        mode: '0644'
+
     - name: Use a blank screensaver
       ansible.builtin.lineinfile:
         path: /etc/X11/Xresources/x11-common
