@@ -18,8 +18,8 @@ You will need a full name, phone number, email address and country for each user
 
 :::{code} text
 GivenName;Surname;Phone;Email;CountryCode
-Sherlock;Holmes;+44800456456;sherlock@holmes.me;GB
-John;Watson;+18005550100;john.watson@nhs.uk;GB
+Ada;Lovelace;+44800456456;ada@lovelace.me;GB
+Grace;Hopper;+18005550100;grace@nasa.gov;US
 :::
 ::::
 
@@ -47,10 +47,10 @@ $ dsh users add PATH_TO_MY_CSV_FILE
     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┓
     ┃ username                     ┃ Entra ID ┃ SRE YOUR_SRE_NAME ┃
     ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━┩
-    │ ada.lovelace                 │ x        │                   │
-    │ grace.hopper                 │ x        │                   │
-    │ sherlock.holmes              │ x        │ x                 │
-    │ john.watson                  │ x        │ x                 │
+    │ ada.lovelace                 │ x        │ x                 │
+    │ grace.hopper                 │ x        │ x                 │
+    │ ursula.franklin              │ x        │                   │
+    │ joan.clarke                  │ x        │                   │
     └──────────────────────────────┴──────────┴───────────────────┘
     ```
 

@@ -57,7 +57,7 @@ Before deploying the Safe Haven Management (SHM) infrastructure you need to deci
 : Domain name that your TRE users will belong to.
 
   :::{hint}
-  Use a domain that you own! If you use _e.g._ `bakerst.london` here your users will be given usernames like `sherlock.holmes@bakerst.london`
+  Use a domain that you own! If you use _e.g._ `example.org` here your users will be given usernames like `ada.lovelace@example.org`
   :::
 
 **location**
