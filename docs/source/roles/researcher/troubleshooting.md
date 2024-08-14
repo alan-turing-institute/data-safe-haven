@@ -24,7 +24,7 @@ We recommend opening an application that allows text entry (such as **Libre Offi
 
 If you get an error message like this one about Firefox not responding, it is likely because you have a browser window open on another workspace.
 
-:::{image} user_guide/firefox_not_responding.png
+:::{image} images/firefox_not_responding.png
 :alt: Firefox not responding
 :align: center
 :::
@@ -182,7 +182,7 @@ Over the course of the work that you do in your SRE, you will often be accessing
 
 - From the **Gitea** dashboard click on the **{guilabel}`+`** button next to the **Repositories** label.
 
-    :::{image} user_guide/gitea_new_repository.png
+    :::{image} images/gitea_new_repository.png
     :alt: Clone Gitea project
     :align: center
     :::
@@ -198,14 +198,14 @@ Over the course of the work that you do in your SRE, you will often be accessing
 
 - Sign into **Gitea** and click the **{guilabel}`Explore`** button in the top bar.
 
-    :::{image} user_guide/gitea_explore.png
+    :::{image} images/gitea_explore.png
     :alt: Explore Gitea repositories
     :align: center
     :::
 
 - Click on the name of the repository you want to work on.
 
-    :::{image} user_guide/gitea_repository_view.png
+    :::{image} images/gitea_repository_view.png
     :alt: View Gitea repository
     :align: center
     :::
@@ -301,21 +301,21 @@ For more information, check the **Gitea** [pull requests documentation](https://
 - From the repository view in **Gitea**, click the **{guilabel}`Pull requests`** button.
 - Click the **{guilabel}`New Pull Request`** button on the right side of the screen.
 
-    :::{image} user_guide/gitea_pull_request_start.png
+    :::{image} images/gitea_pull_request_start.png
     :alt: Gitea pull request
     :align: center
     :::
 
 - Select the source branch and the target branch then click the **{guilabel}`New Pull Request`** button.
 
-    :::{image} user_guide/gitea_pull_request_diff.png
+    :::{image} images/gitea_pull_request_diff.png
     :alt: Gitea pull request
     :align: center
     :::
 
 - Add a title and description to your pull request then click the **{guilabel}`Create Pull Request`** button.
 
-    :::{image} user_guide/gitea_pull_request_finish.png
+    :::{image} images/gitea_pull_request_finish.png
     :alt: Gitea pull request
     :align: center
     :::

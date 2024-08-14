@@ -35,7 +35,7 @@ If you aren't sure about any of these then please return to the **{ref}`Set up y
 
 - At the login prompt enter your **{ref}`long-form username <roles_researcher_username>`** and click on the **{guilabel}`Next`** button
 
-    :::{image} user_guide/guacamole_oauth_login.png
+    :::{image} images/guacamole_oauth_login.png
     :alt: Research environment log in
     :align: center
     ::::
@@ -52,7 +52,7 @@ If you aren't sure about any of these then please return to the **{ref}`Set up y
 
 - You will now **receive a call or mobile app notification** to authenticate using multifactor authentication (MFA).
 
-    :::{image} user_guide/guacamole_mfa.png
+    :::{image} images/guacamole_mfa.png
     :alt: MFA trigger
     :align: center
     :::
@@ -69,7 +69,7 @@ If you aren't sure about any of these then please return to the **{ref}`Set up y
 
 You should now be able to see the SRE dashboard screen which will look like the following
 
-:::{image} user_guide/guacamole_dashboard.png
+:::{image} images/guacamole_dashboard.png
 :alt: Research environment dashboard
 :align: center
 :width: 90%
@@ -111,7 +111,7 @@ These workspaces are shared between everyone on your project. Talk to your colla
 
 - Enter your **{ref}`short-form username <roles_researcher_username>`** and **password** at the prompt.
 
-  :::{image} user_guide/workspace_login_screen.png
+  :::{image} images/workspace_login_screen.png
   :alt: Workspace login screen
   :align: center
   :width: 90%
@@ -125,7 +125,7 @@ These workspaces are shared between everyone on your project. Talk to your colla
   If you enter your username and/or password incorrectly you will see a warning like the one below.
   If this happens, please try again, entering your username and password carefully.
 
-  :::{image} user_guide/workspace_login_failure.png
+  :::{image} images/workspace_login_failure.png
   :alt: Workspace login failure
   :align: center
   :width: 90%
@@ -137,7 +137,7 @@ These workspaces are shared between everyone on your project. Talk to your colla
 
 You should now be able to see the SRE dashboard screen which will look like the following
 
-:::{image} user_guide/workspace_xfce_initial.png
+:::{image} images/workspace_xfce_initial.png
 :alt: Research environment dashboard
 :align: center
 :width: 90%
@@ -162,7 +162,7 @@ You will access this machine in a similar way to the main shared desktop, by sel
 
 Our example user, Ada Lovelace, participating in the **sandbox** project, might select **Workspace 2** instead of **Workspace 1** since it has additional CPUs and RAM.
 
-:::{image} user_guide/guacamole_dashboard_multiple_workspaces.png
+:::{image} images/guacamole_dashboard_multiple_workspaces.png
 :alt: Research environment dashboard
 :align: center
 :width: 90%

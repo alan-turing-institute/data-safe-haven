@@ -83,7 +83,7 @@ You can access applications from the desktop using either:
 - the **Terminal** app accessible from the dock at the bottom of the screen
 - via a drop-down menu when you right-click on the desktop or click the **{menuselection}`Applications`** button on the top left of the screen
 
-:::{image} user_guide/workspace_desktop_applications.png
+:::{image} images/workspace_desktop_applications.png
 :alt: How to access applications from the desktop
 :align: center
 :width: 90%
@@ -95,7 +95,7 @@ A few specific examples are given below.
 
 You can start **VSCodium** from the **{menuselection}`Applications --> Development`** menu.
 
-:::{image} user_guide/workspace_desktop_vscodium.png
+:::{image} images/workspace_desktop_vscodium.png
 :alt: Running VSCodium
 :align: center
 :width: 90%
@@ -105,7 +105,7 @@ You can start **VSCodium** from the **{menuselection}`Applications --> Developme
 
 Typing `R` at the command line will give you a pre-installed version of **R**.
 
-:::{image} user_guide/workspace_terminal_r.png
+:::{image} images/workspace_terminal_r.png
 :alt: Running R from a terminal
 :align: center
 :width: 90%
@@ -113,7 +113,7 @@ Typing `R` at the command line will give you a pre-installed version of **R**.
 
 Or you can use **RStudio** or **VSCodium** from the **{menuselection}`Applications --> Development`** menu.
 
-:::{image} user_guide/workspace_desktop_rstudio.png
+:::{image} images/workspace_desktop_rstudio.png
 :alt: Running RStudio
 :align: center
 :width: 90%
@@ -123,7 +123,7 @@ Or you can use **RStudio** or **VSCodium** from the **{menuselection}`Applicatio
 
 Typing `python` at the command line will give you a pre-installed version of **Python**.
 
-:::{image} user_guide/workspace_terminal_python.png
+:::{image} images/workspace_terminal_python.png
 :alt: Running Python from a terminal
 :align: center
 :width: 90%
@@ -131,7 +131,7 @@ Typing `python` at the command line will give you a pre-installed version of **P
 
 Or you can use **Pycharm** from the **{menuselection}`Applications --> Development`** menu.
 
-:::{image} user_guide/workspace_desktop_pycharm.png
+:::{image} images/workspace_desktop_pycharm.png
 :alt: Running RStudio
 :align: center
 :width: 90%
@@ -304,7 +304,7 @@ Use your **{ref}`short-form username <roles_researcher_username>`** and **passwo
 
 Click the **{guilabel}`Sign in`** button on the top-right of the page.
 
-:::{image} user_guide/gitea_homepage.png
+:::{image} images/gitea_homepage.png
 :alt: Gitea homepage
 :align: center
 :width: 90%
@@ -312,7 +312,7 @@ Click the **{guilabel}`Sign in`** button on the top-right of the page.
 
 Enter your **{ref}`short-form username <roles_researcher_username>`** and **password**.
 
-:::{image} user_guide/gitea_login.png
+:::{image} images/gitea_login.png
 :alt: Gitea login
 :align: center
 :width: 90%
@@ -323,7 +323,7 @@ Then click the **{guilabel}`Sign in`** button
 
 From the **Gitea** dashboard, you can create new repositories or look at repositories created by you or others.
 
-:::{image} user_guide/gitea_dashboard.png
+:::{image} images/gitea_dashboard.png
 :alt: Gitea dashboard
 :align: center
 :width: 90%
@@ -377,7 +377,7 @@ Use your **{ref}`short-form username <roles_researcher_username>`** and **passwo
 
 Click the **{guilabel}`Sign in`** button on the top-right of the page.
 
-:::{image} user_guide/hedgedoc_homepage.png
+:::{image} images/hedgedoc_homepage.png
 :alt: HedgeDoc homepage
 :align: center
 :width: 90%
@@ -385,7 +385,7 @@ Click the **{guilabel}`Sign in`** button on the top-right of the page.
 
 Enter your **{ref}`short-form username <roles_researcher_username>`** and **password**.
 
-:::{image} user_guide/hedgedoc_login.png
+:::{image} images/hedgedoc_login.png
 :alt: HedgeDoc login
 :align: center
 :width: 90%
@@ -403,7 +403,7 @@ They will have the right to change the file if they are signed into the **HedgeD
 
 The link will only work for people who have the same data access approval, it is not open to the general public via the internet.
 
-:::{image} user_guide/hedgedoc_access_options.png
+:::{image} images/hedgedoc_access_options.png
 :alt: HedgeDoc access options
 :align: center
 :width: 90%
@@ -422,7 +422,7 @@ We recommend **publishing** the document to get a much shorter URL which is easi
 Click the **{guilabel}`Publish`** button to publish the document and generate the short URL.
 Click the pen icon to return to the editable markdown view.
 
-:::{image} user_guide/hedgedoc_publish.png
+:::{image} images/hedgedoc_publish.png
 :alt: Publish with HedgeDoc
 :align: center
 :width: 90%
@@ -473,7 +473,7 @@ Click on the **{guilabel}`New database connection`** button (which looks a bit l
 
 - Select **SQL Server** as the database type
 
-:::{image} user_guide/db_dbeaver_select_mssql.png
+:::{image} images/db_dbeaver_select_mssql.png
 :alt: DBeaver select Microsoft SQL
 :align: center
 :::
@@ -491,7 +491,7 @@ Click on the **{guilabel}`New database connection`** button (which looks a bit l
 - Tick **Show All Schemas**
 - Tick **Trust server certificate**
 
-:::{image} user_guide/db_dbeaver_connect_mssql.png
+:::{image} images/db_dbeaver_connect_mssql.png
 :alt: DBeaver connect with Microsoft SQL
 :align: center
 :::
@@ -504,7 +504,7 @@ Click on the **{guilabel}`New database connection`** button (which looks a bit l
 - After clicking finish, you may be prompted to download driver files even though they should be pre-installed.
 - Click on the **{guilabel}`Download`** button if this happens.
 
-:::{image} user_guide/db_dbeaver_driver_download.png
+:::{image} images/db_dbeaver_driver_download.png
 :alt: DBeaver driver download for Microsoft SQL
 :align: center
 :::
@@ -521,7 +521,7 @@ Click on the **{guilabel}`New database connection`** button (which looks a bit l
 
 - Select **PostgreSQL** as the database type
 
-:::{image} user_guide/db_dbeaver_select_postgresql.png
+:::{image} images/db_dbeaver_select_postgresql.png
 :alt: DBeaver select PostgreSQL
 :align: center
 :::
@@ -537,7 +537,7 @@ Click on the **{guilabel}`New database connection`** button (which looks a bit l
 - **Username**: as above
 - **Password**: as above
 
-:::{image} user_guide/db_dbeaver_connect_postgresql.png
+:::{image} images/db_dbeaver_connect_postgresql.png
 :alt: DBeaver connect with PostgreSQL
 :align: center
 :::
@@ -550,7 +550,7 @@ Click on the **{guilabel}`New database connection`** button (which looks a bit l
 - After clicking finish, you may be prompted to download driver files even though they should be pre-installed.
 - Click on the **{guilabel}`Download`** button if this happens.
 
-:::{image} user_guide/db_dbeaver_driver_download.png
+:::{image} images/db_dbeaver_driver_download.png
 :alt: DBeaver driver download for PostgreSQL
 :align: center
 :::

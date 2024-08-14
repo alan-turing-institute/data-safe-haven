@@ -169,7 +169,7 @@ Please follow these steps carefully.
 
 - At the password prompt click the **Forgotten my password** link.
 
-    :::{image} user_guide/account_setup_forgotten_password.png
+    :::{image} images/account_setup_forgotten_password.png
     :alt: Forgotten my password
     :align: center
     :width: 90%
@@ -181,7 +181,7 @@ Please follow these steps carefully.
 
 - Fill out the requested CAPTCHA (your username should be pre-filled) then click on the **{guilabel}`Next`** button.
 
-    :::{image} user_guide/account_setup_captcha.png
+    :::{image} images/account_setup_captcha.png
     :alt: Password CAPTCHA
     :align: center
     :width: 90%
@@ -193,7 +193,7 @@ Please follow these steps carefully.
 
 - Confirm your phone number or email address, which you provided to the {ref}`System Manager <role_system_manager>` when you registered for access to the environment.
 
-    :::{image} user_guide/account_setup_verify_phone.png
+    :::{image} images/account_setup_verify_phone.png
     :alt: Verify phone number
     :align: center
     :width: 90%
@@ -226,7 +226,7 @@ Please follow these steps carefully.
 
 - Enter your password into the **Enter new password** and **Confirm new password** fields.
 
-    :::{image} user_guide/account_setup_new_password.png
+    :::{image} images/account_setup_new_password.png
     :alt: New password
     :align: center
     :width: 90%
@@ -234,7 +234,7 @@ Please follow these steps carefully.
 
 - Click on the **{guilabel}`Finish`** button and you should get this notice
 
-    :::{image} user_guide/account_setup_new_password_sign_in.png
+    :::{image} images/account_setup_new_password_sign_in.png
     :alt: Click to continue
     :align: center
     :width: 90%
@@ -243,7 +243,7 @@ Please follow these steps carefully.
 - Click on this link and provide your username and password when prompted.
 - At this point you will be asked for additional security verification.
 
-    :::{image} user_guide/account_setup_more_information_required.png
+    :::{image} images/account_setup_more_information_required.png
     :alt: Click to continue
     :align: center
     :width: 90%
@@ -263,7 +263,7 @@ This is known as multi-factor authentication (MFA).
 
 - In order to set up MFA you will need to enter your phone number
 
-    :::{image} user_guide/account_setup_mfa_additional_security_verification.png
+    :::{image} images/account_setup_mfa_additional_security_verification.png
     :alt: Additional security verification
     :align: center
     :width: 90%
@@ -275,7 +275,7 @@ This is known as multi-factor authentication (MFA).
 
 - Once you click **{guilabel}`Next`** you will receive a phone call straight away.
 
-    :::{image} user_guide/account_setup_mfa_verifying_phone.png
+    :::{image} images/account_setup_mfa_verifying_phone.png
     :alt: Verifying phone number
     :align: center
     :width: 90%
@@ -291,7 +291,7 @@ This is known as multi-factor authentication (MFA).
 
 - After following the instructions you will see the following screen
 
-    :::{image} user_guide/account_setup_mfa_verified_phone.png
+    :::{image} images/account_setup_mfa_verified_phone.png
     :alt: Verified phone number
     :align: center
     :width: 90%
@@ -299,7 +299,7 @@ This is known as multi-factor authentication (MFA).
 
 - Click **{guilabel}`Next`** to register this phone number for MFA
 
-    :::{image} user_guide/account_setup_mfa_registered_phone.png
+    :::{image} images/account_setup_mfa_registered_phone.png
     :alt: Registered phone number
     :align: center
     :width: 90%
@@ -313,7 +313,7 @@ This is known as multi-factor authentication (MFA).
 
 - You should now see the Security Information dashboard that lists all your verified MFA methods
 
-    :::{image} user_guide/account_setup_mfa_dashboard_phone_only.png
+    :::{image} images/account_setup_mfa_dashboard_phone_only.png
     :alt: Registered phone number
     :align: center
     :width: 90%
@@ -341,7 +341,7 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
 
 - Click on **{guilabel}`+ Add sign-in method`** and select **Authenticator app**.
 
-    :::{image} user_guide/account_setup_mfa_add_authenticator_app.png
+    :::{image} images/account_setup_mfa_add_authenticator_app.png
     :alt: Add Authenticator app
     :align: center
     :width: 90%
@@ -349,7 +349,7 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
 
 - At the **Getting the app** click on **{guilabel}`Next`**.
 
-    :::{image} user_guide/account_setup_mfa_download_authenticator_app.png
+    :::{image} images/account_setup_mfa_download_authenticator_app.png
     :alt: Add Authenticator app
     :align: center
     :::
@@ -364,7 +364,7 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
     - Select **Add an account**
     - Select **Work or School account**
 
-    :::{image} user_guide/account_setup_mfa_allow_notifications.png
+    :::{image} images/account_setup_mfa_allow_notifications.png
     :alt: Allow Authenticator notifications
     :align: center
     :::
@@ -376,21 +376,21 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
 - The next prompt will give you a QR code to scan, like the one shown below
 - Scan the QR code on the screen then click **{guilabel}`Next`**
 
-  :::{image} user_guide/account_setup_mfa_app_qrcode.png
+  :::{image} images/account_setup_mfa_app_qrcode.png
   :alt: Setup Authenticator app
   :align: center
   :::
 
 - Once this is completed, Microsoft will send you a test notification to respond to
 
-  :::{image} user_guide/account_setup_mfa_authenticator_app_test.png
+  :::{image} images/account_setup_mfa_authenticator_app_test.png
   :alt: Authenticator app test notification
   :align: center
   :::
 
 - When you click **{guilabel}`Approve`** on the phone notification, you will get the following message in your browser
 
-  :::{image} user_guide/account_setup_mfa_authenticator_app_approved.png
+  :::{image} images/account_setup_mfa_authenticator_app_approved.png
   :alt: Authenticator app test approved
   :align: center
   :::
@@ -401,7 +401,7 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
 
 - You should now be returned to the Security Information dashboard that lists two verified MFA methods
 
-  :::{image} user_guide/account_setup_mfa_dashboard_two_methods.png
+  :::{image} images/account_setup_mfa_dashboard_two_methods.png
   :alt: Registered MFA methods
   :align: center
   :::
