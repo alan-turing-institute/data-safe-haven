@@ -85,10 +85,10 @@ On the SRE dashboard, you should see multiple different workspaces that you can 
 If you do not see any available workspaces please contact your {ref}`System Manager <role_system_manager>`.
 :::
 
-Each of these is a computer[^vm-footnote] with a wide variety of data analysis applications and programming languages pre-installed.
+Each of these is a computer[^footnote-vm] with a wide variety of data analysis applications and programming languages pre-installed.
 You can use them to analyse the sensitive data belonging to your project while remaining isolated from the wider internet.
 
-[^vm-footnote]: Actually a virtual machine
+[^footnote-vm]: Actually a virtual machine
 
 ::::{admonition} 1. Select a workspace
 :class: dropdown note

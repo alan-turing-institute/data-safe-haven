@@ -277,17 +277,13 @@ You may want to consider having subfolders of **/output/** to make the review of
 
 ## {{pill}} Version control using Gitea
 
-**Gitea** is an open-source code hosting platform for version control and collaboration - similar to **GitHub**.
+**Gitea**[^footnote-gitea] is an open-source code hosting platform for version control and collaboration - similar to **GitHub**.
 It allows you to use [git](https://git-scm.com/about) to **version control** your work, coordinate tasks using **issues** and review work using **pull requests**.
 
-:::{admonition} Read more about Gitea
-:class: dropdown note
-**Gitea** is an open source project.
-We want to thank the community for maintaining free and open source software for us to use and reuse.
-You can read more about **Gitea** at [their website](<https://about.gitea.com/>).
-:::
+[^footnote-gitea]: **Gitea** is an open source project. We want to thank the community for maintaining free and open source software for us to use and reuse. You can read more about **Gitea** at [their website](<https://about.gitea.com/>).
 
 The **Gitea** server within the SRE can hold code, documentation and results from your team's analyses.
+Use the **Gitea** server to work collaboratively on code with other project team members.
 
 :::{important}
 This **Gitea** server is entirely within the SRE - you do not need to worry about the security of the information you upload there as it is inaccessible from the public internet.
@@ -421,25 +417,18 @@ Use your **{ref}`short-form username <roles_researcher_username>`** and **passwo
 
 ## {{book}} Collaborative writing using HedgeDoc
 
-**HedgeDoc** is an open-source document hosting platform for collaboration - similar to **HackMD**.
-It uses [Markdown](https://www.markdownguide.org/) which is a simple way to format your text so that it renders nicely in HTML.
+**HedgeDoc**[^footnote-hedgedoc] is an open-source document hosting platform for collaboration - similar to **HackMD**.
+It uses [Markdown](https://www.markdownguide.org/)[^footnote-markdown] which is a simple way to format your text so that it renders nicely in HTML.
+
+[^footnote-hedgedoc]: **HedgeDoc** is an open source project. We want to thank the community for maintaining free and open source software for us to use and reuse. You can read more about **HedgeDoc** at [their website](<https://hedgedoc.org/>).
+
+[^footnote-markdown]: If you've never used Markdown before, we recommend reading this [Markdown cheat sheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
 
 The **HedgeDoc** server within the SRE can hold documents relating to your team's analyses.
 Use the **HedgeDoc** server to work collaboratively on documents with other project team members.
 
 :::{important}
 This **HedgeDoc** server is entirely within the SRE - you do not need to worry about the security of the information you upload there as it is inaccessible from the public internet.
-:::
-
-:::{admonition} Read more about HedgeDoc
-:class: dropdown note
-**HedgeDoc** is an open source project.
-We want to thank the community for maintaining free and open source software for us to use and reuse.
-You can read more about **HedgeDoc** at [their website](<https://hedgedoc.org/>).
-:::
-
-:::{tip}
-If you've never used Markdown before, we recommend reading this [Markdown cheat sheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
 :::
 
 You can access **HedgeDoc** from an internet browser from the workspace using the desktop shortcut.
