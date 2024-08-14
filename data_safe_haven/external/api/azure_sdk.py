@@ -817,6 +817,18 @@ class AzureSdk:
             msg = f"Failed to load available VM sizes for Azure location {location}."
             raise DataSafeHavenAzureError(msg) from exc
 
+    def list_blobs(self, context, container_name):
+
+        storage_account_keys = self.get_storage_account_keys(
+            context.resource_group_name, context.storage_account_name
+        )
+        blob_client = BlobServiceClient.from_connection_string(
+            f"DefaultEndpointsProtocol=https;AccountName={context.storage_account_name};AccountKey={storage_account_keys[0].value};EndpointSuffix=core.windows.net"
+        )
+        container_client = blob_client.get_container_client(container=container_name)
+        blob_list = container_client.list_blob_names(name_starts_with="sre")
+        return blob_list
+
     def purge_keyvault(
         self,
         key_vault_name: str,
