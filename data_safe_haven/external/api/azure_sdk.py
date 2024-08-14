@@ -828,7 +828,7 @@ class AzureSdk:
         )
         container_client = blob_client.get_container_client(container=container_name)
         blob_list = container_client.list_blob_names(name_starts_with=prefix)
-        return blob_list
+        return list(blob_list)
 
     def purge_keyvault(
         self,
