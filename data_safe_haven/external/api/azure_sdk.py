@@ -936,7 +936,7 @@ class AzureSdk:
                 resource_group_name=resource_group_name,
                 storage_account_name=storage_account_name,
                 storage_container_name=storage_container_name,
-                blob_name=blob_name
+                blob_name=blob_name,
             )
             # Remove the requested blob
             blob_client.delete_blob(delete_snapshots="include")
