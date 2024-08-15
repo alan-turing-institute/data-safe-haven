@@ -12,12 +12,12 @@ while getopts d:l: flag; do
     esac
 done
 
+# Read database password from file
 db_credentials="/etc/database_credential"
-if [ -f "$db_credentials" ]; then
-    username="databaseadmin"
-    password="$(cat "$db_credentials")"
-else
-    echo "Credentials file ($db_credentials) not found."
+username="databaseadmin"
+password="$(cat $db_credentials 2> /dev/null)"
+if [ -z "$password" ]; then
+    echo "Database password could not be read from '$db_credentials'."
     exit 1
 fi
 
