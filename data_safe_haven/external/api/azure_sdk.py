@@ -856,11 +856,10 @@ class AzureSdk:
         Returns:
             List[str]: The list of blob names
         """
-        storage_account_keys = self.get_storage_account_keys(
-            resource_group_name, storage_account_name
-        )
-        blob_client = BlobServiceClient.from_connection_string(
-            f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_keys[0].value};EndpointSuffix=core.windows.net"
+
+        blob_client = self.blob_service_client(
+            resource_group_name=resource_group_name,
+            storage_account_name=storage_account_name,
         )
         container_client = blob_client.get_container_client(container=container_name)
         blob_list = container_client.list_blob_names(name_starts_with=prefix)
