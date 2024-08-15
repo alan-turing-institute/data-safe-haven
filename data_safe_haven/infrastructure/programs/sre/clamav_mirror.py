@@ -56,7 +56,7 @@ class SREClamAVMirrorComponent(ComponentResource):
         # Define configuration file shares
         file_share_clamav_mirror = storage.FileShare(
             f"{self._name}_file_share_clamav_mirror",
-            access_tier=storage.ShareAccessTier.COOL,
+            access_tier=storage.ShareAccessTier.TRANSACTION_OPTIMIZED,
             account_name=props.storage_account_name,
             resource_group_name=props.resource_group_name,
             share_name="clamav-mirror",

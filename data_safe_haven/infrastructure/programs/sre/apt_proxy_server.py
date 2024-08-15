@@ -58,7 +58,7 @@ class SREAptProxyServerComponent(ComponentResource):
         # Define configuration file shares
         file_share_apt_proxy_server = storage.FileShare(
             f"{self._name}_file_share_apt_proxy_server",
-            access_tier=storage.ShareAccessTier.COOL,
+            access_tier=storage.ShareAccessTier.TRANSACTION_OPTIMIZED,
             account_name=props.storage_account_name,
             resource_group_name=props.resource_group_name,
             share_name="apt-proxy-server",
