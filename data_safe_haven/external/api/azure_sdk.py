@@ -113,25 +113,21 @@ class AzureSdk:
         storage_container_name: str,
         blob_name: str,
     ) -> BlobClient:
-        """Construct a client for a blob which may exist or not"""
-        # Connect to Azure client
-        storage_account_keys = self.get_storage_account_keys(
-            resource_group_name, storage_account_name
-        )
-
-        # Load blob service client
-        blob_service_client = BlobServiceClient.from_connection_string(
-            f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_keys[0].value};EndpointSuffix=core.windows.net"
-        )
-        if not isinstance(blob_service_client, BlobServiceClient):
+        try:
+            # Get the blob client from the blob service client
+            blob_service_client = self.blob_service_client(
+                resource_group_name, storage_account_name
+            )
+            blob_client = blob_service_client.get_blob_client(
+                container=storage_container_name, blob=blob_name
+            )
+            if not isinstance(blob_client, BlobClient):
+                msg = f"Blob client has incorrect type {type(blob_client)}."
+                raise TypeError(msg)
+            return blob_client
+        except (DataSafeHavenAzureStorageError, TypeError) as exc:
             msg = f"Could not load blob client for storage account '{storage_account_name}'."
-            raise DataSafeHavenAzureStorageError(msg)
-
-        # Get the blob client
-        blob_client = blob_service_client.get_blob_client(
-            container=storage_container_name, blob=blob_name
-        )
-        return blob_client
+            raise DataSafeHavenAzureStorageError(msg) from exc
 
     def blob_exists(
         self,
@@ -164,6 +160,36 @@ class AzureSdk:
             f"File [green]{blob_name}[/] {response} in blob storage.",
         )
         return exists
+
+    def blob_service_client(
+        self,
+        resource_group_name: str,
+        storage_account_name: str,
+    ) -> BlobServiceClient:
+        """Construct a client for a blob which may exist or not"""
+        try:
+            # Connect to Azure client
+            storage_account_keys = self.get_storage_account_keys(
+                resource_group_name, storage_account_name
+            )
+            # Load blob service client
+            blob_service_client = BlobServiceClient.from_connection_string(
+                ";".join(
+                    (
+                        "DefaultEndpointsProtocol=https",
+                        f"AccountName={storage_account_name}",
+                        f"AccountKey={storage_account_keys[0].value}",
+                        "EndpointSuffix=core.windows.net",
+                    )
+                )
+            )
+            if not isinstance(blob_service_client, BlobServiceClient):
+                msg = f"Blob service client has incorrect type {type(blob_service_client)}."
+                raise TypeError(msg)
+            return blob_service_client
+        except (AzureError, TypeError) as exc:
+            msg = f"Could not load blob service client for storage account '{storage_account_name}'."
+            raise DataSafeHavenAzureStorageError(msg) from exc
 
     def credential(
         self, scope: AzureSdkCredentialScope = AzureSdkCredentialScope.DEFAULT
