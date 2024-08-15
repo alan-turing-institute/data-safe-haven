@@ -86,11 +86,11 @@ def available() -> None:
             context, blob.removeprefix("sre-").removesuffix(".yaml")
         )
         stack = SREProjectManager(
-                    context=context,
-                    config=sre_config,
-                    pulumi_config=pulumi_config,
-                    create_project=True,
-            )
+            context=context,
+            config=sre_config,
+            pulumi_config=pulumi_config,
+            create_project=True,
+        )
         stack_outputs = stack.run_pulumi_command("stack output")
         if "(0)" in stack_outputs:
             console.print(f"SRE {sre_config.name} not deployed")
