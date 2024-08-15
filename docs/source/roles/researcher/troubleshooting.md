@@ -36,7 +36,7 @@ Either log into that workspace and close Firefox, or follow the instructions [he
 Your profile is likely stored under **~/snap/firefox/common/.mozilla/firefox**.
 :::
 
-## {{ zzz }} Idle screen lock
+## {{zzz}} Idle screen lock
 
 By default, the Xfce desktop will enter a screensaver and lock the screen after idling for five minutes.
 This will require entering your password to unlock and is in addition to authenticating with Guacamole and the lock screen on your own computer.
