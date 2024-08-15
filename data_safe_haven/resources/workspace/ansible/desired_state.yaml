@@ -170,11 +170,14 @@
         dest: /etc/xdg/xfce4/terminal/
         mode: '0444'
 
-    - name: Disable light locker (screen lock)
-      ansible.builtin.copy:
-        content: "Hidden=true"
-        dest: /etc/xdg/autostart/light-locker.desktop
-        mode: '0644'
+    # This doesn't work
+    # Possibly a bug in xfce4 < 4.18
+    # https://gitlab.xfce.org/apps/xfce4-screensaver/-/issues/55
+    - name: Disable xfce4 screen saver (screen lock)
+      ansible.builtin.lineinfile:
+        path: /etc/xdg/autostart/xfce4-screensaver.desktop
+        line: 'Hidden=true'
+        state: present
 
     - name: Use a blank screensaver
       ansible.builtin.lineinfile:

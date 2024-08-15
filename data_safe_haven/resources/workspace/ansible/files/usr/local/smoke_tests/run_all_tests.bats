@@ -32,11 +32,11 @@ install_r_package_version() {
 }
 
 check_db_credentials() {
-    db_credentials="/etc/database_credential"
-    if [ -f "$db_credentials" ]; then
-        return 0
+    db_password="$(cat /etc/database_credential 2> /dev/null)"
+    if [ -z "$db_password" ]; then
+        return 1
     fi
-    return 1
+    return 0
 }
 
 
