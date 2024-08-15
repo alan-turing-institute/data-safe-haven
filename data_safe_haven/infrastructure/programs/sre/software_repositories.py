@@ -87,7 +87,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
             account_name=props.storage_account_name,
             resource_group_name=props.resource_group_name,
             share_name="software-repositories-nexus",
-            share_quota=5,
+            share_quota=2,
             signed_identifiers=[],
             opts=child_opts,
         )
