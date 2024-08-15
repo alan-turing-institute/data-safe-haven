@@ -9,7 +9,7 @@ write_files:
   - path: "/etc/database_credential"
     permissions: "0400"
     content: |
-      {{ database_service_admin_password }}
+      {{{ database_service_admin_password }}}
 
   - path: "/etc/nslcd.conf"
     permissions: "0400"
