@@ -45,7 +45,9 @@ You can disable the Xfce lock screen if you find it is unnecessary and slows you
 
 :::{admonition} Disabling the lock screen
 :class: dropdown note
-- First, open Screensaver Preferences either by navigating to **{menuselection}`Applications --> Settings --> Screensaver Preferences`** or by running `xfce4-screensaver-preferences` on the command line.
+- First, open Screensaver Preferences by either:
+    - navigating to **{menuselection}`Applications --> Settings --> Screensaver Preferences`**
+    - or running `xfce4-screensaver-preferences` on the command line.
 - On the **Screensaver** tab you can disable the screensaver using the **Enable Screensaver** toggle.
 - Alternatively, you can navigate to the **Lock Screen** tab to:
     - disable the lock screen with the **Enable Lock Screen** toggle
