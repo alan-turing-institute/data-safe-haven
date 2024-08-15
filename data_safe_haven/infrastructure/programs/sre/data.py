@@ -377,6 +377,7 @@ class SREDataComponent(ComponentResource):
                 f"{''.join(truncate_tokens(stack_name.split('-'), 14))}configdata"
             )[:24],
             kind=storage.Kind.STORAGE_V2,
+            large_file_shares_state=storage.LargeFileSharesState.DISABLED,
             location=props.location,
             minimum_tls_version=storage.MinimumTlsVersion.TLS1_2,
             network_rule_set=storage.NetworkRuleSetArgs(
