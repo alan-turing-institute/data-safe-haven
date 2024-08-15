@@ -554,6 +554,7 @@ class AzureSdk:
                     kind=StorageAccountKind.STORAGE_V2,
                     location=location,
                     tags=tags,
+                    minimum_tls_version="TLS1_2",
                 ),
             )
             storage_account = poller.result()
