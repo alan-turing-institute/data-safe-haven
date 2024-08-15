@@ -36,6 +36,18 @@ Either log into that workspace and close Firefox, or follow the instructions [he
 Your profile is likely stored under **~/snap/firefox/common/.mozilla/firefox**.
 :::
 
+## {{ zzz }} Idle screen lock
+
+By default, the Xfce desktop will enter a screensaver and lock the screen after idling for five minutes.
+This will require entering your password to unlock and is in addition to authenticating with Guacamole and the lock screen on your own computer.
+
+You can disable the Xfce lock screen if you find it is unnecessary and slows your work.
+
+First, open Screensaver Preferences either by nagivating to **{guilabel}`Applications --> Settings --> Screensaver Preferences`** or by running `xfce4-screensaver-preferences` on the command line.
+On the **{guilabel}`Screensaver`** tab you can disable the screensaver using the **{guilabel}`Enable Screensaver`** toggle.
+Alternatively, you can navigate to the **{guilabel}`Lock Screen`** tab and disable the lock screen or locking when the screensaver runs with the **{guilabel}`Enable Lock Screen`** or **{guilabel}`Lock Screen with Screensaver`** toggles respectively.
+More information can be found in the [Xfce documentation](https://docs.xfce.org/apps/xfce4-screensaver/start).
+
 ### {{construction_worker}} Support for users
 
 If you encounter problems while using the Data Safe Haven:
