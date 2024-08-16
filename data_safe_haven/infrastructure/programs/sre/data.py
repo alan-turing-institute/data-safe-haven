@@ -400,7 +400,7 @@ class SREDataComponent(ComponentResource):
                 ],
             ),
             resource_group_name=props.resource_group_name,
-            sku=storage.SkuArgs(name=storage.SkuName.STANDARD_GRS),
+            sku=storage.SkuArgs(name=storage.SkuName.STANDARD_LRS),
             opts=child_opts,
             tags=child_tags,
         )
