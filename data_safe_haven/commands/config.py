@@ -80,7 +80,6 @@ def available() -> None:
         logger.critical(f"No configurations found for context '{context.name}'.")
         raise typer.Exit(1)
     pulumi_config = DSHPulumiConfig.from_remote(context)
-    console.print(f"Available SRE configurations for context '{context.name}':")
     sre_status = {}
     for blob in blobs:
         sre_config = SREConfig.from_remote_by_name(
@@ -99,6 +98,7 @@ def available() -> None:
             sre_status[sre_config.name] = True
     headers = ["SRE Name", "Deployed"]
     rows = [[name, "x" if deployed else ""] for name, deployed in sre_status.items()]
+    console.print(f"Available SRE configurations for context '{context.name}':")
     console.tabulate(headers, rows)
 
 
