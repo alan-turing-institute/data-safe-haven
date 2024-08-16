@@ -1,8 +1,5 @@
 from pathlib import Path
 
-from pytest import fixture
-
-import data_safe_haven.external.api.azure_sdk
 from data_safe_haven.commands.config import config_command_group
 from data_safe_haven.config import ContextManager, SREConfig
 from data_safe_haven.config.sre_config import sre_config_name
@@ -12,43 +9,6 @@ from data_safe_haven.exceptions import (
     DataSafeHavenError,
 )
 from data_safe_haven.external import AzureSdk
-
-
-@fixture
-def mock_blob_client(monkeypatch):
-    class MockBlobClient:
-        def __init__(
-            self,
-            resource_group_name,  # noqa: ARG002
-            storage_account_name,  # noqa: ARG002
-            storage_container_name,  # noqa: ARG002
-            blob_name,
-        ):
-            self.blob_name = blob_name
-
-        def exists(self):
-            if self.blob_name == "exists":
-                return True
-            else:
-                return False
-
-    def mock_blob_client(
-        self,  # noqa: ARG001
-        resource_group_name,
-        storage_account_name,
-        storage_container_name,
-        blob_name,
-    ):
-        return MockBlobClient(
-            resource_group_name,
-            storage_account_name,
-            storage_container_name,
-            blob_name,
-        )
-
-    monkeypatch.setattr(
-        data_safe_haven.external.api.azure_sdk.AzureSdk, "blob_client", mock_blob_client
-    )
 
 
 class TestShowSRE:
