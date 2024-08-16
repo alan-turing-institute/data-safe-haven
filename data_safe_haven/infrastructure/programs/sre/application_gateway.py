@@ -341,6 +341,19 @@ class SREApplicationGatewayComponent(ComponentResource):
                             name="strict-transport-security",
                             rule_sequence=500,
                         ),
+                        # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
+                        network.ApplicationGatewayRewriteRuleArgs(
+                            action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
+                                response_header_configurations=[
+                                    network.ApplicationGatewayHeaderConfigurationArgs(
+                                        header_name="X-Content-Type-Options",
+                                        header_value="nosniff",
+                                    )
+                                ],
+                            ),
+                            name="x-content-type-options",
+                            rule_sequence=600,
+                        ),
                     ],
                 ),
             ],
