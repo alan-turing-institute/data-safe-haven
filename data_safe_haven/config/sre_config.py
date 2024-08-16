@@ -66,14 +66,14 @@ class SREConfig(AzureSerialisableModel):
                     "List of IP addresses belonging to data providers"
                 ],
                 remote_desktop=ConfigSubsectionRemoteDesktopOpts.model_construct(
-                    allow_copy="True/False: whether to allow copying text out of the environment",
-                    allow_paste="True/False: whether to allow pasting text into the environment",
+                    allow_copy="True/False: whether to allow copying text out of the environment [default: False].",
+                    allow_paste="True/False: whether to allow pasting text into the environment [default: False].",
                 ),
                 research_user_ip_addresses=["List of IP addresses belonging to users"],
                 software_packages="Which Python/R packages to allow users to install: [any/pre-approved/none]",
                 storage_quota_gb=ConfigSubsectionStorageQuotaGB.model_construct(
-                    home="Total size in GB across all home directories [default: 50].",
-                    shared="Total size in GB for the shared directories [default: 50].",
+                    home="Total size in GB across all home directories [minimum: 100, default: 100].",
+                    shared="Total size in GB for the shared directories [minimum: 100, default: 100].",
                 ),
                 timezone="Timezone in pytz format (eg. Europe/London)",
                 workspace_skus=[

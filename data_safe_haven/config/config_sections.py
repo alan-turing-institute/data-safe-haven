@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from data_safe_haven.types import (
     AzureLocation,
+    AzurePremiumFileShareSize,
     AzureVmSku,
     DatabaseSystem,
     EmailAddress,
@@ -45,8 +46,8 @@ class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
 
 
 class ConfigSubsectionStorageQuotaGB(BaseModel, validate_assignment=True):
-    home: int = 50
-    shared: int = 50
+    home: AzurePremiumFileShareSize = 100
+    shared: AzurePremiumFileShareSize = 100
 
 
 class ConfigSectionSRE(BaseModel, validate_assignment=True):
