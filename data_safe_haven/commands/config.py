@@ -81,6 +81,7 @@ def available() -> None:
         raise typer.Exit(1)
     pulumi_config = DSHPulumiConfig.from_remote(context)
     console.print(f"Available SRE configurations for context '{context.name}':")
+    sre_status = {}
     for blob in blobs:
         sre_config = SREConfig.from_remote_by_name(
             context, blob.removeprefix("sre-").removesuffix(".yaml")
@@ -93,9 +94,12 @@ def available() -> None:
         )
         stack_outputs = stack.run_pulumi_command("stack output")
         if "No output values" in stack_outputs:
-            console.print(f"SRE {sre_config.name} not deployed")
+            sre_status[sre_config.name] = False
         else:
-            console.print(f"SRE {sre_config.name} deployed")
+            sre_status[sre_config.name] = True
+    headers = ["SRE Name", "Deployed"]
+    rows = [[name, "x" if deployed else ""] for name, deployed in sre_status.items()]
+    console.tabulate(headers, rows)
 
 
 @config_command_group.command()
