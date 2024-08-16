@@ -50,6 +50,7 @@ from azure.mgmt.storage.v2021_08_01 import StorageManagementClient
 from azure.mgmt.storage.v2021_08_01.models import (
     BlobContainer,
     Kind as StorageAccountKind,
+    MinimumTlsVersion,
     PublicAccess,
     Sku as StorageAccountSku,
     StorageAccount,
@@ -581,6 +582,7 @@ class AzureSdk:
                     kind=StorageAccountKind.STORAGE_V2,
                     location=location,
                     tags=tags,
+                    minimum_tls_version=MinimumTlsVersion.TLS1_2,
                 ),
             )
             storage_account = poller.result()

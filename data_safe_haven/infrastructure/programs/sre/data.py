@@ -378,6 +378,7 @@ class SREDataComponent(ComponentResource):
             )[:24],
             kind=storage.Kind.STORAGE_V2,
             location=props.location,
+            minimum_tls_version=storage.MinimumTlsVersion.TLS1_2,
             network_rule_set=storage.NetworkRuleSetArgs(
                 bypass=storage.Bypass.AZURE_SERVICES,
                 default_action=storage.DefaultAction.DENY,
@@ -481,6 +482,7 @@ class SREDataComponent(ComponentResource):
             kind=storage.Kind.BLOCK_BLOB_STORAGE,
             is_hns_enabled=True,
             location=props.location,
+            minimum_tls_version=storage.MinimumTlsVersion.TLS1_2,
             network_rule_set=storage.NetworkRuleSetArgs(
                 bypass=storage.Bypass.AZURE_SERVICES,
                 default_action=storage.DefaultAction.DENY,
@@ -629,6 +631,7 @@ class SREDataComponent(ComponentResource):
             kind=storage.Kind.BLOCK_BLOB_STORAGE,
             is_hns_enabled=True,
             location=props.location,
+            minimum_tls_version=storage.MinimumTlsVersion.TLS1_2,
             network_rule_set=storage.NetworkRuleSetArgs(
                 bypass=storage.Bypass.AZURE_SERVICES,
                 default_action=storage.DefaultAction.DENY,
@@ -805,6 +808,7 @@ class SREDataComponent(ComponentResource):
             ),
             kind=storage.Kind.FILE_STORAGE,
             location=props.location,
+            minimum_tls_version=storage.MinimumTlsVersion.TLS1_2,
             network_rule_set=storage.NetworkRuleSetArgs(
                 bypass=storage.Bypass.AZURE_SERVICES,
                 default_action=storage.DefaultAction.DENY,
