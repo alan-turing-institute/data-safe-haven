@@ -510,6 +510,7 @@ class TestSREApplicationGatewayComponent:
                         "name": "GuacamoleHttpRouting",
                         "priority": 200,
                         "redirect_configuration": {"id": None},
+                        "rewrite_rule_set": {"id": None},
                         "rule_type": "Basic",
                     },
                     {
@@ -521,6 +522,7 @@ class TestSREApplicationGatewayComponent:
                         "http_listener": {"id": None},
                         "name": "GuacamoleHttpsRouting",
                         "priority": 100,
+                        "rewrite_rule_set": {"id": None},
                         "rule_type": "Basic",
                     },
                 ],
@@ -542,7 +544,99 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.rewrite_rule_sets.apply(
-            partial(assert_equal, None),
+            partial(
+                assert_equal_json,
+                [
+                    {
+                        "etag": None,
+                        "provisioning_state": None,
+                        "name": "ResponseHeaders",
+                        "rewrite_rules": [
+                            {
+                                "action_set": {
+                                    "response_header_configurations": [
+                                        {
+                                            "header_name": "Content-Security-Policy",
+                                            "header_value": "upgrade-insecure-requests; base-uri 'self'; frame-ancestors 'self'; form-action 'self'; object-src 'none';",
+                                        }
+                                    ]
+                                },
+                                "name": "content-security-policy",
+                                "rule_sequence": 100,
+                            },
+                            {
+                                "action_set": {
+                                    "response_header_configurations": [
+                                        {
+                                            "header_name": "Permissions-Policy",
+                                            "header_value": "accelerometer=(self), camera=(self), geolocation=(self), gyroscope=(self), magnetometer=(self), microphone=(self), payment=(self), usb=(self)",
+                                        }
+                                    ]
+                                },
+                                "name": "permissions-policy",
+                                "rule_sequence": 200,
+                            },
+                            {
+                                "action_set": {
+                                    "response_header_configurations": [
+                                        {
+                                            "header_name": "Referrer-Policy",
+                                            "header_value": "strict-origin-when-cross-origin",
+                                        }
+                                    ]
+                                },
+                                "name": "referrer-policy",
+                                "rule_sequence": 300,
+                            },
+                            {
+                                "action_set": {
+                                    "response_header_configurations": [
+                                        {"header_name": "Server", "header_value": ""}
+                                    ]
+                                },
+                                "name": "server",
+                                "rule_sequence": 400,
+                            },
+                            {
+                                "action_set": {
+                                    "response_header_configurations": [
+                                        {
+                                            "header_name": "Strict-Transport-Security",
+                                            "header_value": "max-age=31536000; includeSubDomains; preload",
+                                        }
+                                    ]
+                                },
+                                "name": "strict-transport-security",
+                                "rule_sequence": 500,
+                            },
+                            {
+                                "action_set": {
+                                    "response_header_configurations": [
+                                        {
+                                            "header_name": "X-Content-Type-Options",
+                                            "header_value": "nosniff",
+                                        }
+                                    ]
+                                },
+                                "name": "x-content-type-options",
+                                "rule_sequence": 600,
+                            },
+                            {
+                                "action_set": {
+                                    "response_header_configurations": [
+                                        {
+                                            "header_name": "X-Frame-Options",
+                                            "header_value": "SAMEORIGIN",
+                                        }
+                                    ]
+                                },
+                                "name": "x-frame-options",
+                                "rule_sequence": 700,
+                            },
+                        ],
+                    },
+                ],
+            ),
             run_with_unknowns=True,
         )
 
