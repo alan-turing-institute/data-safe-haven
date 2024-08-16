@@ -233,7 +233,13 @@ class SREApplicationGatewayComponent(ComponentResource):
                     ),
                     name="GuacamoleHttpRouting",
                     priority=200,
-                    rule_type="Basic",
+                    rewrite_rule_set=network.SubResourceArgs(
+                        id=Output.concat(
+                            props.resource_group_id,
+                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/rewriteRuleSets/SecurityRuleset",
+                        )
+                    ),
+                    rule_type=network.ApplicationGatewayRequestRoutingRuleType.BASIC,
                 ),
                 network.ApplicationGatewayRequestRoutingRuleArgs(
                     backend_address_pool=network.SubResourceArgs(
@@ -256,10 +262,35 @@ class SREApplicationGatewayComponent(ComponentResource):
                     ),
                     name="GuacamoleHttpsRouting",
                     priority=100,
-                    rule_type="Basic",
+                    rewrite_rule_set=network.SubResourceArgs(
+                        id=Output.concat(
+                            props.resource_group_id,
+                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/rewriteRuleSets/SecurityRuleset",
+                        )
+                    ),
+                    rule_type=network.ApplicationGatewayRequestRoutingRuleType.BASIC,
                 ),
             ],
             resource_group_name=props.resource_group_name,
+            rewrite_rule_sets=[
+                network.ApplicationGatewayRewriteRuleSetArgs(
+                    name="SecurityRuleset",
+                    rewrite_rules=[
+                        network.ApplicationGatewayRewriteRuleArgs(
+                            action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
+                                response_header_configurations=[
+                                    network.ApplicationGatewayHeaderConfigurationArgs(
+                                        header_name="Strict-Transport-Security",
+                                        header_value="max-age=31536000; includeSubDomains; preload",
+                                    )
+                                ],
+                            ),
+                            name="enable-hsts",
+                            rule_sequence=100,
+                        ),
+                    ],
+                ),
+            ],
             sku=network.ApplicationGatewaySkuArgs(
                 capacity=1,
                 name="Standard_v2",
