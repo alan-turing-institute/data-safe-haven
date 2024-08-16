@@ -236,7 +236,7 @@ class SREApplicationGatewayComponent(ComponentResource):
                     rewrite_rule_set=network.SubResourceArgs(
                         id=Output.concat(
                             props.resource_group_id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/rewriteRuleSets/SecurityRuleset",
+                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/rewriteRuleSets/ResponseHeaders",
                         )
                     ),
                     rule_type=network.ApplicationGatewayRequestRoutingRuleType.BASIC,
@@ -265,7 +265,7 @@ class SREApplicationGatewayComponent(ComponentResource):
                     rewrite_rule_set=network.SubResourceArgs(
                         id=Output.concat(
                             props.resource_group_id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/rewriteRuleSets/SecurityRuleset",
+                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/rewriteRuleSets/ResponseHeaders",
                         )
                     ),
                     rule_type=network.ApplicationGatewayRequestRoutingRuleType.BASIC,
@@ -274,8 +274,22 @@ class SREApplicationGatewayComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             rewrite_rule_sets=[
                 network.ApplicationGatewayRewriteRuleSetArgs(
-                    name="SecurityRuleset",
+                    name="ResponseHeaders",
                     rewrite_rules=[
+                        # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy
+                        network.ApplicationGatewayRewriteRuleArgs(
+                            action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
+                                response_header_configurations=[
+                                    network.ApplicationGatewayHeaderConfigurationArgs(
+                                        header_name="Content-Security-Policy",
+                                        header_value="upgrade-insecure-requests; base-uri 'self'; frame-ancestors 'self'; form-action 'self'; object-src 'none';",
+                                    )
+                                ],
+                            ),
+                            name="content-security-policy",
+                            rule_sequence=100,
+                        ),
+                        # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
                         network.ApplicationGatewayRewriteRuleArgs(
                             action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
                                 response_header_configurations=[
@@ -285,8 +299,8 @@ class SREApplicationGatewayComponent(ComponentResource):
                                     )
                                 ],
                             ),
-                            name="enable-hsts",
-                            rule_sequence=100,
+                            name="strict-transport-security",
+                            rule_sequence=500,
                         ),
                     ],
                 ),
