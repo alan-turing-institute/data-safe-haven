@@ -354,6 +354,19 @@ class SREApplicationGatewayComponent(ComponentResource):
                             name="x-content-type-options",
                             rule_sequence=600,
                         ),
+                        # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+                        network.ApplicationGatewayRewriteRuleArgs(
+                            action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
+                                response_header_configurations=[
+                                    network.ApplicationGatewayHeaderConfigurationArgs(
+                                        header_name="X-Frame-Options",
+                                        header_value="SAMEORIGIN",
+                                    )
+                                ],
+                            ),
+                            name="x-frame-options",
+                            rule_sequence=700,
+                        ),
                     ],
                 ),
             ],
