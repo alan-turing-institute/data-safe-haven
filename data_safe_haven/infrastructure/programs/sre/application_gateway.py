@@ -289,6 +289,19 @@ class SREApplicationGatewayComponent(ComponentResource):
                             name="content-security-policy",
                             rule_sequence=100,
                         ),
+                        # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Feature-Policy
+                        network.ApplicationGatewayRewriteRuleArgs(
+                            action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
+                                response_header_configurations=[
+                                    network.ApplicationGatewayHeaderConfigurationArgs(
+                                        header_name="Permissions-Policy",
+                                        header_value="accelerometer=(self), camera=(self), geolocation=(self), gyroscope=(self), magnetometer=(self), microphone=(self), payment=(self), usb=(self)",
+                                    )
+                                ],
+                            ),
+                            name="permissions-policy",
+                            rule_sequence=200,
+                        ),
                         # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
                         network.ApplicationGatewayRewriteRuleArgs(
                             action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
