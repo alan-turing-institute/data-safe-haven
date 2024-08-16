@@ -92,7 +92,7 @@ def available() -> None:
             create_project=True,
         )
         stack_outputs = stack.run_pulumi_command("stack output")
-        if "(0)" in stack_outputs:
+        if "No output values" in stack_outputs:
             console.print(f"SRE {sre_config.name} not deployed")
         else:
             console.print(f"SRE {sre_config.name} deployed")
