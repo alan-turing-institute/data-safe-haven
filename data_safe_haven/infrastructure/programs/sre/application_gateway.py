@@ -315,6 +315,19 @@ class SREApplicationGatewayComponent(ComponentResource):
                             name="referrer-policy",
                             rule_sequence=300,
                         ),
+                        # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Server
+                        network.ApplicationGatewayRewriteRuleArgs(
+                            action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
+                                response_header_configurations=[
+                                    network.ApplicationGatewayHeaderConfigurationArgs(
+                                        header_name="Server",
+                                        header_value="",
+                                    )
+                                ],
+                            ),
+                            name="server",
+                            rule_sequence=400,
+                        ),
                         # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
                         network.ApplicationGatewayRewriteRuleArgs(
                             action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
