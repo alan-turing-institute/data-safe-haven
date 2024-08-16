@@ -795,6 +795,8 @@ class SREDataComponent(ComponentResource):
         # - This holds the /home and /shared containers that are mounted by workspaces
         # - Azure Files has better NFS support but cannot be accessed with Azure Storage Explorer
         # - Allows root-squashing to be configured
+        # From https://learn.microsoft.com/en-us/azure/storage/files/files-nfs-protocol
+        # - premium file shares are required
         storage_account_data_private_user = storage.StorageAccount(
             f"{self._name}_storage_account_data_private_user",
             access_tier=storage.AccessTier.COOL,
