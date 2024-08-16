@@ -501,6 +501,9 @@ def sre_config_yaml(request):
             allow_paste: false
         research_user_ip_addresses: []
         software_packages: none
+        storage_quota_gb:
+            home: 100
+            shared: 100
         timezone: Europe/London
         workspace_skus: []
     """.replace(
