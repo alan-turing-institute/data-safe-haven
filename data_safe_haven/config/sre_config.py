@@ -13,6 +13,7 @@ from .config_sections import (
     ConfigSectionDockerHub,
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
+    ConfigSubsectionStorageQuotaGB,
 )
 
 
@@ -70,6 +71,10 @@ class SREConfig(AzureSerialisableModel):
                 ),
                 research_user_ip_addresses=["List of IP addresses belonging to users"],
                 software_packages="Which Python/R packages to allow users to install: [any/pre-approved/none]",
+                storage_quota_gb=ConfigSubsectionStorageQuotaGB.model_construct(
+                    home="Total size in GB across all home directories [default: 50].",
+                    shared="Total size in GB for the shared directories [default: 50].",
+                ),
                 timezone="Timezone in pytz format (eg. Europe/London)",
                 workspace_skus=[
                     "List of Azure VM SKUs that will be used for data analysis."

@@ -44,6 +44,11 @@ class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
     allow_paste: bool = False
 
 
+class ConfigSubsectionStorageQuotaGB(BaseModel, validate_assignment=True):
+    home: int = 50
+    shared: int = 50
+
+
 class ConfigSectionSRE(BaseModel, validate_assignment=True):
     admin_email_address: EmailAddress
     admin_ip_addresses: list[IpAddress] = Field(..., default_factory=list[IpAddress])
@@ -58,6 +63,9 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     )
     research_user_ip_addresses: list[IpAddress] = Field(
         ..., default_factory=list[IpAddress]
+    )
+    storage_quota_gb: ConfigSubsectionStorageQuotaGB = Field(
+        ..., default_factory=ConfigSubsectionStorageQuotaGB
     )
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
     timezone: TimeZone = "Etc/UTC"

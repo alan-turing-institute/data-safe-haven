@@ -181,6 +181,8 @@ class DeclarativeSRE:
                 location=self.config.azure.location,
                 resource_group=resource_group,
                 sre_fqdn=networking.sre_fqdn,
+                storage_quota_gb_home=self.config.sre.storage_quota_gb.home,
+                storage_quota_gb_shared=self.config.sre.storage_quota_gb.shared,
                 subnet_data_configuration=networking.subnet_data_configuration,
                 subnet_data_desired_state=networking.subnet_data_desired_state,
                 subnet_data_private=networking.subnet_data_private,

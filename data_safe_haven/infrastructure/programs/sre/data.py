@@ -53,6 +53,8 @@ class SREDataProps:
         location: Input[str],
         resource_group: Input[resources.ResourceGroup],
         sre_fqdn: Input[str],
+        storage_quota_gb_home: Input[int],
+        storage_quota_gb_shared: Input[int],
         subnet_data_configuration: Input[network.GetSubnetResult],
         subnet_data_desired_state: Input[network.GetSubnetResult],
         subnet_data_private: Input[network.GetSubnetResult],
@@ -79,6 +81,8 @@ class SREDataProps:
             get_name_from_rg
         )
         self.sre_fqdn = sre_fqdn
+        self.storage_quota_gb_home = storage_quota_gb_home
+        self.storage_quota_gb_shared = storage_quota_gb_shared
         self.subnet_data_configuration_id = Output.from_input(
             subnet_data_configuration
         ).apply(get_id_from_subnet)
@@ -833,7 +837,7 @@ class SREDataComponent(ComponentResource):
             # Squashing prevents root from creating user home directories
             root_squash=storage.RootSquashType.NO_ROOT_SQUASH,
             share_name="home",
-            share_quota=1024,
+            share_quota=props.storage_quota_gb_home,
             signed_identifiers=[],
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=storage_account_data_private_user)
@@ -847,7 +851,7 @@ class SREDataComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             root_squash=storage.RootSquashType.ROOT_SQUASH,
             share_name="shared",
-            share_quota=1024,
+            share_quota=props.storage_quota_gb_shared,
             signed_identifiers=[],
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=storage_account_data_private_user)
