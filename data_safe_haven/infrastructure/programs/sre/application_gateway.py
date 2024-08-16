@@ -112,7 +112,7 @@ class SREApplicationGatewayComponent(ComponentResource):
             ],
             backend_http_settings_collection=[
                 network.ApplicationGatewayBackendHttpSettingsArgs(
-                    cookie_based_affinity=network.ApplicationGatewayCookieBasedAffinity.ENABLED,
+                    cookie_based_affinity=network.ApplicationGatewayCookieBasedAffinity.DISABLED,
                     name="appGatewayBackendHttpSettings",
                     port=80,
                     protocol="Http",

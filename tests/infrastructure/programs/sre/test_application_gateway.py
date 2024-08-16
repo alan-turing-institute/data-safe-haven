@@ -182,7 +182,7 @@ class TestSREApplicationGatewayComponent:
                         "etag": None,
                         "provisioning_state": None,
                         "type": None,
-                        "cookie_based_affinity": "Enabled",
+                        "cookie_based_affinity": "Disabled",
                         "name": "appGatewayBackendHttpSettings",
                         "port": 80,
                         "protocol": "Http",
