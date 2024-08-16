@@ -302,6 +302,19 @@ class SREApplicationGatewayComponent(ComponentResource):
                             name="permissions-policy",
                             rule_sequence=200,
                         ),
+                        # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+                        network.ApplicationGatewayRewriteRuleArgs(
+                            action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
+                                response_header_configurations=[
+                                    network.ApplicationGatewayHeaderConfigurationArgs(
+                                        header_name="Referrer-Policy",
+                                        header_value="strict-origin-when-cross-origin",
+                                    )
+                                ],
+                            ),
+                            name="referrer-policy",
+                            rule_sequence=300,
+                        ),
                         # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
                         network.ApplicationGatewayRewriteRuleArgs(
                             action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
