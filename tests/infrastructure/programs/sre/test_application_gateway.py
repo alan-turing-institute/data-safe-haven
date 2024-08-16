@@ -154,16 +154,16 @@ class TestSREApplicationGatewayComponent:
                 assert_equal_json,
                 [
                     {
-                        "backend_ip_configurations": None,
-                        "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "backend_addresses": [
                             {"ip_address": "10.0.1.44"},
                             {"ip_address": "10.0.1.45"},
                             {"ip_address": "10.0.1.46"},
                         ],
+                        "backend_ip_configurations": None,
+                        "etag": None,
                         "name": "appGatewayBackendGuacamole",
+                        "provisioning_state": None,
+                        "type": None,
                     }
                 ],
             ),
@@ -179,14 +179,18 @@ class TestSREApplicationGatewayComponent:
                 assert_equal_json,
                 [
                     {
-                        "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
+                        "connection_draining": {
+                            "drain_timeout_in_sec": 30,
+                            "enabled": True,
+                        },
                         "cookie_based_affinity": "Disabled",
+                        "etag": None,
                         "name": "appGatewayBackendHttpSettings",
                         "port": 80,
                         "protocol": "Http",
+                        "provisioning_state": None,
                         "request_timeout": 30,
+                        "type": None,
                     }
                 ],
             ),
@@ -275,11 +279,11 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "name": "appGatewayFrontendIP",
                         "private_ip_allocation_method": "Dynamic",
+                        "provisioning_state": None,
                         "public_ip_address": {"id": None},
+                        "type": None,
                     }
                 ],
             ),
@@ -296,17 +300,17 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "name": "appGatewayFrontendHttp",
                         "port": 80,
+                        "provisioning_state": None,
+                        "type": None,
                     },
                     {
                         "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "name": "appGatewayFrontendHttps",
                         "port": 443,
+                        "provisioning_state": None,
+                        "type": None,
                     },
                 ],
             ),
@@ -323,10 +327,10 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "name": "appGatewayIP",
+                        "provisioning_state": None,
                         "subnet": {"id": "subnet_application_gateway_id"},
+                        "type": None,
                     }
                 ],
             ),
@@ -352,24 +356,24 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "frontend_ip_configuration": {"id": None},
                         "frontend_port": {"id": None},
                         "host_name": "sre.example.com",
                         "name": "GuacamoleHttpListener",
                         "protocol": "Http",
+                        "provisioning_state": None,
+                        "type": None,
                     },
                     {
                         "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "frontend_ip_configuration": {"id": None},
                         "frontend_port": {"id": None},
                         "host_name": "sre.example.com",
                         "name": "GuacamoleHttpsListener",
                         "protocol": "Https",
+                        "provisioning_state": None,
                         "ssl_certificate": {"id": None},
+                        "type": None,
                     },
                 ],
             ),
@@ -481,13 +485,13 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
-                        "type": None,
                         "include_path": True,
                         "include_query_string": True,
                         "name": "GuacamoleHttpToHttpsRedirection",
                         "redirect_type": "Permanent",
                         "request_routing_rules": [{"id": None}],
                         "target_listener": {"id": None},
+                        "type": None,
                     }
                 ],
             ),
@@ -504,26 +508,26 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "http_listener": {"id": None},
                         "name": "GuacamoleHttpRouting",
                         "priority": 200,
+                        "provisioning_state": None,
                         "redirect_configuration": {"id": None},
                         "rewrite_rule_set": {"id": None},
                         "rule_type": "Basic",
+                        "type": None,
                     },
                     {
-                        "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "backend_address_pool": {"id": None},
                         "backend_http_settings": {"id": None},
+                        "etag": None,
                         "http_listener": {"id": None},
                         "name": "GuacamoleHttpsRouting",
                         "priority": 100,
+                        "provisioning_state": None,
                         "rewrite_rule_set": {"id": None},
                         "rule_type": "Basic",
+                        "type": None,
                     },
                 ],
             ),
@@ -549,8 +553,8 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
-                        "provisioning_state": None,
                         "name": "ResponseHeaders",
+                        "provisioning_state": None,
                         "rewrite_rules": [
                             {
                                 "action_set": {
@@ -675,11 +679,11 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
+                        "key_vault_secret_id": "key_vault_certificate_id",
+                        "name": "letsencryptcertificate",
                         "provisioning_state": None,
                         "public_cert_data": None,
                         "type": None,
-                        "key_vault_secret_id": "key_vault_certificate_id",
-                        "name": "letsencryptcertificate",
                     }
                 ],
             ),
