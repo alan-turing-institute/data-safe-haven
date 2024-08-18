@@ -564,8 +564,8 @@ class TestSREApplicationGatewayComponent:
                 assert_equal,
                 network.outputs.ApplicationGatewaySkuResponse(
                     capacity=1,
-                    name="Standard_v2",
-                    tier="Standard_v2",
+                    name="Basic",
+                    tier="Basic",
                 ),
             ),
             run_with_unknowns=True,
