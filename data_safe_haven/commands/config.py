@@ -78,7 +78,7 @@ def available() -> None:
         raise typer.Exit(1) from exc
     if not blobs:
         logger.critical(f"No configurations found for context '{context.name}'.")
-        raise typer.Exit(1)
+        raise typer.Exit(0)
     pulumi_config = DSHPulumiConfig.from_remote(context)
     sre_status = {}
     for blob in blobs:
