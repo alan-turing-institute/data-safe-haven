@@ -84,7 +84,7 @@ class TestShowSRE:
         context_manager,
         mocker,
         runner,
-        mock_pulumi_config_from_remote,  # noqa: ARG002
+        mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
         mock_sre_config_from_remote,  # noqa: ARG002
         sre_project_manager,  # noqa: ARG002
     ):
