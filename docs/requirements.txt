@@ -67,7 +67,7 @@ requests==2.32.3
     #   sphinx
 snowballstemmer==2.2.0
     # via sphinx
-soupsieve==2.5
+soupsieve==2.6
     # via beautifulsoup4
 sphinx==8.0.2
     # via
