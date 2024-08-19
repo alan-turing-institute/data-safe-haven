@@ -100,7 +100,7 @@ def available() -> None:
             logger.error(
                 f"Failed to run Pulumi command querying stack outputs for SRE '{sre_config.name}'."
             )
-            raise typer.exit(1) from exc
+            raise typer.Exit(1) from exc
     headers = ["SRE Name", "Deployed"]
     rows = [[name, "x" if deployed else ""] for name, deployed in sre_status.items()]
     console.print(f"Available SRE configurations for context '{context.name}':")
