@@ -79,9 +79,9 @@ Users created via the `dsh users` command line tool will be automatically regist
 If you have manually created a user and want to enable SSPR, do the following
 
 - Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-- Browse to **Users > All Users** from the menu on the left side
+- Browse to **{menuselection}`Users --> All Users`**
 - Select the user you want to enable SSPR for
-- On the **Manage > Authentication Methods** page fill out their contact info as follows:
+- On the **{menuselection}`Manage --> Authentication Methods`** page fill out their contact info as follows:
     - Ensure that you register **both** a phone number and an email address
         - **Phone:** add the user's phone number with a space between the country code and the rest of the number (_e.g._ +44 7700900000)
         - **Email:** enter the user's email address here
