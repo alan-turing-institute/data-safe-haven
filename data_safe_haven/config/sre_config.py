@@ -72,8 +72,8 @@ class SREConfig(AzureSerialisableModel):
                 research_user_ip_addresses=["List of IP addresses belonging to users"],
                 software_packages="Which Python/R packages to allow users to install: [any/pre-approved/none]",
                 storage_quota_gb=ConfigSubsectionStorageQuotaGB.model_construct(
-                    home="Total size in GB across all home directories [minimum: 100, default: 100].",
-                    shared="Total size in GB for the shared directories [minimum: 100, default: 100].",
+                    home="Total size in GiB across all home directories [minimum: 100].",
+                    shared="Total size in GiB for the shared directories [minimum: 100].",
                 ),
                 timezone="Timezone in pytz format (eg. Europe/London)",
                 workspace_skus=[

@@ -46,8 +46,8 @@ class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
 
 
 class ConfigSubsectionStorageQuotaGB(BaseModel, validate_assignment=True):
-    home: AzurePremiumFileShareSize = 100
-    shared: AzurePremiumFileShareSize = 100
+    home: AzurePremiumFileShareSize
+    shared: AzurePremiumFileShareSize
 
 
 class ConfigSectionSRE(BaseModel, validate_assignment=True):
