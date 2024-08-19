@@ -47,23 +47,23 @@ class SREConfig(AzureSerialisableModel):
     def template(cls: type[Self], tier: int | None = None) -> SREConfig:
         """Create SREConfig without validation to allow "replace me" prompts."""
         # Set tier-dependent defaults
-        if tier == 0:
+        if tier == 0:  # noqa: PLR2004
             remote_desktop_allow_copy = True
             remote_desktop_allow_paste = True
             software_packages = SoftwarePackageCategory.ANY
-        elif tier == 1:
+        elif tier == 1:  # noqa: PLR2004
             remote_desktop_allow_copy = True
             remote_desktop_allow_paste = True
             software_packages = SoftwarePackageCategory.ANY
-        elif tier == 2:
+        elif tier == 2:  # noqa: PLR2004
             remote_desktop_allow_copy = False
             remote_desktop_allow_paste = False
             software_packages = SoftwarePackageCategory.ANY
-        elif tier == 3:
+        elif tier == 3:  # noqa: PLR2004
             remote_desktop_allow_copy = False
             remote_desktop_allow_paste = False
             software_packages = SoftwarePackageCategory.PRE_APPROVED
-        elif tier == 4:
+        elif tier == 4:  # noqa: PLR2004
             remote_desktop_allow_copy = False
             remote_desktop_allow_paste = False
             software_packages = SoftwarePackageCategory.NONE

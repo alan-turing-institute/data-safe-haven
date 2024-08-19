@@ -52,7 +52,6 @@ $ dsh config template --file PATH_YOU_WANT_TO_SAVE_YOUR_YAML_FILE_TO \
 :::
 ::::
 
-
 - Edit this file in your favourite text editor, replacing the placeholder text with appropriate values for your setup.
 
 ::::{admonition} Example YAML configuration file
