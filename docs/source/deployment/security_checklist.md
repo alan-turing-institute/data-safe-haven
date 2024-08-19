@@ -12,11 +12,7 @@ The security checklist currently focuses on checks that can evaluate these secur
 
 ## How to use this checklist
 
-- Ensure you have an SHM and attached SRE(s) that you wish to test.
-
-```{note}
-Some parts of the checklist are only relevant when there are multiple SREs attached to the same SHM.
-```
+- Ensure you have successfully deployed an SHM and the SRE(s) that you wish to test.
 
 - Work your way through the actions described in each section, taking care to notice each time you see a {{camera}} or a {{white_check_mark}} and the word **Verify**:
 
@@ -31,11 +27,6 @@ Some parts of the checklist are only relevant when there are multiple SREs attac
 - **Deployed SRE A** that is attached to the SHM
 - **Deployed SRE B** that is attached to the same SHM
 - **VPN access** to the SHM that you are testing
-
-```{important}
-- If you haven't already, you'll need download a VPN certificate and configure {ref}`VPN access <deploy_shm_vpn>` for the SHM
-- Make sure you can use Remote Desktop to log in to the {ref}`domain controller (DC1) <roles_system_deployer_shm_remote_desktop>`.
-```
 
 The following users will be needed for this checklist
 
@@ -139,7 +130,7 @@ Check that the **SRE standard user** can authenticate with MFA.
 
 #### Authenticated user can access the Secure Research Desktop (SRD) desktop
 
-Check that the **SRE standard user** can access the Secure Research Desktop (SRD) desktop.
+Check that the **SRE standard user** can access the workspace.
 
 - Login to the remote desktop web client as the **SRE standard user**.
 
@@ -159,8 +150,7 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 
 ### Turing configuration setting:
 
-- {ref}`Researchers <role_researcher>` cannot access any part of the network from outside the network.
-- VMs in the SHM are only accessible by {ref}`System Managers <role_system_manager>` using the management VPN.
+- {ref}`Researchers <role_researcher>` cannot access any part of an SRE (except the portal) from outside the network.
 - Whilst in the network, one cannot use the internet to connect outside the network.
 - SREs in the same SHM are isolated from one another.
 
@@ -169,22 +159,6 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 - The Data Safe Haven network is isolated from external connections (both {ref}`policy_tier_2` and {ref}`policy_tier_3`)
 
 ### Verify by:
-
-#### Connect to SHM VMs if and only if connected to the SHM VPN:
-
-- Connect to the SHM VPN
-- Attempt to connect to the SHM DC
-
-```{attention}
-{{white_check_mark}} **Verify that:** connection works
-```
-
-- Disconnect from the SHM VPN
-- Attempt to connect to the SHM DC
-
-```{attention}
-{{white_check_mark}} **Verify that:** connection fails
-```
 
 #### Fail to connect to the internet from within an SRD on the SRE network
 
@@ -222,25 +196,6 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 ````
 
 #### SREs are isolated from one another
-
-Check that users cannot connect from one SRE to another one in the same SHM, even if they have access to both SREs
-
-- Ensure that the **SRE standard user** is a member of the research users group for both **SRE A** and **SRE B**
-- Log in to an SRD in **SRE A** as the **SRE standard user** using the web client.
-- Open the `Terminal` app from the dock at the bottom of the screen and enter `ssh -v -o ConnectTimeout=10 <IP address>` where the IP address is one for an SRD in SRE B (you can find this in the Azure portal)
-
-````{attention}
-{{camera}} <b>Verify that:</b>
-
-<details><summary>SSH connection fails</i></summary>
-
-```{image} security_checklist/ssh_connection_fail.png
-:alt: SSH connection failure
-:align: center
-```
-
-</details>
-````
 
 - Check that users cannot copy files from one SRE to another one in the same SHM
     - Log in to an SRD in **SRE A** as the **SRE standard user** using the web client.
@@ -324,7 +279,7 @@ All managed devices should be provided by a known IT team at an approved organis
 
 #### Network rules ({ref}`policy_tier_2` and above):
 
-There are network rules permitting access to the remote desktop gateway from allow-listed IP addresses only
+There are network rules permitting access to the portal from allowed IP addresses only
 
 - Navigate to the NSG for this SRE in the portal:
     - {{pear}} `NSG_SHM_<SHM ID>_SRE_<SRE ID>_GUACAMOLE`
@@ -719,54 +674,6 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 ```{image} security_checklist/srd_pypi_tier3_denied.png
 :alt: SRD PyPI Tier 3
-:align: center
-```
-</details>
-````
-
-## 11. Firewall controls
-
-### Turing configuration setting:
-
-- Whilst all user accessible VMs are entirely blocked off from the internet, this is not the case for administrator-only VMs.
-- An Azure Firewall governs the internet access provided to these VMs, limiting them mostly to downloading system updates.
-
-### Implication:
-
-- An `Azure Firewall` ensures that the administrator VMs have the minimal level of internet access required to function.
-
-### Verify by:
-
-#### Admin has limited access to the internet
-
-- As the {ref}`role_system_manager` use Remote Desktop to connect to the SHM domain controller VM
-- Attempt to connect to a non-approved site, such as `www.google.com`
-
-````{attention}
-{{camera}} <b>Verify that:</b>
-
-<details><summary>connection fails</summary>
-
-```{image} security_checklist/shmdc_website_deny.png
-:alt: SHM DC website denied
-:align: center
-```
-</details>
-````
-
-#### Admin can download Windows updates
-
-- As the {ref}`role_system_manager` use Remote Desktop to connect to the SHM domain controller VM
-- Click on `Start -> Settings-> Update & Security`
-- Click the `Download` button
-
-````{attention}
-{{camera}} <b>Verify that:</b>
-
-<details><summary>updates download and install successfully</summary>
-
-```{image} security_checklist/shmdc_windows_update.png
-:alt: SHM DC update allowed
 :align: center
 ```
 </details>
