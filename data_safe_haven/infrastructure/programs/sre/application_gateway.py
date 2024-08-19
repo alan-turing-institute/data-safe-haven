@@ -376,8 +376,8 @@ class SREApplicationGatewayComponent(ComponentResource):
             ],
             sku=network.ApplicationGatewaySkuArgs(
                 capacity=1,
-                name="Standard_v2",
-                tier="Standard_v2",
+                name="Basic",
+                tier="Basic",
             ),
             ssl_certificates=[
                 network.ApplicationGatewaySslCertificateArgs(
