@@ -91,11 +91,7 @@ def available() -> None:
             pulumi_config=pulumi_config,
             create_project=True,
         )
-        stack_outputs = stack.run_pulumi_command("stack output")
-        if "No output values" in stack_outputs:
-            sre_status[sre_config.name] = False
-        else:
-            sre_status[sre_config.name] = True
+        sre_status[sre_config.name] = "No output values" not in stack.run_pulumi_command("stack output")
     headers = ["SRE Name", "Deployed"]
     rows = [[name, "x" if deployed else ""] for name, deployed in sre_status.items()]
     console.print(f"Available SRE configurations for context '{context.name}':")
