@@ -5,7 +5,7 @@ from __future__ import annotations
 from ipaddress import ip_network
 from itertools import combinations
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, field_validator
 
 from data_safe_haven.types import (
     AzureLocation,
@@ -41,8 +41,8 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
 
 
 class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
-    allow_copy: bool = False
-    allow_paste: bool = False
+    allow_copy: bool
+    allow_paste: bool
 
 
 class ConfigSubsectionStorageQuotaGB(BaseModel, validate_assignment=True):
@@ -57,9 +57,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     admin_ip_addresses: list[IpAddress] = []
     databases: UniqueList[DatabaseSystem] = []
     data_provider_ip_addresses: list[IpAddress] = []
-    remote_desktop: ConfigSubsectionRemoteDesktopOpts = Field(  # type: ignore
-        ..., default_factory=ConfigSubsectionRemoteDesktopOpts
-    )
+    remote_desktop: ConfigSubsectionRemoteDesktopOpts
     research_user_ip_addresses: list[IpAddress] = []
     storage_quota_gb: ConfigSubsectionStorageQuotaGB
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE

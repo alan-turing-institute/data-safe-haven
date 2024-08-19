@@ -66,8 +66,8 @@ class SREConfig(AzureSerialisableModel):
                     "List of IP addresses belonging to data providers"
                 ],
                 remote_desktop=ConfigSubsectionRemoteDesktopOpts.model_construct(
-                    allow_copy="True/False: whether to allow copying text out of the environment [default: False].",  # type:ignore
-                    allow_paste="True/False: whether to allow pasting text into the environment [default: False].",  # type:ignore
+                    allow_copy="True/False: whether to allow copying text out of the environment.",  # type:ignore
+                    allow_paste="True/False: whether to allow pasting text into the environment.",  # type:ignore
                 ),
                 research_user_ip_addresses=["List of IP addresses belonging to users"],
                 software_packages="Which Python/R packages to allow users to install: [any/pre-approved/none]",  # type:ignore

@@ -77,15 +77,20 @@ def config_section_dockerhub() -> ConfigSectionDockerHub:
 
 @fixture
 def config_section_sre(
-    remote_desktop_config, config_subsection_storage_quota_gb
+    config_subsection_remote_desktop, config_subsection_storage_quota_gb
 ) -> ConfigSectionSRE:
     return ConfigSectionSRE(
         admin_email_address="admin@example.com",
         admin_ip_addresses=["1.2.3.4"],
-        remote_desktop=remote_desktop_config,
+        remote_desktop=config_subsection_remote_desktop,
         storage_quota_gb=config_subsection_storage_quota_gb,
         timezone="Europe/London",
     )
+
+
+@fixture
+def config_subsection_remote_desktop() -> ConfigSubsectionRemoteDesktopOpts:
+    return ConfigSubsectionRemoteDesktopOpts(allow_copy=False, allow_paste=False)
 
 
 @fixture
@@ -391,11 +396,6 @@ def pulumi_config_yaml() -> str:
                 data-safe-haven:variable: -3
     """
     return yaml.dump(yaml.safe_load(content))
-
-
-@fixture
-def remote_desktop_config() -> ConfigSubsectionRemoteDesktopOpts:
-    return ConfigSubsectionRemoteDesktopOpts()
 
 
 @fixture

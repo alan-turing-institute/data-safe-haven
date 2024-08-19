@@ -1,0 +1,211 @@
+diff --git a/data_safe_haven/config/config_sections.py b/data_safe_haven/config/config_sections.py
+index 2d9399e77..e0c4fee7e 100644
+--- a/data_safe_haven/config/config_sections.py
++++ b/data_safe_haven/config/config_sections.py
+@@ -5,7 +5,7 @@ from __future__ import annotations
+ from ipaddress import ip_network
+ from itertools import combinations
+
+-from pydantic import BaseModel, Field, field_validator
++from pydantic import BaseModel, field_validator
+
+ from data_safe_haven.types import (
+     AzureLocation,
+@@ -41,8 +41,8 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
+
+
+ class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
+-    allow_copy: bool = False
+-    allow_paste: bool = False
++    allow_copy: bool
++    allow_paste: bool
+
+
+ class ConfigSubsectionStorageQuotaGB(BaseModel, validate_assignment=True):
+@@ -55,9 +55,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
+     admin_ip_addresses: list[IpAddress] = []
+     databases: UniqueList[DatabaseSystem] = []
+     data_provider_ip_addresses: list[IpAddress] = []
+-    remote_desktop: ConfigSubsectionRemoteDesktopOpts = Field(
+-        ..., default_factory=ConfigSubsectionRemoteDesktopOpts
+-    )
++    remote_desktop: ConfigSubsectionRemoteDesktopOpts
+     research_user_ip_addresses: list[IpAddress] = []
+     storage_quota_gb: ConfigSubsectionStorageQuotaGB
+     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
+diff --git a/data_safe_haven/config/sre_config.py b/data_safe_haven/config/sre_config.py
+index fcbb86f31..86a1ba072 100644
+--- a/data_safe_haven/config/sre_config.py
++++ b/data_safe_haven/config/sre_config.py
+@@ -61,19 +61,19 @@ class SREConfig(AzureSerialisableModel):
+             sre=ConfigSectionSRE.model_construct(
+                 admin_email_address="Email address shared by all administrators",
+                 admin_ip_addresses=["List of IP addresses belonging to administrators"],
+                 databases=["List of database systems to deploy"],  # type:ignore
+                 data_provider_ip_addresses=[
+                     "List of IP addresses belonging to data providers"
+                 ],
+                 remote_desktop=ConfigSubsectionRemoteDesktopOpts.model_construct(
+-                    allow_copy="True/False: whether to allow copying text out of the environment [default: False].",
+-                    allow_paste="True/False: whether to allow pasting text into the environment [default: False].",
++                    allow_copy="True/False: whether to allow copying text out of the environment [default: False].",  # type:ignore
++                    allow_paste="True/False: whether to allow pasting text into the environment [default: False].",  # type:ignore
+                 ),
+                 research_user_ip_addresses=["List of IP addresses belonging to users"],
+-                software_packages="Which Python/R packages to allow users to install: [any/pre-approved/none]",
++                software_packages="Which Python/R packages to allow users to install: [any/pre-approved/none]",  # type:ignore
+                 storage_quota_gb=ConfigSubsectionStorageQuotaGB.model_construct(
+-                    home="Total size in GiB across all home directories [minimum: 100].",
+-                    shared="Total size in GiB for the shared directories [minimum: 100].",
++                    home="Total size in GiB across all home directories [minimum: 100].",  # type:ignore
++                    shared="Total size in GiB for the shared directories [minimum: 100].",  # type:ignore
+                 ),
+                 timezone="Timezone in pytz format (eg. Europe/London)",
+                 workspace_skus=[
+diff --git a/pyproject.toml b/pyproject.toml
+index 115fa5f42..bf4fcec5b 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -142,6 +142,7 @@ path = "data_safe_haven/version.py"
+ disallow_subclassing_any = false  # allow subclassing of types from third-party libraries
+ files = "data_safe_haven"         # run mypy over this directory
+ mypy_path = "typings"             # use this directory for stubs
++plugins = "pydantic.mypy"         # enable the pydantic plugin
+ strict = true                     # enable all optional error checking flags
+
+ [[tool.mypy.overrides]]
+diff --git a/tests/config/test_config_sections.py b/tests/config/test_config_sections.py
+index cc6dd0d33..3488e00ba 100644
+--- a/tests/config/test_config_sections.py
++++ b/tests/config/test_config_sections.py
+@@ -7,6 +7,7 @@ from data_safe_haven.config.config_sections import (
+     ConfigSectionSHM,
+     ConfigSectionSRE,
+     ConfigSubsectionRemoteDesktopOpts,
++    ConfigSubsectionStorageQuotaGB,
+ )
+ from data_safe_haven.types import DatabaseSystem, SoftwarePackageCategory
+
+@@ -111,7 +112,9 @@ class TestConfigSectionSHM:
+
+ class TestConfigSectionSRE:
+     def test_constructor(
+-        self, remote_desktop_config: ConfigSubsectionRemoteDesktopOpts
++        self,
++        remote_desktop_config: ConfigSubsectionRemoteDesktopOpts,
++        config_subsection_storage_quota_gb: ConfigSubsectionStorageQuotaGB,
+     ) -> None:
+         sre_config = ConfigSectionSRE(
+             admin_email_address="admin@example.com",
+@@ -122,6 +125,7 @@ class TestConfigSectionSRE:
+             workspace_skus=["Standard_D2s_v4"],
+             research_user_ip_addresses=["3.4.5.6"],
+             software_packages=SoftwarePackageCategory.ANY,
++            storage_quota_gb=config_subsection_storage_quota_gb,
+             timezone="Australia/Perth",
+         )
+         assert sre_config.admin_email_address == "admin@example.com"
+@@ -132,12 +136,13 @@ class TestConfigSectionSRE:
+         assert sre_config.workspace_skus[0] == "Standard_D2s_v4"
+         assert sre_config.research_user_ip_addresses[0] == "3.4.5.6/32"
+         assert sre_config.software_packages == SoftwarePackageCategory.ANY
++        assert sre_config.storage_quota_gb == config_subsection_storage_quota_gb
+         assert sre_config.timezone == "Australia/Perth"
+
+     def test_constructor_defaults(
+-        self, remote_desktop_config: ConfigSubsectionRemoteDesktopOpts
++        self, remote_desktop_config: ConfigSubsectionRemoteDesktopOpts, config_subsection_storage_quota_gb: ConfigSubsectionStorageQuotaGB,
+     ) -> None:
+-        sre_config = ConfigSectionSRE(admin_email_address="admin@example.com")
++        sre_config = ConfigSectionSRE(admin_email_address="admin@example.com", remote_desktop_config=remote_desktop_config, storage_quota_gb=config_subsection_storage_quota_gb)
+         assert sre_config.admin_email_address == "admin@example.com"
+         assert sre_config.admin_ip_addresses == []
+         assert sre_config.databases == []
+@@ -193,12 +198,6 @@ class TestConfigSubsectionRemoteDesktopOpts:
+     def test_constructor(self) -> None:
+         ConfigSubsectionRemoteDesktopOpts(allow_copy=True, allow_paste=True)
+
+-    def test_constructor_defaults(self) -> None:
+-        remote_desktop_config = ConfigSubsectionRemoteDesktopOpts()
+-        assert not all(
+-            (remote_desktop_config.allow_copy, remote_desktop_config.allow_paste)
+-        )
+-
+     def test_constructor_invalid_allow_copy(self) -> None:
+         with pytest.raises(
+             ValueError,
+@@ -208,3 +207,28 @@ class TestConfigSubsectionRemoteDesktopOpts:
+                 allow_copy=True,
+                 allow_paste="not a bool",
+             )
++
++
++class TestConfigSubsectionStorageQuotaGB:
++    def test_constructor(self) -> None:
++        ConfigSubsectionStorageQuotaGB(home=100, shared=100)
++
++    def test_constructor_invalid_type(self) -> None:
++        with pytest.raises(
++            ValueError,
++            match=r"1 validation error for ConfigSubsectionStorageQuotaGB\nallow_paste\n  Input should be a valid boolean",
++        ):
++            ConfigSubsectionStorageQuotaGB(
++                home=100,
++                shared="not a bool",
++            )
++
++    def test_constructor_invalid_value(self) -> None:
++        with pytest.raises(
++            ValueError,
++            match=r"1 validation error for ConfigSubsectionStorageQuotaGB\nallow_paste\n  Input should be a valid boolean",
++        ):
++            ConfigSubsectionStorageQuotaGB(
++                home=50,
++                shared=100,
++            )
+diff --git a/tests/conftest.py b/tests/conftest.py
+index 1acd447ee..c2853c989 100644
+--- a/tests/conftest.py
++++ b/tests/conftest.py
+@@ -25,6 +25,7 @@ from data_safe_haven.config.config_sections import (
+     ConfigSectionSHM,
+     ConfigSectionSRE,
+     ConfigSubsectionRemoteDesktopOpts,
++    ConfigSubsectionStorageQuotaGB,
+ )
+ from data_safe_haven.exceptions import DataSafeHavenAzureError
+ from data_safe_haven.external import AzureSdk, PulumiAccount
+@@ -75,14 +76,23 @@ def config_section_dockerhub() -> ConfigSectionDockerHub:
+
+
+ @fixture
+-def config_section_sre() -> ConfigSectionSRE:
++def config_section_sre(
++    remote_desktop_config, config_subsection_storage_quota_gb
++) -> ConfigSectionSRE:
+     return ConfigSectionSRE(
+         admin_email_address="admin@example.com",
+         admin_ip_addresses=["1.2.3.4"],
++        remote_desktop=remote_desktop_config,
++        storage_quota_gb=config_subsection_storage_quota_gb,
+         timezone="Europe/London",
+     )
+
+
++@fixture
++def config_subsection_storage_quota_gb() -> ConfigSubsectionStorageQuotaGB:
++    return ConfigSubsectionStorageQuotaGB(home=100, shared=100)
++
++
+ @fixture
+ def context(context_dict):
+     return Context(**context_dict)
+@@ -385,7 +395,7 @@ def pulumi_config_yaml() -> str:
+
+ @fixture
+ def remote_desktop_config() -> ConfigSubsectionRemoteDesktopOpts:
+-    return ConfigSubsectionRemoteDesktopOpts()
++    return ConfigSubsectionRemoteDesktopOpts(allow_copy=False, allow_paste=False)
+
+
+ @fixture
