@@ -11,6 +11,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureStorageError,
     DataSafeHavenConfigError,
     DataSafeHavenError,
+    DataSafeHavenPulumiError,
 )
 from data_safe_haven.external.api.azure_sdk import AzureSdk
 from data_safe_haven.infrastructure import SREProjectManager
@@ -91,7 +92,15 @@ def available() -> None:
             pulumi_config=pulumi_config,
             create_project=True,
         )
-        sre_status[sre_config.name] = "No output values" not in stack.run_pulumi_command("stack output")
+        try:
+            sre_status[sre_config.name] = (
+                "No output values" not in stack.run_pulumi_command("stack output")
+            )
+        except DataSafeHavenPulumiError as exc:
+            logger.error(
+                f"Failed to run Pulumi command querying stack outputs for SRE '{sre_config.name}'."
+            )
+            raise typer.exit(1) from exc
     headers = ["SRE Name", "Deployed"]
     rows = [[name, "x" if deployed else ""] for name, deployed in sre_status.items()]
     console.print(f"Available SRE configurations for context '{context.name}':")
