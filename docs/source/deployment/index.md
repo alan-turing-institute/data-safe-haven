@@ -7,6 +7,7 @@ setup_context.md
 configure_entra_id.md
 deploy_shm.md
 deploy_sre.md
+security_checklist.md
 :::
 
 Deploying an instance of the Data Safe Haven involves the following steps:
