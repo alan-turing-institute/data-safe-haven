@@ -148,10 +148,14 @@ def template(
     file: Annotated[
         Optional[Path],  # noqa: UP007
         typer.Option(help="File path to write configuration template to."),
-    ] = None
+    ] = None,
+    tier: Annotated[
+        Optional[int],  # noqa: UP007
+        typer.Option(help="Which security tier to base this template on."),
+    ] = None,
 ) -> None:
     """Write a template Data Safe Haven SRE configuration."""
-    sre_config = SREConfig.template()
+    sre_config = SREConfig.template(tier)
     # The template uses explanatory strings in place of the expected types.
     # Serialisation warnings are therefore suppressed to avoid misleading the users into
     # thinking there is a problem and contaminating the output.
