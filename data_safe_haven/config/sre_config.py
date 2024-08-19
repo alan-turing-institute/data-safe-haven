@@ -13,6 +13,7 @@ from .config_sections import (
     ConfigSectionDockerHub,
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
+    ConfigSubsectionStorageQuotaGB,
 )
 
 
@@ -60,16 +61,20 @@ class SREConfig(AzureSerialisableModel):
             sre=ConfigSectionSRE.model_construct(
                 admin_email_address="Email address shared by all administrators",
                 admin_ip_addresses=["List of IP addresses belonging to administrators"],
-                databases=["List of database systems to deploy"],
+                databases=["List of database systems to deploy"],  # type:ignore
                 data_provider_ip_addresses=[
                     "List of IP addresses belonging to data providers"
                 ],
                 remote_desktop=ConfigSubsectionRemoteDesktopOpts.model_construct(
-                    allow_copy="True/False: whether to allow copying text out of the environment",
-                    allow_paste="True/False: whether to allow pasting text into the environment",
+                    allow_copy="True/False: whether to allow copying text out of the environment.",  # type:ignore
+                    allow_paste="True/False: whether to allow pasting text into the environment.",  # type:ignore
                 ),
                 research_user_ip_addresses=["List of IP addresses belonging to users"],
-                software_packages="Which Python/R packages to allow users to install: [any/pre-approved/none]",
+                software_packages="Which Python/R packages to allow users to install: [any/pre-approved/none]",  # type:ignore
+                storage_quota_gb=ConfigSubsectionStorageQuotaGB.model_construct(
+                    home="Total size in GiB across all home directories [minimum: 100].",  # type:ignore
+                    shared="Total size in GiB for the shared directories [minimum: 100].",  # type:ignore
+                ),
                 timezone="Timezone in pytz format (eg. Europe/London)",
                 workspace_skus=[
                     "List of Azure VM SKUs that will be used for data analysis."

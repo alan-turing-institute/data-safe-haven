@@ -73,7 +73,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         # Define configuration file shares
         file_share_caddy = storage.FileShare(
             f"{self._name}_file_share_caddy",
-            access_tier=storage.ShareAccessTier.COOL,
+            access_tier=storage.ShareAccessTier.TRANSACTION_OPTIMIZED,
             account_name=props.storage_account_name,
             resource_group_name=props.resource_group_name,
             share_name="software-repositories-caddy",
@@ -83,17 +83,17 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         )
         file_share_nexus = storage.FileShare(
             f"{self._name}_file_share_nexus",
-            access_tier=storage.ShareAccessTier.COOL,
+            access_tier=storage.ShareAccessTier.TRANSACTION_OPTIMIZED,
             account_name=props.storage_account_name,
             resource_group_name=props.resource_group_name,
             share_name="software-repositories-nexus",
-            share_quota=5,
+            share_quota=2,
             signed_identifiers=[],
             opts=child_opts,
         )
         file_share_nexus_allowlists = storage.FileShare(
             f"{self._name}_file_share_nexus_allowlists",
-            access_tier=storage.ShareAccessTier.COOL,
+            access_tier=storage.ShareAccessTier.TRANSACTION_OPTIMIZED,
             account_name=props.storage_account_name,
             resource_group_name=props.resource_group_name,
             share_name="software-repositories-nexus-allowlists",

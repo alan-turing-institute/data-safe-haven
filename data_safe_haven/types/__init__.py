@@ -1,5 +1,6 @@
 from .annotated_types import (
     AzureLocation,
+    AzurePremiumFileShareSize,
     AzureSubscriptionName,
     AzureVmSku,
     EmailAddress,
@@ -27,6 +28,7 @@ from .types import PathType
 __all__ = [
     "AzureDnsZoneNames",
     "AzureLocation",
+    "AzurePremiumFileShareSize",
     "AzureSdkCredentialScope",
     "AzureSubscriptionName",
     "AzureVmSku",

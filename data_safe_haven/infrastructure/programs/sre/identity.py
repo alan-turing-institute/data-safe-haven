@@ -73,11 +73,11 @@ class SREIdentityComponent(ComponentResource):
         # Define configuration file share
         file_share = storage.FileShare(
             f"{self._name}_file_share",
-            access_tier=storage.ShareAccessTier.COOL,
+            access_tier=storage.ShareAccessTier.TRANSACTION_OPTIMIZED,
             account_name=props.storage_account_name,
             resource_group_name=props.resource_group_name,
             share_name="identity-redis",
-            share_quota=5,
+            share_quota=1,
             signed_identifiers=[],
             opts=child_opts,
         )

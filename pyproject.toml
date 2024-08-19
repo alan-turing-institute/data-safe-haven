@@ -142,6 +142,7 @@ path = "data_safe_haven/version.py"
 disallow_subclassing_any = false  # allow subclassing of types from third-party libraries
 files = "data_safe_haven"         # run mypy over this directory
 mypy_path = "typings"             # use this directory for stubs
+plugins = "pydantic.mypy"         # enable the pydantic plugin
 strict = true                     # enable all optional error checking flags
 
 [[tool.mypy.overrides]]
