@@ -98,7 +98,7 @@ class TestShowSRE:
     def test_available_no_sres(self, mocker, runner):
         mocker.patch.object(AzureSdk, "list_blobs", return_value=[])
         result = runner.invoke(config_command_group, ["available"])
-        assert result.exit_code == 1
+        assert result.exit_code == 0
         assert "No configurations found" in result.stdout
 
     def test_available_no_context(self, mocker, runner):
