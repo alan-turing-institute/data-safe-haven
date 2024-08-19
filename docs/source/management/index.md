@@ -32,7 +32,7 @@ $ dsh users add PATH_TO_MY_CSV_FILE
 - You can do this from the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 
     1. Browse to **{menuselection}`Groups --> All Groups`**
-    2. Click on the group named **Data Safe Haven SRE _SRE-NAME_ Users**
+    2. Click on the group named **Data Safe Haven SRE _YOUR\_SRE\_NAME_ Users**
     3. Browse to **{menuselection}`Manage --> Members`** from the secondary menu on the left side
 
 - You can do this at the command line by running the following command:
