@@ -846,6 +846,27 @@ class AzureSdk:
             msg = f"Failed to load available VM sizes for Azure location {location}."
             raise DataSafeHavenAzureError(msg) from exc
 
+    def list_blobs(
+        self,
+        container_name: str,
+        prefix: str,
+        resource_group_name: str,
+        storage_account_name: str,
+    ) -> list[str]:
+        """List all blobs with a given prefix in a container
+
+        Returns:
+            List[str]: The list of blob names
+        """
+
+        blob_client = self.blob_service_client(
+            resource_group_name=resource_group_name,
+            storage_account_name=storage_account_name,
+        )
+        container_client = blob_client.get_container_client(container=container_name)
+        blob_list = container_client.list_blob_names(name_starts_with=prefix)
+        return list(blob_list)
+
     def purge_keyvault(
         self,
         key_vault_name: str,

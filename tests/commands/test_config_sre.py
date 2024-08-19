@@ -79,6 +79,44 @@ class TestShowSRE:
         assert "No configuration exists for an SRE" in result.stdout
         assert result.exit_code == 1
 
+    def test_available(
+        self,
+        context_manager,
+        mocker,
+        runner,
+        mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
+        mock_sre_config_from_remote,  # noqa: ARG002
+        sre_project_manager,  # noqa: ARG002
+    ):
+        mocker.patch.object(ContextManager, "from_file", return_value=context_manager)
+        mocker.patch.object(AzureSdk, "list_blobs", return_value=["sandbox", "other"])
+        result = runner.invoke(config_command_group, ["available"])
+        assert result.exit_code == 0
+        assert "Available SRE configurations" in result.stdout
+        assert "sandbox" in result.stdout
+
+    def test_available_no_sres(self, mocker, runner):
+        mocker.patch.object(AzureSdk, "list_blobs", return_value=[])
+        result = runner.invoke(config_command_group, ["available"])
+        assert result.exit_code == 0
+        assert "No configurations found" in result.stdout
+
+    def test_available_no_context(self, mocker, runner):
+        mocker.patch.object(
+            ContextManager, "from_file", side_effect=DataSafeHavenConfigError(" ")
+        )
+        result = runner.invoke(config_command_group, ["available"])
+        assert result.exit_code == 1
+        assert "No context is selected" in result.stdout
+
+    def test_available_no_storage(self, mocker, runner):
+        mocker.patch.object(
+            AzureSdk, "list_blobs", side_effect=DataSafeHavenAzureStorageError(" ")
+        )
+        result = runner.invoke(config_command_group, ["available"])
+        assert result.exit_code == 1
+        assert "Ensure SHM is deployed" in result.stdout
+
 
 class TestTemplateSRE:
     def test_template(self, runner):
