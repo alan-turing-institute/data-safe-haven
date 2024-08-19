@@ -57,7 +57,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     admin_ip_addresses: list[IpAddress] = []
     databases: UniqueList[DatabaseSystem] = []
     data_provider_ip_addresses: list[IpAddress] = []
-    remote_desktop: ConfigSubsectionRemoteDesktopOpts = Field(
+    remote_desktop: ConfigSubsectionRemoteDesktopOpts = Field(  # type: ignore
         ..., default_factory=ConfigSubsectionRemoteDesktopOpts
     )
     research_user_ip_addresses: list[IpAddress] = []
