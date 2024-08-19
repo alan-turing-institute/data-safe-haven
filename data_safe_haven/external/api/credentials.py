@@ -7,6 +7,7 @@ from typing import Any, ClassVar
 
 import jwt
 from azure.core.credentials import AccessToken, TokenCredential
+from azure.core.exceptions import ClientAuthenticationError
 from azure.identity import (
     AuthenticationRecord,
     AzureCliCredential,
@@ -202,10 +203,15 @@ class GraphApiCredential(DeferredCredential):
             **kwargs,
         )
 
-        # Write out an authentication record for this credential
-        new_auth_record = credential.authenticate(scopes=self.scopes)
-        with open(authentication_record_path, "w") as f_auth:
-            f_auth.write(new_auth_record.serialize())
+        # Attempt to authenticate, writing out the record if successful
+        try:
+            new_auth_record = credential.authenticate(scopes=self.scopes)
+            with open(authentication_record_path, "w") as f_auth:
+                f_auth.write(new_auth_record.serialize())
+        except ClientAuthenticationError as exc:
+            self.logger.error(exc.message)
+            msg = "Error getting account information from Microsoft Graph API."
+            raise DataSafeHavenAzureError(msg) from exc
 
         # Confirm that these are the desired credentials
         self.confirm_credentials_interactive(
