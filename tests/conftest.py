@@ -25,6 +25,7 @@ from data_safe_haven.config.config_sections import (
     ConfigSectionSHM,
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
+    ConfigSubsectionStorageQuotaGB,
 )
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureSdk, PulumiAccount
@@ -75,12 +76,21 @@ def config_section_dockerhub() -> ConfigSectionDockerHub:
 
 
 @fixture
-def config_section_sre() -> ConfigSectionSRE:
+def config_section_sre(
+    remote_desktop_config, config_subsection_storage_quota_gb
+) -> ConfigSectionSRE:
     return ConfigSectionSRE(
         admin_email_address="admin@example.com",
         admin_ip_addresses=["1.2.3.4"],
+        remote_desktop=remote_desktop_config,
+        storage_quota_gb=config_subsection_storage_quota_gb,
         timezone="Europe/London",
     )
+
+
+@fixture
+def config_subsection_storage_quota_gb() -> ConfigSubsectionStorageQuotaGB:
+    return ConfigSubsectionStorageQuotaGB(home=100, shared=100)
 
 
 @fixture
