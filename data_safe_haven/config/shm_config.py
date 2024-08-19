@@ -27,8 +27,9 @@ class SHMConfig(AzureSerialisableModel):
     ) -> SHMConfig:
         """Construct an SHMConfig from arguments."""
         azure_sdk = AzureSdk(subscription_name=context.subscription_name)
-        admin_group_id = azure_sdk.entra_directory.get_id_from_groupname(
-            context.admin_group_name
+        admin_group_id = (
+            azure_sdk.entra_directory.get_id_from_groupname(context.admin_group_name)
+            or "admin-group-id-not-found"
         )
         return SHMConfig.model_construct(
             azure=ConfigSectionAzure.model_construct(

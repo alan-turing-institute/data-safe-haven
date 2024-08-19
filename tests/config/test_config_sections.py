@@ -7,6 +7,7 @@ from data_safe_haven.config.config_sections import (
     ConfigSectionSHM,
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
+    ConfigSubsectionStorageQuotaGB,
 )
 from data_safe_haven.types import DatabaseSystem, SoftwarePackageCategory
 
@@ -111,42 +112,53 @@ class TestConfigSectionSHM:
 
 class TestConfigSectionSRE:
     def test_constructor(
-        self, remote_desktop_config: ConfigSubsectionRemoteDesktopOpts
+        self,
+        config_subsection_remote_desktop: ConfigSubsectionRemoteDesktopOpts,
+        config_subsection_storage_quota_gb: ConfigSubsectionStorageQuotaGB,
     ) -> None:
         sre_config = ConfigSectionSRE(
             admin_email_address="admin@example.com",
             admin_ip_addresses=["1.2.3.4"],
             databases=[DatabaseSystem.POSTGRESQL],
             data_provider_ip_addresses=["2.3.4.5"],
-            remote_desktop=remote_desktop_config,
+            remote_desktop=config_subsection_remote_desktop,
             workspace_skus=["Standard_D2s_v4"],
             research_user_ip_addresses=["3.4.5.6"],
             software_packages=SoftwarePackageCategory.ANY,
+            storage_quota_gb=config_subsection_storage_quota_gb,
             timezone="Australia/Perth",
         )
         assert sre_config.admin_email_address == "admin@example.com"
         assert sre_config.admin_ip_addresses[0] == "1.2.3.4/32"
         assert sre_config.databases[0] == DatabaseSystem.POSTGRESQL
         assert sre_config.data_provider_ip_addresses[0] == "2.3.4.5/32"
-        assert sre_config.remote_desktop == remote_desktop_config
-        assert sre_config.workspace_skus[0] == "Standard_D2s_v4"
+        assert sre_config.remote_desktop == config_subsection_remote_desktop
         assert sre_config.research_user_ip_addresses[0] == "3.4.5.6/32"
         assert sre_config.software_packages == SoftwarePackageCategory.ANY
+        assert sre_config.storage_quota_gb == config_subsection_storage_quota_gb
         assert sre_config.timezone == "Australia/Perth"
+        assert sre_config.workspace_skus[0] == "Standard_D2s_v4"
 
     def test_constructor_defaults(
-        self, remote_desktop_config: ConfigSubsectionRemoteDesktopOpts
+        self,
+        config_subsection_remote_desktop: ConfigSubsectionRemoteDesktopOpts,
+        config_subsection_storage_quota_gb: ConfigSubsectionStorageQuotaGB,
     ) -> None:
-        sre_config = ConfigSectionSRE(admin_email_address="admin@example.com")
+        sre_config = ConfigSectionSRE(
+            admin_email_address="admin@example.com",
+            remote_desktop=config_subsection_remote_desktop,
+            storage_quota_gb=config_subsection_storage_quota_gb,
+        )
         assert sre_config.admin_email_address == "admin@example.com"
         assert sre_config.admin_ip_addresses == []
         assert sre_config.databases == []
         assert sre_config.data_provider_ip_addresses == []
-        assert sre_config.remote_desktop == remote_desktop_config
-        assert sre_config.workspace_skus == []
+        assert sre_config.remote_desktop == config_subsection_remote_desktop
         assert sre_config.research_user_ip_addresses == []
         assert sre_config.software_packages == SoftwarePackageCategory.NONE
+        assert sre_config.storage_quota_gb == config_subsection_storage_quota_gb
         assert sre_config.timezone == "Etc/UTC"
+        assert sre_config.workspace_skus == []
 
     def test_all_databases_must_be_unique(self) -> None:
         with pytest.raises(ValueError, match=r"All items must be unique."):
@@ -194,10 +206,11 @@ class TestConfigSubsectionRemoteDesktopOpts:
         ConfigSubsectionRemoteDesktopOpts(allow_copy=True, allow_paste=True)
 
     def test_constructor_defaults(self) -> None:
-        remote_desktop_config = ConfigSubsectionRemoteDesktopOpts()
-        assert not all(
-            (remote_desktop_config.allow_copy, remote_desktop_config.allow_paste)
-        )
+        with pytest.raises(
+            ValueError,
+            match=r"1 validation error for ConfigSubsectionRemoteDesktopOpts\nallow_copy\n  Field required",
+        ):
+            ConfigSubsectionRemoteDesktopOpts(allow_paste=False)
 
     def test_constructor_invalid_allow_copy(self) -> None:
         with pytest.raises(
@@ -207,4 +220,36 @@ class TestConfigSubsectionRemoteDesktopOpts:
             ConfigSubsectionRemoteDesktopOpts(
                 allow_copy=True,
                 allow_paste="not a bool",
+            )
+
+
+class TestConfigSubsectionStorageQuotaGB:
+    def test_constructor(self) -> None:
+        ConfigSubsectionStorageQuotaGB(home=100, shared=100)
+
+    def test_constructor_defaults(self) -> None:
+        with pytest.raises(
+            ValueError,
+            match=r"1 validation error for ConfigSubsectionStorageQuotaGB\nshared\n  Field required",
+        ):
+            ConfigSubsectionStorageQuotaGB(home=100)
+
+    def test_constructor_invalid_type(self) -> None:
+        with pytest.raises(
+            ValueError,
+            match=r"1 validation error for ConfigSubsectionStorageQuotaGB\nshared\n  Input should be a valid integer",
+        ):
+            ConfigSubsectionStorageQuotaGB(
+                home=100,
+                shared="not a bool",
+            )
+
+    def test_constructor_invalid_value(self) -> None:
+        with pytest.raises(
+            ValueError,
+            match=r"1 validation error for ConfigSubsectionStorageQuotaGB\nhome\n  Input should be greater than or equal to 100",
+        ):
+            ConfigSubsectionStorageQuotaGB(
+                home=50,
+                shared=100,
             )

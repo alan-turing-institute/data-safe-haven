@@ -17,6 +17,18 @@ $ hatch shell
 This ensures that you are using the intended version of Data Safe Haven with the correct set of dependencies.
 ::::
 
+::::{important}
+As the Basic Application Gateway is still in preview, you will need to run the following commands once per subscription:
+
+:::{code} shell
+$ az feature register --name "AllowApplicationGatewayBasicSku" \
+                      --namespace "Microsoft.Network" \
+                      --subscription NAME_OR_ID_OF_YOUR_SUBSCRIPTION
+$ az provider register --name Microsoft.Network
+:::
+
+::::
+
 ## Configuration
 
 Each project will have its own dedicated SRE.

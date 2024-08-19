@@ -8,6 +8,7 @@ import yaml
 from pydantic import BaseModel, ValidationError
 
 from data_safe_haven.exceptions import DataSafeHavenConfigError, DataSafeHavenTypeError
+from data_safe_haven.logging import get_logger
 from data_safe_haven.types import PathType
 
 T = TypeVar("T", bound="YAMLSerialisableModel")
@@ -47,6 +48,14 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
         try:
             return cls.model_validate(settings_dict)
         except ValidationError as exc:
+            logger = get_logger()
+            logger.error(
+                f"Found {exc.error_count()} validation errors when trying to load {cls.config_type}."
+            )
+            for error in exc.errors():
+                logger.error(
+                    f"[red]{'.'.join(map(str, error.get('loc', [])))}: {error.get('input', '')}[/] - {error.get('msg', '')}"
+                )
             msg = f"Could not load {cls.config_type} configuration."
             raise DataSafeHavenTypeError(msg) from exc
 
