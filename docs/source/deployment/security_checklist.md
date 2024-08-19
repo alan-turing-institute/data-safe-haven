@@ -12,9 +12,8 @@ The security checklist currently focuses on checks that can evaluate these secur
 
 ## How to use this checklist
 
-- Ensure you have successfully deployed an SHM and the SRE(s) that you wish to test.
-
-- Work your way through the actions described in each section, taking care to notice each time you see a {{camera}} or a {{white_check_mark}} and the word **Verify**:
+Ensure you have met the [](#prerequisites).
+Work your way through the actions described in each section, taking care to notice each time you see a {{camera}} or a {{white_check_mark}} and the word **Verify**.
 
 ```{note}
 - {{camera}} Where you see the camera icon, there should be accompanying screenshot(s) of evidence for this item in the checklist (you may wish to save your own equivalent screenshots as evidence)
@@ -23,20 +22,32 @@ The security checklist currently focuses on checks that can evaluate these secur
 
 ## Prerequisites
 
-- **Deployed SHM** that you are testing
-- **Deployed SRE A** that is attached to the SHM
-- **Deployed SRE B** that is attached to the same SHM
-- **VPN access** to the SHM that you are testing
+### Roles
 
-The following users will be needed for this checklist
+The following roles will be needed for this checklist
 
-- **SRE standard user** who is a member of the **SRE A** research users group
-    - Create a new user **without** MFA
+- **Reseearch User** who is a member of the **SRE A** research users group
+    - Ensure this person's IP address is added to the `reserach_user_ip_addresses` list in **SRE A**'s configuration.
+    - Create a user account **without** MFA
         - Following the SRE deployment instructions for setting up a {ref}`non privileged user account <deploy_sre_apache_guacamole_create_user_account>`, create an account but **do not** add them to any `SG <SRE ID> Research Users` group.
         - Visit [`https://aka.ms/sspr`](https://aka.ms/sspr) in an incognito browser
         - Attempt to login and reset password, but **do not complete MFA** (see {ref}`these steps <roles_researcher_user_guide_setup_mfa>`)
-- {ref}`role_system_manager` who has `Contributor` permissions (or higher) on the underlying Azure subscription
-- **Data provider** who has no accounts on the Safe Haven system
+- {ref}`role_system_manager`
+    - Ensure this person has an account with appropriate permission to deploy the Data Safe Haven
+    - Ensure this person's IP address is added to the `admin_ip_addresses` list in each SRE configuration.
+- **Data provider**
+    - Ensure this person's IP address is added to the `data_provider_ip_addresses` list in each SRE configuration.
+
+Ideally, these roles would be conducted by different people with different IP addresses.
+However, you can emulate this by using a VPN.
+
+### Resources
+
+The following resources should be deployed
+
+- A SHM
+- A Tier 2 SRE, where `software_packages` is set to `any` in the SRE configuration
+- A Tier 3 SRE, where `software_packages` is set to `selected` in the SRE configuration
 
 ## 1. Multifactor authentication and password strength
 
