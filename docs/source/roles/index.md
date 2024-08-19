@@ -38,7 +38,6 @@ Data Safe Haven Host
 Research Institution
 : The organisation responsible for deploying, hosting and running the Data Safe Haven.
 
-
 ## User roles
 
 The different user roles are detailed alphabetically below.
