@@ -51,11 +51,7 @@ In each SRE configuration
 ### Accounts
 
 [Create a user account](../management/index.md#add-users-to-the-data-safe-haven) for the research user in your SHM.
-
-- Create a user account without MFA
-    - Following the SRE deployment instructions for setting up a {ref}`non privileged user account <deploy_sre_apache_guacamole_create_user_account>`, create an account but do not add them to any `SG <SRE ID> Research Users` group.
-    - Visit [`https://aka.ms/sspr`](https://aka.ms/sspr) in an incognito browser
-    - Attempt to login and reset password, but do not complete MFA (see {ref}`these steps <roles_researcher_user_guide_setup_mfa>`)
+Do not register this user with any SRE yet.
 
 ## 1. Multifactor authentication and password strength
 
@@ -71,6 +67,23 @@ In each SRE configuration
 - Passwords are strong
 
 ### Verify by:
+
+#### Check: Users can reset their own password
+
+- Visit [`https://aka.ms/sspr`](https://aka.ms/sspr) and login as the research user.
+- Attempt to login and reset password, but do not complete MFA (see {ref}`these steps <roles_researcher_user_guide_setup_mfa>`)
+
+````{attention}
+{{camera}} <b>Verify that:</b>
+ <details><summary> user can reset their own password</summary>
+
+```{image} security_checklist/login_no_mfa_guacamole.png
+:alt: Guacamole MFA setup prompt
+:align: center
+```
+
+</details>
+````
 
 #### Check: Non-group user cannot access the apps
 
