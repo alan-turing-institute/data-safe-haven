@@ -26,17 +26,10 @@ Work your way through the actions described in each section, taking care to noti
 
 The following roles will be needed for this checklist
 
-- Research User who is a member of the SRE A research users group
-    - Ensure this person's IP address is added to the `reserach_user_ip_addresses` list in SRE A's configuration.
-    - Create a user account without MFA
-        - Following the SRE deployment instructions for setting up a {ref}`non privileged user account <deploy_sre_apache_guacamole_create_user_account>`, create an account but do not add them to any `SG <SRE ID> Research Users` group.
-        - Visit [`https://aka.ms/sspr`](https://aka.ms/sspr) in an incognito browser
-        - Attempt to login and reset password, but do not complete MFA (see {ref}`these steps <roles_researcher_user_guide_setup_mfa>`)
+- {ref}`role_research_user`
 - {ref}`role_system_manager`
     - Ensure this person has an account with appropriate permission to deploy the Data Safe Haven
-    - Ensure this person's IP address is added to the `admin_ip_addresses` list in each SRE configuration.
-- Data provider
-    - Ensure this person's IP address is added to the `data_provider_ip_addresses` list in each SRE configuration.
+- {ref}`role_data_provider
 
 Ideally, these roles would be conducted by different people with different IP addresses.
 However, you can emulate this by using a VPN.
@@ -45,13 +38,24 @@ However, you can emulate this by using a VPN.
 
 The following resources should be deployed
 
-- A SHM
+- An SHM
 - A [Tier 2](../deployment/deploy_sre.md#configuration) SRE
 - A [Tier 3](../deployment/deploy_sre.md#configuration) SRE
+
+In each SRE configuration
+
+- Ensure the research user's IP address is added to the `reserach_user_ip_addresses` list.
+- Ensure the system manager's IP address is added to the `admin_ip_addresses` list.
+- Ensure the data provider's IP address is added to the `data_provider_ip_addresses` list.
 
 ### Accounts
 
 [Create a user account](../management/index.md#add-users-to-the-data-safe-haven) for the research user in your SHM.
+
+- Create a user account without MFA
+    - Following the SRE deployment instructions for setting up a {ref}`non privileged user account <deploy_sre_apache_guacamole_create_user_account>`, create an account but do not add them to any `SG <SRE ID> Research Users` group.
+    - Visit [`https://aka.ms/sspr`](https://aka.ms/sspr) in an incognito browser
+    - Attempt to login and reset password, but do not complete MFA (see {ref}`these steps <roles_researcher_user_guide_setup_mfa>`)
 
 ## 1. Multifactor authentication and password strength
 
