@@ -49,6 +49,10 @@ The following resources should be deployed
 - A Tier 2 SRE, where `software_packages` is set to `any` in the SRE configuration
 - A Tier 3 SRE, where `software_packages` is set to `selected` in the SRE configuration
 
+### Accounts
+
+[Create a user account](../management/index#add-users-to-the-data-safe-ahven) for the research user in your SHM.
+
 ## 1. Multifactor authentication and password strength
 
 ### Turing configuration setting:
@@ -66,7 +70,7 @@ The following resources should be deployed
 
 #### Check: Non-group user cannot access the apps
 
-Attempt to login to the remote desktop web client as the SRE standard user
+Attempt to login to the remote desktop web client as the research user.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -82,7 +86,8 @@ Attempt to login to the remote desktop web client as the SRE standard user
 
 #### Check: Membership of the correct group is insufficient to give access
 
-Add the SRE standard user to the relevant `Research Users` group under `Safe Haven Security Groups` on the domain controller.
+[Assign the research user to SRE A](../management/index#assign-existing-users-to-an-sre).
+Again, attempt to login to the remote desktop web client.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -98,10 +103,10 @@ Add the SRE standard user to the relevant `Research Users` group under `Safe Hav
 
 #### User can self-register for MFA
 
-Check that the SRE standard user is able to successfully set up MFA
+Check that the reserach user is able to successfully set up MFA.
 
-- Visit [`https://aka.ms/mfasetup`](https://aka.ms/mfasetup) in an incognito browser
-- Login as the user you set up
+- Visit [`https://aka.ms/mfasetup`](https://aka.ms/mfasetup).
+- Login as the research user.
 
 ```{attention}
 {{white_check_mark}} Verify that: user is guided to set up MFA
@@ -123,9 +128,9 @@ Check that the SRE standard user is able to successfully set up MFA
 
 #### User can login after setting up MFA
 
-Check that the SRE standard user can authenticate with MFA.
+Check that the research user can authenticate using MFA and is granted access to the SRE.
 
-- Login to the remote desktop web client as the SRE standard user.
+- Login to the remote desktop web client as the research user.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -139,11 +144,12 @@ Check that the SRE standard user can authenticate with MFA.
 </details>
 ````
 
-#### Authenticated user can access the Secure Research Desktop (SRD) desktop
+#### Authenticated user can access workspaces
 
-Check that the SRE standard user can access the workspace.
+Check that the research user can access a workspace.
 
-- Login to the remote desktop web client as the SRE standard user.
+- Login to the remote desktop web client as the research user.
+- Select a workspace and login as the research user.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -209,7 +215,7 @@ Check that the SRE standard user can access the workspace.
 #### SREs are isolated from one another
 
 - Check that users cannot copy files from one SRE to another one in the same SHM
-    - Log in to an SRD in SRE A as the SRE standard user using the web client.
+    - Log in to an SRD in SRE A as the research user using the web client.
     - In a separate browser window, do the same for SRE B.
     - Attempt to copy and paste a file from one SRE desktop to another
 
@@ -366,7 +372,7 @@ Connection from within the secure physical space is possible.
 
 #### SSH connection is not possible
 
-- Attempt to login as the SRE standard user via `SSH` with `ssh <user.name>@<SRE ID>.<safe haven domain>` (e.g. `ssh -v -o ConnectTimeout=10 ada.lovelace@sandbox.turingsafehaven.ac.uk`)
+- Attempt to login as the research user via `SSH` with `ssh <user.name>@<SRE ID>.<safe haven domain>` (e.g. `ssh -v -o ConnectTimeout=10 ada.lovelace@sandbox.turingsafehaven.ac.uk`)
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -382,7 +388,7 @@ Connection from within the secure physical space is possible.
 
 - Find the public IP address for the remote desktop server VM by searching for this VM in the portal, then looking at `Connect` under `Settings`.
     - {{pear}} VM name will be `GUACAMOLE-SRE-<SRE ID>`
-- Attempt to login as the SRE standard user via `SSH` with `ssh <user.name>@<public IP>` (e.g. `ssh ada.lovelace@8.8.8.8`)
+- Attempt to login as the research user via `SSH` with `ssh <user.name>@<public IP>` (e.g. `ssh ada.lovelace@8.8.8.8`)
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -416,7 +422,7 @@ Connection from within the secure physical space is possible.
 #### Users are unable to copy-and-paste between the SRD and their local device
 
 - Copy some text from your deployment device
-- Login to an SRD as the SRE standard user via the remote desktop web client
+- Login to an SRD as the research user via the remote desktop web client
 - Open up a notepad or terminal on the SRD and attempt to paste the text to it.
 
 ```{attention}
@@ -432,7 +438,7 @@ Connection from within the secure physical space is possible.
 
 #### Users can copy between VMs inside the network
 
-- Login to an SRD as the SRE standard user via the remote desktop web client
+- Login to an SRD as the research user via the remote desktop web client
 - Open up a notepad or terminal on the SRD and attempt to paste the text to it.
 - In another tab or browser connect to a different SRD (or to the same VM via the SSH connection) using the remote desktop web client
 - Attempt to paste the text to it.
@@ -530,7 +536,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 #### Confirm that a non-privileged user is able to read the different storage volumes and write to output
 
-- Login to an SRD as the SRE standard user via the remote desktop web client
+- Login to an SRD as the research user via the remote desktop web client
 - Open up a file explorer and search for the various storage volumes
 
 ```{attention}
@@ -579,7 +585,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 #### Check that some software tools were installed as expected during deployment
 
-- Login to an SRD as the SRE standard user via the remote desktop web client
+- Login to an SRD as the research user via the remote desktop web client
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -610,7 +616,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 ```
 
 ```{attention}
-{{white_check_mark}} Verify that: the SRE standard user cannot install software that requires administrator rights (e.g. anything that is installed with `apt`)
+{{white_check_mark}} Verify that: the research user cannot install software that requires administrator rights (e.g. anything that is installed with `apt`)
 ```
 
 ## 10. Software package repositories
@@ -629,7 +635,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 #### {ref}`policy_tier_2`: Download a package that is not on the allow list
 
-- Login as the SRE standard user into an SRD via remote desktop web client
+- Login as the research user into an SRD via remote desktop web client
 - Open up a terminal
 - Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `pip install aero-calc`)
 
@@ -661,7 +667,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 #### {ref}`policy_tier_3`: Download a package on the allow list and one not on the allow list
 
-- Login as the SRE standard user into an SRD via remote desktop web client
+- Login as the research user into an SRD via remote desktop web client
 - Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `pip install aero-calc`)
 
 ````{attention}
