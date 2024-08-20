@@ -155,7 +155,7 @@ Check that the research user can access a workspace.
 
 #### Fail to connect to the internet from a workspace
 
-- Conenct to an SRE workspace by using the web client.
+- Connect to an SRE workspace by using the web client.
 - Attempt to access the internet using a browser and CLI tools.
 
 ````{attention}
