@@ -29,7 +29,7 @@ The following roles will be needed for this checklist
 - {ref}`role_researcher`
 - {ref}`role_system_manager`
     - Ensure this person has an account with appropriate permission to deploy the Data Safe Haven
-- {ref}`role_data_provider`
+- {ref}`role_data_provider_representative`
 
 Ideally, these roles would be conducted by different people with different IP addresses.
 However, you can emulate this by using a VPN.
