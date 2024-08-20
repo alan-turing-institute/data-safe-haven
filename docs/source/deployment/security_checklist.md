@@ -481,12 +481,12 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 ```
 
 ```{attention}
-{{white_check_mark}} Verify that: the permissions of other storage volumes match that {ref}`described in the user guide <role_researcher_user_guide_shared_storage>`.
+{{white_check_mark}} Verify that: the permissions of other storage volumes match that described in the [user guide](../roles/researcher/using_the_sre.md#-sharing-files-inside-the-sre).
 ```
 
 #### Confirm that {ref}`role_system_manager` can see and download files from output
 
-- As the {ref}`role_system_manager`, follow the instructions in the {ref}`administrator document <roles_system_manager_data_egress>` on how to access files set for egress with `Azure Storage Explorer`.
+- As the {ref}`role_system_manager`, follow the instructions in the [project manager documentation](../roles/project_manager/data_egress.md#data-egress-process) on how to access files set for egress with `Azure Storage Explorer`.
 
 ```{attention}
 {{white_check_mark}} Verify that: you can see the files written to the `/output` storage volume.
