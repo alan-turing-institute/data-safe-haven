@@ -508,8 +508,8 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 ### Implication:
 
-- {ref}`policy_tier_2`: User can access all packages from PyPI/CRAN
-- {ref}`policy_tier_3`: User can only access approved packages from PyPI/CRAN. Allowed list is in `environment_configs/package_lists`
+- {ref}`policy_tier_2`: User can access all packages from PyPI/CRAN.
+- {ref}`policy_tier_3`: User can only access approved packages from PyPI/CRAN.
 
 ### Verify by:
 
