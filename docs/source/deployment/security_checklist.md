@@ -26,7 +26,7 @@ Work your way through the actions described in each section, taking care to noti
 
 The following roles will be needed for this checklist
 
-- {ref}`role_research_user`
+- {ref}`role_researcher`
 - {ref}`role_system_manager`
     - Ensure this person has an account with appropriate permission to deploy the Data Safe Haven
 - {ref}`role_data_provider`
