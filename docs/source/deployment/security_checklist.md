@@ -512,9 +512,8 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 #### {ref}`policy_tier_2`: Download a package that is not on the allow list
 
-- Login as the research user into an SRD via remote desktop web client
-- Open up a terminal
-- Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `pip install aero-calc`)
+- Connect to a Tier 2 workspace as the research user via remote desktop web client.
+- Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `python -m venv ./venv && source ./venv/bin/activate && pip install aero-calc`)
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -527,7 +526,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 </details>
 ````
 
-- Attempt to install any package that is not on the allowed list (for example, try `pip install awscli`)
+- Then attempt to install any package that is not on the allowed list (for example, try `pip install -q awscli`)
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -542,8 +541,8 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 #### {ref}`policy_tier_3`: Download a package on the allow list and one not on the allow list
 
-- Login as the research user into an SRD via remote desktop web client
-- Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `pip install aero-calc`)
+- Connect to a Tier 3 workspace as the research user via remote desktop web client.
+- Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `python -m venv ./venv && source ./venv/bin/activate && pip install aero-calc`).
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -556,7 +555,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 </details>
 ````
 
-- Then attempt to download a package that is not included in the allowed list (for example, try `pip install awscli`)
+- Then attempt to download a package that is not included in the allowed list (for example, try `pip install awscli`).
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
