@@ -78,7 +78,10 @@ Do not register this user with any SRE yet.
 {{camera}} <b>Verify that:</b>
  <details><summary> user can reset their own password</summary>
 
-```{image} security_checklist/login_no_mfa_guacamole.png
+```{image} security_checklist/sspr.png
+:align: center
+```
+```{image} security_checklist/sspr_success.png
 :align: center
 ```
 
@@ -93,7 +96,7 @@ Attempt to login to the remote desktop web client as the research user.
 {{camera}} <b>Verify that:</b>
  <details><summary>user can authenticated but cannot see any workspaces</summary>
 
-```{image} security_checklist/login_no_mfa_guacamole.png
+```{image} security_checklist/no_valid_workspaces.png
 :align: center
 ```
 
@@ -110,7 +113,7 @@ Check that the research user can authenticate using MFA and is granted access to
 {{camera}} <b>Verify that:</b>
 <details><summary>user can authenicated and can see workspaces</summary>
 
-```{image} security_checklist/aad_mfa_approve_signin_request.png
+```{image} security_checklist/valid_workspaces.png
 :align: center
 ```
 
@@ -128,7 +131,7 @@ Check that the research user can access a workspace.
 {{camera}} <b>Verify that:</b>
 <details><summary>you can connect to any workspace</summary>
 
-```{image} security_checklist/guacamole_srd_desktop.png
+```{image} images/workspace_xfce_initial.png
 :align: center
 ```
 
@@ -159,7 +162,7 @@ Check that the research user can access a workspace.
 
 <details><summary>browsing to the service fails</i></summary>
 
-```{image} security_checklist/srd_no_internet.png
+```{image} security_checklist/no_internet_browser.png
 :align: center
 ```
 
@@ -167,7 +170,7 @@ Check that the research user can access a workspace.
 
 <details><summary>you cannot access the service using curl</summary>
 
-```{image} security_checklist/srd_no_curl.png
+```{image} security_checklist/no_internet_curl.png
 :align: center
 ```
 
@@ -175,7 +178,7 @@ Check that the research user can access a workspace.
 
 <details><summary>you cannot look up the IP address for the service using nslookup</summary>
 
-```{image} security_checklist/srd_no_nslookup.png
+```{image} security_checklist/no_nslookup.png
 :align: center
 ```
 </details>
@@ -320,7 +323,7 @@ Connection from within the secure physical space is possible.
 
 <details><summary>SSH login by fully-qualified domain name fails</summary>
 
-```{image} security_checklist/srd_no_ssh_by_fqdn.png
+```{image} security_checklist/no_ssh_fqdn.png
 :align: center
 ```
 </details>
@@ -335,7 +338,7 @@ Connection from within the secure physical space is possible.
 
 <details><summary>SSH login by public IP address fails</summary>
 
-```{image} security_checklist/srd_no_ssh_by_ip.png
+```{image} security_checklist/no_ssh_ip.png
 :align: center
 ```
 </details>
@@ -520,7 +523,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 <details><summary>you can install the package</summary>
 
-```{image} security_checklist/srd_pypi_tier2_allow_listed.png
+```{image} security_checklist/pypi_t2_allowed.png
 :align: center
 ```
 </details>
@@ -533,7 +536,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 <details><summary>you can install the package</summary>
 
-```{image} security_checklist/srd_pypi_tier2_not_allow_listed.png
+```{image} security_checklist/pypi_t2_disallowed.png
 :align: center
 ```
 </details>
@@ -549,7 +552,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 <details><summary>you can install the package</summary>
 
-```{image} security_checklist/srd_pypi_tier3_allowed.png
+```{image} security_checklist/pypi_t3_allowed.png
 :align: center
 ```
 </details>
@@ -562,7 +565,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 <details><summary>you cannot install the package</summary>
 
-```{image} security_checklist/srd_pypi_tier3_denied.png
+```{image} security_checklist/pypi_t3_disallowed.png
 :align: center
 ```
 </details>
