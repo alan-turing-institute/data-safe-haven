@@ -44,7 +44,7 @@ The following resources should be deployed
 
 In each SRE configuration
 
-- Ensure the research user's IP address is added to the `reserach_user_ip_addresses` list.
+- Ensure the research user's IP address is added to the `research_user_ip_addresses` list.
 - Ensure the system manager's IP address is added to the `admin_ip_addresses` list.
 - Ensure the data provider's IP address is added to the `data_provider_ip_addresses` list.
 
