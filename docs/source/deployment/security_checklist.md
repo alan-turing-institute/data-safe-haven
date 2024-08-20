@@ -342,7 +342,7 @@ Connection from within the secure physical space is possible.
 ````
 
 ```{attention}
-{{white_check_mark}} Verify that: the remote desktop web client application gateway (`shm-<SHM ID>-sre-<SRE ID>-ag-entrypoint`) is the only SRE resource with a public IP address
+{{white_check_mark}} Verify that: the remote desktop web client application gateway (`shm-<SHM ID>-sre-<SRE ID>-ag-entrypoint`), and the firewall, are the only SRE resources with public IP addresses.
 ```
 
 ## 6. Copy-and-paste
