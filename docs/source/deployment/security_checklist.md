@@ -349,27 +349,27 @@ Connection from within the secure physical space is possible.
 
 ### Turing configuration setting:
 
-- Users cannot copy something from outside the network and paste it into the network.
-- Users cannot copy something from within the network and paste it outside the network.
+- Users cannot copy data from outside the SRE and paste it into the SRE.
+- Users cannot copy data from within the SRE and paste it outside the SRE.
 
 ### Implication:
 
-- Copy and paste is disabled on the remote desktop
+- Copy and paste is disabled on the remote desktop.
 
 ### Verify by:
 
 #### Users are unable to copy-and-paste between the SRD and their local device
 
-- Copy some text from your deployment device
-- Login to an SRD as the research user via the remote desktop web client
-- Open up a notepad or terminal on the SRD and attempt to paste the text to it.
+- Copy some text from your local device.
+- Connect to a workspace as the research user via the remote desktop web client.
+- Open a text editor or terminal on the SRD and attempt to paste the text to it.
 
 ```{attention}
 {{white_check_mark}} Verify that: paste fails
 ```
 
-- Write some next in the note pad or terminal of the SRD and copy it
-- Attempt to copy the text externally to deployment device (e.g. into URL of browser)
+- Write some text in a text editor or terminal of the workspace and copy it.
+- Attempt to paste the text on your local device.
 
 ```{attention}
 {{white_check_mark}} Verify that: paste fails
@@ -377,9 +377,9 @@ Connection from within the secure physical space is possible.
 
 #### Users can copy between VMs inside the network
 
-- Login to an SRD as the research user via the remote desktop web client
-- Open up a notepad or terminal on the SRD and attempt to paste the text to it.
-- In another tab or browser connect to a different SRD (or to the same VM via the SSH connection) using the remote desktop web client
+- Login to a workspace as the research user via the remote desktop web client
+- Open a text editor or terminal, write some text, and copy it.
+- In another browser tab or window, connect to a workspace in the same SRE (or to the same workspace via the SSH connection) using the remote desktop web client.
 - Attempt to paste the text to it.
 
 ```{attention}
