@@ -222,16 +222,16 @@ All managed devices should be provided by a known IT team at an approved organis
 ```
 
 ```{attention}
-{{white_check_mark}} Verify that: allow-listed IP addresses are exclusive to managed devices.
+{{white_check_mark}} Verify that: allowed IP addresses are exclusive to managed devices.
 ```
 
-- Connect to the environment using an allow-listed IP address and credentials
+- Connect to the environment using an allowed IP address and credentials
 
 ```{attention}
 {{white_check_mark}} Verify that: connection succeeds
 ```
 
-- Connect to the environment from an IP address that is not allow-listed but with correct credentials.
+- Connect to the environment from an IP address that is not allowed but with correct credentials.
 
 ```{attention}
 {{white_check_mark}} Verify that: connection fails
@@ -409,12 +409,10 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 ### Verify by:
 
-To test all the above, you will need to act both as the {ref}`role_system_manager` and {ref}`role_data_provider_representative`:
-
 #### Check that the {ref}`role_system_manager` can send an upload token to the {ref}`role_data_provider_representative` over a secure channel
 
-- Use the IP address of your own device in place of that of the data provider
-- Generate an upload token with write-only permissions following the instructions in the {ref}`administrator document <roles_system_manager_data_ingress>`.
+- Use the IP address of your own device in place of that of the data provider.
+- Generate an upload token with only Write and List permissions.
 
 ```{attention}
 {{white_check_mark}} Verify that: the upload token is successfully created.
@@ -426,8 +424,8 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 #### Ensure that data ingress works only for connections from the accepted IP address range
 
-- As the {ref}`role_data_provider_representative`, ensure you're working from a device that has an allow-listed IP address
-- Using the upload token with write-only permissions and limited time period that you set up in the previous step, follow the ingress instructions for the {ref}`data provider <role_data_provider_representative>`
+- As the {ref}`role_data_provider_representative`, ensure you're working from a device that has an allowed IP address.
+- Using the upload token with write-only permissions and limited time period that you set up in the previous step, follow the ingress instructions for the {ref}`data provider <role_data_provider_representative>`.
 
 ```{attention}
 {{white_check_mark}} Verify that: writing succeeds by uploading a file
@@ -437,7 +435,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 {{white_check_mark}} Verify that: attempting to open or download any of the files results in the following error: `Failed to start transfer: Insufficient credentials.` under the `Activities` pane at the bottom of the MS Azure Storage Explorer window.
 ```
 
-- Switch to a device that lacks an allow-listed IP address (or change your IP with a VPN)
+- Switch to a device without and allowed IP address (or change your IP with a VPN)
 - Attempt to write to the ingress volume via the test device
 
 ```{attention}
@@ -457,7 +455,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 ```
 
 ```{attention}
-{{white_check_mark}} Verify that: the overall ingress works by uploading different kinds of files, e.g. data, images, scripts (if appropriate).
+{{white_check_mark}} Verify that: the data ingress process works by uploading different kinds of files, e.g. data, images, scripts (if appropriate).
 ```
 
 ## 8. Data egress
