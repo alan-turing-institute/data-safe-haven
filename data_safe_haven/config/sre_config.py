@@ -47,11 +47,11 @@ class SREConfig(AzureSerialisableModel):
     def template(cls: type[Self], tier: int | None = None) -> SREConfig:
         """Create SREConfig without validation to allow "replace me" prompts."""
         # Set tier-dependent defaults
-        if tier == 0:  # noqa: PLR2004
+        if tier == 0:
             remote_desktop_allow_copy = True
             remote_desktop_allow_paste = True
             software_packages = SoftwarePackageCategory.ANY
-        elif tier == 1:  # noqa: PLR2004
+        elif tier == 1:
             remote_desktop_allow_copy = True
             remote_desktop_allow_paste = True
             software_packages = SoftwarePackageCategory.ANY
@@ -68,9 +68,9 @@ class SREConfig(AzureSerialisableModel):
             remote_desktop_allow_paste = False
             software_packages = SoftwarePackageCategory.NONE
         else:
-            remote_desktop_allow_copy = "True/False: whether to allow copying text out of the environment."
-            remote_desktop_allow_paste = "True/False: whether to allow pasting text into the environment."
-            software_packages="Which Python/R packages to allow users to install: [any/pre-approved/none]"
+            remote_desktop_allow_copy = "True/False: whether to allow copying text out of the environment."  # type: ignore
+            remote_desktop_allow_paste = "True/False: whether to allow pasting text into the environment."  # type: ignore
+            software_packages = "Which Python/R packages to allow users to install: [any/pre-approved/none]"  # type: ignore
 
         return SREConfig.model_construct(
             azure=ConfigSectionAzure.model_construct(
@@ -92,14 +92,14 @@ class SREConfig(AzureSerialisableModel):
                     "List of IP addresses belonging to data providers"
                 ],
                 remote_desktop=ConfigSubsectionRemoteDesktopOpts.model_construct(
-                    allow_copy=remote_desktop_allow_copy,  # type:ignore
-                    allow_paste=remote_desktop_allow_paste,  # type:ignore
+                    allow_copy=remote_desktop_allow_copy,
+                    allow_paste=remote_desktop_allow_paste,
                 ),
                 research_user_ip_addresses=["List of IP addresses belonging to users"],
-                software_packages=software_packages,  # type:ignore
+                software_packages=software_packages,
                 storage_quota_gb=ConfigSubsectionStorageQuotaGB.model_construct(
-                    home="Total size in GiB across all home directories [minimum: 100].",  # type:ignore
-                    shared="Total size in GiB for the shared directories [minimum: 100].",  # type:ignore
+                    home="Total size in GiB across all home directories [minimum: 100].",  # type: ignore
+                    shared="Total size in GiB for the shared directories [minimum: 100].",  # type: ignore
                 ),
                 timezone="Timezone in pytz format (eg. Europe/London)",
                 workspace_skus=[
