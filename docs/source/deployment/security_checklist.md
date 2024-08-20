@@ -303,7 +303,7 @@ Connection from within the secure physical space is possible.
 
 ### Turing configuration setting:
 
-- User can connect via remote desktop but cannot connect through other means such as `SSH`
+- User can connect via remote desktop but cannot connect through other means such as SSH
 
 ### Implication:
 
@@ -313,7 +313,7 @@ Connection from within the secure physical space is possible.
 
 #### SSH connection is not possible
 
-- Attempt to login as the research user via `SSH` with `ssh <user.name>@<SRE ID>.<safe haven domain>` (e.g. `ssh -v -o ConnectTimeout=10 ada.lovelace@sandbox.turingsafehaven.ac.uk`).
+- Attempt to login as the research user via SSH with `ssh <user.name>@<SRE ID>.<safe haven domain>` (e.g. `ssh -v -o ConnectTimeout=10 ada.lovelace@sandbox.turingsafehaven.ac.uk`).
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -328,7 +328,7 @@ Connection from within the secure physical space is possible.
 
 - Find the public IP address for the remote desktop web client.
     - {{pear}} This will be given by the resource `shm-<SHM ID>-sre-<SRE ID>-public-ip`.
-- Attempt to login as the research user via `SSH` with `ssh <user.name>@<public IP>` (e.g. `ssh ada.lovelace@8.8.8.8`).
+- Attempt to login as the research user via `SSH` with `ssh <user.name>@<public IP>` (_e.g._ `ssh ada.lovelace@8.8.8.8`).
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -342,7 +342,7 @@ Connection from within the secure physical space is possible.
 ````
 
 ```{attention}
-{{white_check_mark}} Verify that: the remote desktop server (`RDG-SRE-<SRE ID>`) is the only SRE resource with a public IP address
+{{white_check_mark}} Verify that: the remote desktop web client application gateway (`shm-<SHM ID>-sre-<SRE ID>-ag-entrypoint`) is the only SRE resource with a public IP address
 ```
 
 ## 6. Copy-and-paste
