@@ -70,8 +70,9 @@ Do not register this user with any SRE yet.
 
 #### Check: Users can reset their own password
 
-- Visit [`https://aka.ms/sspr`](https://aka.ms/sspr) and login as the research user.
-- Attempt to login and reset password, but do not complete MFA (see {ref}`these steps <roles_researcher_user_guide_setup_mfa>`)
+- Attempt to login to the remote desktop web client as the research user.
+- Click "Forgotten my password".
+- Reset password.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -85,13 +86,13 @@ Do not register this user with any SRE yet.
 </details>
 ````
 
-#### Check: Non-group user cannot access the apps
+#### Check: Non-registered users cannot connect to any SRE workspace
 
 Attempt to login to the remote desktop web client as the research user.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
- <details><summary> user is prompted to setup MFA</summary>
+ <details><summary>user can authenticated but cannot see any workspaces</summary>
 
 ```{image} security_checklist/login_no_mfa_guacamole.png
 :alt: Guacamole MFA setup prompt
@@ -101,49 +102,7 @@ Attempt to login to the remote desktop web client as the research user.
 </details>
 ````
 
-#### Check: Membership of the correct group is insufficient to give access
-
-[Assign the research user to SRE A](../management/index.md#assign-existing-users-to-an-sre).
-Again, attempt to login to the remote desktop web client.
-
-````{attention}
-{{camera}} <b>Verify that:</b>
-<details><summary>user is prompted to setup MFA</summary>
-
-```{image} security_checklist/login_no_mfa_guacamole.png
-:alt: Guacamole MFA setup prompt
-:align: center
-```
-
-</details>
-````
-
-#### User can self-register for MFA
-
-Check that the reserach user is able to successfully set up MFA.
-
-- Visit [`https://aka.ms/mfasetup`](https://aka.ms/mfasetup).
-- Login as the research user.
-
-```{attention}
-{{white_check_mark}} Verify that: user is guided to set up MFA
-```
-
-- Set up MFA as per {ref}`the user guide instructions <roles_researcher_user_guide_setup_mfa>`.
-
-````{attention}
-{{camera}} <b>Verify that:</b>
-
-<details><summary>MFA setup is successful</summary>
-
-```{image} security_checklist/aad_additional_security_verification.png
-:alt: AAD additional security verification
-:align: center
-```
-</details>
-````
-
-#### User can login after setting up MFA
+#### Check: Registered users can access SRE workspaces
 
 Check that the research user can authenticate using MFA and is granted access to the SRE.
 
