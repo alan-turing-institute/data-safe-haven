@@ -46,8 +46,8 @@ However, you can emulate this by using a VPN.
 The following resources should be deployed
 
 - A SHM
-- A Tier 2 SRE, where `software_packages` is set to `any` in the SRE configuration
-- A Tier 3 SRE, where `software_packages` is set to `selected` in the SRE configuration
+- A [Tier 2](../deployment/deploy_sre.md#configuration) SRE
+- A [Tier 3](../deployment/deploy_sre.md#configuration) SRE
 
 ### Accounts
 
