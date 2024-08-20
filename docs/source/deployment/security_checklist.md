@@ -110,7 +110,7 @@ Check that the research user can authenticate using MFA and is granted access to
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-<details><summary>you are prompted for MFA and can respond</summary>
+<details><summary>user can authenicated and can see workspaces</summary>
 
 ```{image} security_checklist/aad_mfa_approve_signin_request.png
 :alt: AAD MFA approve sign-in request
@@ -129,7 +129,7 @@ Check that the research user can access a workspace.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-<details><summary>you can connect to <i>Desktop: Ubuntu0</i></summary>
+<details><summary>you can connect to any workspace</summary>
 
 ```{image} security_checklist/guacamole_srd_desktop.png
 :alt: SRD desktop
