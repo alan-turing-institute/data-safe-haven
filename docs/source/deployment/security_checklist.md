@@ -26,7 +26,7 @@ Work your way through the actions described in each section, taking care to noti
 
 The following roles will be needed for this checklist
 
-- Reseearch User who is a member of the SRE A research users group
+- Research User who is a member of the SRE A research users group
     - Ensure this person's IP address is added to the `reserach_user_ip_addresses` list in SRE A's configuration.
     - Create a user account without MFA
         - Following the SRE deployment instructions for setting up a {ref}`non privileged user account <deploy_sre_apache_guacamole_create_user_account>`, create an account but do not add them to any `SG <SRE ID> Research Users` group.
