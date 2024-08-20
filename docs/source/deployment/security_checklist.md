@@ -181,31 +181,6 @@ Check that the research user can access a workspace.
 </details>
 ````
 
-#### SREs are isolated from one another
-
-- Check that users cannot copy files from one SRE to another one.
-    - Connect to an SRE A workspace as the research user using the web client.
-    - In a separate browser window, do the same for SRE B.
-    - Attempt to copy and paste a file from one SRE workspace to another
-
-```{attention}
-{{white_check_mark}} Verify that: copy-and-paste is not possible
-```
-
-- Check that the network rules are set appropriately to block outgoing traffic
-- Visit the portal and find the Network Security Group resource `shm-<SHM ID>-sre-<SRE ID>-nsg-workspaces`, then click on **{menuselection}`Settings --> Outbound security rules`**
-
-````{attention}
-{{camera}} <b>Verify that:</b>
-
-<details><summary>there exists an NSG rule with Destination <i>Internet</i> and Action <i>Deny</i> and that no higher priority rule allows connection to the internet.</summary>
-
-```{image} security_checklist/nsg_outbound_access.png
-:align: center
-```
-</details>
-````
-
 ## 3. User devices
 
 ### Turing configuration setting:
