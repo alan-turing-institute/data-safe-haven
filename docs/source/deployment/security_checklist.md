@@ -94,7 +94,7 @@ Attempt to login to the remote desktop web client as the research user.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
- <details><summary>user can authenticated but cannot see any workspaces</summary>
+ <details><summary>user can authenticate but cannot see any workspaces</summary>
 
 ```{image} security_checklist/no_valid_workspaces.png
 :align: center
@@ -111,7 +111,7 @@ Check that the research user can authenticate using MFA and is granted access to
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-<details><summary>user can authenicated and can see workspaces</summary>
+<details><summary>user can authenticate and can see workspaces</summary>
 
 ```{image} security_checklist/valid_workspaces.png
 :align: center
@@ -142,8 +142,8 @@ Check that the research user can access a workspace.
 
 ### Turing configuration setting:
 
-- The only part of the SRE a {ref}`Researchers <role_researcher>` can access from the internet is the remote desktop web client.
-- From within the SRE, a {ref}`Researchers <role_researcher>` cannot use the connect to clients outside the SRE network (with the exception of indirect, read-only access to package repositories).
+- The only part of the SRE a {ref}`Researcher <role_researcher>` can access from the internet is the remote desktop web client.
+- From within the SRE, a {ref}`Researcher <role_researcher>` cannot connect to clients outside the SRE network (with the exception of indirect, read-only access to package repositories).
 - SREs are isolated from one another.
 
 ### Implication:
@@ -427,7 +427,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 {{white_check_mark}} Verify that: attempting to open or download any of the files results in the following error: `Failed to start transfer: Insufficient credentials.` under the `Activities` pane at the bottom of the MS Azure Storage Explorer window.
 ```
 
-- Switch to a device without and allowed IP address (or change your IP with a VPN)
+- Switch to a device without an allowed IP address (or change your IP with a VPN)
 - Attempt to write to the ingress volume via the test device
 
 ```{attention}
