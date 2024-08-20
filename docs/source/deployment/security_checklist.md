@@ -100,7 +100,7 @@ Attempt to login to the remote desktop web client as the research user.
 </details>
 ````
 
-#### Check: Registered users can access SRE workspaces
+#### Check: Registered users can see SRE workspaces
 
 Check that the research user can authenticate using MFA and is granted access to the SRE.
 
@@ -117,7 +117,7 @@ Check that the research user can authenticate using MFA and is granted access to
 </details>
 ````
 
-#### Authenticated user can access workspaces
+#### Check: Authenticated user can access workspaces
 
 Check that the research user can access a workspace.
 
