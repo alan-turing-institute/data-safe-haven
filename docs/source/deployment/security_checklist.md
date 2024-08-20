@@ -243,24 +243,24 @@ Check that the research user can access a workspace.
 ### Turing configuration setting:
 
 - Managed devices must be provided by an approved organisation and the user must not have administrator access to them.
-- Network rules for higher tier environments permit access only from IP ranges corresponding to `Restricted` networks that only permit managed devices to connect.
+- Access is only permitted from IPs listed in the `research_user_ip_addresses` configuration parameter.
 
 ### Implication:
 
 - At {ref}`policy_tier_3`, only managed devices can connect to the Data Safe Haven environment.
-- At {ref}`policy_tier_2`, any device can connect to the Data Safe Haven environment (with VPN connection and correct credentials).
+- At {ref}`policy_tier_2`, any device can connect to the Data Safe Haven environment.
 
 ### Verify by:
 
 #### User devices ({ref}`policy_tier_2`)
 
-- Connect to the environment using an allow-listed IP address and credentials
+- Connect to the environment using an allowed IP address and credentials
 
 ```{attention}
 {{white_check_mark}} Verify that: connection succeeds
 ```
 
-- Connect to the environment from an IP address that is not allow-listed but with correct credentials.
+- Connect to the environment from an IP address that is not allowed but with correct credentials.
 
 ```{attention}
 {{white_check_mark}} Verify that: connection fails
@@ -298,8 +298,7 @@ All managed devices should be provided by a known IT team at an approved organis
 
 There are network rules permitting access to the portal from allowed IP addresses only
 
-- Navigate to the NSG for this SRE in the portal:
-    - {{pear}} `NSG_SHM_<SHM ID>_SRE_<SRE ID>_GUACAMOLE`
+- In the Azure portal navigate to the Guacamole NSG for this SRE `shm-<SHM ID>-sre-<SRE ID>-nsg-guacamole-containers`.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -314,7 +313,7 @@ There are network rules permitting access to the portal from allowed IP addresse
 ````
 
 ```{attention}
-{{white_check_mark}} Verify that: all other NSGs (apart from `NSG_SHM*<SHM ID>_SRE_<SRE ID>\_DEPLOYMENT`) have an inbound `Deny All` rule and no higher priority rule allowing inbound connections from outside the Virtual Network (apart from the Admin VPN in some cases).
+{{white_check_mark}} Verify that: all other NSGs have an inbound `Deny All` rule and no higher priority rule allowing inbound connections from outside the Virtual Network.
 ```
 
 ## 4. Physical security
