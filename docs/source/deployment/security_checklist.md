@@ -241,12 +241,12 @@ All managed devices should be provided by a known IT team at an approved organis
 
 There are network rules permitting access to the portal from allowed IP addresses only
 
-- In the Azure portal navigate to the Guacamole NSG for this SRE `shm-<SHM ID>-sre-<SRE ID>-nsg-guacamole-containers`.
+- In the Azure portal navigate to the Guacamole application gateway NSG for this SRE `shm-<SHM ID>-sre-<SRE ID>-nsg-application-gateway`.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
 
-<details><summary>the NSG has network rules allowing <b>inbound</b> access from allow-listed IP addresses only</summary>
+<details><summary>the NSG has network rules allowing Inbound access from allowed IP addresses only</summary>
 
 ```{image} security_checklist/nsg_inbound_access.png
 :align: center
