@@ -167,9 +167,9 @@ Check that the research user can access a workspace.
 
 ### Turing configuration setting:
 
-- {ref}`Researchers <role_researcher>` cannot access any part of an SRE (except the portal) from outside the network.
-- Whilst in the network, one cannot use the internet to connect outside the network.
-- SREs in the same SHM are isolated from one another.
+- {ref}`Researchers <role_researcher>` cannot access any part of an SRE (except the portal) from outside the SRE network.
+- {ref}`Researchers <role_researcher>` in the SRE network, cannot use the connect to clients outside the SRE network (with the exception of indirect, read-only access to package repositories).
+- SREs are isolated from one another.
 
 ### Implication:
 
@@ -177,10 +177,10 @@ Check that the research user can access a workspace.
 
 ### Verify by:
 
-#### Fail to connect to the internet from within an SRD on the SRE network
+#### Fail to connect to the internet from a workspace
 
-- Login as a user to an SRD from within the SRE by using the web client.
-- Choose your favourite three websites and attempt to access the internet using a browser
+- Conenct to an SRE workspace by using the web client.
+- Attempt to access the internet using a browser and CLI tools.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -214,17 +214,17 @@ Check that the research user can access a workspace.
 
 #### SREs are isolated from one another
 
-- Check that users cannot copy files from one SRE to another one in the same SHM
-    - Log in to an SRD in SRE A as the research user using the web client.
+- Check that users cannot copy files from one SRE to another one.
+    - Connect to an SRE A workspace as the research user using the web client.
     - In a separate browser window, do the same for SRE B.
-    - Attempt to copy and paste a file from one SRE desktop to another
+    - Attempt to copy and paste a file from one SRE workspace to another
 
 ```{attention}
 {{white_check_mark}} Verify that: copy-and-paste is not possible
 ```
 
 - Check that the network rules are set appropriately to block outgoing traffic
-- Visit the portal and find `NSG_SHM_<SHM ID>_SRE_<SRE ID>_COMPUTE`, then click on `Settings > Outbound security rules`
+- Visit the portal and find the Network Security Group resource `shm-<SHM ID>-sre-<SRE ID>-nsg-workspaces`, then click on **{menuselection}`Settings --> Outbound security rules`**
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
