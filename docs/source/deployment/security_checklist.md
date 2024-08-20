@@ -7,18 +7,13 @@ This security checklist is used by the Alan Turing Institute to evaluate complia
 Organisations are responsible for making their own decisions about the suitability of any of our default controls and should treat this checklist as an example, not a template to follow.
 ```
 
-In this check list we aim to **evaluate** our deployment against the {ref}`security configuration <design_turing_security_configuration>` that we apply at the Alan Turing Institute.
+In this check list we aim to evaluate our deployment against the {ref}`security configuration <design_turing_security_configuration>` that we apply at the Alan Turing Institute.
 The security checklist currently focuses on checks that can evaluate these security requirements for {ref}`policy_tier_2` (or greater) SREs (with some steps noted as specific to a tier):
 
 ## How to use this checklist
 
-- Ensure you have an SHM and attached SRE(s) that you wish to test.
-
-```{note}
-Some parts of the checklist are only relevant when there are multiple SREs attached to the same SHM.
-```
-
-- Work your way through the actions described in each section, taking care to notice each time you see a {{camera}} or a {{white_check_mark}} and the word **Verify**:
+Ensure you have met the [](#prerequisites).
+Work your way through the actions described in each section, taking care to notice each time you see a {{camera}} or a {{white_check_mark}} and the word Verify.
 
 ```{note}
 - {{camera}} Where you see the camera icon, there should be accompanying screenshot(s) of evidence for this item in the checklist (you may wish to save your own equivalent screenshots as evidence)
@@ -27,25 +22,36 @@ Some parts of the checklist are only relevant when there are multiple SREs attac
 
 ## Prerequisites
 
-- **Deployed SHM** that you are testing
-- **Deployed SRE A** that is attached to the SHM
-- **Deployed SRE B** that is attached to the same SHM
-- **VPN access** to the SHM that you are testing
+### Roles
 
-```{important}
-- If you haven't already, you'll need download a VPN certificate and configure {ref}`VPN access <deploy_shm_vpn>` for the SHM
-- Make sure you can use Remote Desktop to log in to the {ref}`domain controller (DC1) <roles_system_deployer_shm_remote_desktop>`.
-```
+The following roles will be needed for this checklist
 
-The following users will be needed for this checklist
+- {ref}`role_researcher`
+- {ref}`role_system_manager`
+    - Ensure this person has an account with appropriate permission to deploy the Data Safe Haven
+- {ref}`role_data_provider_representative`
 
-- **SRE standard user** who is a member of the **SRE A** research users group
-    - Create a new user **without** MFA
-        - Following the SRE deployment instructions for setting up a {ref}`non privileged user account <deploy_sre_apache_guacamole_create_user_account>`, create an account but **do not** add them to any `SG <SRE ID> Research Users` group.
-        - Visit [`https://aka.ms/sspr`](https://aka.ms/sspr) in an incognito browser
-        - Attempt to login and reset password, but **do not complete MFA** (see {ref}`these steps <roles_researcher_user_guide_setup_mfa>`)
-- {ref}`role_system_manager` who has `Contributor` permissions (or higher) on the underlying Azure subscription
-- **Data provider** who has no accounts on the Safe Haven system
+Ideally, these roles would be conducted by different people with different IP addresses.
+However, you can emulate this by using a VPN.
+
+### Resources
+
+The following resources should be deployed
+
+- An SHM
+- A [Tier 2](../deployment/deploy_sre.md#configuration) SRE
+- A [Tier 3](../deployment/deploy_sre.md#configuration) SRE
+
+In each SRE configuration
+
+- Ensure the research user's IP address is added to the `research_user_ip_addresses` list.
+- Ensure the system manager's IP address is added to the `admin_ip_addresses` list.
+- Ensure the data provider's IP address is added to the `data_provider_ip_addresses` list.
+
+### Accounts
+
+[Create a user account](../management/index.md#add-users-to-the-data-safe-haven) for the research user in your SHM.
+Do not register this user with any SRE yet.
 
 ## 1. Multifactor authentication and password strength
 
@@ -62,93 +68,70 @@ The following users will be needed for this checklist
 
 ### Verify by:
 
-#### Check: Non-group user cannot access the apps
+#### Check: Users can reset their own password
 
-Attempt to login to the remote desktop web client as the **SRE standard user**
+- Attempt to login to the remote desktop web client as the research user.
+- Click "Forgotten my password".
+- Reset password.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
- <details><summary> user is prompted to setup MFA</summary>
+ <details><summary> user can reset their own password</summary>
 
-```{image} security_checklist/login_no_mfa_guacamole.png
-:alt: Guacamole MFA setup prompt
+```{image} security_checklist/sspr.png
+:align: center
+```
+```{image} security_checklist/sspr_success.png
 :align: center
 ```
 
 </details>
 ````
 
-#### Check: Membership of the correct group is insufficient to give access
+#### Check: Non-registered users cannot connect to any SRE workspace
 
-Add the **SRE standard user** to the relevant `Research Users` group under `Safe Haven Security Groups` on the domain controller.
+Attempt to login to the remote desktop web client as the research user.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-<details><summary>user is prompted to setup MFA</summary>
+ <details><summary>user can authenticate but cannot see any workspaces</summary>
 
-```{image} security_checklist/login_no_mfa_guacamole.png
-:alt: Guacamole MFA setup prompt
+```{image} security_checklist/no_valid_workspaces.png
 :align: center
 ```
 
 </details>
 ````
 
-#### User can self-register for MFA
+#### Check: Registered users can see SRE workspaces
 
-Check that the **SRE standard user** is able to successfully set up MFA
+Check that the research user can authenticate using MFA and is granted access to the SRE.
 
-- Visit [`https://aka.ms/mfasetup`](https://aka.ms/mfasetup) in an incognito browser
-- Login as the user you set up
-
-```{attention}
-{{white_check_mark}} **Verify that:** user is guided to set up MFA
-```
-
-- Set up MFA as per {ref}`the user guide instructions <roles_researcher_user_guide_setup_mfa>`.
+- Login to the remote desktop web client as the research user.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
+<details><summary>user can authenticate and can see workspaces</summary>
 
-<details><summary>MFA setup is successful</summary>
-
-```{image} security_checklist/aad_additional_security_verification.png
-:alt: AAD additional security verification
-:align: center
-```
-</details>
-````
-
-#### User can login after setting up MFA
-
-Check that the **SRE standard user** can authenticate with MFA.
-
-- Login to the remote desktop web client as the **SRE standard user**.
-
-````{attention}
-{{camera}} <b>Verify that:</b>
-<details><summary>you are prompted for MFA and can respond</summary>
-
-```{image} security_checklist/aad_mfa_approve_signin_request.png
-:alt: AAD MFA approve sign-in request
+```{image} security_checklist/valid_workspaces.png
 :align: center
 ```
 
 </details>
 ````
 
-#### Authenticated user can access the Secure Research Desktop (SRD) desktop
+#### Check: Authenticated user can access workspaces
 
-Check that the **SRE standard user** can access the Secure Research Desktop (SRD) desktop.
+Check that the research user can access a workspace.
 
-- Login to the remote desktop web client as the **SRE standard user**.
+- Login to the remote desktop web client as the research user.
+- Select a workspace and login as the research user.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-<details><summary>you can connect to <i>Desktop: Ubuntu0</i></summary>
+<details><summary>you can connect to any workspace</summary>
 
-```{image} security_checklist/guacamole_srd_desktop.png
-:alt: SRD desktop
+```{image} security_checklist/workspace_xfce_initial.png
 :align: center
 ```
 
@@ -159,10 +142,9 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 
 ### Turing configuration setting:
 
-- {ref}`Researchers <role_researcher>` cannot access any part of the network from outside the network.
-- VMs in the SHM are only accessible by {ref}`System Managers <role_system_manager>` using the management VPN.
-- Whilst in the network, one cannot use the internet to connect outside the network.
-- SREs in the same SHM are isolated from one another.
+- The only part of the SRE a {ref}`Researcher <role_researcher>` can access from the internet is the remote desktop web client.
+- From within the SRE, a {ref}`Researcher <role_researcher>` cannot connect to clients outside the SRE network (with the exception of indirect, read-only access to package repositories).
+- SREs are isolated from one another.
 
 ### Implication:
 
@@ -170,97 +152,33 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 
 ### Verify by:
 
-#### Connect to SHM VMs if and only if connected to the SHM VPN:
+#### Fail to connect to the internet from a workspace
 
-- Connect to the SHM VPN
-- Attempt to connect to the SHM DC
-
-```{attention}
-{{white_check_mark}} **Verify that:** connection works
-```
-
-- Disconnect from the SHM VPN
-- Attempt to connect to the SHM DC
-
-```{attention}
-{{white_check_mark}} **Verify that:** connection fails
-```
-
-#### Fail to connect to the internet from within an SRD on the SRE network
-
-- Login as a user to an SRD from within the SRE by using the web client.
-- Choose your favourite three websites and attempt to access the internet using a browser
+- Connect to an SRE workspace by using the web client.
+- Attempt to access the internet using a browser and CLI tools.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
 
-<details><summary>browsing to the website fails</i></summary>
+<details><summary>browsing to the service fails</i></summary>
 
-```{image} security_checklist/srd_no_internet.png
-:alt: SRD no internet
+```{image} security_checklist/no_internet_browser.png
 :align: center
 ```
 
 </details>
 
-<details><summary>you cannot access the website using curl</summary>
+<details><summary>you cannot access the service using curl</summary>
 
-```{image} security_checklist/srd_no_curl.png
-:alt: SRD no curl
+```{image} security_checklist/no_internet_curl.png
 :align: center
 ```
 
 </details>
 
-<details><summary>you cannot look up the IP address for the website using nslookup</summary>
+<details><summary>you cannot look up the IP address for the service using nslookup</summary>
 
-```{image} security_checklist/srd_no_nslookup.png
-:alt: SRD no curl
-:align: center
-```
-</details>
-````
-
-#### SREs are isolated from one another
-
-Check that users cannot connect from one SRE to another one in the same SHM, even if they have access to both SREs
-
-- Ensure that the **SRE standard user** is a member of the research users group for both **SRE A** and **SRE B**
-- Log in to an SRD in **SRE A** as the **SRE standard user** using the web client.
-- Open the `Terminal` app from the dock at the bottom of the screen and enter `ssh -v -o ConnectTimeout=10 <IP address>` where the IP address is one for an SRD in SRE B (you can find this in the Azure portal)
-
-````{attention}
-{{camera}} <b>Verify that:</b>
-
-<details><summary>SSH connection fails</i></summary>
-
-```{image} security_checklist/ssh_connection_fail.png
-:alt: SSH connection failure
-:align: center
-```
-
-</details>
-````
-
-- Check that users cannot copy files from one SRE to another one in the same SHM
-    - Log in to an SRD in **SRE A** as the **SRE standard user** using the web client.
-    - In a separate browser window, do the same for **SRE B**.
-    - Attempt to copy and paste a file from one SRE desktop to another
-
-```{attention}
-{{white_check_mark}} **Verify that:** copy-and-paste is not possible
-```
-
-- Check that the network rules are set appropriately to block outgoing traffic
-- Visit the portal and find `NSG_SHM_<SHM ID>_SRE_<SRE ID>_COMPUTE`, then click on `Settings > Outbound security rules`
-
-````{attention}
-{{camera}} <b>Verify that:</b>
-
-<details><summary>there exists an NSG rule with Destination <i>Internet</i> and Action <i>Deny</i> and that no higher priority rule allows connection to the internet.</summary>
-
-```{image} security_checklist/nsg_outbound_access.png
-:alt: NSG outbound access
+```{image} security_checklist/no_nslookup.png
 :align: center
 ```
 </details>
@@ -271,27 +189,27 @@ Check that users cannot connect from one SRE to another one in the same SHM, eve
 ### Turing configuration setting:
 
 - Managed devices must be provided by an approved organisation and the user must not have administrator access to them.
-- Network rules for higher tier environments permit access only from IP ranges corresponding to `Restricted` networks that only permit managed devices to connect.
+- Access is only permitted from IPs listed in the `research_user_ip_addresses` configuration parameter.
 
 ### Implication:
 
 - At {ref}`policy_tier_3`, only managed devices can connect to the Data Safe Haven environment.
-- At {ref}`policy_tier_2`, any device can connect to the Data Safe Haven environment (with VPN connection and correct credentials).
+- At {ref}`policy_tier_2`, any device can connect to the Data Safe Haven environment.
 
 ### Verify by:
 
 #### User devices ({ref}`policy_tier_2`)
 
-- Connect to the environment using an allow-listed IP address and credentials
+- Connect to the environment using an allowed IP address and credentials
 
 ```{attention}
-{{white_check_mark}} **Verify that:** connection succeeds
+{{white_check_mark}} Verify that: connection succeeds
 ```
 
-- Connect to the environment from an IP address that is not allow-listed but with correct credentials.
+- Connect to the environment from an IP address that is not allowed but with correct credentials.
 
 ```{attention}
-{{white_check_mark}} **Verify that:** connection fails
+{{white_check_mark}} Verify that: connection fails
 ```
 
 #### User devices ({ref}`policy_tier_3`)
@@ -299,50 +217,48 @@ Check that users cannot connect from one SRE to another one in the same SHM, eve
 All managed devices should be provided by a known IT team at an approved organisation.
 
 ```{attention}
-{{white_check_mark}} **Verify that:** the IT team of the approved organisation take responsibility for managing the device.
+{{white_check_mark}} Verify that: the IT team of the approved organisation take responsibility for managing the device.
 ```
 
 ```{attention}
-{{white_check_mark}} **Verify that:** the user does not have administrator permissions on the device.
+{{white_check_mark}} Verify that: the user does not have administrator permissions on the device.
 ```
 
 ```{attention}
-{{white_check_mark}} **Verify that:** allow-listed IP addresses are exclusive to managed devices.
+{{white_check_mark}} Verify that: allowed IP addresses are exclusive to managed devices.
 ```
 
-- Connect to the environment using an allow-listed IP address and credentials
+- Connect to the environment using an allowed IP address and credentials
 
 ```{attention}
-{{white_check_mark}} **Verify that:** connection succeeds
+{{white_check_mark}} Verify that: connection succeeds
 ```
 
-- Connect to the environment from an IP address that is not allow-listed but with correct credentials.
+- Connect to the environment from an IP address that is not allowed but with correct credentials.
 
 ```{attention}
-{{white_check_mark}} **Verify that:** connection fails
+{{white_check_mark}} Verify that: connection fails
 ```
 
 #### Network rules ({ref}`policy_tier_2` and above):
 
-There are network rules permitting access to the remote desktop gateway from allow-listed IP addresses only
+There are network rules permitting access to the portal from allowed IP addresses only
 
-- Navigate to the NSG for this SRE in the portal:
-    - {{pear}} `NSG_SHM_<SHM ID>_SRE_<SRE ID>_GUACAMOLE`
+- In the Azure portal navigate to the Guacamole application gateway NSG for this SRE `shm-<SHM ID>-sre-<SRE ID>-nsg-application-gateway`.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
 
-<details><summary>the NSG has network rules allowing <b>inbound</b> access from allow-listed IP addresses only</summary>
+<details><summary>the NSG has network rules allowing Inbound access from allowed IP addresses only</summary>
 
 ```{image} security_checklist/nsg_inbound_access.png
-:alt: NSG inbound access
 :align: center
 ```
 </details>
 ````
 
 ```{attention}
-{{white_check_mark}} **Verify that:** all other NSGs (apart from `NSG_SHM*<SHM ID>_SRE_<SRE ID>\_DEPLOYMENT`) have an inbound `Deny All` rule and no higher priority rule allowing inbound connections from outside the Virtual Network (apart from the Admin VPN in some cases).
+{{white_check_mark}} Verify that: all other NSGs have an inbound `Deny All` rule and no higher priority rule allowing inbound connections from outside the Virtual Network.
 ```
 
 ## 4. Physical security
@@ -352,11 +268,11 @@ There are network rules permitting access to the remote desktop gateway from all
 - Medium security research spaces control the possibility of unauthorised viewing.
 - Card access or other means of restricting entry to only known researchers (such as the signing in of guests on a known list) is required.
 - Screen adaptations or desk partitions can be adopted in open-plan spaces if there is a high risk of "visual eavesdropping".
-- Firewall rules for the Environments can permit access only from Restricted network IP ranges corresponding to these research spaces.
+- Firewall rules can permit access only from IP ranges corresponding to these research spaces.
 
 ### Implication:
 
-- At {ref}`policy_tier_3` access is limited to certain secure physical spaces
+- At {ref}`policy_tier_3` access is limited to certain secure physical spaces.
 
 ### Verify by:
 
@@ -364,33 +280,33 @@ There are network rules permitting access to the remote desktop gateway from all
 
 Connection from outside the secure physical space is not possible.
 
-- Attempt to connect to the {ref}`policy_tier_3` SRE web client from home using a managed device and the correct VPN connection and credentials
+- Attempt to connect to the {ref}`policy_tier_3` SRE web client from home using a managed device and the correct VPN connection and credentials.
 
 ```{attention}
-{{white_check_mark}} **Verify that:** connection fails
+{{white_check_mark}} Verify that: connection fails.
 ```
 
 Connection from within the secure physical space is possible.
 
-- Attempt to connect from research office using a managed device and the correct VPN connection and credentials
+- Attempt to connect from research office using a managed device and the correct VPN connection and credentials.
 
 ```{attention}
-{{white_check_mark}} **Verify that:** connection succeeds
+{{white_check_mark}} Verify that: connection succeeds.
 ```
 
 ```{attention}
-{{white_check_mark}} **Verify that:** check the network IP ranges corresponding to the research spaces and compare against the IPs accepted by the firewall.
+{{white_check_mark}} Verify that: check the network IP ranges corresponding to the research spaces and compare against the IPs accepted by the firewall.
 ```
 
 ```{attention}
-{{white_check_mark}} **Verify that:** confirm in person that physical measures such as screen adaptions or desk partitions are present if risk of visual eavesdropping is high.
+{{white_check_mark}} Verify that: confirm in person that physical measures such as screen adaptions or desk partitions are present if risk of visual eavesdropping is high.
 ```
 
 ## 5. Remote connections
 
 ### Turing configuration setting:
 
-- User can connect via remote desktop but cannot connect through other means such as `SSH`
+- User can connect via remote desktop but cannot connect through other means such as SSH
 
 ### Implication:
 
@@ -400,79 +316,66 @@ Connection from within the secure physical space is possible.
 
 #### SSH connection is not possible
 
-- Attempt to login as the **SRE standard user** via `SSH` with `ssh <user.name>@<SRE ID>.<safe haven domain>` (e.g. `ssh -v -o ConnectTimeout=10 ada.lovelace@sandbox.turingsafehaven.ac.uk`)
+- Attempt to login as the research user via SSH with `ssh <user.name>@<SRE ID>.<safe haven domain>` (e.g. `ssh -v -o ConnectTimeout=10 ada.lovelace@sandbox.turingsafehaven.ac.uk`).
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
 
 <details><summary>SSH login by fully-qualified domain name fails</summary>
 
-```{image} security_checklist/srd_no_ssh_by_fqdn.png
-:alt: SRD SSH connection by FQDN not possible
+```{image} security_checklist/no_ssh_fqdn.png
 :align: center
 ```
 </details>
 ````
 
-- Find the public IP address for the remote desktop server VM by searching for this VM in the portal, then looking at `Connect` under `Settings`.
-    - {{pear}} VM name will be `GUACAMOLE-SRE-<SRE ID>`
-- Attempt to login as the **SRE standard user** via `SSH` with `ssh <user.name>@<public IP>` (e.g. `ssh ada.lovelace@8.8.8.8`)
+- Find the public IP address for the remote desktop web client.
+    - {{pear}} This will be given by the resource `shm-<SHM ID>-sre-<SRE ID>-public-ip`.
+- Attempt to login as the research user via `SSH` with `ssh <user.name>@<public IP>` (_e.g._ `ssh ada.lovelace@8.8.8.8`).
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
 
 <details><summary>SSH login by public IP address fails</summary>
 
-```{image} security_checklist/srd_no_ssh_by_ip.png
-:alt: SRD SSH connection by IP address not possible
+```{image} security_checklist/no_ssh_ip.png
 :align: center
 ```
 </details>
 ````
 
 ```{attention}
-{{white_check_mark}} **Verify that:** the remote desktop server (`RDG-SRE-<SRE ID>`) is the only SRE resource with a public IP address
+{{white_check_mark}} Verify that: the remote desktop web client application gateway (`shm-<SHM ID>-sre-<SRE ID>-ag-entrypoint`), and the firewall, are the only SRE resources with public IP addresses.
 ```
 
 ## 6. Copy-and-paste
 
 ### Turing configuration setting:
 
-- Users cannot copy something from outside the network and paste it into the network.
-- Users cannot copy something from within the network and paste it outside the network.
+- Users cannot copy data from outside the SRE and paste it into the SRE.
+- Users cannot copy data from within the SRE and paste it outside the SRE.
 
 ### Implication:
 
-- Copy and paste is disabled on the remote desktop
+- Copy and paste is disabled on the remote desktop.
 
 ### Verify by:
 
 #### Users are unable to copy-and-paste between the SRD and their local device
 
-- Copy some text from your deployment device
-- Login to an SRD as the **SRE standard user** via the remote desktop web client
-- Open up a notepad or terminal on the SRD and attempt to paste the text to it.
+- Copy some text from your local device.
+- Connect to a workspace as the research user via the remote desktop web client.
+- Open a text editor or terminal on the SRD and attempt to paste the text to it.
 
 ```{attention}
-{{white_check_mark}} **Verify that:** paste fails
+{{white_check_mark}} Verify that: paste fails
 ```
 
-- Write some next in the note pad or terminal of the SRD and copy it
-- Attempt to copy the text externally to deployment device (e.g. into URL of browser)
+- Write some text in a text editor or terminal of the workspace and copy it.
+- Attempt to paste the text on your local device.
 
 ```{attention}
-{{white_check_mark}} **Verify that:** paste fails
-```
-
-#### Users can copy between VMs inside the network
-
-- Login to an SRD as the **SRE standard user** via the remote desktop web client
-- Open up a notepad or terminal on the SRD and attempt to paste the text to it.
-- In another tab or browser connect to a different SRD (or to the same VM via the SSH connection) using the remote desktop web client
-- Attempt to paste the text to it.
-
-```{attention}
-{{white_check_mark}} **Verify that:** paste succeeds
+{{white_check_mark}} Verify that: paste fails
 ```
 
 ## 7. Data ingress
@@ -484,7 +387,7 @@ Connection from within the secure physical space is possible.
 
 To minimise the risk of unauthorised access to the dataset while the ingress volume is open for uploads, the following security measures are in place:
 
-- Access to the ingress volume is restricted to a limited range of IP addresses associated with the **Dataset Provider** and the **host organisation**.
+- Access to the ingress volume is restricted to a limited range of IP addresses associated with the Dataset Provider and the host organisation.
 - The {ref}`role_data_provider_representative` receives a write-only upload token.
     - This allows them to upload, verify and modify the uploaded data, but does not viewing or download of the data.
     - This provides protection against an unauthorised party accessing the data, even they gain access to the upload token.
@@ -498,39 +401,37 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 ### Verify by:
 
-To test all the above, you will need to act both as the {ref}`role_system_manager` and {ref}`role_data_provider_representative`:
-
 #### Check that the {ref}`role_system_manager` can send an upload token to the {ref}`role_data_provider_representative` over a secure channel
 
-- Use the IP address of your own device in place of that of the data provider
-- Generate an upload token with write-only permissions following the instructions in the {ref}`administrator document <roles_system_manager_data_ingress>`.
+- Use the IP address of your own device in place of that of the data provider.
+- Generate an upload token with only Write and List permissions.
 
 ```{attention}
-{{white_check_mark}} **Verify that:** the upload token is successfully created.
+{{white_check_mark}} Verify that: the upload token is successfully created.
 ```
 
 ```{attention}
-{{white_check_mark}} **Verify that:** you are able to send this token using a secure mechanism.
+{{white_check_mark}} Verify that: you are able to send this token using a secure mechanism.
 ```
 
 #### Ensure that data ingress works only for connections from the accepted IP address range
 
-- As the {ref}`role_data_provider_representative`, ensure you're working from a device that has an allow-listed IP address
-- Using the upload token with write-only permissions and limited time period that you set up in the previous step, follow the ingress instructions for the {ref}`data provider <role_data_provider_representative>`
+- As the {ref}`role_data_provider_representative`, ensure you're working from a device that has an allowed IP address.
+- Using the upload token with write-only permissions and limited time period that you set up in the previous step, follow the ingress instructions for the {ref}`data provider <role_data_provider_representative>`.
 
 ```{attention}
-{{white_check_mark}} **Verify that:** writing succeeds by uploading a file
+{{white_check_mark}} Verify that: writing succeeds by uploading a file
 ```
 
 ```{attention}
-{{white_check_mark}} **Verify that:** attempting to open or download any of the files results in the following error: `Failed to start transfer: Insufficient credentials.` under the `Activities` pane at the bottom of the MS Azure Storage Explorer window.
+{{white_check_mark}} Verify that: attempting to open or download any of the files results in the following error: `Failed to start transfer: Insufficient credentials.` under the `Activities` pane at the bottom of the MS Azure Storage Explorer window.
 ```
 
-- Switch to a device that lacks an allow-listed IP address (or change your IP with a VPN)
+- Switch to a device without an allowed IP address (or change your IP with a VPN)
 - Attempt to write to the ingress volume via the test device
 
 ```{attention}
-{{white_check_mark}} **Verify that:** the access token fails.
+{{white_check_mark}} Verify that: the access token fails.
 ```
 
 #### Check that the upload fails if the token has expired
@@ -538,22 +439,22 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 - Create a write-only token with short duration
 
 ```{attention}
-{{white_check_mark}} **Verify that:** you can connect and write with the token during the duration
+{{white_check_mark}} Verify that: you can connect and write with the token during the duration
 ```
 
 ```{attention}
-{{white_check_mark}} **Verify that:** you cannot connect and write with the token after the duration has expired
+{{white_check_mark}} Verify that: you cannot connect and write with the token after the duration has expired
 ```
 
 ```{attention}
-{{white_check_mark}} **Verify that:** the overall ingress works by uploading different kinds of files, e.g. data, images, scripts (if appropriate).
+{{white_check_mark}} Verify that: the data ingress process works by uploading different kinds of files, e.g. data, images, scripts (if appropriate).
 ```
 
 ## 8. Data egress
 
 ### Turing configuration setting:
 
-- Users can write to the `/output` volume
+- Research users can write to the `/output` volume.
 - A {ref}`role_system_manager` can view and download data in the `/output` volume via `Azure Storage Explorer`.
 
 ### Implication:
@@ -564,90 +465,30 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 #### Confirm that a non-privileged user is able to read the different storage volumes and write to output
 
-- Login to an SRD as the **SRE standard user** via the remote desktop web client
+- Login to an SRD as the research user via the remote desktop web client
 - Open up a file explorer and search for the various storage volumes
 
 ```{attention}
-{{white_check_mark}} **Verify that:** the `/output` volume exists and can be read and written to
+{{white_check_mark}} Verify that: the `/output` volume exists and can be read and written to.
 ```
 
 ```{attention}
-{{white_check_mark}} **Verify that:** the permissions of other storage volumes match that {ref}`described in the user guide <role_researcher_user_guide_shared_storage>`.
+{{white_check_mark}} Verify that: the permissions of other storage volumes match that described in the [user guide](../roles/researcher/using_the_sre.md#-sharing-files-inside-the-sre).
 ```
 
-#### Confirm that the different volumes exist in blob storage and that logging on requires domain admin permissions
+#### Confirm that {ref}`role_system_manager` can see and download files from output
 
-- As the {ref}`role_system_manager`, follow the instructions in the {ref}`administrator document <roles_system_manager_data_egress>` on how to access files set for egress with `Azure Storage Explorer`.
+- As the {ref}`role_system_manager`, follow the instructions in the [project manager documentation](../roles/project_manager/data_egress.md#data-egress-process) on how to access files set for egress with `Azure Storage Explorer`.
 
 ```{attention}
-{{white_check_mark}} **Verify that:** you can see the files written to the `/output` storage volume (including any you created as a non-privileged user in step 1)
-```
-
-```{attention}
-{{white_check_mark}} **Verify that:** a written file can be taken out of the environment via download
-```
-
-## 9. Software ingress
-
-### Turing configuration setting:
-
-- For {ref}`policy_tier_0` and {ref}`policy_tier_1` environments, outbound internet access means users can directly download their software from the internet.
-- For {ref}`policy_tier_2` or higher environments we use the secure data transfer process.
-
-- Installation during deployment
-    - If known in advance, software can be installed during SRD deployment whilst there is still internet access, but before project data is added. Once the software is installed, the SRD undergoes ingress into the environment with a one way lock.
-- Installation after deployment
-    - Once an SRD has been deployed into the analysis environment it cannot be moved out. There is no outbound internet access.
-    - Software is added via ingress in a similar manner to data:
-        - Researchers are provided temporary write-only access to the software ingress volume.
-        - The access is then revoked and the software is then reviewed.
-        - If it passes review, the software is moved into the environment.
-    - If the software requires administrator rights to install, a {ref}`role_system_manager` must do this. Otherwise, the researcher can do this themselves.
-
-### Implication:
-
-- The base SRD provided in the SREs comes with a wide range of common data science software pre-installed, as well as package mirrors.
-- Additional software must be added separately via ingress.
-
-### Verify by:
-
-#### Check that some software tools were installed as expected during deployment
-
-- Login to an SRD as the **SRE standard user** via the remote desktop web client
-
-````{attention}
-{{camera}} <b>Verify that:</b>
-
-<details><summary>the following programmes can be opened without issue: <i>DBeaver</i>, <i>RStudio</i>, <i>PyCharm</i> and <i>Visual Studio Code</i></summary>
-
-```{image} security_checklist/srd_installed_software.png
-:alt: SRD installed software
-:align: center
-```
-</details>
-````
-
-#### Check that it's possible to grant and revoke software ingress capability
-
-- Follow the instructions in the {ref}`Safe Haven Administrator Documentation <roles_system_manager_software_ingress>`:
-
-```{attention}
-{{white_check_mark}} **Verify that:** you can generate a temporary write-only upload token
+{{white_check_mark}} Verify that: you can see the files written to the `/output` storage volume.
 ```
 
 ```{attention}
-{{white_check_mark}} **Verify that:** you can upload software as a non-admin with this token, but write access is revoked after the temporary token has expired
+{{white_check_mark}} Verify that: a written file can be taken out of the environment via download
 ```
 
-```{attention}
-{{white_check_mark}} **Verify that:** software uploaded by a non-admin can be read by administrators
-```
-
-```{attention}
-{{white_check_mark}} **Verify that:** the **SRE standard user** cannot install software that requires administrator rights (e.g. anything that is installed with `apt`)
-```
-
-## 10. Software package repositories
+## 9. Software package repositories
 
 ### Turing configuration setting::
 
@@ -656,117 +497,64 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 ### Implication:
 
-- {ref}`policy_tier_2`: User can access all packages from PyPI/CRAN
-- {ref}`policy_tier_3`: User can only access approved packages from PyPI/CRAN. Allowed list is in `environment_configs/package_lists`
+- {ref}`policy_tier_2`: User can access all packages from PyPI/CRAN.
+- {ref}`policy_tier_3`: User can only access approved packages from PyPI/CRAN.
 
 ### Verify by:
 
-#### {ref}`policy_tier_2`: Download a package that is **not** on the allow list
+#### {ref}`policy_tier_2`: Download a package that is not on the allow list
 
-- Login as the **SRE standard user** into an SRD via remote desktop web client
-- Open up a terminal
-- Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `pip install aero-calc`)
-
-````{attention}
-{{camera}} <b>Verify that:</b>
-
-<details><summary>you can install the package</summary>
-
-```{image} security_checklist/srd_pypi_tier2_allow_listed.png
-:alt: SRD PyPI Tier 2
-:align: center
-```
-</details>
-````
-
-- Attempt to install any package that is not on the allowed list (for example, try `pip install awscli`)
+- Connect to a Tier 2 workspace as the research user via remote desktop web client.
+- Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `python -m venv ./venv && source ./venv/bin/activate && pip install pytz`)
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
 
 <details><summary>you can install the package</summary>
 
-```{image} security_checklist/srd_pypi_tier2_not_allow_listed.png
-:alt: SRD PyPI Tier 2
+```{image} security_checklist/pypi_t2_allowed.png
 :align: center
 ```
 </details>
 ````
 
-#### {ref}`policy_tier_3`: Download a package on the allow list and one **not** on the allow list
-
-- Login as the **SRE standard user** into an SRD via remote desktop web client
-- Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `pip install aero-calc`)
+- Then attempt to install any package that is not on the allowed list (for example, try `pip install -q awscli`)
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
 
 <details><summary>you can install the package</summary>
 
-```{image} security_checklist/srd_pypi_tier3_allowed.png
-:alt: SRD PyPI Tier 3
+```{image} security_checklist/pypi_t2_disallowed.png
 :align: center
 ```
 </details>
 ````
 
-- Then attempt to download a package that is not included in the allowed list (for example, try `pip install awscli`)
+#### {ref}`policy_tier_3`: Download a package on the allow list and one not on the allow list
+
+- Connect to a Tier 3 workspace as the research user via remote desktop web client.
+- Attempt to install a package on the allowed list that is not included out-of-the-box (for example, try `python -m venv ./venv && source ./venv/bin/activate && pip install pytz`).
+
+````{attention}
+{{camera}} <b>Verify that:</b>
+
+<details><summary>you can install the package</summary>
+
+```{image} security_checklist/pypi_t3_allowed.png
+:align: center
+```
+</details>
+````
+
+- Then attempt to download a package that is not included in the allowed list (for example, try `pip install awscli`).
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
 
 <details><summary>you cannot install the package</summary>
 
-```{image} security_checklist/srd_pypi_tier3_denied.png
-:alt: SRD PyPI Tier 3
-:align: center
-```
-</details>
-````
-
-## 11. Firewall controls
-
-### Turing configuration setting:
-
-- Whilst all user accessible VMs are entirely blocked off from the internet, this is not the case for administrator-only VMs.
-- An Azure Firewall governs the internet access provided to these VMs, limiting them mostly to downloading system updates.
-
-### Implication:
-
-- An `Azure Firewall` ensures that the administrator VMs have the minimal level of internet access required to function.
-
-### Verify by:
-
-#### Admin has limited access to the internet
-
-- As the {ref}`role_system_manager` use Remote Desktop to connect to the SHM domain controller VM
-- Attempt to connect to a non-approved site, such as `www.google.com`
-
-````{attention}
-{{camera}} <b>Verify that:</b>
-
-<details><summary>connection fails</summary>
-
-```{image} security_checklist/shmdc_website_deny.png
-:alt: SHM DC website denied
-:align: center
-```
-</details>
-````
-
-#### Admin can download Windows updates
-
-- As the {ref}`role_system_manager` use Remote Desktop to connect to the SHM domain controller VM
-- Click on `Start -> Settings-> Update & Security`
-- Click the `Download` button
-
-````{attention}
-{{camera}} <b>Verify that:</b>
-
-<details><summary>updates download and install successfully</summary>
-
-```{image} security_checklist/shmdc_windows_update.png
-:alt: SHM DC update allowed
+```{image} security_checklist/pypi_t3_disallowed.png
 :align: center
 ```
 </details>

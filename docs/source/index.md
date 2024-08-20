@@ -1,15 +1,16 @@
 # The Turing Data Safe Haven
 
-```{toctree}
+:::{toctree}
 :hidden: true
 :maxdepth: 2
 
 overview/index.md
 design/index.md
 deployment/index.md
+management/index.md
 roles/index.md
 contributing/index.md
-```
+:::
 
 ```{image} _static/scriberia_diagram.jpg
 :alt: Data Safe Haven cartoon by Scriberia for The Alan Turing Institute
@@ -39,6 +40,8 @@ You can read them through in order or simply jump to the section that you are mo
     - If you want details about the technical design of the Data Safe Haven.
 - [**Deployment**](deployment/index.md)
     - If you want to deploy your own Data Safe Haven.
+- [**Management**](management/index.md)
+    - If you want to manage a Data Safe Haven that you (or someone else) has deployed.
 - [**Roles**](roles/index.md)
     - Information about the different user roles in the Data Safe Haven.
     - Instructions and advice for the actions of different user roles.

@@ -590,6 +590,25 @@
         "bug",
         "review"
       ]
+    },
+    {
+      "login": "J0shev",
+      "name": "Josh Everett",
+      "avatar_url": "https://avatars.githubusercontent.com/u/17052866?v=4",
+      "profile": "https://github.com/J0shev",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "dsj976",
+      "name": "David Salvador Jasin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/57944311?v=4",
+      "profile": "https://github.com/dsj976",
+      "contributions": [
+        "bug",
+        "doc"
+      ]
     }
   ],
   "contributorsSortAlphabetically": true,

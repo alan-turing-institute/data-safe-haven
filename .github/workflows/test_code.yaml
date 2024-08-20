@@ -1,38 +1,61 @@
 ---
 name: Test code
 
-# Run workflow on pushes to matching branches
+# Run workflow on PRs and pushes to matching branches
 on:  # yamllint disable-line rule:truthy
   push:
     branches: [develop, latest]
   pull_request:
-    branches: [develop, latest]
 
 jobs:
-  test_powershell:
+  test_python:
     runs-on: ubuntu-latest
+    permissions:
+      # Gives the action the necessary permissions for publishing new
+      # comments in pull requests.
+      pull-requests: write
+      # Gives the action the necessary permissions for pushing data to the
+      # python-coverage-comment-action branch, and for editing existing
+      # comments (to avoid publishing multiple comments in the same PR)
+      contents: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Install requirements
-        shell: pwsh
-        run: |
-          Set-PSRepository PSGallery -InstallationPolicy Trusted
-          deployment/CheckRequirements.ps1 -InstallMissing -IncludeDev
-      - name: Test PowerShell
-        shell: pwsh
-        run: ./tests/Run_Pester_Tests.ps1
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      - name: Install hatch
+        run: pip install hatch
+      - name: Test Python
+        run: hatch run test:test-coverage
+      # For security reasons, PRs created from forks cannot generate PR comments directly
+      # (see https://securitylab.github.com/research/github-actions-preventing-pwn-requests/).
+      # Instead we need to trigger another workflow after this one completes.
+      - name: Generate coverage comment
+        id: coverage_comment
+        uses: py-cov-action/python-coverage-comment-action@v3
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+      # Save the coverage comment for later use
+      # See https://github.com/py-cov-action/python-coverage-comment-action/blob/main/README.md
+      - name: Save coverage comment as an artifact
+        uses: actions/upload-artifact@v4
+        if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
+        with:
+          name: python-coverage-comment-action
+          path: python-coverage-comment-action.txt
 
   test_markdown_links:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install requirements
         shell: bash
         run: npm install -g markdown-link-check
       - name: Link Checker
-        uses: lycheeverse/lychee-action@v1.7.0
+        uses: lycheeverse/lychee-action@v1.10.0
         with:
           args: --config='./.lychee.toml' --no-progress --offline '**/*.md' --exclude-path './docs'
           fail: true  # fail on broken links
