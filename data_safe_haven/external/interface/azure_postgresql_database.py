@@ -142,7 +142,7 @@ class AzurePostgreSQLDatabase:
                 _filepath = pathlib.Path(filepath)
                 self.logger.info(f"Running SQL script: [green]{_filepath.name}[/].")
                 commands = self.load_sql(_filepath, mustache_values)
-                for line in commands.splitlines:
+                for line in commands.splitlines():
                     self.logger.debug(line)
                 cursor.execute(query=commands.encode())
                 if cursor.statusmessage and "SELECT" in cursor.statusmessage:
