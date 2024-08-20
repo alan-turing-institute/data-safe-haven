@@ -378,17 +378,6 @@ Connection from within the secure physical space is possible.
 {{white_check_mark}} Verify that: paste fails
 ```
 
-#### Users can copy between VMs inside the network
-
-- Login to a workspace as the research user via the remote desktop web client
-- Open a text editor or terminal, write some text, and copy it.
-- In another browser tab or window, connect to a workspace in the same SRE (or to the same workspace via the SSH connection) using the remote desktop web client.
-- Attempt to paste the text to it.
-
-```{attention}
-{{white_check_mark}} Verify that: paste succeeds
-```
-
 ## 7. Data ingress
 
 ### Turing configuration setting:
