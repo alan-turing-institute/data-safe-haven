@@ -17,7 +17,7 @@ $ hatch shell
 This ensures that you are using the intended version of Data Safe Haven with the correct set of dependencies.
 ::::
 
-::::{important}
+::::{note}
 As the Basic Application Gateway is still in preview, you will need to run the following commands once per subscription:
 
 :::{code} shell
@@ -33,11 +33,24 @@ $ az provider register --name Microsoft.Network
 
 Each project will have its own dedicated SRE.
 
-- Create a configuration file
+- Create a configuration file (optionally starting from one of our standard {ref}`policy_classification_sensitivity_tiers`)
+
+::::{admonition} EITHER start from a blank template
+:class: dropdown note
 
 :::{code} shell
 $ dsh config template --file PATH_YOU_WANT_TO_SAVE_YOUR_YAML_FILE_TO
 :::
+::::
+
+::::{admonition} OR start from a predefined tier
+:class: dropdown note
+
+:::{code} shell
+$ dsh config template --file PATH_YOU_WANT_TO_SAVE_YOUR_YAML_FILE_TO \
+                      --tier TIER_YOU_WANT_TO_USE
+:::
+::::
 
 - Edit this file in your favourite text editor, replacing the placeholder text with appropriate values for your setup.
 
