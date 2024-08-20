@@ -51,7 +51,7 @@ The following resources should be deployed
 
 ### Accounts
 
-[Create a user account](../management/index#add-users-to-the-data-safe-ahven) for the research user in your SHM.
+[Create a user account](../management/index.md#add-users-to-the-data-safe-haven) for the research user in your SHM.
 
 ## 1. Multifactor authentication and password strength
 
@@ -86,7 +86,7 @@ Attempt to login to the remote desktop web client as the research user.
 
 #### Check: Membership of the correct group is insufficient to give access
 
-[Assign the research user to SRE A](../management/index#assign-existing-users-to-an-sre).
+[Assign the research user to SRE A](../management/index.md#assign-existing-users-to-an-sre).
 Again, attempt to login to the remote desktop web client.
 
 ````{attention}
