@@ -57,9 +57,38 @@ This is necessary both to secure logins and to allow users to set their own pass
 - Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 - Browse to **{menuselection}`Protection --> Authentication methods`** from the menu on the left side
 - Browse to **{menuselection}`Manage --> Policies`** from the secondary menu on the left side
-- For each of **Microsoft Authenticator**, **SMS**, **Voice call** and **Email OTP** click on the method name
+- For each of **Microsoft Authenticator**, **SMS**, **Third-party software OATH tokens**, **Voice call** and **Email OTP** click on the method name
     - Ensure the slider is set to **Enable** and the target to **All users**
+    - {{bangbang}} For **SMS** ensure that **Use for sign-in** is unchecked
+    - {{bangbang}} For **Voice call** switch to the **Configure** tab and ensure that **Office** is checked
     - Click the **{guilabel}`Save`** button
+
+::::{admonition} Microsoft Entra authentication summary
+:class: dropdown hint
+
+:::{image} images/entra_authentication_methods.png
+:alt: Microsoft Entra authentication methods
+:align: center
+:::
+
+::::
+
+- Browse to **{menuselection}`Protection --> Authentication methods --> Authentication strengths`** from the menu on the left side
+- Click the **{guilabel}`+ New authentication strength`** button
+- Enter the following values on the **Configure** tab
+
+:::{admonition} Configure app-based authentication
+:class: dropdown hint
+
+- **Name**: App-based authentication
+- **Description**: App-based authentication
+- Under **{menuselection}`Multi-factor authentication`**:
+    - Check **Password + Microsoft Authenticator (Push notification)**
+    - Check **Password + Software OATH token**
+- Click the **{guilabel}`Next`** button
+- Click the **{guilabel}`Create`** button
+
+:::
 
 ## Activate your native Microsoft Entra account
 
@@ -187,7 +216,8 @@ These instructions will create a policy which requires all users (except the eme
         - Click the **{guilabel}`Done`** button
 - Under **{menuselection}`Grant`**:
     - Check **Grant access**
-    - Check **Require multi-factor authentication**
+    - Check **Require authentication strength**
+    - In the drop-down menu select **App-based authentication**
     - Click the **{guilabel}`Select`** button
 - Under **{menuselection}`Session`**:
     - Check **Sign-in frequency**
