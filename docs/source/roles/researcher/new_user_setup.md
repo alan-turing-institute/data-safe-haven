@@ -255,76 +255,9 @@ Please follow these steps carefully.
 The next step in setting up your account is to authenticate your account from your phone.
 This additional security verification is to make it harder for people to impersonate you and connect to the environment without permission.
 This is known as multi-factor authentication (MFA).
+The Data Safe Haven requires that you use a phone app for MFA - this can be **Microsoft Authenticator** or another authenticator app.
 
-#### {{telephone_receiver}} Phone number registration
-
-::::{admonition} 1. Enter your phone number
-:class: dropdown note
-
-- In order to set up MFA you will need to enter your phone number
-
-    :::{image} images/account_setup_mfa_additional_security_verification.png
-    :alt: Additional security verification
-    :align: center
-    :width: 90%
-    :::
-::::
-
-::::{admonition} 2. Answer a phone call
-:class: dropdown note
-
-- Once you click **{guilabel}`Next`** you will receive a phone call straight away.
-
-    :::{image} images/account_setup_mfa_verifying_phone.png
-    :alt: Verifying phone number
-    :align: center
-    :width: 90%
-    :::
-
-    :::{tip}
-    The call might say _press the pound key_ or _press the hash key_. Both mean hit the `#` button.
-    :::
-::::
-
-::::{admonition} 3. Register phone number
-:class: dropdown note
-
-- After following the instructions you will see the following screen
-
-    :::{image} images/account_setup_mfa_verified_phone.png
-    :alt: Verified phone number
-    :align: center
-    :width: 90%
-    :::
-
-- Click **{guilabel}`Next`** to register this phone number for MFA
-
-    :::{image} images/account_setup_mfa_registered_phone.png
-    :alt: Registered phone number
-    :align: center
-    :width: 90%
-    :::
-
-- Click **{guilabel}`Done`**
-
-::::
-
-::::{admonition} 4. Check the Security Information dashboard
-:class: dropdown note
-
-- You should now see the Security Information dashboard that lists all your verified MFA methods
-
-    :::{image} images/account_setup_mfa_dashboard_phone_only.png
-    :alt: Registered phone number
-    :align: center
-    :width: 90%
-    :::
-
-- Choose whichever you prefer to be your **Default sign-in method**.
-
-::::
-
-#### {{iphone}} Authenticator app registration
+#### {{bento_box}} Microsoft Authenticator app
 
 ::::{admonition} 1. Download the Microsoft Authenticator app
 :class: dropdown note
@@ -335,9 +268,13 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
 - {{robot}} Android: `https://bit.ly/androidauthenticator`
 - {{bento_box}} Windows mobile: `https://bit.ly/windowsauthenticator`
 
+    :::{important}
+    You must give permission for the authenticator app to send you notifications for the app to work as an MFA method.
+    :::
+
 ::::
 
-::::{admonition} 2. Open authenticator app
+::::{admonition} 2. Add sign-in method
 :class: dropdown note
 
 - Click on **{guilabel}`+ Add sign-in method`** and select **Authenticator app**.
@@ -350,31 +287,27 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
 
 - At the **Getting the app** click on **{guilabel}`Next`**.
 
-    :::{image} images/account_setup_mfa_download_authenticator_app.png
+    :::{image} images/account_setup_mfa_choose_authenticator_app.png
     :alt: Add Authenticator app
     :align: center
     :width: 90%
     :::
 
-- Open the app
+- Open the Microsoft Authenticator app
 
 ::::
 
 ::::{admonition} 3. Register your app
 :class: dropdown note
 
-- From the app
+- From the Microsoft Authenticator app
     - Select **Add an account**
     - Select **Work or School account**
-
+- From your browser, at the on-screen prompt click on **{guilabel}`Next`**.
     :::{image} images/account_setup_mfa_allow_notifications.png
     :alt: Allow Authenticator notifications
     :align: center
     :width: 90%
-    :::
-
-    :::{important}
-    You must give permission for the authenticator app to send you notifications for the app to work as an MFA method.
     :::
 
 - The next prompt will give you a QR code to scan, like the one shown below
@@ -388,7 +321,7 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
 
 - Once this is completed, Microsoft will send you a test notification to respond to
 
-  :::{image} images/account_setup_mfa_authenticator_app_test.png
+  :::{image} images/account_setup_mfa_microsoft_authenticator_app_test.png
   :alt: Authenticator app test notification
   :align: center
   :width: 90%
@@ -396,7 +329,7 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
 
 - When you click **{guilabel}`Approve`** on the phone notification, you will get the following message in your browser
 
-  :::{image} images/account_setup_mfa_authenticator_app_approved.png
+  :::{image} images/account_setup_mfa_microsoft_authenticator_app_approved.png
   :alt: Authenticator app test approved
   :align: center
   :width: 90%
@@ -406,13 +339,104 @@ Search for **Microsoft Authenticator** in your phone's app store or follow the a
 ::::{admonition} 4. Check the Security Information dashboard
 :class: dropdown note
 
-- You should now be returned to the Security Information dashboard that lists two verified MFA methods
+- You should now be returned to the Security Information dashboard that shows the **Microsoft Authenticator** method.
 
-  :::{image} images/account_setup_mfa_dashboard_two_methods.png
+  :::{image} images/account_setup_mfa_dashboard_microsoft_authenticator.png
   :alt: Registered MFA methods
   :align: center
   :width: 90%
   :::
+
+- Choose whichever you prefer to be your **Default sign-in method**.
+
+::::
+
+#### {{iphone}} Alternate authenticator app
+
+::::{admonition} 1. Download an authenticator app
+:class: dropdown note
+
+- Choose an authenticator app that supports **time-based one-time password (TOTP)**.
+- One example is **Google Authenticator**.
+
+    :::{important}
+    You must give permission for the authenticator app to send you notifications for the app to work as an MFA method.
+    :::
+
+::::
+
+::::{admonition} 2. Add sign-in method
+:class: dropdown note
+
+- Click on **{guilabel}`+ Add sign-in method`** and select **Authenticator app**.
+
+    :::{image} images/account_setup_mfa_add_authenticator_app.png
+    :alt: Add Authenticator app
+    :align: center
+    :width: 90%
+    :::
+
+- At the **Getting the app** click on **I want to use a different authenticator app**.
+
+    :::{image} images/account_setup_mfa_choose_authenticator_app.png
+    :alt: Add Authenticator app
+    :align: center
+    :width: 90%
+    :::
+
+- Open your authenticator app
+
+::::
+
+::::{admonition} 3. Register your app
+:class: dropdown note
+
+- Follow the steps in your authenticator app to add a new account
+- At the on-screen prompt click on **{guilabel}`Next`**.
+
+    :::{image} images/account_setup_mfa_totp_allow_notifications.png
+    :alt: Allow authenticator notifications
+    :align: center
+    :width: 90%
+    :::
+
+- The next prompt will give you a QR code to scan, like the one shown below
+- Scan the QR code on the screen then click **{guilabel}`Next`**
+
+    :::{image} images/account_setup_mfa_totp_app_qrcode.png
+    :alt: Setup Authenticator app
+    :align: center
+    :width: 90%
+    :::
+
+- Once this is completed, Microsoft will send you a test notification to respond to
+
+    :::{image} images/account_setup_mfa_totp_authenticator_app_test.png
+    :alt: Authenticator app test notification
+    :align: center
+    :width: 90%
+    :::
+
+- When you click **{guilabel}`Approve`** on the phone notification, you will get the following message in your browser
+
+    :::{image} images/account_setup_mfa_totp_authenticator_app_approved.png
+    :alt: Authenticator app test approved
+    :align: center
+    :width: 90%
+    :::
+
+::::
+
+::::{admonition} 4. Check the Security Information dashboard
+:class: dropdown note
+
+- You should now be returned to the Security Information dashboard that shows the **Authenticator app** method.
+
+    :::{image} images/account_setup_mfa_dashboard_totp_authenticator.png
+    :alt: Registered MFA methods
+    :align: center
+    :width: 90%
+    :::
 
 - Choose whichever you prefer to be your **Default sign-in method**.
 
