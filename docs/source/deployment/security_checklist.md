@@ -496,66 +496,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 {{white_check_mark}} Verify that: a written file can be taken out of the environment via download
 ```
 
-## 9. Software ingress
-
-### Turing configuration setting:
-
-- For {ref}`policy_tier_0` and {ref}`policy_tier_1` environments, outbound internet access means users can directly download their software from the internet.
-- For {ref}`policy_tier_2` or higher environments we use the secure data transfer process.
-
-- Installation during deployment
-    - If known in advance, software can be installed during SRD deployment whilst there is still internet access, but before project data is added. Once the software is installed, the SRD undergoes ingress into the environment with a one way lock.
-- Installation after deployment
-    - Once an SRD has been deployed into the analysis environment it cannot be moved out. There is no outbound internet access.
-    - Software is added via ingress in a similar manner to data:
-        - Researchers are provided temporary write-only access to the software ingress volume.
-        - The access is then revoked and the software is then reviewed.
-        - If it passes review, the software is moved into the environment.
-    - If the software requires administrator rights to install, a {ref}`role_system_manager` must do this. Otherwise, the researcher can do this themselves.
-
-### Implication:
-
-- The base SRD provided in the SREs comes with a wide range of common data science software pre-installed, as well as package mirrors.
-- Additional software must be added separately via ingress.
-
-### Verify by:
-
-#### Check that some software tools were installed as expected during deployment
-
-- Login to an SRD as the research user via the remote desktop web client
-
-````{attention}
-{{camera}} <b>Verify that:</b>
-
-<details><summary>the following programmes can be opened without issue: <i>DBeaver</i>, <i>RStudio</i>, <i>PyCharm</i> and <i>Visual Studio Code</i></summary>
-
-```{image} security_checklist/srd_installed_software.png
-:align: center
-```
-</details>
-````
-
-#### Check that it's possible to grant and revoke software ingress capability
-
-- Follow the instructions in the {ref}`Safe Haven Administrator Documentation <roles_system_manager_software_ingress>`:
-
-```{attention}
-{{white_check_mark}} Verify that: you can generate a temporary write-only upload token
-```
-
-```{attention}
-{{white_check_mark}} Verify that: you can upload software as a non-admin with this token, but write access is revoked after the temporary token has expired
-```
-
-```{attention}
-{{white_check_mark}} Verify that: software uploaded by a non-admin can be read by administrators
-```
-
-```{attention}
-{{white_check_mark}} Verify that: the research user cannot install software that requires administrator rights (e.g. anything that is installed with `apt`)
-```
-
-## 10. Software package repositories
+## 9. Software package repositories
 
 ### Turing configuration setting::
 
