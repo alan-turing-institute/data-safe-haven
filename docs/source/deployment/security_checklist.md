@@ -323,11 +323,11 @@ There are network rules permitting access to the portal from allowed IP addresse
 - Medium security research spaces control the possibility of unauthorised viewing.
 - Card access or other means of restricting entry to only known researchers (such as the signing in of guests on a known list) is required.
 - Screen adaptations or desk partitions can be adopted in open-plan spaces if there is a high risk of "visual eavesdropping".
-- Firewall rules for the Environments can permit access only from Restricted network IP ranges corresponding to these research spaces.
+- Firewall rules can permit access only from IP ranges corresponding to these research spaces.
 
 ### Implication:
 
-- At {ref}`policy_tier_3` access is limited to certain secure physical spaces
+- At {ref}`policy_tier_3` access is limited to certain secure physical spaces.
 
 ### Verify by:
 
@@ -335,18 +335,18 @@ There are network rules permitting access to the portal from allowed IP addresse
 
 Connection from outside the secure physical space is not possible.
 
-- Attempt to connect to the {ref}`policy_tier_3` SRE web client from home using a managed device and the correct VPN connection and credentials
+- Attempt to connect to the {ref}`policy_tier_3` SRE web client from home using a managed device and the correct VPN connection and credentials.
 
 ```{attention}
-{{white_check_mark}} Verify that: connection fails
+{{white_check_mark}} Verify that: connection fails.
 ```
 
 Connection from within the secure physical space is possible.
 
-- Attempt to connect from research office using a managed device and the correct VPN connection and credentials
+- Attempt to connect from research office using a managed device and the correct VPN connection and credentials.
 
 ```{attention}
-{{white_check_mark}} Verify that: connection succeeds
+{{white_check_mark}} Verify that: connection succeeds.
 ```
 
 ```{attention}
