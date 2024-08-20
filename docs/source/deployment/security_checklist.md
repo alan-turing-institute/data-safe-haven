@@ -79,7 +79,6 @@ Do not register this user with any SRE yet.
  <details><summary> user can reset their own password</summary>
 
 ```{image} security_checklist/login_no_mfa_guacamole.png
-:alt: Guacamole MFA setup prompt
 :align: center
 ```
 
@@ -95,7 +94,6 @@ Attempt to login to the remote desktop web client as the research user.
  <details><summary>user can authenticated but cannot see any workspaces</summary>
 
 ```{image} security_checklist/login_no_mfa_guacamole.png
-:alt: Guacamole MFA setup prompt
 :align: center
 ```
 
@@ -113,7 +111,6 @@ Check that the research user can authenticate using MFA and is granted access to
 <details><summary>user can authenicated and can see workspaces</summary>
 
 ```{image} security_checklist/aad_mfa_approve_signin_request.png
-:alt: AAD MFA approve sign-in request
 :align: center
 ```
 
@@ -132,7 +129,6 @@ Check that the research user can access a workspace.
 <details><summary>you can connect to any workspace</summary>
 
 ```{image} security_checklist/guacamole_srd_desktop.png
-:alt: SRD desktop
 :align: center
 ```
 
@@ -161,28 +157,25 @@ Check that the research user can access a workspace.
 ````{attention}
 {{camera}} <b>Verify that:</b>
 
-<details><summary>browsing to the website fails</i></summary>
+<details><summary>browsing to the service fails</i></summary>
 
 ```{image} security_checklist/srd_no_internet.png
-:alt: SRD no internet
 :align: center
 ```
 
 </details>
 
-<details><summary>you cannot access the website using curl</summary>
+<details><summary>you cannot access the service using curl</summary>
 
 ```{image} security_checklist/srd_no_curl.png
-:alt: SRD no curl
 :align: center
 ```
 
 </details>
 
-<details><summary>you cannot look up the IP address for the website using nslookup</summary>
+<details><summary>you cannot look up the IP address for the service using nslookup</summary>
 
 ```{image} security_checklist/srd_no_nslookup.png
-:alt: SRD no curl
 :align: center
 ```
 </details>
@@ -208,7 +201,6 @@ Check that the research user can access a workspace.
 <details><summary>there exists an NSG rule with Destination <i>Internet</i> and Action <i>Deny</i> and that no higher priority rule allows connection to the internet.</summary>
 
 ```{image} security_checklist/nsg_outbound_access.png
-:alt: NSG outbound access
 :align: center
 ```
 </details>
@@ -282,7 +274,6 @@ There are network rules permitting access to the portal from allowed IP addresse
 <details><summary>the NSG has network rules allowing <b>inbound</b> access from allow-listed IP addresses only</summary>
 
 ```{image} security_checklist/nsg_inbound_access.png
-:alt: NSG inbound access
 :align: center
 ```
 </details>
@@ -355,7 +346,6 @@ Connection from within the secure physical space is possible.
 <details><summary>SSH login by fully-qualified domain name fails</summary>
 
 ```{image} security_checklist/srd_no_ssh_by_fqdn.png
-:alt: SRD SSH connection by FQDN not possible
 :align: center
 ```
 </details>
@@ -371,7 +361,6 @@ Connection from within the secure physical space is possible.
 <details><summary>SSH login by public IP address fails</summary>
 
 ```{image} security_checklist/srd_no_ssh_by_ip.png
-:alt: SRD SSH connection by IP address not possible
 :align: center
 ```
 </details>
@@ -568,7 +557,6 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 <details><summary>the following programmes can be opened without issue: <i>DBeaver</i>, <i>RStudio</i>, <i>PyCharm</i> and <i>Visual Studio Code</i></summary>
 
 ```{image} security_checklist/srd_installed_software.png
-:alt: SRD installed software
 :align: center
 ```
 </details>
@@ -620,7 +608,6 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 <details><summary>you can install the package</summary>
 
 ```{image} security_checklist/srd_pypi_tier2_allow_listed.png
-:alt: SRD PyPI Tier 2
 :align: center
 ```
 </details>
@@ -634,7 +621,6 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 <details><summary>you can install the package</summary>
 
 ```{image} security_checklist/srd_pypi_tier2_not_allow_listed.png
-:alt: SRD PyPI Tier 2
 :align: center
 ```
 </details>
@@ -651,7 +637,6 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 <details><summary>you can install the package</summary>
 
 ```{image} security_checklist/srd_pypi_tier3_allowed.png
-:alt: SRD PyPI Tier 3
 :align: center
 ```
 </details>
@@ -665,7 +650,6 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 <details><summary>you cannot install the package</summary>
 
 ```{image} security_checklist/srd_pypi_tier3_denied.png
-:alt: SRD PyPI Tier 3
 :align: center
 ```
 </details>
