@@ -131,7 +131,7 @@ Check that the research user can access a workspace.
 {{camera}} <b>Verify that:</b>
 <details><summary>you can connect to any workspace</summary>
 
-```{image} images/workspace_xfce_initial.png
+```{image} security_checklist/workspace_xfce_initial.png
 :align: center
 ```
 
