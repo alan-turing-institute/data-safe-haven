@@ -101,8 +101,12 @@ class SREProvisioningManager:
                         f"{vm_identifier} [{vm_details['cpus']} CPU(s),"
                         f" {vm_details['gpus']} GPU(s), {vm_details['ram']} GB RAM]"
                     ),
-                    "disable_copy": self.remote_desktop_params["disable_copy"],
-                    "disable_paste": self.remote_desktop_params["disable_paste"],
+                    "disable_copy": str(
+                        self.remote_desktop_params["disable_copy"]
+                    ).lower(),
+                    "disable_paste": str(
+                        self.remote_desktop_params["disable_paste"]
+                    ).lower(),
                     "ip_address": vm_details["ip_address"],
                     "timezone": self.remote_desktop_params["timezone"],
                 }
