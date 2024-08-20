@@ -462,7 +462,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 ### Turing configuration setting:
 
-- Users can write to the `/output` volume
+- Research users can write to the `/output` volume.
 - A {ref}`role_system_manager` can view and download data in the `/output` volume via `Azure Storage Explorer`.
 
 ### Implication:
@@ -477,19 +477,19 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 - Open up a file explorer and search for the various storage volumes
 
 ```{attention}
-{{white_check_mark}} Verify that: the `/output` volume exists and can be read and written to
+{{white_check_mark}} Verify that: the `/output` volume exists and can be read and written to.
 ```
 
 ```{attention}
 {{white_check_mark}} Verify that: the permissions of other storage volumes match that {ref}`described in the user guide <role_researcher_user_guide_shared_storage>`.
 ```
 
-#### Confirm that the different volumes exist in blob storage and that logging on requires domain admin permissions
+#### Confirm that {ref}`role_system_manager` can see and download files from output
 
 - As the {ref}`role_system_manager`, follow the instructions in the {ref}`administrator document <roles_system_manager_data_egress>` on how to access files set for egress with `Azure Storage Explorer`.
 
 ```{attention}
-{{white_check_mark}} Verify that: you can see the files written to the `/output` storage volume (including any you created as a non-privileged user in step 1)
+{{white_check_mark}} Verify that: you can see the files written to the `/output` storage volume.
 ```
 
 ```{attention}
