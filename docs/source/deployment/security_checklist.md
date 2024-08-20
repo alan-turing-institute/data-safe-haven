@@ -143,8 +143,8 @@ Check that the research user can access a workspace.
 
 ### Turing configuration setting:
 
-- {ref}`Researchers <role_researcher>` cannot access any part of an SRE (except the portal) from outside the SRE network.
-- {ref}`Researchers <role_researcher>` in the SRE network, cannot use the connect to clients outside the SRE network (with the exception of indirect, read-only access to package repositories).
+- The only part of the SRE a {ref}`Researchers <role_researcher>` can access from the internet is the remote desktop web client.
+- From within the SRE, a {ref}`Researchers <role_researcher>` cannot use the connect to clients outside the SRE network (with the exception of indirect, read-only access to package repositories).
 - SREs are isolated from one another.
 
 ### Implication:
