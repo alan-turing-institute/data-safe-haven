@@ -4,8 +4,8 @@
 # - emoji==2.12.1
 # - myst-parser==4.0.0
 # - pydata-sphinx-theme==0.15.4
-# - sphinx==8.0.2
 # - sphinx-togglebutton==0.3.2
+# - sphinx==8.0.2
 #
 
 accessible-pygments==0.0.5

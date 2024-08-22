@@ -50,6 +50,15 @@ dependencies = [
   "websocket-client==1.8.0",
 ]
 
+[project.optional-dependencies]
+docs = [
+  "emoji==2.12.1",
+  "myst-parser==4.0.0",
+  "pydata-sphinx-theme==0.15.4",
+  "sphinx==8.0.2",
+  "sphinx-togglebutton==0.3.2",
+]
+
 [project.scripts]
 dsh = "data_safe_haven.commands.cli:main"
 
@@ -77,13 +86,7 @@ lock-filename = ".hatch/requirements.txt"
 type = "pip-compile"
 lock-filename = ".hatch/requirements-docs.txt"
 detached = true
-dependencies = [
-  "emoji==2.12.1",
-  "myst-parser==4.0.0",
-  "pydata-sphinx-theme==0.15.4",
-  "sphinx==8.0.2",
-  "sphinx-togglebutton==0.3.2",
-]
+features = ["docs"]
 
 [tool.hatch.envs.docs.scripts]
 build = [
