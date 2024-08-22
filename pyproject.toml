@@ -66,7 +66,16 @@ omit= [
   "data_safe_haven/resources/*",
 ]
 
+[tool.hatch.env]
+requires = ["hatch-pip-compile"]
+
+[tool.hatch.envs.default]
+type = "pip-compile"
+lock-filename = ".hatch/requirements.txt"
+
 [tool.hatch.envs.docs]
+type = "pip-compile"
+lock-filename = ".hatch/requirements-docs.txt"
 detached = true
 dependencies = [
   "emoji==2.12.1",
@@ -83,13 +92,15 @@ build = [
 ]
 
 [tool.hatch.envs.lint]
+type = "pip-compile"
+lock-filename = ".hatch/requirements-lint.txt"
 detached = true
 dependencies = [
   "ansible==10.2.0",
   "ansible-dev-tools==24.7.2",
   "black==24.4.2",
   "mypy==1.10.1",
-  "pydantic==2.8.0",
+  "pydantic==2.8.2",
   "ruff==0.5.0",
   "types-appdirs==1.4.3.5",
   "types-chevron==0.14.2.20240310",
@@ -117,6 +128,9 @@ style = [
 typing = "mypy {args:data_safe_haven}"
 
 [tool.hatch.envs.test]
+type = "pip-compile"
+lock-filename = ".hatch/requirements-test.txt"
+pip-compile-constraint = "default"
 dependencies = [
   "coverage==7.5.4",
   "freezegun==1.5.1",
