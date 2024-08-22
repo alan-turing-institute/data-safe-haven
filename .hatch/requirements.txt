@@ -7,13 +7,11 @@
 # - azure-keyvault-certificates==4.8.0
 # - azure-keyvault-keys==4.9.0
 # - azure-keyvault-secrets==4.8.0
-# - azure-mgmt-automation==1.0.0
 # - azure-mgmt-compute==32.0.0
 # - azure-mgmt-containerinstance==10.1.0
 # - azure-mgmt-dns==8.1.0
 # - azure-mgmt-keyvault==10.3.1
 # - azure-mgmt-msi==7.0.0
-# - azure-mgmt-network==26.0.0
 # - azure-mgmt-rdbms==10.1.0
 # - azure-mgmt-resource==23.1.1
 # - azure-mgmt-storage==21.2.1
@@ -23,11 +21,9 @@
 # - chevron==0.14.0
 # - cryptography==43.0.0
 # - fqdn==1.5.1
-# - msal==1.30.0
 # - psycopg==3.2.1
 # - pulumi-azure-native==2.56.0
 # - pulumi-random==4.16.3
-# - pulumi-tls==5.0.4
 # - pulumi==3.129.0
 # - pydantic==2.8.2
 # - pyjwt[crypto]==2.9.0
@@ -51,13 +47,11 @@ attrs==24.2.0
     # via parver
 azure-common==1.1.28
     # via
-    #   azure-mgmt-automation
     #   azure-mgmt-compute
     #   azure-mgmt-containerinstance
     #   azure-mgmt-dns
     #   azure-mgmt-keyvault
     #   azure-mgmt-msi
-    #   azure-mgmt-network
     #   azure-mgmt-rdbms
     #   azure-mgmt-resource
     #   azure-mgmt-storage
@@ -81,21 +75,17 @@ azure-keyvault-keys==4.9.0
     # via hatch.envs.default
 azure-keyvault-secrets==4.8.0
     # via hatch.envs.default
-azure-mgmt-automation==1.0.0
-    # via hatch.envs.default
 azure-mgmt-compute==32.0.0
     # via hatch.envs.default
 azure-mgmt-containerinstance==10.1.0
     # via hatch.envs.default
 azure-mgmt-core==1.4.0
     # via
-    #   azure-mgmt-automation
     #   azure-mgmt-compute
     #   azure-mgmt-containerinstance
     #   azure-mgmt-dns
     #   azure-mgmt-keyvault
     #   azure-mgmt-msi
-    #   azure-mgmt-network
     #   azure-mgmt-rdbms
     #   azure-mgmt-resource
     #   azure-mgmt-storage
@@ -104,8 +94,6 @@ azure-mgmt-dns==8.1.0
 azure-mgmt-keyvault==10.3.1
     # via hatch.envs.default
 azure-mgmt-msi==7.0.0
-    # via hatch.envs.default
-azure-mgmt-network==26.0.0
     # via hatch.envs.default
 azure-mgmt-rdbms==10.1.0
     # via hatch.envs.default
@@ -164,7 +152,6 @@ isodate==0.6.1
     #   azure-mgmt-containerinstance
     #   azure-mgmt-dns
     #   azure-mgmt-keyvault
-    #   azure-mgmt-network
     #   azure-mgmt-resource
     #   azure-mgmt-storage
     #   azure-storage-blob
@@ -179,14 +166,12 @@ mdurl==0.1.2
     # via markdown-it-py
 msal==1.30.0
     # via
-    #   hatch.envs.default
     #   azure-identity
     #   msal-extensions
 msal-extensions==1.2.0
     # via azure-identity
 msrest==0.7.1
     # via
-    #   azure-mgmt-automation
     #   azure-mgmt-msi
     #   azure-mgmt-rdbms
 oauthlib==3.2.2
@@ -195,7 +180,6 @@ parver==0.5
     # via
     #   pulumi-azure-native
     #   pulumi-random
-    #   pulumi-tls
 portalocker==2.10.1
     # via msal-extensions
 protobuf==4.25.4
@@ -207,12 +191,9 @@ pulumi==3.129.0
     #   hatch.envs.default
     #   pulumi-azure-native
     #   pulumi-random
-    #   pulumi-tls
 pulumi-azure-native==2.56.0
     # via hatch.envs.default
 pulumi-random==4.16.3
-    # via hatch.envs.default
-pulumi-tls==5.0.4
     # via hatch.envs.default
 pycparser==2.22
     # via cffi
@@ -259,7 +240,6 @@ semver==2.13.0
     #   pulumi
     #   pulumi-azure-native
     #   pulumi-random
-    #   pulumi-tls
 shellingham==1.5.4
     # via typer
 simple-acme-dns==3.1.0
