@@ -33,9 +33,9 @@ dependencies = [
   "cryptography==43.0.0",
   "fqdn==1.5.1",
   "psycopg==3.2.1",
-  "pulumi==3.129.0",
   "pulumi-azure-native==2.56.0",
   "pulumi-random==4.16.3",
+  "pulumi==3.129.0",
   "pydantic==2.8.2",
   "pyjwt[crypto]==2.9.0",
   "pytz==2024.1",
@@ -51,14 +51,15 @@ docs = [
   "emoji==2.12.1",
   "myst-parser==4.0.0",
   "pydata-sphinx-theme==0.15.4",
-  "sphinx==8.0.2",
   "sphinx-togglebutton==0.3.2",
+  "sphinx==8.0.2",
 ]
 lint = [
   "ansible-dev-tools==24.7.2",
   "ansible==10.2.0",
   "black==24.4.2",
   "mypy==1.10.1",
+  "pandas-stubs==2.2.2.240807",
   "pydantic==2.8.2",
   "ruff==0.5.0",
   "types-appdirs==1.4.3.5",
@@ -149,7 +150,7 @@ path = "data_safe_haven/version.py"
 disallow_subclassing_any = false  # allow subclassing of types from third-party libraries
 files = "data_safe_haven"         # run mypy over this directory
 mypy_path = "typings"             # use this directory for stubs
-plugins = "pydantic.mypy"         # enable the pydantic plugin
+plugins = ["pydantic.mypy"]       # enable the pydantic plugin
 strict = true                     # enable all optional error checking flags
 
 [[tool.mypy.overrides]]
@@ -160,19 +161,14 @@ module = [
     "azure.keyvault.*",
     "azure.mgmt.*",
     "azure.storage.*",
-    "cryptography.*",
     "dns.*",
     "jwt.*",
-    "msal.*",
     "numpy.*",
-    "pandas.*",
     "psycopg.*",
-    "pulumi.*",
     "pulumi_azure_native.*",
     "pulumi_random.*",
-    "pulumi_tls.*",
+    "pulumi.*",
     "pymssql.*",
-    "rich.*",
     "simple_acme_dns.*",
     "sklearn.*",
     "websocket.*",
