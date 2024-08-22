@@ -105,10 +105,7 @@ detached = true
 features = ["docs"]
 
 [tool.hatch.envs.docs.scripts]
-build = [
-  # Treat warnings as errors
-  "make -C docs html SPHINXOPTS='-W'"
-]
+build = "sphinx-build -M html docs/source/ docs/build/ --fail-on-warning"
 
 [tool.hatch.envs.lint]
 type = "pip-compile"
