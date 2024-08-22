@@ -71,6 +71,13 @@ lint = [
   "types-pyyaml==6.0.12.20240311",
   "types-requests==2.32.0.20240622",
 ]
+test = [
+  "coverage==7.5.4",
+  "freezegun==1.5.1",
+  "pytest-mock==3.14.0",
+  "pytest==8.2.2",
+  "requests-mock==1.12.1",
+]
 
 [project.scripts]
 dsh = "data_safe_haven.commands.cli:main"
@@ -135,13 +142,7 @@ typing = "mypy {args:data_safe_haven}"
 type = "pip-compile"
 lock-filename = ".hatch/requirements-test.txt"
 pip-compile-constraint = "default"
-dependencies = [
-  "coverage==7.5.4",
-  "freezegun==1.5.1",
-  "pytest==8.2.2",
-  "pytest-mock==3.14.0",
-  "requests-mock==1.12.1",
-]
+features = ["test"]
 
 [tool.hatch.envs.test.scripts]
 test = "coverage run -m pytest {args: tests}"

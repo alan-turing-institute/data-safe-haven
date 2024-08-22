@@ -3,11 +3,6 @@
 #
 # [constraints] .hatch/requirements.txt (SHA256: f69a7b24505549799b2702a30abac1cfa1d85ea29ffe35d27691e5112ed51eb3)
 #
-# - coverage==7.5.4
-# - freezegun==1.5.1
-# - pytest==8.2.2
-# - pytest-mock==3.14.0
-# - requests-mock==1.12.1
 # - appdirs==1.4.4
 # - azure-core==1.30.2
 # - azure-identity==1.17.1
@@ -44,6 +39,11 @@
 # - simple-acme-dns==3.1.0
 # - typer==0.12.4
 # - websocket-client==1.8.0
+# - coverage==7.5.4
+# - freezegun==1.5.1
+# - pytest-mock==3.14.0
+# - pytest==8.2.2
+# - requests-mock==1.12.1
 #
 
 acme==2.10.0
