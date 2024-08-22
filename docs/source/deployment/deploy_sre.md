@@ -4,19 +4,6 @@
 
 These instructions will deploy a new Secure Research Environment (SRE).
 
-::::{admonition} Ensure you are using a hatch shell
-:class: dropdown important
-
-You must use a `hatch` shell to run any `dsh` commands.
-From the project base directory run:
-
-:::{code} shell
-$ hatch shell
-:::
-
-This ensures that you are using the intended version of Data Safe Haven with the correct set of dependencies.
-::::
-
 ::::{note}
 As the Basic Application Gateway is still in preview, you will need to run the following commands once per subscription:
 
