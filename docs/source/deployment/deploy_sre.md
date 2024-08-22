@@ -17,15 +17,40 @@ $ hatch shell
 This ensures that you are using the intended version of Data Safe Haven with the correct set of dependencies.
 ::::
 
+::::{note}
+As the Basic Application Gateway is still in preview, you will need to run the following commands once per subscription:
+
+:::{code} shell
+$ az feature register --name "AllowApplicationGatewayBasicSku" \
+                      --namespace "Microsoft.Network" \
+                      --subscription NAME_OR_ID_OF_YOUR_SUBSCRIPTION
+$ az provider register --name Microsoft.Network
+:::
+
+::::
+
 ## Configuration
 
 Each project will have its own dedicated SRE.
 
-- Create a configuration file
+- Create a configuration file (optionally starting from one of our standard {ref}`policy_classification_sensitivity_tiers`)
+
+::::{admonition} EITHER start from a blank template
+:class: dropdown note
 
 :::{code} shell
 $ dsh config template --file PATH_YOU_WANT_TO_SAVE_YOUR_YAML_FILE_TO
 :::
+::::
+
+::::{admonition} OR start from a predefined tier
+:class: dropdown note
+
+:::{code} shell
+$ dsh config template --file PATH_YOU_WANT_TO_SAVE_YOUR_YAML_FILE_TO \
+                      --tier TIER_YOU_WANT_TO_USE
+:::
+::::
 
 - Edit this file in your favourite text editor, replacing the placeholder text with appropriate values for your setup.
 
@@ -50,12 +75,20 @@ sre:
     allow_copy: # True/False: whether to allow copying text out of the environment
     allow_paste: # True/False: whether to allow pasting text into the environment
   research_user_ip_addresses: # List of IP addresses belonging to users
-  software_packages: # any/pre-approved/none: which packages from external repositories to allow
+  software_packages: # Which Python/R packages to allow users to install: [any/pre-approved/none]
   timezone: # Timezone in pytz format (eg. Europe/London)
-  workspace_skus: # List of Azure VM SKUs - see cloudprice.net for list of valid SKUs
+  workspace_skus: # List of Azure VM SKUs that will be used for data analysis.
 :::
 
 ::::
+
+:::{important}
+All VM SKUs you want to deploy must support premium SSDs.
+
+- See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-types#premium-ssds) for more details on premium SSD support.
+- See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/) for a full list of valid SKUs
+
+:::
 
 ## Upload the configuration file
 
@@ -76,3 +109,20 @@ If you want to make changes to the config, edit this file and then run `dsh conf
 :::{code} shell
 $ dsh sre deploy YOUR_SRE_NAME
 :::
+
+::::{important}
+After deployment, you may need to manually ensure that backups function.
+
+- In the Azure Portal, navigate to the resource group for the SRE: **shm-_SHM\_NAME_-sre-_SRE\_NAME_-rg**
+- Navigate to the backup vault for the SRE: **shm-_SHM\_NAME_-sre-_SRE\_NAME_-bv-backup**
+- From the side menu, select **{menuselection}`Manage --> Backup Instances`**
+- Change **Datasource type** to  **Azure Blobs (Azure Storage)**
+- Select the **BlobBackupSensitiveData** instance
+
+If you see the message **Fix protection error for the backup instance**, as pictured below, then click the **{guilabel}`Fix protection error`** button.
+
+:::{image} images/backup_fix_protection_error.png
+:alt: Fix protection error for the backup instance
+:align: center
+:::
+::::

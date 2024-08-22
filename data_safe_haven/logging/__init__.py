@@ -1,5 +1,4 @@
 from .logger import (
-    from_ansi,
     get_console_handler,
     get_logger,
     get_null_logger,
@@ -9,7 +8,6 @@ from .logger import (
 )
 
 __all__ = [
-    "from_ansi",
     "get_console_handler",
     "get_logger",
     "get_null_logger",

@@ -9,7 +9,7 @@ write_files:
   - path: "/etc/database_credential"
     permissions: "0400"
     content: |
-      {{ database_service_admin_password }}
+      {{{ database_service_admin_password }}}
 
   - path: "/etc/nslcd.conf"
     permissions: "0400"
@@ -92,6 +92,16 @@ write_files:
       pushd /desired_state
       ansible-playbook /desired_state/desired_state.yaml
       popd
+
+  - path: "/root/gitea.url"
+    permissions: "0400"
+    content: |
+      URL=http://{{gitea_hostname}}
+
+  - path: "/root/hedgedoc.url"
+    permissions: "0400"
+    content: |
+      URL=http://{{hedgedoc_hostname}}
 
 mounts:
   # Desired state configuration is in a blob container mounted as NFSv3

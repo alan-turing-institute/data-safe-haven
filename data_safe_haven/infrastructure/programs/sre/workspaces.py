@@ -28,6 +28,8 @@ class SREWorkspacesProps:
         data_collection_endpoint_id: Input[str],
         data_collection_rule_id: Input[str],
         database_service_admin_password: Input[str],
+        gitea_hostname: Input[str],
+        hedgedoc_hostname: Input[str],
         ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
         ldap_server_hostname: Input[str],
@@ -54,6 +56,8 @@ class SREWorkspacesProps:
         self.data_collection_rule_id = data_collection_rule_id
         self.data_collection_endpoint_id = data_collection_endpoint_id
         self.database_service_admin_password = database_service_admin_password
+        self.gitea_hostname = gitea_hostname
+        self.hedgedoc_hostname = hedgedoc_hostname
         self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
         self.ldap_server_hostname = ldap_server_hostname
@@ -116,6 +120,8 @@ class SREWorkspacesComponent(ComponentResource):
             apt_proxy_server_hostname=props.apt_proxy_server_hostname,
             clamav_mirror_hostname=props.clamav_mirror_hostname,
             database_service_admin_password=props.database_service_admin_password,
+            gitea_hostname=props.gitea_hostname,
+            hedgedoc_hostname=props.hedgedoc_hostname,
             ldap_group_filter=props.ldap_group_filter,
             ldap_group_search_base=props.ldap_group_search_base,
             ldap_server_hostname=props.ldap_server_hostname,

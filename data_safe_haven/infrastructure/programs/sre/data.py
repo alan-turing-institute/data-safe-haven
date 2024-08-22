@@ -53,6 +53,8 @@ class SREDataProps:
         location: Input[str],
         resource_group: Input[resources.ResourceGroup],
         sre_fqdn: Input[str],
+        storage_quota_gb_home: Input[int],
+        storage_quota_gb_shared: Input[int],
         subnet_data_configuration: Input[network.GetSubnetResult],
         subnet_data_desired_state: Input[network.GetSubnetResult],
         subnet_data_private: Input[network.GetSubnetResult],
@@ -79,6 +81,8 @@ class SREDataProps:
             get_name_from_rg
         )
         self.sre_fqdn = sre_fqdn
+        self.storage_quota_gb_home = storage_quota_gb_home
+        self.storage_quota_gb_shared = storage_quota_gb_shared
         self.subnet_data_configuration_id = Output.from_input(
             subnet_data_configuration
         ).apply(get_id_from_subnet)
@@ -377,7 +381,9 @@ class SREDataComponent(ComponentResource):
                 f"{''.join(truncate_tokens(stack_name.split('-'), 14))}configdata"
             )[:24],
             kind=storage.Kind.STORAGE_V2,
+            large_file_shares_state=storage.LargeFileSharesState.DISABLED,
             location=props.location,
+            minimum_tls_version=storage.MinimumTlsVersion.TLS1_2,
             network_rule_set=storage.NetworkRuleSetArgs(
                 bypass=storage.Bypass.AZURE_SERVICES,
                 default_action=storage.DefaultAction.DENY,
@@ -398,7 +404,7 @@ class SREDataComponent(ComponentResource):
                 ],
             ),
             resource_group_name=props.resource_group_name,
-            sku=storage.SkuArgs(name=storage.SkuName.STANDARD_GRS),
+            sku=storage.SkuArgs(name=storage.SkuName.STANDARD_LRS),
             opts=child_opts,
             tags=child_tags,
         )
@@ -481,6 +487,7 @@ class SREDataComponent(ComponentResource):
             kind=storage.Kind.BLOCK_BLOB_STORAGE,
             is_hns_enabled=True,
             location=props.location,
+            minimum_tls_version=storage.MinimumTlsVersion.TLS1_2,
             network_rule_set=storage.NetworkRuleSetArgs(
                 bypass=storage.Bypass.AZURE_SERVICES,
                 default_action=storage.DefaultAction.DENY,
@@ -629,6 +636,7 @@ class SREDataComponent(ComponentResource):
             kind=storage.Kind.BLOCK_BLOB_STORAGE,
             is_hns_enabled=True,
             location=props.location,
+            minimum_tls_version=storage.MinimumTlsVersion.TLS1_2,
             network_rule_set=storage.NetworkRuleSetArgs(
                 bypass=storage.Bypass.AZURE_SERVICES,
                 default_action=storage.DefaultAction.DENY,
@@ -787,6 +795,8 @@ class SREDataComponent(ComponentResource):
         # - This holds the /home and /shared containers that are mounted by workspaces
         # - Azure Files has better NFS support but cannot be accessed with Azure Storage Explorer
         # - Allows root-squashing to be configured
+        # From https://learn.microsoft.com/en-us/azure/storage/files/files-nfs-protocol
+        # - premium file shares are required
         storage_account_data_private_user = storage.StorageAccount(
             f"{self._name}_storage_account_data_private_user",
             access_tier=storage.AccessTier.COOL,
@@ -805,6 +815,7 @@ class SREDataComponent(ComponentResource):
             ),
             kind=storage.Kind.FILE_STORAGE,
             location=props.location,
+            minimum_tls_version=storage.MinimumTlsVersion.TLS1_2,
             network_rule_set=storage.NetworkRuleSetArgs(
                 bypass=storage.Bypass.AZURE_SERVICES,
                 default_action=storage.DefaultAction.DENY,
@@ -828,7 +839,7 @@ class SREDataComponent(ComponentResource):
             # Squashing prevents root from creating user home directories
             root_squash=storage.RootSquashType.NO_ROOT_SQUASH,
             share_name="home",
-            share_quota=1024,
+            share_quota=props.storage_quota_gb_home,
             signed_identifiers=[],
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=storage_account_data_private_user)
@@ -842,7 +853,7 @@ class SREDataComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             root_squash=storage.RootSquashType.ROOT_SQUASH,
             share_name="shared",
-            share_quota=1024,
+            share_quota=props.storage_quota_gb_shared,
             signed_identifiers=[],
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=storage_account_data_private_user)

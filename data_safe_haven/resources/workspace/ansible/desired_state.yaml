@@ -27,7 +27,7 @@
       tags: apt
       ansible.builtin.script:
         executable: /bin/bash
-        cmd: /desired_state/install_deb.sh "{{ item.source }}" "{{ item.filename }}" "{{ item.sha256 }}"
+        cmd: "/desired_state/install_deb.sh {{ item.source }} {{ item.filename }} {{ item.sha256 }}"
         creates: "{{ item.creates }}"
       loop: "{{ deb_packages[ansible_facts.distribution_release] }}"
 
@@ -67,12 +67,14 @@
             fi
           fi
 
+    # This will create directories if src or dest ends in '/'
     - name: Copy bashrc skeleton
       ansible.builtin.copy:
         src: etc/skel/bashrc
         dest: /etc/skel/.bashrc
         mode: '0755'
 
+    # This will create directories if src or dest ends in '/'
     - name: Copy xsession skeleton
       ansible.builtin.copy:
         src: etc/skel/xsession
@@ -96,7 +98,6 @@
         new_module_path: pam_mkhomedir.so
         module_arguments: 'skel=/etc/skel umask=0022'
         state: after
-      notify: Update PAM auth
 
     - name: Don't prompt to change expired passwords via ldap
       community.general.pamd:
@@ -124,26 +125,18 @@
         validate: sshd -T -f %s
       notify: Restart sshd
 
-    - name: Ensure xrdp directories exist
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: directory
-        mode: '0755'
-      loop:
-        - /etc/xdg/xfce4/terminal
-        - /etc/xrdp
-        - /usr/local/share/xrdp
-
+    # This will create directories if src or dest ends in '/'
     - name: Copy xrdp settings
       ansible.builtin.copy:
-        src: etc/xrdp/xrdp.ini
-        dest: /etc/xrdp/xrdp.ini
+        src: etc/xrdp/
+        dest: /etc/xrdp/
         mode: '0644'
 
+    # This will create directories if src or dest ends in '/'
     - name: Copy xrdp logo
       ansible.builtin.copy:
-        src: usr/local/share/xrdp/dsh_logo_240x140_256color.bmp
-        dest: /usr/local/share/xrdp/dsh_logo_240x140_256color.bmp
+        src: usr/local/share/xrdp/
+        dest: /usr/local/share/xrdp/
         mode: '0444'
 
     - name: Disable xrdp root login
@@ -170,11 +163,21 @@
         regexp: '^TerminalEmulator='
         line: 'TerminalEmulator=xfce4-terminal'
 
-    - name: Set default terminal colourscheme
+    # This will create directories if src or dest ends in '/'
+    - name: Copy default terminal colourscheme
       ansible.builtin.copy:
-        src: etc/xdg/xfce4/terminal/terminalrc
-        dest: /etc/xdg/xfce4/terminal/terminalrc
+        src: etc/xdg/xfce4/terminal/
+        dest: /etc/xdg/xfce4/terminal/
         mode: '0444'
+
+    # This doesn't work
+    # Possibly a bug in xfce4 < 4.18
+    # https://gitlab.xfce.org/apps/xfce4-screensaver/-/issues/55
+    - name: Disable xfce4 screen saver (screen lock)
+      ansible.builtin.lineinfile:
+        path: /etc/xdg/autostart/xfce4-screensaver.desktop
+        line: 'Hidden=true'
+        state: present
 
     - name: Use a blank screensaver
       ansible.builtin.lineinfile:
@@ -200,6 +203,30 @@
         - xrdp
         - xrdp-sesman
 
+    # This will create directories if src or dest ends in '/'
+    - name: Copy desktop icons directory
+      ansible.builtin.copy:
+        src: "usr/local/share/icons/"
+        dest: "/usr/local/share/icons/"
+        mode: '0444'
+
+    # This will create directories if src or dest ends in '/'
+    - name: Copy desktop files directory
+      ansible.builtin.copy:
+        src: "etc/skel/Desktop/"
+        dest: "/etc/skel/Desktop/"
+        mode: '0755'
+
+    - name: Set desktop file URLs
+      ansible.builtin.lineinfile:
+        path: "/etc/skel/Desktop/{{ item }}.desktop"
+        line: "{{ lookup('file', '/root/{{ item }}.url') }}"
+        state: present
+      loop:
+        - gitea
+        - hedgedoc
+
+    # This will create directories if src or dest ends in '/'
     - name: Add polkit rule to allow colord
       ansible.builtin.copy:
         src: etc/polkit-1/localauthority/50-local.d/50-colord.pkla
@@ -228,6 +255,7 @@
         mode: '0640'
       notify: Restart auditd
 
+    # This will create directories if src or dest ends in '/'
     - name: Copy auditd privileged executable rules script
       tags: auditd
       ansible.builtin.copy:
@@ -242,13 +270,27 @@
         creates: /etc/audit/rules.d/50-privileged.rules
       notify: Restart auditd
 
-    - name: Copy ClamAV configuration
+    # This will create directories if src or dest ends in '/'
+    - name: Copy ClamAV daemon configuration
       ansible.builtin.copy:
         src: etc/clamav/clamd.conf
         dest: /etc/clamav/clamd.conf
         mode: '0444'
         owner: clamav
         group: adm
+      register: clamd
+
+    - name: Enable and start ClamAV daemon
+      ansible.builtin.systemd:
+        name: clamav-daemon
+        enabled: true
+        state: started
+
+    - name: Restart ClamAV daemon  # noqa: no-handler
+      ansible.builtin.systemd:
+        name: clamav-daemon
+        state: restarted
+      when: clamd.changed
 
     - name: Set freshclam private mirror
       ansible.builtin.lineinfile:
@@ -263,12 +305,12 @@
           systemctl stop clamav-freshclam && freshclam && systemctl start clamav-freshclam
         creates: '/var/lib/clamav/main.{c[vl]d,inc}'
 
-    - name: Install ClamAV services and timer
+    # This will create directories if src or dest ends in '/'
+    - name: Copy ClamAV services directory
       ansible.builtin.copy:
-        src: "{{ item }}"
+        src: "etc/systemd/system/"
         dest: /etc/systemd/system/
         mode: '0644'
-      with_fileglob: 'etc/systemd/system/clamav*'
       notify: Systemd daemon reload
 
     - name: Enable and start freshclam
@@ -276,12 +318,6 @@
         name: clamav-freshclam
         state: started
         enabled: true
-
-    - name: Enable and start ClamAV daemon
-      ansible.builtin.systemd:
-        name: clamav-daemon
-        enabled: true
-        state: started
 
     - name: Enable and start ClamAV on access scan
       ansible.builtin.systemd:
@@ -295,12 +331,12 @@
         enabled: true
         state: started
 
-    - name: Copy smoke test files
+    # This will create directories if src or dest ends in '/'
+    - name: Copy smoke test files directory
       ansible.builtin.copy:
-        src: "{{ item }}"
+        src: "usr/local/smoke_tests/"
         dest: /usr/local/smoke_tests/
         mode: '0755'
-      with_fileglob: 'usr/local/smoke_tests/*'
 
 
   handlers:
@@ -313,10 +349,6 @@
       ansible.builtin.systemd:
         name: sshd
         state: restarted
-
-    - name: Update PAM auth  # noqa: no-changed-when
-      ansible.builtin.command:
-        cmd: pam-auth-update --enable mkhomedir ldap
 
     # Run systemd daemon-reload.
     # https://www.freedesktop.org/software/systemd/man/systemctl.html#daemon-reload

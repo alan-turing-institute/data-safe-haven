@@ -1,13 +1,19 @@
-- `C`
-- `C++`
-- `CMake` compiler
-- `Fortran`
+- `C` programming language
+- `C++` programming language
+- `clojure` programming language
+- `DotNet` runtime environment
+- `F#` programming language
+- `Fortran` programming language
 - `gcc` compilers
-- `Java`
-- `Julia` (plus common data science libraries)
-- `Microsoft .NET` framework
-- `Python` [three most recent versions] (plus common data science libraries)
-- `R` (plus common data science libraries)
-- `Rust` compiler with `cargo` package manager
-- `scala`
-- `spark-shell`
+- `Guile` programming language
+- `Haskell` language and packaging tools
+- `Java` runtime environment
+- `octave` programming language
+- `Python` programming language and `pip` package manager
+    - plus ability to install additional libraries
+- `R` programming language
+    - plus ability to install additional libraries
+- `Racket` programming language
+- `ruby` programming language
+- `Rust` language and `cargo` package manager
+- `scala` programming language

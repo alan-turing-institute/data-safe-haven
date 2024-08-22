@@ -7,6 +7,7 @@ setup_context.md
 configure_entra_id.md
 deploy_shm.md
 deploy_sre.md
+security_checklist.md
 :::
 
 Deploying an instance of the Data Safe Haven involves the following steps:
@@ -37,14 +38,8 @@ See [the instructions here](https://docs.docker.com/security/for-developers/acce
 
 ## Install the project
 
-Download or checkout this code from GitHub.
-
-:::{important}
-**{sub-ref}`today`**: you should use the `develop` branch as no stable v5 release has been tagged.
-Please contact the development team in case of any problems.
-:::
-
-Enter the base directory and install Python dependencies with `hatch` by doing the following:
+- Download or checkout the [latest supported version](https://github.com/alan-turing-institute/data-safe-haven/blob/develop/SECURITY.md) of this code from [GitHub](https://github.com/alan-turing-institute/data-safe-haven).
+- Enter the base directory and install Python dependencies with `hatch` by doing the following:
 
 :::{code} shell
 $ hatch run true

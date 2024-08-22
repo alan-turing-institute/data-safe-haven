@@ -7,8 +7,8 @@ All organisations using an earlier version in production should update to the la
 
 | Version                                                                                 | Supported          |
 | --------------------------------------------------------------------------------------- | ------------------ |
-| [4.2.2](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.2.2)   | :white_check_mark: |
-| < 4.2.2                                                                                 | :x:                |
+| [5.0.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v5.0.0)   | :white_check_mark: |
+| < 5.0.0                                                                                 | :x:                |
 
 ## Reporting a Vulnerability
 
