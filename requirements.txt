@@ -50,7 +50,7 @@ azure-keyvault-secrets==4.8.0
     # via data-safe-haven (pyproject.toml)
 azure-mgmt-automation==1.0.0
     # via data-safe-haven (pyproject.toml)
-azure-mgmt-compute==32.0.0
+azure-mgmt-compute==33.0.0
     # via data-safe-haven (pyproject.toml)
 azure-mgmt-containerinstance==10.1.0
     # via data-safe-haven (pyproject.toml)
@@ -123,7 +123,7 @@ fqdn==1.5.1
     # via data-safe-haven (pyproject.toml)
 grpcio==1.60.2
     # via pulumi
-idna==3.7
+idna==3.8
     # via
     #   -c requirements-constraints.txt
     #   requests
@@ -174,13 +174,13 @@ protobuf==4.25.4
     # via pulumi
 psycopg==3.2.1
     # via data-safe-haven (pyproject.toml)
-pulumi==3.129.0
+pulumi==3.130.0
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi-azure-native
     #   pulumi-random
     #   pulumi-tls
-pulumi-azure-native==2.56.0
+pulumi-azure-native==2.58.0
     # via data-safe-haven (pyproject.toml)
 pulumi-random==4.16.3
     # via data-safe-haven (pyproject.toml)
@@ -242,7 +242,7 @@ six==1.16.0
     #   azure-core
     #   isodate
     #   pulumi
-typer==0.12.4
+typer==0.12.5
     # via data-safe-haven (pyproject.toml)
 typing-extensions==4.12.2
     # via
