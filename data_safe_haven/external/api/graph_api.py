@@ -1060,17 +1060,17 @@ class GraphApi:
             DataSafeHavenMicrosoftGraphError if domain could not be verified
         """
         try:
-            # Create the Entra custom domain if it does not already exist
+            # Check whether the domain has been added to Entra ID
             domains = self.read_domains()
             if not any(d["id"] == domain_name for d in domains):
                 msg = f"Domain {domain_name} has not been added to Entra ID."
                 raise DataSafeHavenMicrosoftGraphError(msg)
-            # Wait until domain delegation is complete
+            # Loop until domain delegation is complete
             while True:
                 # Check whether all expected nameservers are active
                 with suppress(resolver.NXDOMAIN):
                     self.logger.debug(
-                        f"Checking [green]{domain_name}[/] domain verification status ..."
+                        f"Checking [green]{domain_name}[/] domain registration status ..."
                     )
                     active_nameservers = [
                         str(ns) for ns in iter(resolver.resolve(domain_name, "NS"))
@@ -1080,11 +1080,11 @@ class GraphApi:
                         for nameserver in expected_nameservers
                     ):
                         self.logger.info(
-                            f"Verified that domain [green]{domain_name}[/] is delegated to Azure."
+                            f"Verified that [green]{domain_name}[/] is registered as a custom Entra ID domain."
                         )
                         break
                 self.logger.warning(
-                    f"Domain [green]{domain_name}[/] is not currently delegated to Azure."
+                    f"Domain [green]{domain_name}[/] is not currently registered as a custom Entra ID domain."
                 )
                 # Prompt user to set domain delegation manually
                 docs_link = "https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain"
@@ -1093,15 +1093,13 @@ class GraphApi:
                 )
                 ns_list = ", ".join([f"[green]{n}[/]" for n in expected_nameservers])
                 self.logger.info(
-                    f"You will need to create an NS record pointing to: {ns_list}"
+                    f"You will need to create NS records pointing to: {ns_list}"
                 )
                 if not console.confirm(
                     f"Are you ready to check whether [green]{domain_name}[/] has been delegated to Azure?",
                     default_to_yes=True,
                 ):
-                    self.logger.error(
-                        "Please use `az login` to connect to the correct Azure CLI account"
-                    )
+                    self.logger.error("User terminated check for domain delegation.")
                     raise typer.Exit(1)
             # Send verification request if needed
             if not any((d["id"] == domain_name and d["isVerified"]) for d in domains):
