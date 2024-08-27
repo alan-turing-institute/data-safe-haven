@@ -27,28 +27,8 @@ class Context(ContextBase, BaseModel, validate_assignment=True):
     _pulumi_encryption_key = None
 
     @property
-    def tags(self) -> dict[str, str]:
-        return {
-            "description": self.description,
-            "project": "Data Safe Haven",
-            "shm_name": self.name,
-            "version": __version__,
-        }
-
-    @property
-    def work_directory(self) -> Path:
-        return config_dir() / self.name
-
-    @property
-    def resource_group_name(self) -> str:
-        return f"shm-{self.name}-rg"
-
-    @property
-    def storage_account_name(self) -> str:
-        # https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview#storage-account-name
-        #   Storage account names must be between 3 and 24 characters in length and may
-        #   contain numbers and lowercase letters only.
-        return f"shm{alphanumeric(self.name)[:21]}"
+    def entra_application_name(self) -> str:
+        return f"Data Safe Haven ({self.description}) Pulumi Service Principal"
 
     @property
     def key_vault_name(self) -> str:
@@ -82,6 +62,30 @@ class Context(ContextBase, BaseModel, validate_assignment=True):
     @property
     def pulumi_secrets_provider_url(self) -> str:
         return f"azurekeyvault://{self.key_vault_name}.vault.azure.net/keys/{self.pulumi_encryption_key_name}/{self.pulumi_encryption_key_version}"
+
+    @property
+    def resource_group_name(self) -> str:
+        return f"shm-{self.name}-rg"
+
+    @property
+    def storage_account_name(self) -> str:
+        # https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview#storage-account-name
+        #   Storage account names must be between 3 and 24 characters in length and may
+        #   contain numbers and lowercase letters only.
+        return f"shm{alphanumeric(self.name)[:21]}"
+
+    @property
+    def tags(self) -> dict[str, str]:
+        return {
+            "description": self.description,
+            "project": "Data Safe Haven",
+            "shm_name": self.name,
+            "version": __version__,
+        }
+
+    @property
+    def work_directory(self) -> Path:
+        return config_dir() / self.name
 
     def to_yaml(self) -> str:
         return yaml.dump(self.model_dump(), indent=2)

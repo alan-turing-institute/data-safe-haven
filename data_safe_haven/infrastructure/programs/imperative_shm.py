@@ -145,13 +145,12 @@ class ImperativeSHM:
             raise DataSafeHavenAzureError(msg) from exc
         # Create an application for use by the pulumi-azuread module
         try:
-            application_name = f"Data Safe Haven ({self.context.description}) Pulumi Service Principal"
             graph_api.create_application(
-                application_name,
+                self.context.entra_application_name,
                 application_scopes=["Group.ReadWrite.All"],
                 delegated_scopes=[],
                 request_json={
-                    "displayName": application_name,
+                    "displayName": self.context.entra_application_name,
                     "signInAudience": "AzureADMyOrg",
                 },
             )
