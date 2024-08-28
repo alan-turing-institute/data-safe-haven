@@ -6,11 +6,13 @@ class TestDeploySRE:
         self,
         runner,
         mock_graph_api_token,  # noqa: ARG002
+        mock_contextmanager_assert_context,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
         mock_pulumi_config_from_remote_or_create,  # noqa: ARG002
         mock_pulumi_config_upload,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
         mock_sre_config_from_remote,  # noqa: ARG002
+        mock_graph_api_get_application_by_name,  # noqa: ARG002
         mock_sre_project_manager_deploy_then_exit,  # noqa: ARG002
     ):
         result = runner.invoke(sre_command_group, ["deploy", "sandbox"])

@@ -27,9 +27,24 @@ def mock_azure_sdk_blob_exists_false(mocker):
 
 
 @fixture
+def mock_contextmanager_assert_context(mocker, context) -> Context:
+    context._entra_application_secret = "dummy-secret"  # noqa: S105
+    mocker.patch.object(ContextManager, "assert_context", return_value=context)
+
+
+@fixture
 def mock_graph_api_add_custom_domain(mocker):
     mocker.patch.object(
         GraphApi, "add_custom_domain", return_value="dummy-verification-record"
+    )
+
+
+@fixture
+def mock_graph_api_get_application_by_name(mocker, request):
+    mocker.patch.object(
+        GraphApi,
+        "get_application_by_name",
+        return_value={"appId": request.config.guid_application},
     )
 
 
