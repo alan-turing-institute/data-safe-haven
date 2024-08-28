@@ -16,7 +16,6 @@ from data_safe_haven.exceptions import (
     DataSafeHavenMicrosoftGraphError,
     DataSafeHavenValueError,
 )
-from data_safe_haven.functions import alphanumeric
 from data_safe_haven.logging import get_logger, get_null_logger
 
 from .credentials import DeferredCredential, GraphApiCredential
@@ -312,40 +311,6 @@ class GraphApi:
             return str(json_response["secretText"])
         except Exception as exc:
             msg = f"Could not create application secret '{application_secret_name}'."
-            raise DataSafeHavenMicrosoftGraphError(msg) from exc
-
-    def create_group(self, group_name: str) -> None:
-        """Create an Entra group if it does not already exist
-
-        Raises:
-            DataSafeHavenMicrosoftGraphError if the group could not be created
-        """
-        try:
-            if self.get_id_from_groupname(group_name):
-                self.logger.info(
-                    f"Found existing Entra group '[green]{group_name}[/]'.",
-                )
-                return
-            self.logger.debug(
-                f"Creating Entra group '[green]{group_name}[/]'...",
-            )
-            request_json = {
-                "description": group_name,
-                "displayName": group_name,
-                "groupTypes": [],
-                "mailEnabled": False,
-                "mailNickname": alphanumeric(group_name).lower(),
-                "securityEnabled": True,
-            }
-            self.http_post(
-                f"{self.base_endpoint}/groups",
-                json=request_json,
-            ).json()
-            self.logger.info(
-                f"Created Entra group '[green]{group_name}[/]'.",
-            )
-        except Exception as exc:
-            msg = f"Could not create Entra group '{group_name}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def ensure_application_service_principal(
