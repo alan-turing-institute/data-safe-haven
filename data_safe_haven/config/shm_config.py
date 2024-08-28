@@ -12,8 +12,11 @@ from .config_sections import ConfigSectionAzure, ConfigSectionSHM
 
 
 class SHMConfig(AzureSerialisableModel):
+    """Serialisable config for a Data Safe Haven management component."""
+
     config_type: ClassVar[str] = "SHMConfig"
     default_filename: ClassVar[str] = "shm.yaml"
+
     azure: ConfigSectionAzure
     shm: ConfigSectionSHM
 

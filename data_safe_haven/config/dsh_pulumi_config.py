@@ -12,6 +12,7 @@ class DSHPulumiConfig(AzureSerialisableModel):
 
     config_type: ClassVar[str] = "Pulumi"
     default_filename: ClassVar[str] = "pulumi.yaml"
+
     encrypted_key: str | None
     projects: dict[str, DSHPulumiProject]
 

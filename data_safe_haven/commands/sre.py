@@ -85,9 +85,12 @@ def deploy(
         )
         # Set Entra options
         application = graph_api.get_application_by_name(context.entra_application_name)
-        stack.add_option("azuread:clientId", application["appId"], replace=True)
+        if not application:
+            msg = f"No Entra application '{context.entra_application_name}' was found. Please redeploy your SHM."
+            raise DataSafeHavenConfigError(msg)
+        stack.add_option("azuread:clientId", application.get("appId", ""), replace=True)
         if not context.entra_application_secret:
-            msg = f"No Entra '{context.entra_application_secret_name}' was found. Please redeploy your SHM."
+            msg = f"No Entra application secret '{context.entra_application_secret_name}' was found. Please redeploy your SHM."
             raise DataSafeHavenConfigError(msg)
         stack.add_secret(
             "azuread:clientSecret", context.entra_application_secret, replace=True

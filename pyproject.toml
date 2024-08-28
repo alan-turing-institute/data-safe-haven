@@ -184,6 +184,7 @@ module = [
     "numpy.*",
     "psycopg.*",
     "pulumi_azure_native.*",
+    "pulumi_azuread.*",
     "pulumi_random.*",
     "pulumi.*",
     "pymssql.*",

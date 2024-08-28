@@ -17,15 +17,18 @@ from data_safe_haven.types import AzureSubscriptionName, EntraGroupName, SafeStr
 
 
 class Context(ContextBase, BaseModel, validate_assignment=True):
+    """Context for a Data Safe Haven deployment."""
+
+    entra_application_kvsecret_name: ClassVar[str] = "pulumi-deployment-secret"
+    entra_application_secret_name: ClassVar[str] = "Pulumi Deployment Secret"
+    pulumi_encryption_key_name: ClassVar[str] = "pulumi-encryption-key"
+    pulumi_storage_container_name: ClassVar[str] = "pulumi"
+    storage_container_name: ClassVar[str] = "config"
+
     admin_group_name: EntraGroupName
     description: str
     name: SafeString
     subscription_name: AzureSubscriptionName
-    storage_container_name: ClassVar[str] = "config"
-    pulumi_storage_container_name: ClassVar[str] = "pulumi"
-    pulumi_encryption_key_name: ClassVar[str] = "pulumi-encryption-key"
-    entra_application_secret_name: ClassVar[str] = "Pulumi Deployment Secret"
-    entra_application_kvsecret_name: ClassVar[str] = "pulumi-deployment-secret"
 
     _pulumi_encryption_key = None
     _entra_application_secret = None
@@ -49,7 +52,7 @@ class Context(ContextBase, BaseModel, validate_assignment=True):
         return self._entra_application_secret
 
     @entra_application_secret.setter
-    def entra_application_secret(self, application_secret: str):
+    def entra_application_secret(self, application_secret: str) -> None:
         azure_sdk = AzureSdk(subscription_name=self.subscription_name)
         azure_sdk.set_keyvault_secret(
             secret_name=self.entra_application_kvsecret_name,
