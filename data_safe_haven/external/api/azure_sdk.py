@@ -689,7 +689,7 @@ class AzureSdk:
             credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
             vault_url=f"https://{key_vault_name}.vault.azure.net",
         )
-        # Ensure that secret exists
+        # Get secret if it exists
         try:
             secret = secret_client.get_secret(secret_name)
             if secret.value:

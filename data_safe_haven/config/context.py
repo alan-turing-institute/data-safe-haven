@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 from data_safe_haven import __version__
 from data_safe_haven.directories import config_dir
+from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureSdk
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.serialisers import ContextBase
@@ -23,12 +24,38 @@ class Context(ContextBase, BaseModel, validate_assignment=True):
     storage_container_name: ClassVar[str] = "config"
     pulumi_storage_container_name: ClassVar[str] = "pulumi"
     pulumi_encryption_key_name: ClassVar[str] = "pulumi-encryption-key"
+    entra_application_secret_name: ClassVar[str] = "Pulumi Deployment Secret"
+    entra_application_kvsecret_name: ClassVar[str] = "pulumi-deployment-secret"
 
     _pulumi_encryption_key = None
+    _entra_application_secret = None
 
     @property
     def entra_application_name(self) -> str:
         return f"Data Safe Haven ({self.description}) Pulumi Service Principal"
+
+    @property
+    def entra_application_secret(self) -> str:
+        if not self._entra_application_secret:
+            azure_sdk = AzureSdk(subscription_name=self.subscription_name)
+            try:
+                application_secret = azure_sdk.get_keyvault_secret(
+                    secret_name=self.entra_application_kvsecret_name,
+                    key_vault_name=self.key_vault_name,
+                )
+                self._entra_application_secret = application_secret
+            except DataSafeHavenAzureError:
+                return ""
+        return self._entra_application_secret
+
+    @entra_application_secret.setter
+    def entra_application_secret(self, application_secret: str):
+        azure_sdk = AzureSdk(subscription_name=self.subscription_name)
+        azure_sdk.set_keyvault_secret(
+            secret_name=self.entra_application_kvsecret_name,
+            secret_value=application_secret,
+            key_vault_name=self.key_vault_name,
+        )
 
     @property
     def key_vault_name(self) -> str:
