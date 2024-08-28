@@ -83,6 +83,18 @@ def deploy(
         stack.add_option(
             "azure-native:tenantId", sre_config.azure.tenant_id, replace=False
         )
+        # Set Entra options
+        application = graph_api.get_application_by_name(context.entra_application_name)
+        stack.add_option("azuread:clientId", application["appId"], replace=True)
+        if not context.entra_application_secret:
+            msg = f"No Entra '{context.entra_application_secret_name}' was found. Please redeploy your SHM."
+            raise DataSafeHavenConfigError(msg)
+        stack.add_secret(
+            "azuread:clientSecret", context.entra_application_secret, replace=True
+        )
+        stack.add_option(
+            "azuread:tenantId", shm_config.shm.entra_tenant_id, replace=True
+        )
         # Load SHM outputs
         stack.add_option(
             "shm-admin-group-id",
