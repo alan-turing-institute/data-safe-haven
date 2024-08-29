@@ -8,26 +8,6 @@ It can truly only succeed with a interdisciplinary team working together.
 The point of these contributing guidelines are to help you participate as easily as possible.
 If you have any questions that aren't discussed below, please let us know by [opening an issue](#project-management-through-issues).
 
-## Contents
-
-Been here before?
-Already know what you're looking for in this guide?
-Jump to the following sections:
-
-- [A DevOps development philosophy](#a-devops-development-philosophy)
-    - [Project workflow](#project-workflow)
-    - [Project meetings](#project-meetings)
-    - [Communications within the team and asking for help](#communications-within-the-team-and-asking-for-help)
-- [Contributing through GitHub](#contributing-through-github)
-    - [Discussions vs Issues](#discussions-vs-issues)
-    - [Writing in markdown](#writing-in-markdown)
-    - [Project management through issues](#project-management-through-issues)
-    - [Issues as conversations](#issues-as-conversations)
-    - [Who's involved in the project](#whos-involved-in-the-project)
-    - [Make a change with a pull request](#making-a-change-with-a-pull-request)
-    - [Make a change to the documentation](#making-a-change-to-the-documentation)
-    - [Adding new contributors](#adding-new-contributors)
-
 ## A DevOps development philosophy
 
 For the Data Safe Haven project, we follow a DevOps development philosophy.
@@ -74,7 +54,7 @@ Discussions around particular tasks should be conducted **when the work is being
 
 ### Communications within the team and asking for help
 
-As this team is distributed, not working full-time on this project and often working asynchronously, we do not have any form of daily meeting or stand-up
+As this team is distributed, not working full-time on this project and often working asynchronously, we do not have any form of daily meeting or stand-up.
 The best way to work around this absence is to **commit to sharing updates as regularly as possible**.
 Please see the section on [project management through issues](#project-management-through-issues) below on how to do this via GitHub.
 
