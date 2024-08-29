@@ -39,11 +39,29 @@ See [the instructions here](https://docs.docker.com/security/for-developers/acce
 ## Install the project
 
 - Look up the [latest supported version](https://github.com/alan-turing-institute/data-safe-haven/blob/develop/SECURITY.md) of this code from [GitHub](https://github.com/alan-turing-institute/data-safe-haven).
-- Install the executable with `pipx` (using version 'v5.0.0' for this example) by running:
+- Install the executable with `pipx` by running:
 
 :::{code} shell
-$ pipx install git+https://github.com/alan-turing-institute/data-safe-haven.git@v5.0.0
+$ pipx install data-safe-haven
 :::
+
+- Or install a specific version with
+
+:::{code} shell
+$ pipx install data-safe-haven==5.0.0
+:::
+
+::::{admonition} [Advanced] install into a virtual environment
+:class: dropdown caution
+
+If you prefer, you can install this package into a virtual environment:
+
+:::{code} shell
+$ python -m venv /path/to/new/virtual/environment
+$ source /path/to/new/virtual/environment/bin/activate
+$ pip install data-safe-haven
+:::
+::::
 
 - Test that this has worked by checking the version
 
