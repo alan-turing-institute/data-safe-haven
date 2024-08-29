@@ -29,7 +29,7 @@
 # - pyjwt[crypto]==2.9.0
 # - pytz==2024.1
 # - pyyaml==6.0.2
-# - rich==13.7.1
+# - rich==13.8.0
 # - simple-acme-dns==3.1.0
 # - typer==0.12.5
 # - websocket-client==1.8.0
@@ -231,7 +231,7 @@ requests==2.32.3
     #   requests-oauthlib
 requests-oauthlib==2.0.0
     # via msrest
-rich==13.7.1
+rich==13.8.0
     # via
     #   hatch.envs.default
     #   typer
