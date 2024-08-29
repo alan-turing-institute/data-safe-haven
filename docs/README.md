@@ -12,17 +12,31 @@ Install the following requirements before starting
 
 Build the documentation with `hatch`.
 
-```console
-> hatch run docs:build
-```
+:::{code} bash
+$ hatch run docs:build
+:::
 
 The generated documents will be placed under `build/html/`.
 To view the documents open `build/html/index.html` in your browser.
 For example
 
-```console
-> firefox build/html/index.html
-```
+:::{code} bash
+$ firefox build/html/index.html
+:::
+
+## Publishing a new release to PyPI
+
+- Build the tarball and wheel
+
+:::{code} bash
+$ hatch run build
+:::
+
+- Upload to PyPI, providing your API token at the prompt
+
+:::{code} bash
+$ hatch run publish --user __token__
+:::
 
 ## Reproducible Builds
 
