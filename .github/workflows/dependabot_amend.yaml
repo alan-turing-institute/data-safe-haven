@@ -1,0 +1,46 @@
+---
+name: Amend Dependabot PRs
+
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - dependabot/pip/**
+  pull_request:
+    branches:
+      - dependabot/pip/**
+  workflow_dispatch:  # allow this workflow to be manually triggered
+
+# checkout needs 'contents:read'
+# pull request needs 'pull-requests:write' and 'contents:write'
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  amend_dependabot_prs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install hatch
+        run: pip install hatch
+
+      - name: Update hatch requirements
+        run: |
+          rm .hatch/requirements*.txt
+          hatch run true
+          hatch -e docs run true
+          hatch -e lint run true
+          hatch -e test run true
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5.0.1
+        with:
+          commit_message: "[dependabot skip] :wrench: Update Python requirements files"
+          branch: ${{ github.head_ref }}

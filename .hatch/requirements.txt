@@ -31,7 +31,7 @@
 # - pyyaml==6.0.2
 # - rich==13.7.1
 # - simple-acme-dns==3.1.0
-# - typer==0.12.4
+# - typer==0.12.5
 # - websocket-client==1.8.0
 #
 
@@ -141,7 +141,7 @@ fqdn==1.5.1
     # via hatch.envs.default
 grpcio==1.60.2
     # via pulumi
-idna==3.7
+idna==3.8
     # via requests
 isodate==0.6.1
     # via
@@ -249,7 +249,7 @@ six==1.16.0
     #   azure-core
     #   isodate
     #   pulumi
-typer==0.12.4
+typer==0.12.5
     # via hatch.envs.default
 typing-extensions==4.12.2
     # via

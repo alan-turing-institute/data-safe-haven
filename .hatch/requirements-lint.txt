@@ -36,7 +36,7 @@ ansible-core==2.17.3
     #   ansible-lint
     #   molecule
     #   pytest-ansible
-ansible-creator==24.7.1
+ansible-creator==24.8.0
     # via ansible-dev-tools
 ansible-dev-environment==24.7.0
     # via ansible-dev-tools
@@ -162,7 +162,7 @@ pathspec==0.12.1
     #   ansible-lint
     #   black
     #   yamllint
-pbr==6.0.0
+pbr==6.1.0
     # via bindep
 pexpect==4.9.0
     # via ansible-runner
@@ -222,7 +222,7 @@ referencing==0.35.1
     #   jsonschema-specifications
 resolvelib==1.0.1
     # via ansible-core
-rich==13.7.1
+rich==13.8.0
     # via
     #   ansible-lint
     #   enrich
@@ -275,7 +275,7 @@ wcmatch==9.0
     #   molecule
 yamllint==1.35.1
     # via ansible-lint
-zipp==3.20.0
+zipp==3.20.1
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:

@@ -30,7 +30,7 @@ docutils==0.21.2
     #   sphinx-togglebutton
 emoji==2.12.1
     # via hatch.envs.docs
-idna==3.7
+idna==3.8
     # via requests
 imagesize==1.4.1
     # via sphinx

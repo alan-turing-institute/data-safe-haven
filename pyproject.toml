@@ -42,7 +42,7 @@ dependencies = [
   "pyyaml==6.0.2",
   "rich==13.7.1",
   "simple-acme-dns==3.1.0",
-  "typer==0.12.4",
+  "typer==0.12.5",
   "websocket-client==1.8.0",
 ]
 
