@@ -35,7 +35,7 @@
 # - simple-acme-dns==3.1.0
 # - typer==0.12.5
 # - websocket-client==1.8.0
-# - coverage==7.5.4
+# - coverage==7.6.1
 # - freezegun==1.5.1
 # - pytest-mock==3.14.0
 # - pytest==8.2.2
@@ -179,7 +179,7 @@ click==8.1.7
     # via
     #   -c .hatch/requirements.txt
     #   typer
-coverage==7.5.4
+coverage==7.6.1
     # via hatch.envs.test
 cryptography==43.0.0
     # via
