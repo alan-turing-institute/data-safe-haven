@@ -24,7 +24,7 @@
 # - psycopg==3.2.1
 # - pulumi-azure-native==2.56.0
 # - pulumi-random==4.16.3
-# - pulumi==3.129.0
+# - pulumi==3.130.0
 # - pydantic==2.8.2
 # - pyjwt[crypto]==2.9.0
 # - pytz==2024.1
@@ -186,7 +186,7 @@ protobuf==4.25.4
     # via pulumi
 psycopg==3.2.1
     # via hatch.envs.default
-pulumi==3.129.0
+pulumi==3.130.0
     # via
     #   hatch.envs.default
     #   pulumi-azure-native
