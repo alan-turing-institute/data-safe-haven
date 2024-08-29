@@ -15,6 +15,7 @@ environment_configs/package_lists/dependency-cache.json
 # Python build caches
 __pycache__/
 .venv/
+dist/
 
 # Development tools
 .vscode

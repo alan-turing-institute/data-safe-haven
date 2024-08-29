@@ -22,7 +22,7 @@ Deploying an instance of the Data Safe Haven involves the following steps:
 Install the following requirements before starting
 
 - [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
-- [Hatch](https://hatch.pypa.io/1.9/install/)
+- [pipx](https://pipx.pypa.io/stable/installation/)
 - [Pulumi](https://www.pulumi.com/docs/get-started/install/)
 
 ### Docker Hub
@@ -38,9 +38,33 @@ See [the instructions here](https://docs.docker.com/security/for-developers/acce
 
 ## Install the project
 
-- Download or checkout the [latest supported version](https://github.com/alan-turing-institute/data-safe-haven/blob/develop/SECURITY.md) of this code from [GitHub](https://github.com/alan-turing-institute/data-safe-haven).
-- Enter the base directory and install Python dependencies with `hatch` by doing the following:
+- Look up the [latest supported version](https://github.com/alan-turing-institute/data-safe-haven/blob/develop/SECURITY.md) of this code from [GitHub](https://github.com/alan-turing-institute/data-safe-haven).
+- Install the executable with `pipx` by running:
 
 :::{code} shell
-$ hatch run true
+$ pipx install data-safe-haven
+:::
+
+- Or install a specific version with
+
+:::{code} shell
+$ pipx install data-safe-haven==5.0.0
+:::
+
+::::{admonition} [Advanced] install into a virtual environment
+:class: dropdown caution
+
+If you prefer, you can install this package into a virtual environment:
+
+:::{code} shell
+$ python -m venv /path/to/new/virtual/environment
+$ source /path/to/new/virtual/environment/bin/activate
+$ pip install data-safe-haven
+:::
+::::
+
+- Test that this has worked by checking the version
+
+:::{code} shell
+$ dsh --version
 :::
