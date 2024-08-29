@@ -58,6 +58,11 @@ dependencies = [
   "websocket-client==1.8.0",
 ]
 
+[project.urls]
+Documentation = "https://data-safe-haven.readthedocs.io"
+Issues = "https://github.com/alan-turing-institute/data-safe-haven/issues"
+Source = "https://github.com/alan-turing-institute/data-safe-haven"
+
 [project.optional-dependencies]
 docs = [
   "emoji==2.12.1",
