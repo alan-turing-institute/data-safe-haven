@@ -73,7 +73,7 @@ docs = [
 ]
 lint = [
   "ansible-dev-tools==24.8.0",
-  "ansible==10.2.0",
+  "ansible==10.3.0",
   "black==24.8.0",
   "mypy==1.11.2",
   "pandas-stubs==2.2.2.240807",
