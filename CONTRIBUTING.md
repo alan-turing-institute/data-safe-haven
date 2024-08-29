@@ -23,7 +23,6 @@ Jump to the following sections:
     - [Writing in markdown](#writing-in-markdown)
     - [Project management through issues](#project-management-through-issues)
     - [Issues as conversations](#issues-as-conversations)
-    - [Working in a private repository](#working-in-a-private-repository)
     - [Who's involved in the project](#whos-involved-in-the-project)
     - [Make a change with a pull request](#making-a-change-with-a-pull-request)
     - [Make a change to the documentation](#making-a-change-to-the-documentation)
@@ -175,17 +174,6 @@ Alternatively (and this is encouraged) you can use the issue to keep track of wh
 <p align="center">
    <img src="docs/source/contributing/example-conversation-in-issue.png" width="80%" title="example-conversation-in-issue">
 </p>
-
-### Working in a private repository
-
-As one of the goals of this project is to build a secure infrastructure for data storage and analysis, our project will very likely include some code with security vulnerabilities!
-Therefore we're keeping the repository private until we're confident that our work is secure.
-
-Please note that the plan is to make the contents of this repository openly available.
-Please be considerate of the content you add and use professional and inclusive language at all times.
-
-As we're working in a private repository you may not be able to see the repository if you aren't signed in.
-So if you see a 404 page and you're confident you have the correct url, go back to [github.com](https://github.com) to make sure that you're signed into your account.
 
 ### Making a change with a pull request
 
