@@ -55,7 +55,7 @@ docs = [
   "sphinx==8.0.2",
 ]
 lint = [
-  "ansible-dev-tools==24.7.2",
+  "ansible-dev-tools==24.8.0",
   "ansible==10.2.0",
   "black==24.8.0",
   "mypy==1.10.1",
