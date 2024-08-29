@@ -3,7 +3,7 @@
 #
 # - ansible-dev-tools==24.7.2
 # - ansible==10.2.0
-# - black==24.4.2
+# - black==24.8.0
 # - mypy==1.10.1
 # - pandas-stubs==2.2.2.240807
 # - pydantic==2.8.2
@@ -58,7 +58,7 @@ attrs==24.2.0
     #   referencing
 bindep==2.11.0
     # via ansible-builder
-black==24.4.2
+black==24.8.0
     # via
     #   hatch.envs.lint
     #   ansible-lint
