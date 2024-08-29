@@ -7,3 +7,8 @@ updates:
     directory: "/"  # The exact logic is unclear, but it recursively searches at least .github/workflows/
     schedule:
       interval: "weekly"
+  # Python package update PRs
+  - package-ecosystem: pip  # This will update 'pyproject.toml'
+    directory: "/"
+    schedule:
+      interval: weekly
