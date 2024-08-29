@@ -30,7 +30,7 @@ dependencies = [
   "azure-keyvault-certificates==4.8.0",
   "azure-keyvault-keys==4.9.0",
   "azure-keyvault-secrets==4.8.0",
-  "azure-mgmt-compute==32.0.0",
+  "azure-mgmt-compute==33.0.0",
   "azure-mgmt-containerinstance==10.1.0",
   "azure-mgmt-dns==8.1.0",
   "azure-mgmt-keyvault==10.3.1",
