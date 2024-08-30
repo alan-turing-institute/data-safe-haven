@@ -22,7 +22,7 @@ It was developed as part of the Alan Turing Institute's [Data Safe Havens in the
 ## 🧑‍🧑‍🧒 Community & support
 
 - Visit the [Data Safe Haven website](https://data-safe-haven.readthedocs.io) for full documentation and useful links.
-- Join our [Slack server](https://join.slack.com/t/turingdatasafehaven/shared_invite/zt-104oyd8wn-DyOufeaAQFiJDlG5dDGk~w) to ask questions, discuss features, and for general API chat.
+- Join our [Slack workspace](https://join.slack.com/t/turingdatasafehaven/shared_invite/zt-104oyd8wn-DyOufeaAQFiJDlG5dDGk~w) to ask questions, discuss features, and for general API chat.
 - Open a [discussion on GitHub](https://github.com/alan-turing-institute/data-safe-haven/discussions) for general questions, feature suggestions, and help with our deployment scripts.
 - Look through our [issues on GitHub](https://github.com/alan-turing-institute/data-safe-haven/issues) to see what we're working on and progress towards specific fixes.
 - Send us an [email](mailto:safehavendevs@turing.ac.uk).
