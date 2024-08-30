@@ -6,11 +6,11 @@ The **Turing Data Safe Haven** is an open-source framework for creating secure e
 It provides a set of scripts and templates that will allow you to deploy, administer and use your own secure environment.
 It was developed as part of the Alan Turing Institute's [Data Safe Havens in the Cloud](https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud) project.
 
-[![Documentation](https://readthedocs.org/projects/data-safe-haven/badge/?version=latest)](https://data-safe-haven.readthedocs.io/en/latest/?badge=latest)
 [![PyPI - Version](https://img.shields.io/pypi/v/data-safe-haven)](https://pypi.org/project/data-safe-haven/)
+[![Latest version](https://img.shields.io/github/v/release/alan-turing-institute/data-safe-haven?style=flat&label=Latest&color=%234B78E6)](https://github.com/alan-turing-institute/data-safe-haven/releases)
+[![Documentation](https://readthedocs.org/projects/data-safe-haven/badge/?version=latest)](https://data-safe-haven.readthedocs.io/en/latest/?badge=latest)
 [![Lint code](https://github.com/alan-turing-institute/data-safe-haven/actions/workflows/lint_code.yaml/badge.svg)](https://github.com/alan-turing-institute/data-safe-haven/actions/workflows/lint_code.yaml)
 [![Test code](https://github.com/alan-turing-institute/data-safe-haven/actions/workflows/test_code.yaml/badge.svg)](https://github.com/alan-turing-institute/data-safe-haven/actions/workflows/test_code.yaml)
-[![Latest version](https://img.shields.io/github/v/release/alan-turing-institute/data-safe-haven?style=flat&label=Latest&color=%234B78E6)](https://github.com/alan-turing-institute/data-safe-haven/releases)
 [![Slack](https://img.shields.io/badge/Join%20us!-yellow?style=flat&logo=slack&logoColor=white&labelColor=4A154B&label=Slack)](https://join.slack.com/t/turingdatasafehaven/signup)
 ![Licence](https://img.shields.io/github/license/alan-turing-institute/data-safe-haven)
 [![Citation](https://img.shields.io/badge/citation-cite%20this%20project-informational)](https://github.com/alan-turing-institute/data-safe-haven/blob/develop/CITATION.cff)
