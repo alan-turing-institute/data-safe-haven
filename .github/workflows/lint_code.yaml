@@ -48,9 +48,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
       - name: Install requirements
         shell: bash
-        run: sudo gem install mdl
+        run: gem install mdl
       - name: Lint Markdown
         run: mdl --style .mdlstyle.rb .
 

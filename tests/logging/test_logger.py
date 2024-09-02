@@ -6,22 +6,12 @@ from rich.logging import RichHandler
 
 from data_safe_haven.logging.logger import (
     PlainFileHandler,
-    from_ansi,
     get_console_handler,
     get_logger,
     logfile_name,
     set_console_level,
     show_console_level,
 )
-
-
-class TestFromAnsi:
-    def test_from_ansi(self, capsys):
-        logger = get_logger()
-        from_ansi(logger, "\033[31;1;4mHello\033[0m")
-        out, _ = capsys.readouterr()
-        assert "Hello" in out
-        assert r"\033" not in out
 
 
 class TestLogFileName:

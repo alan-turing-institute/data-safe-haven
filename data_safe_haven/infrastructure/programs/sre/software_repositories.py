@@ -73,7 +73,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         # Define configuration file shares
         file_share_caddy = storage.FileShare(
             f"{self._name}_file_share_caddy",
-            access_tier=storage.ShareAccessTier.COOL,
+            access_tier=storage.ShareAccessTier.TRANSACTION_OPTIMIZED,
             account_name=props.storage_account_name,
             resource_group_name=props.resource_group_name,
             share_name="software-repositories-caddy",
@@ -83,17 +83,17 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         )
         file_share_nexus = storage.FileShare(
             f"{self._name}_file_share_nexus",
-            access_tier=storage.ShareAccessTier.COOL,
+            access_tier=storage.ShareAccessTier.TRANSACTION_OPTIMIZED,
             account_name=props.storage_account_name,
             resource_group_name=props.resource_group_name,
             share_name="software-repositories-nexus",
-            share_quota=5,
+            share_quota=2,
             signed_identifiers=[],
             opts=child_opts,
         )
         file_share_nexus_allowlists = storage.FileShare(
             f"{self._name}_file_share_nexus_allowlists",
-            access_tier=storage.ShareAccessTier.COOL,
+            access_tier=storage.ShareAccessTier.TRANSACTION_OPTIMIZED,
             account_name=props.storage_account_name,
             resource_group_name=props.resource_group_name,
             share_name="software-repositories-nexus-allowlists",
@@ -184,7 +184,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         ],
                     ),
                     containerinstance.ContainerArgs(
-                        image="sonatype/nexus3:3.70.1",
+                        image="sonatype/nexus3:3.71.0",
                         name="nexus"[:63],
                         environment_variables=[],
                         ports=[],
@@ -203,7 +203,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         ],
                     ),
                     containerinstance.ContainerArgs(
-                        image="ghcr.io/alan-turing-institute/nexus-allowlist:v0.9.0",
+                        image="ghcr.io/alan-turing-institute/nexus-allowlist:v0.10.0",
                         name="nexus-allowlist"[:63],
                         environment_variables=[
                             containerinstance.EnvironmentVariableArgs(

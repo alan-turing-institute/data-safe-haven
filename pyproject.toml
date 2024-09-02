@@ -9,45 +9,88 @@ description = "An open-source framework for creating secure environments to anal
 authors = [
   { name = "Data Safe Haven development team", email = "safehavendevs@turing.ac.uk" },
 ]
+readme = "README.md"
 requires-python = "==3.12.*"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: BSD License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Security",
+  "Topic :: System :: Systems Administration",
+]
 license = { text = "BSD-3-Clause" }
 dependencies = [
-  "appdirs>=1.4",
-  "azure-core>=1.26",
-  "azure-identity>=1.16.1",
-  "azure-keyvault-certificates>=4.6",
-  "azure-keyvault-keys>=4.6",
-  "azure-keyvault-secrets>=4.6",
-  "azure-mgmt-automation>=1.0",
-  "azure-mgmt-compute>=30.3",
-  "azure-mgmt-containerinstance>=10.1",
-  "azure-mgmt-dns>=8.0",
-  "azure-mgmt-keyvault>=10.3",
-  "azure-mgmt-msi>=7.0",
-  "azure-mgmt-network>=25.0",
-  "azure-mgmt-rdbms>=10.1",
-  "azure-mgmt-resource>=23.0",
-  "azure-mgmt-storage>=21.1",
-  "azure-storage-blob>=12.15",
-  "azure-storage-file-datalake>=12.10",
-  "azure-storage-file-share>=12.10",
-  "chevron>=0.14",
-  "cryptography>=42.0",
-  "fqdn>=1.5",
-  "msal>=1.21",
-  "psycopg>=3.1",
-  "pulumi>=3.80",
-  "pulumi-azure-native>=2.49.1",
-  "pulumi-random>=4.14",
-  "pulumi-tls>=5.0.3",
-  "pydantic>=2.4",
-  "pyjwt>=2.8",
-  "pytz>=2023.3",
-  "PyYAML>=6.0",
-  "rich>=13.4",
-  "simple-acme-dns>=3.0",
-  "typer>=0.9",
-  "websocket-client>=1.5",
+  "appdirs==1.4.4",
+  "azure-core==1.30.2",
+  "azure-identity==1.17.1",
+  "azure-keyvault-certificates==4.8.0",
+  "azure-keyvault-keys==4.9.0",
+  "azure-keyvault-secrets==4.8.0",
+  "azure-mgmt-compute==33.0.0",
+  "azure-mgmt-containerinstance==10.1.0",
+  "azure-mgmt-dns==8.1.0",
+  "azure-mgmt-keyvault==10.3.1",
+  "azure-mgmt-msi==7.0.0",
+  "azure-mgmt-rdbms==10.1.0",
+  "azure-mgmt-resource==23.1.1",
+  "azure-mgmt-storage==21.2.1",
+  "azure-storage-blob==12.22.0",
+  "azure-storage-file-datalake==12.16.0",
+  "azure-storage-file-share==12.17.0",
+  "chevron==0.14.0",
+  "cryptography==43.0.0",
+  "fqdn==1.5.1",
+  "psycopg==3.2.1",
+  "pulumi-azure-native==2.58.0",
+  "pulumi-random==4.16.3",
+  "pulumi==3.130.0",
+  "pydantic==2.8.2",
+  "pyjwt[crypto]==2.9.0",
+  "pytz==2024.1",
+  "pyyaml==6.0.2",
+  "rich==13.8.0",
+  "simple-acme-dns==3.1.0",
+  "typer==0.12.5",
+  "websocket-client==1.8.0",
+]
+
+[project.urls]
+Documentation = "https://data-safe-haven.readthedocs.io"
+Issues = "https://github.com/alan-turing-institute/data-safe-haven/issues"
+Source = "https://github.com/alan-turing-institute/data-safe-haven"
+
+[project.optional-dependencies]
+docs = [
+  "emoji==2.12.1",
+  "myst-parser==4.0.0",
+  "pydata-sphinx-theme==0.15.4",
+  "sphinx-togglebutton==0.3.2",
+  "sphinx==8.0.2",
+]
+lint = [
+  "ansible-dev-tools==24.8.0",
+  "ansible==10.3.0",
+  "black==24.8.0",
+  "mypy==1.11.2",
+  "pandas-stubs==2.2.2.240807",
+  "pydantic==2.8.2",
+  "ruff==0.6.3",
+  "types-appdirs==1.4.3.5",
+  "types-chevron==0.14.2.20240310",
+  "types-pytz==2024.1.0.20240417",
+  "types-pyyaml==6.0.12.20240808",
+  "types-requests==2.32.0.20240712",
+]
+test = [
+  "coverage==7.6.1",
+  "freezegun==1.5.1",
+  "pytest-mock==3.14.0",
+  "pytest==8.3.2",
+  "requests-mock==1.12.1",
 ]
 
 [project.scripts]
@@ -66,41 +109,27 @@ omit= [
   "data_safe_haven/resources/*",
 ]
 
+[tool.hatch.env]
+requires = ["hatch-pip-compile"]
+
 [tool.hatch.envs.default]
-pre-install-commands = ["pip install -r requirements.txt"]
+type = "pip-compile"
+lock-filename = ".hatch/requirements.txt"
 
 [tool.hatch.envs.docs]
+type = "pip-compile"
+lock-filename = ".hatch/requirements-docs.txt"
 detached = true
-dependencies = [
-  "emoji>=2.10.0",
-  "myst-parser>=2.0.0",
-  "pydata-sphinx-theme>=0.15.0",
-  "Sphinx>=7.3.0",
-  "sphinx-togglebutton>0.3.0",
-]
-pre-install-commands = ["pip install -r docs/requirements.txt"]
+features = ["docs"]
 
 [tool.hatch.envs.docs.scripts]
-build = [
-  # Treat warnings as errors
-  "make -C docs html SPHINXOPTS='-W'"
-]
+build = "sphinx-build -M html docs/source/ docs/build/ --fail-on-warning"
 
 [tool.hatch.envs.lint]
+type = "pip-compile"
+lock-filename = ".hatch/requirements-lint.txt"
 detached = true
-dependencies = [
-  "ansible>=10.2.0",
-  "ansible-dev-tools>=24.7.1",
-  "black>=24.1.0",
-  "mypy>=1.0.0",
-  "pydantic>=2.4",
-  "ruff>=0.3.4",
-  "types-appdirs>=1.4.3.5",
-  "types-chevron>=0.14.2.5",
-  "types-pytz>=2023.3.0.0",
-  "types-PyYAML>=6.0.12.11",
-  "types-requests>=2.31.0.2",
-]
+features = ["lint"]
 
 [tool.hatch.envs.lint.scripts]
 all = [
@@ -121,14 +150,10 @@ style = [
 typing = "mypy {args:data_safe_haven}"
 
 [tool.hatch.envs.test]
-dependencies = [
-  "coverage>=7.5.1",
-  "freezegun>=1.5",
-  "pytest>=8.1",
-  "pytest-mock>=3.14",
-  "requests-mock>=1.12",
-]
-pre-install-commands = ["pip install -r requirements.txt"]
+type = "pip-compile"
+lock-filename = ".hatch/requirements-test.txt"
+pip-compile-constraint = "default"
+features = ["test"]
 
 [tool.hatch.envs.test.scripts]
 test = "coverage run -m pytest {args: tests}"
@@ -142,6 +167,7 @@ path = "data_safe_haven/version.py"
 disallow_subclassing_any = false  # allow subclassing of types from third-party libraries
 files = "data_safe_haven"         # run mypy over this directory
 mypy_path = "typings"             # use this directory for stubs
+plugins = ["pydantic.mypy"]       # enable the pydantic plugin
 strict = true                     # enable all optional error checking flags
 
 [[tool.mypy.overrides]]
@@ -152,19 +178,14 @@ module = [
     "azure.keyvault.*",
     "azure.mgmt.*",
     "azure.storage.*",
-    "cryptography.*",
     "dns.*",
     "jwt.*",
-    "msal.*",
     "numpy.*",
-    "pandas.*",
     "psycopg.*",
-    "pulumi.*",
     "pulumi_azure_native.*",
     "pulumi_random.*",
-    "pulumi_tls.*",
+    "pulumi.*",
     "pymssql.*",
-    "rich.*",
     "simple_acme_dns.*",
     "sklearn.*",
     "websocket.*",
