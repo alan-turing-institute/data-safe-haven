@@ -1,7 +1,6 @@
-- `emacs`
-- `nano`
-- `PyCharm`
-- `RStudio`
-- `Spyder`
-- `vim`
-- `Visual Studio Code`
+- `emacs` editor
+- `nano` editor
+- `PyCharm` IDE
+- `RStudio` IDE
+- `vim`editor
+- `Visual Studio Code` IDE

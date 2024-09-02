@@ -112,7 +112,11 @@ class SREApplicationGatewayComponent(ComponentResource):
             ],
             backend_http_settings_collection=[
                 network.ApplicationGatewayBackendHttpSettingsArgs(
-                    cookie_based_affinity=network.ApplicationGatewayCookieBasedAffinity.ENABLED,
+                    cookie_based_affinity=network.ApplicationGatewayCookieBasedAffinity.DISABLED,
+                    connection_draining=network.ApplicationGatewayConnectionDrainingArgs(
+                        drain_timeout_in_sec=30,
+                        enabled=True,
+                    ),
                     name="appGatewayBackendHttpSettings",
                     port=80,
                     protocol="Http",
@@ -233,7 +237,13 @@ class SREApplicationGatewayComponent(ComponentResource):
                     ),
                     name="GuacamoleHttpRouting",
                     priority=200,
-                    rule_type="Basic",
+                    rewrite_rule_set=network.SubResourceArgs(
+                        id=Output.concat(
+                            props.resource_group_id,
+                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/rewriteRuleSets/ResponseHeaders",
+                        )
+                    ),
+                    rule_type=network.ApplicationGatewayRequestRoutingRuleType.BASIC,
                 ),
                 network.ApplicationGatewayRequestRoutingRuleArgs(
                     backend_address_pool=network.SubResourceArgs(
@@ -256,14 +266,118 @@ class SREApplicationGatewayComponent(ComponentResource):
                     ),
                     name="GuacamoleHttpsRouting",
                     priority=100,
-                    rule_type="Basic",
+                    rewrite_rule_set=network.SubResourceArgs(
+                        id=Output.concat(
+                            props.resource_group_id,
+                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/rewriteRuleSets/ResponseHeaders",
+                        )
+                    ),
+                    rule_type=network.ApplicationGatewayRequestRoutingRuleType.BASIC,
                 ),
             ],
             resource_group_name=props.resource_group_name,
+            rewrite_rule_sets=[
+                network.ApplicationGatewayRewriteRuleSetArgs(
+                    name="ResponseHeaders",
+                    rewrite_rules=[
+                        # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy
+                        network.ApplicationGatewayRewriteRuleArgs(
+                            action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
+                                response_header_configurations=[
+                                    network.ApplicationGatewayHeaderConfigurationArgs(
+                                        header_name="Content-Security-Policy",
+                                        header_value="upgrade-insecure-requests; base-uri 'self'; frame-ancestors 'self'; form-action 'self'; object-src 'none';",
+                                    )
+                                ],
+                            ),
+                            name="content-security-policy",
+                            rule_sequence=100,
+                        ),
+                        # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Feature-Policy
+                        network.ApplicationGatewayRewriteRuleArgs(
+                            action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
+                                response_header_configurations=[
+                                    network.ApplicationGatewayHeaderConfigurationArgs(
+                                        header_name="Permissions-Policy",
+                                        header_value="accelerometer=(self), camera=(self), geolocation=(self), gyroscope=(self), magnetometer=(self), microphone=(self), payment=(self), usb=(self)",
+                                    )
+                                ],
+                            ),
+                            name="permissions-policy",
+                            rule_sequence=200,
+                        ),
+                        # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+                        network.ApplicationGatewayRewriteRuleArgs(
+                            action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
+                                response_header_configurations=[
+                                    network.ApplicationGatewayHeaderConfigurationArgs(
+                                        header_name="Referrer-Policy",
+                                        header_value="strict-origin-when-cross-origin",
+                                    )
+                                ],
+                            ),
+                            name="referrer-policy",
+                            rule_sequence=300,
+                        ),
+                        # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Server
+                        network.ApplicationGatewayRewriteRuleArgs(
+                            action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
+                                response_header_configurations=[
+                                    network.ApplicationGatewayHeaderConfigurationArgs(
+                                        header_name="Server",
+                                        header_value="",
+                                    )
+                                ],
+                            ),
+                            name="server",
+                            rule_sequence=400,
+                        ),
+                        # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
+                        network.ApplicationGatewayRewriteRuleArgs(
+                            action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
+                                response_header_configurations=[
+                                    network.ApplicationGatewayHeaderConfigurationArgs(
+                                        header_name="Strict-Transport-Security",
+                                        header_value="max-age=31536000; includeSubDomains; preload",
+                                    )
+                                ],
+                            ),
+                            name="strict-transport-security",
+                            rule_sequence=500,
+                        ),
+                        # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
+                        network.ApplicationGatewayRewriteRuleArgs(
+                            action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
+                                response_header_configurations=[
+                                    network.ApplicationGatewayHeaderConfigurationArgs(
+                                        header_name="X-Content-Type-Options",
+                                        header_value="nosniff",
+                                    )
+                                ],
+                            ),
+                            name="x-content-type-options",
+                            rule_sequence=600,
+                        ),
+                        # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+                        network.ApplicationGatewayRewriteRuleArgs(
+                            action_set=network.ApplicationGatewayRewriteRuleActionSetArgs(
+                                response_header_configurations=[
+                                    network.ApplicationGatewayHeaderConfigurationArgs(
+                                        header_name="X-Frame-Options",
+                                        header_value="SAMEORIGIN",
+                                    )
+                                ],
+                            ),
+                            name="x-frame-options",
+                            rule_sequence=700,
+                        ),
+                    ],
+                ),
+            ],
             sku=network.ApplicationGatewaySkuArgs(
                 capacity=1,
-                name="Standard_v2",
-                tier="Standard_v2",
+                name="Basic",
+                tier="Basic",
             ),
             ssl_certificates=[
                 network.ApplicationGatewaySslCertificateArgs(

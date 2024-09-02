@@ -18,8 +18,8 @@ You will need a full name, phone number, email address and country for each user
 
 :::{code} text
 GivenName;Surname;Phone;Email;CountryCode
-Sherlock;Holmes;+44800456456;sherlock@holmes.me;GB
-John;Watson;+18005550100;john.watson@nhs.uk;GB
+Ada;Lovelace;+44800456456;ada@lovelace.me;GB
+Grace;Hopper;+18005550100;grace@nasa.gov;US
 :::
 ::::
 
@@ -32,7 +32,7 @@ $ dsh users add PATH_TO_MY_CSV_FILE
 - You can do this from the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 
     1. Browse to **{menuselection}`Groups --> All Groups`**
-    2. Click on the group named **Data Safe Haven SRE _SRE-NAME_ Users**
+    2. Click on the group named **Data Safe Haven SRE _YOUR\_SRE\_NAME_ Users**
     3. Browse to **{menuselection}`Manage --> Members`** from the secondary menu on the left side
 
 - You can do this at the command line by running the following command:
@@ -47,10 +47,10 @@ $ dsh users add PATH_TO_MY_CSV_FILE
     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┓
     ┃ username                     ┃ Entra ID ┃ SRE YOUR_SRE_NAME ┃
     ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━┩
-    │ ada.lovelace                 │ x        │                   │
-    │ grace.hopper                 │ x        │                   │
-    │ sherlock.holmes              │ x        │ x                 │
-    │ john.watson                  │ x        │ x                 │
+    │ ada.lovelace                 │ x        │ x                 │
+    │ grace.hopper                 │ x        │ x                 │
+    │ ursula.franklin              │ x        │                   │
+    │ joan.clarke                  │ x        │                   │
     └──────────────────────────────┴──────────┴───────────────────┘
     ```
 
@@ -79,9 +79,9 @@ Users created via the `dsh users` command line tool will be automatically regist
 If you have manually created a user and want to enable SSPR, do the following
 
 - Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-- Browse to **Users > All Users** from the menu on the left side
+- Browse to **{menuselection}`Users --> All Users`**
 - Select the user you want to enable SSPR for
-- On the **Manage > Authentication Methods** page fill out their contact info as follows:
+- On the **{menuselection}`Manage --> Authentication Methods`** page fill out their contact info as follows:
     - Ensure that you register **both** a phone number and an email address
         - **Phone:** add the user's phone number with a space between the country code and the rest of the number (_e.g._ +44 7700900000)
         - **Email:** enter the user's email address here

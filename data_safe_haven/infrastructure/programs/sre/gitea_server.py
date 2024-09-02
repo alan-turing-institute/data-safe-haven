@@ -79,7 +79,7 @@ class SREGiteaServerComponent(ComponentResource):
         # Define configuration file shares
         file_share_gitea_caddy = storage.FileShare(
             f"{self._name}_file_share_gitea_caddy",
-            access_tier=storage.ShareAccessTier.COOL,
+            access_tier=storage.ShareAccessTier.TRANSACTION_OPTIMIZED,
             account_name=props.storage_account_name,
             resource_group_name=props.resource_group_name,
             share_name="gitea-caddy",
@@ -89,7 +89,7 @@ class SREGiteaServerComponent(ComponentResource):
         )
         file_share_gitea_gitea = storage.FileShare(
             f"{self._name}_file_share_gitea_gitea",
-            access_tier=storage.ShareAccessTier.COOL,
+            access_tier=storage.ShareAccessTier.TRANSACTION_OPTIMIZED,
             account_name=props.storage_account_name,
             resource_group_name=props.resource_group_name,
             share_name="gitea-gitea",
@@ -336,7 +336,7 @@ class SREGiteaServerComponent(ComponentResource):
         )
 
         # Register the container group in the SRE DNS zone
-        LocalDnsRecordComponent(
+        local_dns = LocalDnsRecordComponent(
             f"{self._name}_gitea_dns_record_set",
             LocalDnsRecordProps(
                 base_fqdn=props.sre_fqdn,
@@ -348,3 +348,6 @@ class SREGiteaServerComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=container_group)
             ),
         )
+
+        # Register outputs
+        self.hostname = local_dns.hostname

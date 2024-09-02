@@ -154,16 +154,16 @@ class TestSREApplicationGatewayComponent:
                 assert_equal_json,
                 [
                     {
-                        "backend_ip_configurations": None,
-                        "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "backend_addresses": [
                             {"ip_address": "10.0.1.44"},
                             {"ip_address": "10.0.1.45"},
                             {"ip_address": "10.0.1.46"},
                         ],
+                        "backend_ip_configurations": None,
+                        "etag": None,
                         "name": "appGatewayBackendGuacamole",
+                        "provisioning_state": None,
+                        "type": None,
                     }
                 ],
             ),
@@ -179,14 +179,18 @@ class TestSREApplicationGatewayComponent:
                 assert_equal_json,
                 [
                     {
+                        "connection_draining": {
+                            "drain_timeout_in_sec": 30,
+                            "enabled": True,
+                        },
+                        "cookie_based_affinity": "Disabled",
                         "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
-                        "cookie_based_affinity": "Enabled",
                         "name": "appGatewayBackendHttpSettings",
                         "port": 80,
                         "protocol": "Http",
+                        "provisioning_state": None,
                         "request_timeout": 30,
+                        "type": None,
                     }
                 ],
             ),
@@ -275,11 +279,11 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "name": "appGatewayFrontendIP",
                         "private_ip_allocation_method": "Dynamic",
+                        "provisioning_state": None,
                         "public_ip_address": {"id": None},
+                        "type": None,
                     }
                 ],
             ),
@@ -296,17 +300,17 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "name": "appGatewayFrontendHttp",
                         "port": 80,
+                        "provisioning_state": None,
+                        "type": None,
                     },
                     {
                         "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "name": "appGatewayFrontendHttps",
                         "port": 443,
+                        "provisioning_state": None,
+                        "type": None,
                     },
                 ],
             ),
@@ -323,10 +327,10 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "name": "appGatewayIP",
+                        "provisioning_state": None,
                         "subnet": {"id": "subnet_application_gateway_id"},
+                        "type": None,
                     }
                 ],
             ),
@@ -352,24 +356,24 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "frontend_ip_configuration": {"id": None},
                         "frontend_port": {"id": None},
                         "host_name": "sre.example.com",
                         "name": "GuacamoleHttpListener",
                         "protocol": "Http",
+                        "provisioning_state": None,
+                        "type": None,
                     },
                     {
                         "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "frontend_ip_configuration": {"id": None},
                         "frontend_port": {"id": None},
                         "host_name": "sre.example.com",
                         "name": "GuacamoleHttpsListener",
                         "protocol": "Https",
+                        "provisioning_state": None,
                         "ssl_certificate": {"id": None},
+                        "type": None,
                     },
                 ],
             ),
@@ -481,13 +485,13 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
-                        "type": None,
                         "include_path": True,
                         "include_query_string": True,
                         "name": "GuacamoleHttpToHttpsRedirection",
                         "redirect_type": "Permanent",
                         "request_routing_rules": [{"id": None}],
                         "target_listener": {"id": None},
+                        "type": None,
                     }
                 ],
             ),
@@ -504,24 +508,26 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "http_listener": {"id": None},
                         "name": "GuacamoleHttpRouting",
                         "priority": 200,
+                        "provisioning_state": None,
                         "redirect_configuration": {"id": None},
+                        "rewrite_rule_set": {"id": None},
                         "rule_type": "Basic",
+                        "type": None,
                     },
                     {
-                        "etag": None,
-                        "provisioning_state": None,
-                        "type": None,
                         "backend_address_pool": {"id": None},
                         "backend_http_settings": {"id": None},
+                        "etag": None,
                         "http_listener": {"id": None},
                         "name": "GuacamoleHttpsRouting",
                         "priority": 100,
+                        "provisioning_state": None,
+                        "rewrite_rule_set": {"id": None},
                         "rule_type": "Basic",
+                        "type": None,
                     },
                 ],
             ),
@@ -542,7 +548,99 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.rewrite_rule_sets.apply(
-            partial(assert_equal, None),
+            partial(
+                assert_equal_json,
+                [
+                    {
+                        "etag": None,
+                        "name": "ResponseHeaders",
+                        "provisioning_state": None,
+                        "rewrite_rules": [
+                            {
+                                "action_set": {
+                                    "response_header_configurations": [
+                                        {
+                                            "header_name": "Content-Security-Policy",
+                                            "header_value": "upgrade-insecure-requests; base-uri 'self'; frame-ancestors 'self'; form-action 'self'; object-src 'none';",
+                                        }
+                                    ]
+                                },
+                                "name": "content-security-policy",
+                                "rule_sequence": 100,
+                            },
+                            {
+                                "action_set": {
+                                    "response_header_configurations": [
+                                        {
+                                            "header_name": "Permissions-Policy",
+                                            "header_value": "accelerometer=(self), camera=(self), geolocation=(self), gyroscope=(self), magnetometer=(self), microphone=(self), payment=(self), usb=(self)",
+                                        }
+                                    ]
+                                },
+                                "name": "permissions-policy",
+                                "rule_sequence": 200,
+                            },
+                            {
+                                "action_set": {
+                                    "response_header_configurations": [
+                                        {
+                                            "header_name": "Referrer-Policy",
+                                            "header_value": "strict-origin-when-cross-origin",
+                                        }
+                                    ]
+                                },
+                                "name": "referrer-policy",
+                                "rule_sequence": 300,
+                            },
+                            {
+                                "action_set": {
+                                    "response_header_configurations": [
+                                        {"header_name": "Server", "header_value": ""}
+                                    ]
+                                },
+                                "name": "server",
+                                "rule_sequence": 400,
+                            },
+                            {
+                                "action_set": {
+                                    "response_header_configurations": [
+                                        {
+                                            "header_name": "Strict-Transport-Security",
+                                            "header_value": "max-age=31536000; includeSubDomains; preload",
+                                        }
+                                    ]
+                                },
+                                "name": "strict-transport-security",
+                                "rule_sequence": 500,
+                            },
+                            {
+                                "action_set": {
+                                    "response_header_configurations": [
+                                        {
+                                            "header_name": "X-Content-Type-Options",
+                                            "header_value": "nosniff",
+                                        }
+                                    ]
+                                },
+                                "name": "x-content-type-options",
+                                "rule_sequence": 600,
+                            },
+                            {
+                                "action_set": {
+                                    "response_header_configurations": [
+                                        {
+                                            "header_name": "X-Frame-Options",
+                                            "header_value": "SAMEORIGIN",
+                                        }
+                                    ]
+                                },
+                                "name": "x-frame-options",
+                                "rule_sequence": 700,
+                            },
+                        ],
+                    },
+                ],
+            ),
             run_with_unknowns=True,
         )
 
@@ -564,8 +662,8 @@ class TestSREApplicationGatewayComponent:
                 assert_equal,
                 network.outputs.ApplicationGatewaySkuResponse(
                     capacity=1,
-                    name="Standard_v2",
-                    tier="Standard_v2",
+                    name="Basic",
+                    tier="Basic",
                 ),
             ),
             run_with_unknowns=True,
@@ -581,11 +679,11 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
+                        "key_vault_secret_id": "key_vault_certificate_id",
+                        "name": "letsencryptcertificate",
                         "provisioning_state": None,
                         "public_cert_data": None,
                         "type": None,
-                        "key_vault_secret_id": "key_vault_certificate_id",
-                        "name": "letsencryptcertificate",
                     }
                 ],
             ),

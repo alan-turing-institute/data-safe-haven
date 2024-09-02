@@ -2,12 +2,14 @@ backports.zoneinfo
 contourpy
 cycler
 fonttools
+joblib
 kiwisolver
 matplotlib
 numpy
 packaging
 pandas
 pillow
+pip
 psycopg
 psycopg-binary
 pymssql
@@ -16,6 +18,8 @@ pyparsing
 python-dateutil
 pytz
 scikit-learn
+scipy
 six
+threadpoolctl
 typing-extensions
 tzdata

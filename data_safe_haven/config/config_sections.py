@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from ipaddress import ip_network
+from itertools import combinations
+
+from pydantic import BaseModel, field_validator
 
 from data_safe_haven.types import (
     AzureLocation,
+    AzurePremiumFileShareSize,
     AzureVmSku,
     DatabaseSystem,
     EmailAddress,
@@ -37,25 +41,40 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
 
 
 class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
-    allow_copy: bool = False
-    allow_paste: bool = False
+    allow_copy: bool
+    allow_paste: bool
+
+
+class ConfigSubsectionStorageQuotaGB(BaseModel, validate_assignment=True):
+    home: AzurePremiumFileShareSize
+    shared: AzurePremiumFileShareSize
 
 
 class ConfigSectionSRE(BaseModel, validate_assignment=True):
+    # Mutable objects can be used as default arguments in Pydantic:
+    # https://docs.pydantic.dev/latest/concepts/models/#fields-with-non-hashable-default-values
     admin_email_address: EmailAddress
-    admin_ip_addresses: list[IpAddress] = Field(..., default_factory=list[IpAddress])
-    databases: UniqueList[DatabaseSystem] = Field(
-        ..., default_factory=list[DatabaseSystem]
-    )
-    data_provider_ip_addresses: list[IpAddress] = Field(
-        ..., default_factory=list[IpAddress]
-    )
-    remote_desktop: ConfigSubsectionRemoteDesktopOpts = Field(
-        ..., default_factory=ConfigSubsectionRemoteDesktopOpts
-    )
-    research_user_ip_addresses: list[IpAddress] = Field(
-        ..., default_factory=list[IpAddress]
-    )
+    admin_ip_addresses: list[IpAddress] = []
+    databases: UniqueList[DatabaseSystem] = []
+    data_provider_ip_addresses: list[IpAddress] = []
+    remote_desktop: ConfigSubsectionRemoteDesktopOpts
+    research_user_ip_addresses: list[IpAddress] = []
+    storage_quota_gb: ConfigSubsectionStorageQuotaGB
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
     timezone: TimeZone = "Etc/UTC"
-    workspace_skus: list[AzureVmSku] = Field(..., default_factory=list[AzureVmSku])
+    workspace_skus: list[AzureVmSku] = []
+
+    @field_validator(
+        "admin_ip_addresses",
+        "data_provider_ip_addresses",
+        "research_user_ip_addresses",
+        mode="after",
+    )
+    @classmethod
+    def ensure_non_overlapping(cls, v: list[IpAddress]) -> list[IpAddress]:
+        for a, b in combinations(v, 2):
+            a_ip, b_ip = ip_network(a), ip_network(b)
+            if a_ip.overlaps(b_ip):
+                msg = "IP addresses must not overlap."
+                raise ValueError(msg)
+        return v

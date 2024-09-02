@@ -2,7 +2,11 @@ import pytest
 from freezegun import freeze_time
 
 from data_safe_haven.exceptions import DataSafeHavenValueError
-from data_safe_haven.functions import get_key_vault_name, json_safe, next_occurrence
+from data_safe_haven.functions import (
+    get_key_vault_name,
+    json_safe,
+    next_occurrence,
+)
 
 
 class TestNextOccurrence:
