@@ -19,7 +19,7 @@
 # - azure-storage-file-datalake==12.16.0
 # - azure-storage-file-share==12.17.0
 # - chevron==0.14.0
-# - cryptography==43.0.1
+# - cryptography==43.0.0
 # - fqdn==1.5.1
 # - psycopg==3.2.1
 # - pulumi-azure-native==2.58.0
@@ -121,7 +121,7 @@ chevron==0.14.0
     # via hatch.envs.default
 click==8.1.7
     # via typer
-cryptography==43.0.1
+cryptography==43.0.0
     # via
     #   hatch.envs.default
     #   acme
