@@ -6,7 +6,7 @@
 # - black==24.8.0
 # - mypy==1.11.2
 # - pandas-stubs==2.2.2.240807
-# - pydantic==2.9.0
+# - pydantic==2.9.1
 # - ruff==0.6.4
 # - types-appdirs==1.4.3.5
 # - types-chevron==0.14.2.20240310
@@ -180,9 +180,9 @@ ptyprocess==0.7.0
     # via pexpect
 pycparser==2.22
     # via cffi
-pydantic==2.9.0
+pydantic==2.9.1
     # via hatch.envs.lint
-pydantic-core==2.23.2
+pydantic-core==2.23.3
     # via pydantic
 pygments==2.18.0
     # via rich

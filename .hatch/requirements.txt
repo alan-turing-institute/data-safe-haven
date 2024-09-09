@@ -25,7 +25,7 @@
 # - pulumi-azure-native==2.59.0
 # - pulumi-random==4.16.4
 # - pulumi==3.131.0
-# - pydantic==2.9.0
+# - pydantic==2.9.1
 # - pyjwt[crypto]==2.9.0
 # - pytz==2024.1
 # - pyyaml==6.0.2
@@ -197,9 +197,9 @@ pulumi-random==4.16.4
     # via hatch.envs.default
 pycparser==2.22
     # via cffi
-pydantic==2.9.0
+pydantic==2.9.1
     # via hatch.envs.default
-pydantic-core==2.23.2
+pydantic-core==2.23.3
     # via pydantic
 pygments==2.18.0
     # via rich
