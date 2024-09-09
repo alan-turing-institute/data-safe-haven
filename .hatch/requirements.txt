@@ -19,13 +19,13 @@
 # - azure-storage-file-datalake==12.16.0
 # - azure-storage-file-share==12.17.0
 # - chevron==0.14.0
-# - cryptography==43.0.0
+# - cryptography==43.0.1
 # - fqdn==1.5.1
 # - psycopg==3.2.1
-# - pulumi-azure-native==2.58.0
-# - pulumi-random==4.16.3
-# - pulumi==3.130.0
-# - pydantic==2.8.2
+# - pulumi-azure-native==2.59.0
+# - pulumi-random==4.16.4
+# - pulumi==3.131.0
+# - pydantic==2.9.1
 # - pyjwt[crypto]==2.9.0
 # - pytz==2024.1
 # - pyyaml==6.0.2
@@ -113,7 +113,7 @@ certifi==2024.8.30
     # via
     #   msrest
     #   requests
-cffi==1.17.0
+cffi==1.17.1
     # via cryptography
 charset-normalizer==3.3.2
     # via requests
@@ -121,7 +121,7 @@ chevron==0.14.0
     # via hatch.envs.default
 click==8.1.7
     # via typer
-cryptography==43.0.0
+cryptography==43.0.1
     # via
     #   hatch.envs.default
     #   acme
@@ -164,7 +164,7 @@ markdown-it-py==3.0.0
     # via rich
 mdurl==0.1.2
     # via markdown-it-py
-msal==1.30.0
+msal==1.31.0
     # via
     #   azure-identity
     #   msal-extensions
@@ -186,20 +186,20 @@ protobuf==4.25.4
     # via pulumi
 psycopg==3.2.1
     # via hatch.envs.default
-pulumi==3.130.0
+pulumi==3.131.0
     # via
     #   hatch.envs.default
     #   pulumi-azure-native
     #   pulumi-random
-pulumi-azure-native==2.58.0
+pulumi-azure-native==2.59.0
     # via hatch.envs.default
-pulumi-random==4.16.3
+pulumi-random==4.16.4
     # via hatch.envs.default
 pycparser==2.22
     # via cffi
-pydantic==2.8.2
+pydantic==2.9.1
     # via hatch.envs.default
-pydantic-core==2.20.1
+pydantic-core==2.23.3
     # via pydantic
 pygments==2.18.0
     # via rich
