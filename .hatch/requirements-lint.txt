@@ -264,9 +264,7 @@ typing-extensions==4.12.2
     #   pydantic
     #   pydantic-core
 tzdata==2024.1
-    # via
-    #   ansible-navigator
-    #   pydantic
+    # via ansible-navigator
 urllib3==2.2.2
     # via types-requests
 virtualenv==20.26.4

@@ -267,8 +267,6 @@ typing-extensions==4.12.2
     #   pydantic
     #   pydantic-core
     #   typer
-tzdata==2024.1
-    # via pydantic
 urllib3==2.2.2
     # via requests
 validators==0.28.3
