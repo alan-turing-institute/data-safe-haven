@@ -24,7 +24,7 @@ ansible-builder==3.1.0
     #   ansible-dev-environment
     #   ansible-dev-tools
     #   ansible-navigator
-ansible-compat==24.8.0
+ansible-compat==24.9.0
     # via
     #   ansible-lint
     #   molecule
@@ -36,9 +36,9 @@ ansible-core==2.17.3
     #   ansible-lint
     #   molecule
     #   pytest-ansible
-ansible-creator==24.8.0
+ansible-creator==24.9.0
     # via ansible-dev-tools
-ansible-dev-environment==24.7.0
+ansible-dev-environment==24.9.0
     # via ansible-dev-tools
 ansible-dev-tools==24.8.0
     # via hatch.envs.lint
