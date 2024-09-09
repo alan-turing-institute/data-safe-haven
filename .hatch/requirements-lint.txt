@@ -6,13 +6,13 @@
 # - black==24.8.0
 # - mypy==1.11.2
 # - pandas-stubs==2.2.2.240807
-# - pydantic==2.8.2
-# - ruff==0.6.3
+# - pydantic==2.9.0
+# - ruff==0.6.4
 # - types-appdirs==1.4.3.5
 # - types-chevron==0.14.2.20240310
 # - types-pytz==2024.1.0.20240417
 # - types-pyyaml==6.0.12.20240808
-# - types-requests==2.32.0.20240712
+# - types-requests==2.32.0.20240907
 #
 
 annotated-types==0.7.0
@@ -66,7 +66,7 @@ bracex==2.5
     # via wcmatch
 cachetools==5.5.0
     # via tox
-cffi==1.17.0
+cffi==1.17.1
     # via
     #   cryptography
     #   onigurumacffi
@@ -81,7 +81,7 @@ click-help-colors==0.9.4
     # via molecule
 colorama==0.4.6
     # via tox
-cryptography==43.0.0
+cryptography==43.0.1
     # via ansible-core
 distlib==0.3.8
     # via
@@ -95,7 +95,7 @@ enrich==1.2.7
     # via molecule
 execnet==2.1.1
     # via pytest-xdist
-filelock==3.15.4
+filelock==3.16.0
     # via
     #   ansible-lint
     #   tox
@@ -135,7 +135,7 @@ mypy-extensions==1.0.0
     # via
     #   black
     #   mypy
-numpy==2.1.0
+numpy==2.1.1
     # via pandas-stubs
 onigurumacffi==1.3.0
     # via ansible-navigator
@@ -166,7 +166,7 @@ pbr==6.1.0
     # via bindep
 pexpect==4.9.0
     # via ansible-runner
-platformdirs==4.2.2
+platformdirs==4.3.2
     # via
     #   black
     #   tox
@@ -180,9 +180,9 @@ ptyprocess==0.7.0
     # via pexpect
 pycparser==2.22
     # via cffi
-pydantic==2.8.2
+pydantic==2.9.0
     # via hatch.envs.lint
-pydantic-core==2.20.1
+pydantic-core==2.23.2
     # via pydantic
 pygments==2.18.0
     # via rich
@@ -235,14 +235,14 @@ ruamel-yaml==0.18.6
     # via ansible-lint
 ruamel-yaml-clib==0.2.8
     # via ruamel-yaml
-ruff==0.6.3
+ruff==0.6.4
     # via hatch.envs.lint
 subprocess-tee==0.4.2
     # via
     #   ansible-compat
     #   ansible-dev-environment
     #   ansible-lint
-tox==4.18.0
+tox==4.18.1
     # via tox-ansible
 tox-ansible==24.8.0
     # via ansible-dev-tools
@@ -256,7 +256,7 @@ types-pytz==2024.1.0.20240417
     #   pandas-stubs
 types-pyyaml==6.0.12.20240808
     # via hatch.envs.lint
-types-requests==2.32.0.20240712
+types-requests==2.32.0.20240907
     # via hatch.envs.lint
 typing-extensions==4.12.2
     # via
@@ -264,10 +264,12 @@ typing-extensions==4.12.2
     #   pydantic
     #   pydantic-core
 tzdata==2024.1
-    # via ansible-navigator
+    # via
+    #   ansible-navigator
+    #   pydantic
 urllib3==2.2.2
     # via types-requests
-virtualenv==20.26.3
+virtualenv==20.26.4
     # via tox
 wcmatch==9.0
     # via
