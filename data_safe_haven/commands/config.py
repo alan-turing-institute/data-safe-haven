@@ -8,6 +8,7 @@ import typer
 from data_safe_haven import console
 from data_safe_haven.config import ContextManager, DSHPulumiConfig, SHMConfig, SREConfig
 from data_safe_haven.exceptions import (
+    DataSafeHavenAzureError,
     DataSafeHavenAzureStorageError,
     DataSafeHavenConfigError,
     DataSafeHavenError,
@@ -130,7 +131,7 @@ def show(
     except DataSafeHavenAzureStorageError as exc:
         logger.critical("Ensure SHM is deployed before attempting to use SRE configs.")
         raise typer.Exit(1) from exc
-    except DataSafeHavenError as exc:
+    except DataSafeHavenAzureError as exc:
         logger.critical(
             f"No configuration exists for an SRE named '{name}' for the selected context."
         )

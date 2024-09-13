@@ -5,7 +5,6 @@ from typing import Any, ClassVar, TypeVar
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenAzureStorageError,
-    DataSafeHavenError,
 )
 from data_safe_haven.external import AzureSdk
 
@@ -44,7 +43,7 @@ class AzureSerialisableModel(YAMLSerialisableModel):
         except DataSafeHavenAzureStorageError as exc:
             msg = f"Storage account '{context.storage_account_name}' does not exist."
             raise DataSafeHavenAzureStorageError(msg) from exc
-        except DataSafeHavenError as exc:
+        except DataSafeHavenAzureError as exc:
             msg = f"Could not load file '{filename or cls.default_filename}' from Azure storage."
             raise DataSafeHavenAzureError(msg) from exc
 
