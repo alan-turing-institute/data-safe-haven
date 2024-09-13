@@ -16,6 +16,7 @@ class SREIpRanges:
     data_configuration = vnet.next_subnet(8)
     data_desired_state = vnet.next_subnet(8)
     data_private = vnet.next_subnet(8)
+    external_git_mirror = vnet.next_subnet(8)
     firewall = vnet.next_subnet(64)  # 64 address minimum
     firewall_management = vnet.next_subnet(64)  # 64 address minimum
     guacamole_containers = vnet.next_subnet(8)
