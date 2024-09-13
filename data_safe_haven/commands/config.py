@@ -6,7 +6,13 @@ from typing import Annotated, Optional
 import typer
 
 from data_safe_haven import console
-from data_safe_haven.config import ContextManager, DSHPulumiConfig, SHMConfig, SREConfig, sre_config_name
+from data_safe_haven.config import (
+    ContextManager,
+    DSHPulumiConfig,
+    SHMConfig,
+    SREConfig,
+    sre_config_name,
+)
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenAzureStorageError,

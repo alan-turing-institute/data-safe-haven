@@ -5,7 +5,7 @@ from typing import Any, ClassVar, TypeVar
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenAzureStorageError,
-    DataSafeHavenTypeError
+    DataSafeHavenTypeError,
 )
 from data_safe_haven.external import AzureSdk
 
