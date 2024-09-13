@@ -91,7 +91,7 @@ class SREConfig(AzureSerialisableModel):
                 data_provider_ip_addresses=[
                     "List of IP addresses belonging to data providers"
                 ],
-                external_git_mirror="True/False: whether to deploy an external mirror git server (True), or only an internal server",
+                external_git_mirror="True/False: whether to deploy an external mirror git server (True), or only an internal server",  # type: ignore
                 remote_desktop=ConfigSubsectionRemoteDesktopOpts.model_construct(
                     allow_copy=remote_desktop_allow_copy,
                     allow_paste=remote_desktop_allow_paste,
