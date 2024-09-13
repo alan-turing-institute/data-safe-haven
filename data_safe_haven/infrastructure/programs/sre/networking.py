@@ -81,6 +81,29 @@ class SRENetworkingComponent(ComponentResource):
         )
 
         # Define NSGs
+        nsg_external_git_mirror = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_external_git_mirror",
+            location=props.location,
+            network_security_group_name=f"{stack_name}-nsg-external-git-mirror",
+            resource_group_name=props.resource_group_name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+            ],
+            opts=child_opts,
+            tags=child_tags,
+        )
         nsg_application_gateway = network.NetworkSecurityGroup(
             f"{self._name}_nsg_application_gateway",
             location=props.location,
@@ -1560,7 +1583,7 @@ class SRENetworkingComponent(ComponentResource):
         subnet_data_configuration_name = "DataConfigurationSubnet"
         subnet_data_desired_state_name = "DataDesiredStateSubnet"
         subnet_data_private_name = "DataPrivateSubnet"
-        # subnet_external_git_mirror_name = "ExternalGitMirrorSubnet"
+        subnet_external_git_mirror_name = "ExternalGitMirrorSubnet"
         subnet_firewall_name = "AzureFirewallSubnet"
         subnet_firewall_management_name = "AzureFirewallManagementSubnet"
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
@@ -1748,6 +1771,15 @@ class SRENetworkingComponent(ComponentResource):
                     name=subnet_user_services_containers_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_containers.id
+                    ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
+                ),
+                # User services external git mirror
+                network.SubnetArgs(
+                    address_prefix=SREIpRanges.external_git_mirror.prefix,
+                    name=subnet_external_git_mirror_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_external_git_mirror.id
                     ),
                     route_table=network.RouteTableArgs(id=route_table.id),
                 ),
@@ -1979,6 +2011,11 @@ class SRENetworkingComponent(ComponentResource):
         )
         self.subnet_data_private = network.get_subnet_output(
             subnet_name=subnet_data_private_name,
+            resource_group_name=props.resource_group_name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_external_git_mirror = network.get_subnet_output(
+            subnet_name=subnet_external_git_mirror_name,
             resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
