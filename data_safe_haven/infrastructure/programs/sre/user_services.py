@@ -42,8 +42,8 @@ class SREUserServicesProps:
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
-        subnet_containers_support: Input[network.GetSubnetResult],
         subnet_containers: Input[network.GetSubnetResult],
+        subnet_containers_support: Input[network.GetSubnetResult],
         subnet_databases: Input[network.GetSubnetResult],
         # subnet_external_git_mirror: Input[network.GetSubnetResult],
         subnet_software_repositories: Input[network.GetSubnetResult],
@@ -134,7 +134,7 @@ class SREUserServicesComponent(ComponentResource):
             )
 
         # Deploy the HedgeDoc server
-        SREHedgeDocServerComponent(
+        self.hedgedoc_server = SREHedgeDocServerComponent(
             "sre_hedgedoc_server",
             stack_name,
             SREHedgeDocServerProps(
@@ -159,7 +159,7 @@ class SREUserServicesComponent(ComponentResource):
         )
 
         # Deploy software repository servers
-        software_repositories = SRESoftwareRepositoriesComponent(
+        self.software_repositories = SRESoftwareRepositoriesComponent(
             "sre_software_repositories",
             stack_name,
             SRESoftwareRepositoriesProps(
@@ -194,6 +194,3 @@ class SREUserServicesComponent(ComponentResource):
                 opts=child_opts,
                 tags=child_tags,
             )
-
-        # Register outputs
-        self.software_repositories = software_repositories

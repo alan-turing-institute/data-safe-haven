@@ -16,40 +16,12 @@ However, you may choose to use multiple SHMs if, for example, you want to separa
 
 ## Requirements
 
-- A [Microsoft Entra](https://learn.microsoft.com/en-us/entra/fundamentals/) tenant
-- An account with [Global Administrator](https://learn.microsoft.com/en-us/entra/global-secure-access/reference-role-based-permissions#global-administrator) privileges on this tenant
-- An account with at least [Contributor](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/general#contributor) permissions on the Azure subscription where you will deploy your infrastructure
-
-:::{hint}
-We suggest using a dedicated Microsoft Entra tenant for your DSH deployment, but this is not a requirement.
-
-We recommend using a separate tenants for your users and your infrastructure subscriptions, but this is not a requirement.
-:::
-
-:::{admonition} How to deploy a new tenant
-:class: dropdown note
-Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/create-new-tenant).
-
-- set the **Organisation Name** to something appropriate for your deployment (_e.g._ _Contoso Production Safe Haven_)
-- set the **Initial Domain Name** to the lower-case version of the organisation name with spaces and special characters removed (_e.g._ _contosoproductionsafehaven_)
-- set the **Country or Region** to whichever country is appropriate for your deployment (_e.g._ _United Kingdom_)
-
-:::
+- A [Microsoft Entra](https://learn.microsoft.com/en-us/entra/fundamentals/) tenant for managing your users
+    - An account with [Global Administrator](https://learn.microsoft.com/en-us/entra/global-secure-access/reference-role-based-permissions#global-administrator) privileges on this tenant
+- An Azure subscription where you will deploy your infrastructure
+    - An account with at least [Contributor](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/general#contributor) permissions on this subscription
 
 ## Deployment
-
-::::{admonition} Ensure you are using a hatch shell
-:class: dropdown important
-
-You must use a `hatch` shell to run any `dsh` commands.
-From the project base directory run:
-
-:::{code} shell
-$ hatch shell
-:::
-
-This ensures that you are using the intended version of Data Safe Haven with the correct set of dependencies.
-::::
 
 Before deploying the Safe Haven Management (SHM) infrastructure you need to decide on a few parameters:
 
@@ -72,7 +44,7 @@ Before deploying the Safe Haven Management (SHM) infrastructure you need to deci
 : Domain name that your TRE users will belong to.
 
   :::{hint}
-  Use a domain that you own! If you use _e.g._ `bakerst.london` here your users will be given usernames like `sherlock.holmes@bakerst.london`
+  Use a domain that you own! If you use _e.g._ `example.org` here your users will be given usernames like `ada.lovelace@example.org`
   :::
 
 **location**

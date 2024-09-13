@@ -25,6 +25,7 @@ from data_safe_haven.config.config_sections import (
     ConfigSectionSHM,
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
+    ConfigSubsectionStorageQuotaGB,
 )
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureSdk, PulumiAccount
@@ -75,12 +76,26 @@ def config_section_dockerhub() -> ConfigSectionDockerHub:
 
 
 @fixture
-def config_section_sre() -> ConfigSectionSRE:
+def config_section_sre(
+    config_subsection_remote_desktop, config_subsection_storage_quota_gb
+) -> ConfigSectionSRE:
     return ConfigSectionSRE(
         admin_email_address="admin@example.com",
         admin_ip_addresses=["1.2.3.4"],
+        remote_desktop=config_subsection_remote_desktop,
+        storage_quota_gb=config_subsection_storage_quota_gb,
         timezone="Europe/London",
     )
+
+
+@fixture
+def config_subsection_remote_desktop() -> ConfigSubsectionRemoteDesktopOpts:
+    return ConfigSubsectionRemoteDesktopOpts(allow_copy=False, allow_paste=False)
+
+
+@fixture
+def config_subsection_storage_quota_gb() -> ConfigSubsectionStorageQuotaGB:
+    return ConfigSubsectionStorageQuotaGB(home=100, shared=100)
 
 
 @fixture
@@ -384,11 +399,6 @@ def pulumi_config_yaml() -> str:
 
 
 @fixture
-def remote_desktop_config() -> ConfigSubsectionRemoteDesktopOpts:
-    return ConfigSubsectionRemoteDesktopOpts()
-
-
-@fixture
 def shm_config(
     config_section_azure: ConfigSectionAzure, config_section_shm: ConfigSectionSHM
 ) -> SHMConfig:
@@ -501,6 +511,9 @@ def sre_config_yaml(request):
             allow_paste: false
         research_user_ip_addresses: []
         software_packages: none
+        storage_quota_gb:
+            home: 100
+            shared: 100
         timezone: Europe/London
         workspace_skus: []
     """.replace(

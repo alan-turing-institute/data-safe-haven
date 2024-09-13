@@ -1,6 +1,6 @@
 # The Turing Data Safe Haven
 
-```{toctree}
+:::{toctree}
 :hidden: true
 :maxdepth: 2
 
@@ -10,7 +10,7 @@ deployment/index.md
 management/index.md
 roles/index.md
 contributing/index.md
-```
+:::
 
 ```{image} _static/scriberia_diagram.jpg
 :alt: Data Safe Haven cartoon by Scriberia for The Alan Turing Institute

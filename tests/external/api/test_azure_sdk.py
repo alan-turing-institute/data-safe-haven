@@ -114,10 +114,17 @@ def mock_key_vault_management_client(monkeypatch):
 
 @fixture
 def mock_storage_management_client(monkeypatch):
+    class MockStorageAccount:
+        def __init__(self, name):
+            self.name = name
 
     class MockStorageAccountsOperations:
         def list(self):
-            return ["shmstorageaccount", "shmstorageaccounter", "shmstorageaccountest"]
+            return [
+                MockStorageAccount("shmstorageaccount"),
+                MockStorageAccount("shmstorageaccounter"),
+                MockStorageAccount("shmstorageaccountest"),
+            ]
 
         def list_keys(
             self, resource_group_name, account_name, **kwargs  # noqa: ARG002
@@ -209,7 +216,7 @@ class TestAzureSdk:
         mocker.patch.object(sdk, "storage_exists", return_value=False)
         with pytest.raises(
             DataSafeHavenAzureStorageError,
-            match="Storage account 'storage_account' does not exist",
+            match="Storage account 'storage_account' could not be found.",
         ):
             sdk.blob_exists(
                 "exists", "resource_group", "storage_account", "storage_container"
@@ -253,9 +260,9 @@ class TestAzureSdk:
     ):
         sdk = AzureSdk("subscription name")
         if storage_account_name == "shmstorageaccount":
-            error_text = "No keys were retrieved"
+            error_text = "List of keys was empty for storage account 'shmstorageaccount' in resource group 'resource group'."
         else:
-            error_text = "Could not connect to storage account"
+            error_text = "No keys were retrieved for storage account 'shmstoragenonexistent' in resource group 'resource group'."
 
         with pytest.raises(DataSafeHavenAzureStorageError, match=error_text):
             sdk.get_storage_account_keys("resource group", storage_account_name)

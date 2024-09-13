@@ -7,15 +7,9 @@ from typing import Any, cast
 import psycopg
 from azure.core.polling import LROPoller
 from azure.mgmt.rdbms.postgresql_flexibleservers import PostgreSQLManagementClient
-from azure.mgmt.rdbms.postgresql_flexibleservers.models import (
-    FirewallRule,
-    Server,
-)
+from azure.mgmt.rdbms.postgresql_flexibleservers.models import FirewallRule, Server
 
-from data_safe_haven.exceptions import (
-    DataSafeHavenAzureError,
-    DataSafeHavenValueError,
-)
+from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenValueError
 from data_safe_haven.external import AzureSdk
 from data_safe_haven.functions import current_ip_address
 from data_safe_haven.logging import get_logger
@@ -148,6 +142,8 @@ class AzurePostgreSQLDatabase:
                 _filepath = pathlib.Path(filepath)
                 self.logger.info(f"Running SQL script: [green]{_filepath.name}[/].")
                 commands = self.load_sql(_filepath, mustache_values)
+                for line in commands.splitlines():
+                    self.logger.debug(line)
                 cursor.execute(query=commands.encode())
                 if cursor.statusmessage and "SELECT" in cursor.statusmessage:
                     outputs += [[str(msg) for msg in msg_tuple] for msg_tuple in cursor]

@@ -12,6 +12,7 @@ class SREIpRanges:
     vnet = AzureIPv4Range("10.0.0.0", "10.0.255.255")
     application_gateway = vnet.next_subnet(256)
     apt_proxy_server = vnet.next_subnet(8)
+    clamav_mirror = vnet.next_subnet(8)
     data_configuration = vnet.next_subnet(8)
     data_desired_state = vnet.next_subnet(8)
     data_private = vnet.next_subnet(8)

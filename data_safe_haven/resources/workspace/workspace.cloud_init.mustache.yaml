@@ -1,10 +1,15 @@
 #cloud-config
 
 write_files:
+  - path: "/etc/clamav/freshclam-mirror.conf"
+    permissions: "0400"
+    content: |
+      PrivateMirror {{ clamav_mirror_hostname }}
+
   - path: "/etc/database_credential"
     permissions: "0400"
     content: |
-      {{ database_service_admin_password }}
+      {{{ database_service_admin_password }}}
 
   - path: "/etc/nslcd.conf"
     permissions: "0400"
@@ -29,10 +34,10 @@ write_files:
 
       # All users that are members of the correct group
       filter passwd {{{ldap_user_filter}}}
+      map    passwd loginShell "/bin/bash"
 
       # One group for each security group belonging to this SRE and for each primary user group for users that belong to a group in this SRE
       filter group {{{ldap_group_filter}}}
-
 
   - path: "/etc/pip.conf"
     permissions: "0444"
@@ -52,14 +57,6 @@ write_files:
           r["CRAN"] <- "http://{{software_repository_hostname}}/repository/cran-proxy"
           options(repos = r)
       })
-
-  - path: "/root/desired_state.sh"
-    permissions: "0700"
-    content: |
-      #!/usr/bin/env bash
-      pushd /desired_state
-      ansible-playbook /desired_state/desired_state.yaml
-      popd
 
   - path: "/etc/systemd/system/desired-state.timer"
     permissions: "0644"
@@ -88,6 +85,23 @@ write_files:
       ExecStart=/root/desired_state.sh
       StandardOutput=journal+console
 
+  - path: "/root/desired_state.sh"
+    permissions: "0700"
+    content: |
+      #!/usr/bin/env bash
+      pushd /desired_state
+      ansible-playbook /desired_state/desired_state.yaml
+      popd
+
+  - path: "/root/gitea.url"
+    permissions: "0400"
+    content: |
+      URL=http://{{gitea_hostname}}
+
+  - path: "/root/hedgedoc.url"
+    permissions: "0400"
+    content: |
+      URL=http://{{hedgedoc_hostname}}
 
 mounts:
   # Desired state configuration is in a blob container mounted as NFSv3

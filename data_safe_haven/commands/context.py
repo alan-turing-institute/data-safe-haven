@@ -6,9 +6,7 @@ import typer
 
 from data_safe_haven import console, validators
 from data_safe_haven.config import ContextManager
-from data_safe_haven.exceptions import (
-    DataSafeHavenConfigError,
-)
+from data_safe_haven.exceptions import DataSafeHavenConfigError
 from data_safe_haven.logging import get_logger
 
 context_command_group = typer.Typer()

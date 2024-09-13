@@ -13,10 +13,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.infrastructure import ImperativeSHM
 from data_safe_haven.logging import get_logger
-from data_safe_haven.validators import (
-    typer_aad_guid,
-    typer_fqdn,
-)
+from data_safe_haven.validators import typer_aad_guid, typer_fqdn
 
 shm_command_group = typer.Typer()
 
@@ -62,49 +59,54 @@ def deploy(
         raise typer.Exit(1) from exc
 
     # Load SHM config from remote if it exists or locally if not
-    if SHMConfig.remote_exists(context):
-        config = SHMConfig.from_remote(context)
-        # If command line arguments conflict with the remote version then present diff
-        if fqdn:
-            config.shm.fqdn = fqdn
-        if entra_tenant_id:
-            config.shm.entra_tenant_id = entra_tenant_id
-        if location:
-            config.azure.location = location
-        if diff := config.remote_yaml_diff(context):
-            logger = get_logger()
-            for line in "".join(diff).splitlines():
-                logger.info(line)
-            if not console.confirm(
-                (
-                    "Configuration has changed, "
-                    "do you want to overwrite the remote configuration?"
-                ),
-                default_to_yes=False,
-            ):
-                raise typer.Exit(0)
-    else:
-        if not entra_tenant_id:
-            logger.critical(
-                "You must provide the --entra-tenant-id argument when first deploying an SHM."
+    try:
+        if SHMConfig.remote_exists(context):
+            config = SHMConfig.from_remote(context)
+            # If command line arguments conflict with the remote version then present diff
+            if fqdn:
+                config.shm.fqdn = fqdn
+            if entra_tenant_id:
+                config.shm.entra_tenant_id = entra_tenant_id
+            if location:
+                config.azure.location = location
+            if diff := config.remote_yaml_diff(context):
+                logger = get_logger()
+                for line in "".join(diff).splitlines():
+                    logger.info(line)
+                if not console.confirm(
+                    (
+                        "Configuration has changed, "
+                        "do you want to overwrite the remote configuration?"
+                    ),
+                    default_to_yes=False,
+                ):
+                    raise typer.Exit(0)
+        else:
+            if not entra_tenant_id:
+                logger.critical(
+                    "You must provide the --entra-tenant-id argument when first deploying an SHM."
+                )
+                raise typer.Exit(1)
+            if not fqdn:
+                logger.critical(
+                    "You must provide the --fqdn argument when first deploying an SHM."
+                )
+                raise typer.Exit(1)
+            if not location:
+                logger.critical(
+                    "You must provide the --location argument when first deploying an SHM."
+                )
+                raise typer.Exit(1)
+            config = SHMConfig.from_args(
+                context,
+                entra_tenant_id=entra_tenant_id,
+                fqdn=fqdn,
+                location=location,
             )
-            raise typer.Exit(1)
-        if not fqdn:
-            logger.critical(
-                "You must provide the --fqdn argument when first deploying an SHM."
-            )
-            raise typer.Exit(1)
-        if not location:
-            logger.critical(
-                "You must provide the --location argument when first deploying an SHM."
-            )
-            raise typer.Exit(1)
-        config = SHMConfig.from_args(
-            context,
-            entra_tenant_id=entra_tenant_id,
-            fqdn=fqdn,
-            location=location,
-        )
+    except DataSafeHavenError as exc:
+        msg = "Failed to load SHM configuration."
+        logger.critical(msg)
+        raise typer.Exit(1) from exc
 
     # Create Data Safe Haven SHM infrastructure.
     try:

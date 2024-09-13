@@ -5,16 +5,11 @@ from datetime import UTC, datetime
 
 from rich.highlighter import NullHighlighter
 from rich.logging import RichHandler
-from rich.text import Text
 
 from data_safe_haven.directories import log_dir
 
 from .non_logging_singleton import NonLoggingSingleton
 from .plain_file_handler import PlainFileHandler
-
-
-def from_ansi(logger: logging.Logger, text: str) -> None:
-    logger.info(Text.from_ansi(text))
 
 
 def get_console_handler() -> RichHandler:

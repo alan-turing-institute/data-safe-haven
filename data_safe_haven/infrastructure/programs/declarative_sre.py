@@ -12,46 +12,17 @@ from .sre.application_gateway import (
     SREApplicationGatewayProps,
 )
 from .sre.apt_proxy_server import SREAptProxyServerComponent, SREAptProxyServerProps
-from .sre.backup import (
-    SREBackupComponent,
-    SREBackupProps,
-)
-from .sre.data import (
-    SREDataComponent,
-    SREDataProps,
-)
-from .sre.dns_server import (
-    SREDnsServerComponent,
-    SREDnsServerProps,
-)
-from .sre.firewall import (
-    SREFirewallComponent,
-    SREFirewallProps,
-)
-from .sre.identity import (
-    SREIdentityComponent,
-    SREIdentityProps,
-)
-from .sre.monitoring import (
-    SREMonitoringComponent,
-    SREMonitoringProps,
-)
-from .sre.networking import (
-    SRENetworkingComponent,
-    SRENetworkingProps,
-)
-from .sre.remote_desktop import (
-    SRERemoteDesktopComponent,
-    SRERemoteDesktopProps,
-)
-from .sre.user_services import (
-    SREUserServicesComponent,
-    SREUserServicesProps,
-)
-from .sre.workspaces import (
-    SREWorkspacesComponent,
-    SREWorkspacesProps,
-)
+from .sre.backup import SREBackupComponent, SREBackupProps
+from .sre.clamav_mirror import SREClamAVMirrorComponent, SREClamAVMirrorProps
+from .sre.data import SREDataComponent, SREDataProps
+from .sre.dns_server import SREDnsServerComponent, SREDnsServerProps
+from .sre.firewall import SREFirewallComponent, SREFirewallProps
+from .sre.identity import SREIdentityComponent, SREIdentityProps
+from .sre.monitoring import SREMonitoringComponent, SREMonitoringProps
+from .sre.networking import SRENetworkingComponent, SRENetworkingProps
+from .sre.remote_desktop import SRERemoteDesktopComponent, SRERemoteDesktopProps
+from .sre.user_services import SREUserServicesComponent, SREUserServicesProps
+from .sre.workspaces import SREWorkspacesComponent, SREWorkspacesProps
 
 
 class DeclarativeSRE:
@@ -184,6 +155,7 @@ class DeclarativeSRE:
                 resource_group_name=resource_group.name,
                 route_table_name=networking.route_table_name,
                 subnet_apt_proxy_server=networking.subnet_apt_proxy_server,
+                subnet_clamav_mirror=networking.subnet_clamav_mirror,
                 subnet_firewall=networking.subnet_firewall,
                 subnet_firewall_management=networking.subnet_firewall_management,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
@@ -209,6 +181,8 @@ class DeclarativeSRE:
                 location=self.config.azure.location,
                 resource_group=resource_group,
                 sre_fqdn=networking.sre_fqdn,
+                storage_quota_gb_home=self.config.sre.storage_quota_gb.home,
+                storage_quota_gb_shared=self.config.sre.storage_quota_gb.shared,
                 subnet_data_configuration=networking.subnet_data_configuration,
                 subnet_data_desired_state=networking.subnet_data_desired_state,
                 subnet_data_private=networking.subnet_data_private,
@@ -231,6 +205,23 @@ class DeclarativeSRE:
                 sre_fqdn=networking.sre_fqdn,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
+            ),
+            tags=self.tags,
+        )
+
+        # Deploy the ClamAV mirror server
+        clamav_mirror = SREClamAVMirrorComponent(
+            "sre_clamav_mirror",
+            self.stack_name,
+            SREClamAVMirrorProps(
+                dns_server_ip=dns.ip_address,
+                dockerhub_credentials=dockerhub_credentials,
+                location=self.config.azure.location,
+                resource_group_name=resource_group.name,
+                sre_fqdn=networking.sre_fqdn,
+                storage_account_key=data.storage_account_data_configuration_key,
+                storage_account_name=data.storage_account_data_configuration_name,
+                subnet=networking.subnet_clamav_mirror,
             ),
             tags=self.tags,
         )
@@ -356,9 +347,12 @@ class DeclarativeSRE:
             SREWorkspacesProps(
                 admin_password=data.password_workspace_admin,
                 apt_proxy_server_hostname=apt_proxy_server.hostname,
+                clamav_mirror_hostname=clamav_mirror.hostname,
                 data_collection_rule_id=monitoring.data_collection_rule_vms.id,
                 data_collection_endpoint_id=monitoring.data_collection_endpoint.id,
                 database_service_admin_password=data.password_database_service_admin,
+                gitea_hostname=user_services.gitea_server.hostname,
+                hedgedoc_hostname=user_services.hedgedoc_server.hostname,
                 ldap_group_filter=ldap_group_filter,
                 ldap_group_search_base=ldap_group_search_base,
                 ldap_server_hostname=identity.hostname,

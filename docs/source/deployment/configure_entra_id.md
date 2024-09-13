@@ -5,6 +5,26 @@
 These instructions will configure the [Microsoft Entra ID](https://www.microsoft.com/en-gb/security/business/identity-access/microsoft-entra-id) where you will manage your users.
 You only need one Microsoft Entra ID for your deployment of the Data Safe Haven.
 
+## Setting up your Microsoft Entra tenant
+
+:::{tip}
+We suggest using a dedicated Microsoft Entra tenant for your DSH deployment, but this is not a requirement.
+
+We also recommend using a separate tenant for managing your users from the one where your infrastructure subscriptions live, but this is not a requirement.
+:::
+
+If you decide to deploy a new tenant for user management, follow the instructions here:
+
+:::{admonition} How to deploy a new tenant
+:class: dropdown note
+Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/create-new-tenant).
+
+- set the **Organisation Name** to something appropriate for your deployment (_e.g._ _Contoso Production Safe Haven_)
+- set the **Initial Domain Name** to the lower-case version of the organisation name with spaces and special characters removed (_e.g._ _contosoproductionsafehaven_)
+- set the **Country or Region** to whichever country is appropriate for your deployment (_e.g._ _United Kingdom_)
+
+:::
+
 ## Create a native Microsoft Entra administrator account
 
 If you created a new Microsoft Entra tenant, an external administrator account will have been automatically created for you.
@@ -37,11 +57,40 @@ This is necessary both to secure logins and to allow users to set their own pass
 - Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 - Browse to **{menuselection}`Protection --> Authentication methods`** from the menu on the left side
 - Browse to **{menuselection}`Manage --> Policies`** from the secondary menu on the left side
-- For each of **Microsoft Authenticator**, **SMS**, **Voice call** and **Email OTP** click on the method name
+- For each of **Microsoft Authenticator**, **SMS**, **Third-party software OATH tokens**, **Voice call** and **Email OTP** click on the method name
     - Ensure the slider is set to **Enable** and the target to **All users**
+    - {{bangbang}} For **SMS** ensure that **Use for sign-in** is unchecked
+    - {{bangbang}} For **Voice call** switch to the **Configure** tab and ensure that **Office** is checked
     - Click the **{guilabel}`Save`** button
 
-## Activate a native Microsoft Entra account
+::::{admonition} Microsoft Entra authentication summary
+:class: dropdown hint
+
+:::{image} images/entra_authentication_methods.png
+:alt: Microsoft Entra authentication methods
+:align: center
+:::
+
+::::
+
+- Browse to **{menuselection}`Protection --> Authentication methods --> Authentication strengths`** from the menu on the left side
+- Click the **{guilabel}`+ New authentication strength`** button
+- Enter the following values on the **Configure** tab
+
+:::{admonition} Configure app-based authentication
+:class: dropdown hint
+
+- **Name**: App-based authentication
+- **Description**: App-based authentication
+- Under **{menuselection}`Multi-factor authentication`**:
+    - Check **Password + Microsoft Authenticator (Push notification)**
+    - Check **Password + Software OATH token**
+- Click the **{guilabel}`Next`** button
+- Click the **{guilabel}`Create`** button
+
+:::
+
+## Activate your native Microsoft Entra account
 
 In order to use this account you will need to activate it.
 Start by setting up authentication methods for this user, following the steps below.
@@ -67,7 +116,7 @@ Now you can reset the password for this user, following the steps below.
 ## Delete any external administrators
 
 :::{warning}
-In this step we will delete any external admin account which might belong to Microsoft Entra ID.
+In this step we will delete any external account with administrator privileges which might belong to Microsoft Entra ID.
 Before you do this, you **must** ensure that you can log into Entra using your **native** administrator account.
 :::
 
@@ -84,6 +133,10 @@ The **User principal name** field for external users will contain the external d
 - Click the **{guilabel}`Sign out`** button to log out of any accounts
 - Log in with your native administrator credentials
 - Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/how-to-create-delete-users#delete-a-user) to delete each external user
+
+:::{note}
+We recommend deleting **all** external users, but if these users are necessary, you can instead remove administrator privileges from them.
+:::
 
 ## Create additional administrators
 
@@ -104,7 +157,7 @@ Since this account will be exempt from normal login policies, it should not be u
 At least one user needs to have a [Microsoft Entra Licence](https://www.microsoft.com/en-gb/security/business/microsoft-entra-pricing) assigned in order to enable [self-service password reset](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-sspr-licensing) and conditional access policies.
 
 :::{tip}
-P1 Licences are sufficient but you may use another licence if you prefer.
+**P1 Licences** are sufficient but you may use another licence if you prefer.
 :::
 
 - Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
@@ -163,7 +216,8 @@ These instructions will create a policy which requires all users (except the eme
         - Click the **{guilabel}`Done`** button
 - Under **{menuselection}`Grant`**:
     - Check **Grant access**
-    - Check **Require multi-factor authentication**
+    - Check **Require authentication strength**
+    - In the drop-down menu select **App-based authentication**
     - Click the **{guilabel}`Select`** button
 - Under **{menuselection}`Session`**:
     - Check **Sign-in frequency**

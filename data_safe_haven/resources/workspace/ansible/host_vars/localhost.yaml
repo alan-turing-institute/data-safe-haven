@@ -11,6 +11,9 @@ package_categories:
       - auditd
       - bats
       - clamav
+      - clamav-daemon
+      - clamav-unofficial-sigs
+      - ubuntu-drivers-common
     jammy: []
     noble: []
   - category: browsers
@@ -115,6 +118,7 @@ package_categories:
       - rsync
       - tmux
       - wget
+      - xfce4-terminal
     jammy: []
     noble:
       - eza
@@ -126,6 +130,19 @@ apt_packages:
   common: "{{ package_categories | map(attribute='common') | flatten }}"
   jammy: "{{ package_categories | map(attribute='jammy') | flatten }}"
   noble: "{{ package_categories | map(attribute='noble') | flatten }}"
+
+# Note that RStudio does not currently have a separate release for noble
+deb_packages:
+  jammy:
+    - source: https://download1.rstudio.org/electron/jammy/amd64
+      filename: rstudio-2024.04.2-764-amd64.deb
+      sha256: 1d0bd2f54215f514a8a78a4d035c7804218bb8fafa417aa5083d341e174e6452
+      creates: /usr/bin/rstudio
+  noble:
+    - source: https://download1.rstudio.org/electron/jammy/amd64
+      filename: rstudio-2024.04.2-764-amd64.deb
+      sha256: 1d0bd2f54215f514a8a78a4d035c7804218bb8fafa417aa5083d341e174e6452
+      creates: /usr/bin/rstudio
 
 snap_packages:
   - name: codium
