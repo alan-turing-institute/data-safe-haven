@@ -5,6 +5,7 @@ from typing import Any, ClassVar, TypeVar
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenAzureStorageError,
+    DataSafeHavenTypeError
 )
 from data_safe_haven.external import AzureSdk
 
@@ -46,6 +47,9 @@ class AzureSerialisableModel(YAMLSerialisableModel):
         except DataSafeHavenAzureError as exc:
             msg = f"Could not load file '{filename or cls.default_filename}' from Azure storage."
             raise DataSafeHavenAzureError(msg) from exc
+        except DataSafeHavenTypeError as exc:
+            msg = f"'{filename or cls.default_filename}' does not contain a valid {cls.config_type} configuration."
+            raise DataSafeHavenTypeError(msg) from exc
 
     @classmethod
     def from_remote_or_create(

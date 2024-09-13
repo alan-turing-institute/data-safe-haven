@@ -13,6 +13,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenError,
     DataSafeHavenPulumiError,
+    DataSafeHavenTypeError,
 )
 from data_safe_haven.external.api.azure_sdk import AzureSdk
 from data_safe_haven.infrastructure import SREProjectManager
@@ -134,6 +135,11 @@ def show(
     except DataSafeHavenAzureError as exc:
         logger.critical(
             f"No configuration exists for an SRE named '{name}' for the selected context."
+        )
+        raise typer.Exit(1) from exc
+    except DataSafeHavenTypeError as exc:
+        logger.warning(
+            f"Remote configuration for SRE '{name}' is not valid."
         )
         raise typer.Exit(1) from exc
     config_yaml = sre_config.to_yaml()
