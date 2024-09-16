@@ -100,9 +100,9 @@ class SREUserServicesComponent(ComponentResource):
         child_tags = {"component": "user services"} | (tags if tags else {})
 
         # Deploy the Gitea servers
-        self.gitea_server = []
+        self.gitea_server = []  # type: list[str]
         if props.external_git_mirror:
-            gitea_servers = ["external", "internal"]
+            gitea_servers = ["internal", "external"]
             subnet = [props.subnet_containers_id, props.subnet_external_git_mirror_id]
         else:
             gitea_servers = ["internal"]
