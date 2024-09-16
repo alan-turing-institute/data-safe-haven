@@ -137,3 +137,12 @@ class TestAzureSerialisableModel:
             context.storage_account_name,
             context.storage_container_name,
         )
+
+    def test_from_remote_validation_error(self, mocker, context, example_config_yaml):
+        example_config_yaml = example_config_yaml.replace("5", "abc")
+        mocker.patch.object(AzureSdk, "download_blob", return_value=example_config_yaml)
+        with raises(
+            DataSafeHavenTypeError,
+            match="'file.yaml' does not contain a valid Example configuration.",
+        ):
+            ExampleAzureSerialisableModel.from_remote(context)
