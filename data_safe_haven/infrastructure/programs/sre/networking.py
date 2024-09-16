@@ -100,6 +100,18 @@ class SRENetworkingComponent(ComponentResource):
                     source_address_prefix="*",
                     source_port_range="*",
                 ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from user container services.",
+                    destination_address_prefix=SREIpRanges.external_git_mirror.prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowGitServersInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_EXTERNAL_GIT_MIRROR,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=SREIpRanges.user_services_containers.prefix,
+                    source_port_range="*",
+                ),
             ],
             opts=child_opts,
             tags=child_tags,
@@ -1777,6 +1789,13 @@ class SRENetworkingComponent(ComponentResource):
                 # User services external git mirror
                 network.SubnetArgs(
                     address_prefix=SREIpRanges.external_git_mirror.prefix,
+                    delegations=[
+                        network.DelegationArgs(
+                            name="SubnetDelegationContainerGroups",
+                            service_name="Microsoft.ContainerInstance/containerGroups",
+                            type="Microsoft.Network/virtualNetworks/subnets/delegations",
+                        ),
+                    ],
                     name=subnet_external_git_mirror_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_external_git_mirror.id
