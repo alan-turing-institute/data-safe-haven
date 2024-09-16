@@ -118,7 +118,7 @@ class TestAzureSerialisableModel:
 
         with raises(
             DataSafeHavenTypeError,
-            match="Could not load Example configuration.",
+            match="Example configuration is invalid.",
         ):
             ExampleAzureSerialisableModel.from_yaml(yaml)
 

@@ -4,9 +4,9 @@ from data_safe_haven.commands.config import config_command_group
 from data_safe_haven.config import ContextManager, SREConfig
 from data_safe_haven.config.sre_config import sre_config_name
 from data_safe_haven.exceptions import (
+    DataSafeHavenAzureError,
     DataSafeHavenAzureStorageError,
     DataSafeHavenConfigError,
-    DataSafeHavenError,
 )
 from data_safe_haven.external import AzureSdk
 
@@ -73,7 +73,7 @@ class TestShowSRE:
     def test_incorrect_sre_name(self, mocker, runner):
         sre_name = "sandbox"
         mocker.patch.object(
-            SREConfig, "from_remote_by_name", side_effect=DataSafeHavenError(" ")
+            SREConfig, "from_remote_by_name", side_effect=DataSafeHavenAzureError(" ")
         )
         result = runner.invoke(config_command_group, ["show", sre_name])
         assert "No configuration exists for an SRE" in result.stdout
