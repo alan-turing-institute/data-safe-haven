@@ -7,6 +7,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenAzureStorageError,
     DataSafeHavenConfigError,
+    DataSafeHavenTypeError,
 )
 from data_safe_haven.external import AzureSdk
 
@@ -40,6 +41,25 @@ class TestShowSRE:
         with open(template_file) as f:
             template_text = f.read()
         assert sre_config_yaml in template_text
+
+    def test_show_invalid_config(self, mocker, runner, context, sre_config_yaml):
+        mocker.patch.object(
+            SREConfig, "from_remote_by_name", side_effect=DataSafeHavenTypeError(" ")
+        )
+        mock_method = mocker.patch.object(
+            AzureSdk, "download_blob", return_value=sre_config_yaml
+        )
+        sre_name = "sandbox"
+        result = runner.invoke(config_command_group, ["show", sre_name])
+
+        assert result.exit_code == 1
+        assert sre_config_yaml in result.stdout
+        mock_method.assert_called_once_with(
+            sre_config_name(sre_name),
+            context.resource_group_name,
+            context.storage_account_name,
+            context.storage_container_name,
+        )
 
     def test_no_context(self, mocker, runner):
         sre_name = "sandbox"
