@@ -29,8 +29,8 @@ from data_safe_haven.infrastructure.common import (
     get_name_from_rg,
 )
 from data_safe_haven.infrastructure.components import (
-    BlobContainerAcl,
-    BlobContainerAclProps,
+    NFSV3BlobContainerComponent,
+    NFSV3BlobContainerProps,
     NFSV3StorageAccount,
     SSLCertificate,
     SSLCertificateProps,
@@ -474,67 +474,34 @@ class SREDataComponent(ComponentResource):
             tags=child_tags,
         )
         # Deploy storage containers
-        storage_container_egress = storage.BlobContainer(
+        NFSV3BlobContainerComponent(
             f"{self._name}_blob_egress",
-            account_name=storage_account_data_private_sensitive.name,
-            container_name="egress",
-            default_encryption_scope="$account-encryption-key",
-            deny_encryption_scope_override=False,
-            public_access=storage.PublicAccess.NONE,
-            resource_group_name=props.resource_group_name,
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(parent=storage_account_data_private_sensitive),
-            ),
-        )
-        storage_container_ingress = storage.BlobContainer(
-            f"{self._name}_blob_ingress",
-            account_name=storage_account_data_private_sensitive.name,
-            container_name="ingress",
-            default_encryption_scope="$account-encryption-key",
-            deny_encryption_scope_override=False,
-            public_access=storage.PublicAccess.NONE,
-            resource_group_name=props.resource_group_name,
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(parent=storage_account_data_private_sensitive),
-            ),
-        )
-        # Set storage container ACLs
-        BlobContainerAcl(
-            f"{storage_container_egress._name}_acl",
-            BlobContainerAclProps(
+            NFSV3BlobContainerProps(
                 acl_user="rwx",
                 acl_group="rwx",
                 acl_other="rwx",
                 # due to an Azure bug `apply_default_permissions=True` also gives user
                 # 65533 ownership of the fileshare (preventing use inside the SRE)
                 apply_default_permissions=False,
-                container_name=storage_container_egress.name,
+                container_name="egress",
                 resource_group_name=props.resource_group_name,
-                storage_account_name=storage_account_data_private_sensitive.name,
+                storage_account=storage_account_data_private_sensitive,
                 subscription_name=props.subscription_name,
             ),
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=storage_container_egress)
-            ),
         )
-        BlobContainerAcl(
-            f"{storage_container_ingress._name}_acl",
-            BlobContainerAclProps(
+        NFSV3BlobContainerComponent(
+            f"{self._name}_blob_ingress",
+            NFSV3BlobContainerProps(
                 acl_user="rwx",
                 acl_group="r-x",
                 acl_other="r-x",
                 # ensure that the above permissions are also set on any newly created
                 # files (eg. with Azure Storage Explorer)
                 apply_default_permissions=True,
-                container_name=storage_container_ingress.name,
+                container_name="ingress",
                 resource_group_name=props.resource_group_name,
-                storage_account_name=storage_account_data_private_sensitive.name,
+                storage_account=storage_account_data_private_sensitive,
                 subscription_name=props.subscription_name,
-            ),
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=storage_container_ingress)
             ),
         )
         # Set up a private endpoint for the sensitive data storage account

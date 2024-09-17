@@ -29,8 +29,8 @@ from data_safe_haven.infrastructure.common import (
     get_name_from_rg,
 )
 from data_safe_haven.infrastructure.components import (
-    BlobContainerAcl,
-    BlobContainerAclProps,
+    NFSV3BlobContainerComponent,
+    NFSV3BlobContainerProps,
     NFSV3StorageAccount,
 )
 from data_safe_haven.resources import resources_path
@@ -97,36 +97,19 @@ class SREDesiredStateComponent(ComponentResource):
             tags=child_tags,
         )
         # Deploy desired state share
-        container_desired_state = storage.BlobContainer(
+        container_desired_state = NFSV3BlobContainerComponent(
             f"{self._name}_blob_desired_state",
-            account_name=storage_account.name,
-            container_name="desiredstate",
-            default_encryption_scope="$account-encryption-key",
-            deny_encryption_scope_override=False,
-            public_access=storage.PublicAccess.NONE,
-            resource_group_name=props.resource_group_name,
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(parent=storage_account),
-            ),
-        )
-        # Set storage container ACLs
-        BlobContainerAcl(
-            f"{container_desired_state._name}_acl",
-            BlobContainerAclProps(
+            NFSV3BlobContainerProps(
                 acl_user="r-x",
                 acl_group="r-x",
                 acl_other="r-x",
                 # ensure that the above permissions are also set on any newly created
                 # files (eg. with Azure Storage Explorer)
                 apply_default_permissions=True,
-                container_name=container_desired_state.name,
+                container_name="desiredstate",
                 resource_group_name=props.resource_group_name,
-                storage_account_name=storage_account.name,
+                storage_account=storage_account,
                 subscription_name=props.subscription_name,
-            ),
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=container_desired_state)
             ),
         )
         # Create file assets to upload
