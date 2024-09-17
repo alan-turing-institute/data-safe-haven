@@ -43,23 +43,41 @@ class SREDesiredStateProps:
     def __init__(
         self,
         admin_ip_addresses: Input[Sequence[str]],
+        clamav_mirror_hostname: Input[str],
+        database_service_admin_password: Input[str],
         dns_private_zones: Input[dict[str, network.PrivateZone]],
         gitea_hostname: Input[str],
         hedgedoc_hostname: Input[str],
+        ldap_group_filter: Input[str],
+        ldap_group_search_base: Input[str],
+        ldap_server_hostname: Input[str],
+        ldap_server_port: Input[int],
+        ldap_user_filter: Input[str],
+        ldap_user_search_base: Input[str],
         location: Input[str],
         resource_group: Input[resources.ResourceGroup],
+        software_repository_hostname: Input[str],
         subscription_name: Input[str],
         subnet_desired_state: Input[network.GetSubnetResult],
     ) -> None:
         self.admin_ip_addresses = admin_ip_addresses
+        self.clamav_mirror_hostname = clamav_mirror_hostname
+        self.database_service_admin_password = database_service_admin_password
         self.dns_private_zones = dns_private_zones
         self.gitea_hostname = gitea_hostname
         self.hedgedoc_hostname = hedgedoc_hostname
+        self.ldap_group_filter = ldap_group_filter
+        self.ldap_group_search_base = ldap_group_search_base
+        self.ldap_server_hostname = ldap_server_hostname
+        self.ldap_server_port = Output.from_input(ldap_server_port).apply(str)
+        self.ldap_user_filter = ldap_user_filter
+        self.ldap_user_search_base = ldap_user_search_base
         self.location = location
         self.resource_group_id = Output.from_input(resource_group).apply(get_id_from_rg)
         self.resource_group_name = Output.from_input(resource_group).apply(
             get_name_from_rg
         )
+        self.software_repository_hostname = software_repository_hostname
         self.subnet_desired_state_id = Output.from_input(subnet_desired_state).apply(
             get_id_from_subnet
         )
@@ -141,8 +159,17 @@ class SREDesiredStateComponent(ComponentResource):
             container_name=container_desired_state.name,
             resource_group_name=props.resource_group_name,
             source=Output.all(
+                clamav_mirror_hostname=props.clamav_mirror_hostname,
+                database_service_admin_password=props.database_service_admin_password,
                 gitea_hostname=props.gitea_hostname,
                 hedgedoc_hostname=props.hedgedoc_hostname,
+                ldap_group_filter=props.ldap_group_filter,
+                ldap_group_search_base=props.ldap_group_search_base,
+                ldap_server_hostname=props.ldap_server_hostname,
+                ldap_server_port=props.ldap_server_port,
+                ldap_user_filter=props.ldap_user_filter,
+                ldap_user_search_base=props.ldap_user_search_base,
+                software_repository_hostname=props.software_repository_hostname,
             ).apply(lambda kwargs: StringAsset(self.ansible_vars_file(**kwargs))),
         )
         # Set up a private endpoint for the desired state storage account
