@@ -82,7 +82,7 @@ class SREDesiredStateComponent(ComponentResource):
         child_tags = {"component": "data"} | (tags if tags else {})
 
         # Deploy desired state storage account
-        # - This holds the /desired_state container that is mounted by workspaces
+        # - This holds the /var/local/ansible container that is mounted by workspaces
         # - Azure blobs have worse NFS support but can be accessed with Azure Storage Explorer
         storage_account = NFSV3StorageAccount(
             f"{self._name}_storage_account",

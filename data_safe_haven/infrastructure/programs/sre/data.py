@@ -458,7 +458,7 @@ class SREDataComponent(ComponentResource):
             ),
         )
         # Deploy sensitive data blob storage account
-        # - This holds the /data and /output containers that are mounted by workspaces
+        # - This holds the /mnt/input and /mnt/output containers that are mounted by workspaces
         # - Azure blobs have worse NFS support but can be accessed with Azure Storage Explorer
         storage_account_data_private_sensitive = NFSV3StorageAccount(
             f"{self._name}_storage_account_data_private_sensitive",
@@ -569,7 +569,7 @@ class SREDataComponent(ComponentResource):
         )
 
         # Deploy data_private_user files storage account
-        # - This holds the /home and /shared containers that are mounted by workspaces
+        # - This holds the /home and /mnt/shared containers that are mounted by workspaces
         # - Azure Files has better NFS support but cannot be accessed with Azure Storage Explorer
         # - Allows root-squashing to be configured
         # From https://learn.microsoft.com/en-us/azure/storage/files/files-nfs-protocol
