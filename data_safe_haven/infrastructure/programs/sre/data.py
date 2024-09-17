@@ -31,6 +31,7 @@ from data_safe_haven.infrastructure.common import (
 from data_safe_haven.infrastructure.components import (
     BlobContainerAcl,
     BlobContainerAclProps,
+    NFSV3StorageAccount,
     SSLCertificate,
     SSLCertificateProps,
 )
@@ -459,52 +460,16 @@ class SREDataComponent(ComponentResource):
         # Deploy sensitive data blob storage account
         # - This holds the /data and /output containers that are mounted by workspaces
         # - Azure blobs have worse NFS support but can be accessed with Azure Storage Explorer
-        storage_account_data_private_sensitive = storage.StorageAccount(
+        storage_account_data_private_sensitive = NFSV3StorageAccount(
             f"{self._name}_storage_account_data_private_sensitive",
             # Storage account names have a maximum of 24 characters
             account_name=alphanumeric(
                 f"{''.join(truncate_tokens(stack_name.split('-'), 11))}sensitivedata{sha256hash(self._name)}"
             )[:24],
-            enable_https_traffic_only=True,
-            enable_nfs_v3=True,
-            encryption=storage.EncryptionArgs(
-                key_source=storage.KeySource.MICROSOFT_STORAGE,
-                services=storage.EncryptionServicesArgs(
-                    blob=storage.EncryptionServiceArgs(
-                        enabled=True, key_type=storage.KeyType.ACCOUNT
-                    ),
-                    file=storage.EncryptionServiceArgs(
-                        enabled=True, key_type=storage.KeyType.ACCOUNT
-                    ),
-                ),
-            ),
-            kind=storage.Kind.BLOCK_BLOB_STORAGE,
-            is_hns_enabled=True,
+            allowed_ip_addresses=props.data_private_sensitive_ip_addresses,
             location=props.location,
-            minimum_tls_version=storage.MinimumTlsVersion.TLS1_2,
-            network_rule_set=storage.NetworkRuleSetArgs(
-                bypass=storage.Bypass.AZURE_SERVICES,
-                default_action=storage.DefaultAction.DENY,
-                ip_rules=Output.from_input(
-                    props.data_private_sensitive_ip_addresses
-                ).apply(
-                    lambda ip_ranges: [
-                        storage.IPRuleArgs(
-                            action=storage.Action.ALLOW,
-                            i_p_address_or_range=str(ip_address),
-                        )
-                        for ip_range in sorted(ip_ranges)
-                        for ip_address in AzureIPv4Range.from_cidr(ip_range).all_ips()
-                    ]
-                ),
-                virtual_network_rules=[
-                    storage.VirtualNetworkRuleArgs(
-                        virtual_network_resource_id=props.subnet_data_private_id,
-                    )
-                ],
-            ),
+            subnet_id=props.subnet_data_private_id,
             resource_group_name=props.resource_group_name,
-            sku=storage.SkuArgs(name=storage.SkuName.PREMIUM_ZRS),
             opts=child_opts,
             tags=child_tags,
         )

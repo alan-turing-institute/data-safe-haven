@@ -17,7 +17,6 @@ from pulumi_azure_native import (
     storage,
 )
 
-from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import (
     alphanumeric,
     replace_separators,
@@ -32,6 +31,7 @@ from data_safe_haven.infrastructure.common import (
 from data_safe_haven.infrastructure.components import (
     BlobContainerAcl,
     BlobContainerAclProps,
+    NFSV3StorageAccount,
 )
 from data_safe_haven.resources import resources_path
 from data_safe_haven.types import AzureDnsZoneNames
@@ -84,49 +84,15 @@ class SREDesiredStateComponent(ComponentResource):
         # Deploy desired state storage account
         # - This holds the /desired_state container that is mounted by workspaces
         # - Azure blobs have worse NFS support but can be accessed with Azure Storage Explorer
-        storage_account = storage.StorageAccount(
+        storage_account = NFSV3StorageAccount(
             f"{self._name}_storage_account",
-            # Storage account names have a maximum of 24 characters
             account_name=alphanumeric(
                 f"{''.join(truncate_tokens(stack_name.split('-'), 11))}desiredstate{sha256hash(self._name)}"
             )[:24],
-            enable_https_traffic_only=True,
-            enable_nfs_v3=True,
-            encryption=storage.EncryptionArgs(
-                key_source=storage.KeySource.MICROSOFT_STORAGE,
-                services=storage.EncryptionServicesArgs(
-                    blob=storage.EncryptionServiceArgs(
-                        enabled=True, key_type=storage.KeyType.ACCOUNT
-                    ),
-                    file=storage.EncryptionServiceArgs(
-                        enabled=True, key_type=storage.KeyType.ACCOUNT
-                    ),
-                ),
-            ),
-            kind=storage.Kind.BLOCK_BLOB_STORAGE,
-            is_hns_enabled=True,
+            allowed_ip_addresses=props.admin_ip_addresses,
             location=props.location,
-            network_rule_set=storage.NetworkRuleSetArgs(
-                bypass=storage.Bypass.AZURE_SERVICES,
-                default_action=storage.DefaultAction.DENY,
-                ip_rules=Output.from_input(props.admin_ip_addresses).apply(
-                    lambda ip_ranges: [
-                        storage.IPRuleArgs(
-                            action=storage.Action.ALLOW,
-                            i_p_address_or_range=str(ip_address),
-                        )
-                        for ip_range in sorted(ip_ranges)
-                        for ip_address in AzureIPv4Range.from_cidr(ip_range).all_ips()
-                    ]
-                ),
-                virtual_network_rules=[
-                    storage.VirtualNetworkRuleArgs(
-                        virtual_network_resource_id=props.subnet_desired_state_id,
-                    )
-                ],
-            ),
             resource_group_name=props.resource_group_name,
-            sku=storage.SkuArgs(name=storage.SkuName.PREMIUM_ZRS),
+            subnet_id=props.subnet_desired_state_id,
             opts=child_opts,
             tags=child_tags,
         )
