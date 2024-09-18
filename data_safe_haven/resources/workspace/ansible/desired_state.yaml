@@ -335,9 +335,9 @@
         mode: '0444'
       loop:
         - src: etc/pip.conf.j2
-          dest: /etc/
-        - src: etc/R/Rprofile.site
-          dest: /etc/R/
+          dest: /etc/pip.conf
+        - src: etc/R/Rprofile.site.j2
+          dest: /etc/R/Rprofile.site
 
     - name: Copy smoke test files directory
       ansible.builtin.copy:
