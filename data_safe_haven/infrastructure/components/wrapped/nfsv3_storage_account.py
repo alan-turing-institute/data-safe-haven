@@ -6,7 +6,7 @@ from pulumi_azure_native import storage
 from data_safe_haven.external import AzureIPv4Range
 
 
-class NFSV3StorageAccount(storage.StorageAccount):
+class WrappedNFSV3StorageAccount(storage.StorageAccount):
     encryption_args = storage.EncryptionArgs(
         key_source=storage.KeySource.MICROSOFT_STORAGE,
         services=storage.EncryptionServicesArgs(

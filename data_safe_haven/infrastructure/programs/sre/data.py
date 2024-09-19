@@ -31,9 +31,9 @@ from data_safe_haven.infrastructure.common import (
 from data_safe_haven.infrastructure.components import (
     NFSV3BlobContainerComponent,
     NFSV3BlobContainerProps,
-    NFSV3StorageAccount,
     SSLCertificate,
     SSLCertificateProps,
+    WrappedNFSV3StorageAccount,
 )
 from data_safe_haven.types import AzureDnsZoneNames
 
@@ -460,7 +460,7 @@ class SREDataComponent(ComponentResource):
         # Deploy sensitive data blob storage account
         # - This holds the /mnt/input and /mnt/output containers that are mounted by workspaces
         # - Azure blobs have worse NFS support but can be accessed with Azure Storage Explorer
-        storage_account_data_private_sensitive = NFSV3StorageAccount(
+        storage_account_data_private_sensitive = WrappedNFSV3StorageAccount(
             f"{self._name}_storage_account_data_private_sensitive",
             # Storage account names have a maximum of 24 characters
             account_name=alphanumeric(

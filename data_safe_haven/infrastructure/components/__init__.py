@@ -21,8 +21,8 @@ from .dynamic import (
     SSLCertificateProps,
 )
 from .wrapped import (
-    NFSV3StorageAccount,
     WrappedLogAnalyticsWorkspace,
+    WrappedNFSV3StorageAccount,
 )
 
 __all__ = [
@@ -39,7 +39,7 @@ __all__ = [
     "MicrosoftSQLDatabaseProps",
     "NFSV3BlobContainerComponent",
     "NFSV3BlobContainerProps",
-    "NFSV3StorageAccount",
+    "WrappedNFSV3StorageAccount",
     "PostgresqlDatabaseComponent",
     "PostgresqlDatabaseProps",
     "SSLCertificate",

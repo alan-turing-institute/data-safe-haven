@@ -31,7 +31,7 @@ from data_safe_haven.infrastructure.common import (
 from data_safe_haven.infrastructure.components import (
     NFSV3BlobContainerComponent,
     NFSV3BlobContainerProps,
-    NFSV3StorageAccount,
+    WrappedNFSV3StorageAccount,
 )
 from data_safe_haven.resources import resources_path
 from data_safe_haven.types import AzureDnsZoneNames
@@ -102,7 +102,7 @@ class SREDesiredStateComponent(ComponentResource):
         # Deploy desired state storage account
         # - This holds the /var/local/ansible container that is mounted by workspaces
         # - Azure blobs have worse NFS support but can be accessed with Azure Storage Explorer
-        storage_account = NFSV3StorageAccount(
+        storage_account = WrappedNFSV3StorageAccount(
             f"{self._name}_storage_account",
             account_name=alphanumeric(
                 f"{''.join(truncate_tokens(stack_name.split('-'), 11))}desiredstate{sha256hash(self._name)}"
