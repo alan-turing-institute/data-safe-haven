@@ -454,12 +454,12 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 ### Turing configuration setting:
 
-- Research users can write to the `/output` volume.
-- A {ref}`role_system_manager` can view and download data in the `/output` volume via `Azure Storage Explorer`.
+- Research users can write to the `/mnt/output` volume.
+- A {ref}`role_system_manager` can view and download data in the `/mnt/output` volume via `Azure Storage Explorer`.
 
 ### Implication:
 
-- SREs contain an `/output` volume, in which SRE users can store data designated for egress.
+- SREs contain an `/mnt/output` volume, in which SRE users can store data designated for egress.
 
 ### Verify by:
 
@@ -469,7 +469,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 - Open up a file explorer and search for the various storage volumes
 
 ```{attention}
-{{white_check_mark}} Verify that: the `/output` volume exists and can be read and written to.
+{{white_check_mark}} Verify that: the `/mnt/output` volume exists and can be read and written to.
 ```
 
 ```{attention}
@@ -481,7 +481,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 - As the {ref}`role_system_manager`, follow the instructions in the [project manager documentation](../roles/project_manager/data_egress.md#data-egress-process) on how to access files set for egress with `Azure Storage Explorer`.
 
 ```{attention}
-{{white_check_mark}} Verify that: you can see the files written to the `/output` storage volume.
+{{white_check_mark}} Verify that: you can see the files written to the `/mnt/output` storage volume.
 ```
 
 ```{attention}

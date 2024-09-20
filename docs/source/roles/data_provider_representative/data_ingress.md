@@ -61,10 +61,10 @@ They are common algorithms built into many operating systems, and included in th
 You can generate a checksum file, which can be used to verify the integrity of files.
 If you upload this file then researchers will be able to independently verify data integrity within the environment.
 
-Here are instructions to generate a checksum file using the `md5sum` algorithm for a data set stored in a directory called `data`.
+Here are instructions to generate a checksum file using the `md5sum` algorithm for a data set stored in the `input` directory.
 
 ```console
-find ./data/ -type fl -exec md5sum {} + > hashes.txt
+find ./mnt/input/ -type fl -exec md5sum {} + > hashes.txt
 ```
 
 `find` searches the `data` directory for files and symbolic links (`-type fl`).

@@ -483,10 +483,10 @@ class SRENetworkingComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
-        nsg_data_desired_state = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_data_desired_state",
+        nsg_desired_state = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_desired_state",
             location=props.location,
-            network_security_group_name=f"{stack_name}-nsg-data-desired-state",
+            network_security_group_name=f"{stack_name}-nsg-desired-state",
             resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
@@ -1454,7 +1454,7 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to desired state data endpoints.",
-                    destination_address_prefix=SREIpRanges.data_desired_state.prefix,
+                    destination_address_prefix=SREIpRanges.desired_state.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDataDesiredStateEndpointsOutbound",
@@ -1558,7 +1558,7 @@ class SRENetworkingComponent(ComponentResource):
         subnet_apt_proxy_server_name = "AptProxyServerSubnet"
         subnet_clamav_mirror_name = "ClamAVMirrorSubnet"
         subnet_data_configuration_name = "DataConfigurationSubnet"
-        subnet_data_desired_state_name = "DataDesiredStateSubnet"
+        subnet_desired_state_name = "DataDesiredStateSubnet"
         subnet_data_private_name = "DataPrivateSubnet"
         subnet_firewall_name = "AzureFirewallSubnet"
         subnet_firewall_management_name = "AzureFirewallManagementSubnet"
@@ -1643,10 +1643,10 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # Desired state data subnet
                 network.SubnetArgs(
-                    address_prefix=SREIpRanges.data_desired_state.prefix,
-                    name=subnet_data_desired_state_name,
+                    address_prefix=SREIpRanges.desired_state.prefix,
+                    name=subnet_desired_state_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_data_desired_state.id
+                        id=nsg_desired_state.id
                     ),
                     route_table=network.RouteTableArgs(id=route_table.id),
                     service_endpoints=[
@@ -1966,13 +1966,13 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
-        self.subnet_data_desired_state = network.get_subnet_output(
-            subnet_name=subnet_data_desired_state_name,
+        self.subnet_desired_state = network.get_subnet_output(
+            subnet_name=subnet_desired_state_name,
             resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
-        self.subnet_data_desired_state = network.get_subnet_output(
-            subnet_name=subnet_data_desired_state_name,
+        self.subnet_desired_state = network.get_subnet_output(
+            subnet_name=subnet_desired_state_name,
             resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
