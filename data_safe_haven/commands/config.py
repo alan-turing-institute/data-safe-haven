@@ -1,5 +1,6 @@
 """Command group and entrypoints for managing DSH configuration"""
 
+from logging import Logger
 from pathlib import Path
 from typing import Annotated, Optional
 
@@ -24,6 +25,7 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.external.api.azure_sdk import AzureSdk
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.logging import get_logger
+from data_safe_haven.serialisers import ContextBase
 
 config_command_group = typer.Typer()
 
@@ -246,7 +248,7 @@ def upload(
         raise typer.Exit(1) from exc
 
 
-def dump_remote_config(context, name, logger):
+def dump_remote_config(context: ContextBase, name: str, logger: Logger) -> None:
     logger.warning(
         f"Remote configuration for SRE '{name}' is not valid. Dumping remote file."
     )
