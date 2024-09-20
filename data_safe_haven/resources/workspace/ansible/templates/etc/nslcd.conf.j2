@@ -1,0 +1,24 @@
+# nslcd configuration file.
+# http://manpages.ubuntu.com/manpages/bionic/man5/nslcd.conf.5.html
+
+# Runtime options
+uid nslcd
+gid nslcd
+log syslog debug
+
+# Do not allow uids lower than 2000 to login
+nss_min_uid 2000
+
+# General connection options
+uri ldap://{{ ldap_server_hostname }}:{{ ldap_server_port }}
+
+# Search/mapping options
+base {{ ldap_user_search_base }}
+base {{ ldap_group_search_base }}
+
+# All users that are members of the correct group
+filter passwd {{ ldap_user_filter }}
+map    passwd loginShell "/bin/bash"
+
+# One group for each security group belonging to this SRE and for each primary user group for users that belong to a group in this SRE
+filter group {{ ldap_group_filter }}

@@ -4,7 +4,7 @@ from collections.abc import Mapping, Sequence
 from typing import ClassVar
 
 import pulumi_random
-from pulumi import ComponentResource, FileAsset, Input, Output, ResourceOptions
+from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     authorization,
     keyvault,
@@ -29,12 +29,12 @@ from data_safe_haven.infrastructure.common import (
     get_name_from_rg,
 )
 from data_safe_haven.infrastructure.components import (
-    BlobContainerAcl,
-    BlobContainerAclProps,
+    NFSV3BlobContainerComponent,
+    NFSV3BlobContainerProps,
     SSLCertificate,
     SSLCertificateProps,
+    WrappedNFSV3StorageAccount,
 )
-from data_safe_haven.resources import resources_path
 from data_safe_haven.types import AzureDnsZoneNames
 
 
@@ -56,7 +56,6 @@ class SREDataProps:
         storage_quota_gb_home: Input[int],
         storage_quota_gb_shared: Input[int],
         subnet_data_configuration: Input[network.GetSubnetResult],
-        subnet_data_desired_state: Input[network.GetSubnetResult],
         subnet_data_private: Input[network.GetSubnetResult],
         subscription_id: Input[str],
         subscription_name: Input[str],
@@ -85,9 +84,6 @@ class SREDataProps:
         self.storage_quota_gb_shared = storage_quota_gb_shared
         self.subnet_data_configuration_id = Output.from_input(
             subnet_data_configuration
-        ).apply(get_id_from_subnet)
-        self.subnet_data_desired_state_id = Output.from_input(
-            subnet_data_desired_state
         ).apply(get_id_from_subnet)
         self.subnet_data_private_id = Output.from_input(subnet_data_private).apply(
             get_id_from_subnet
@@ -461,270 +457,51 @@ class SREDataComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=storage_account_data_configuration)
             ),
         )
-
-        # Deploy desired state storage account
-        # - This holds the /desired_state container that is mounted by workspaces
-        # - Azure blobs have worse NFS support but can be accessed with Azure Storage Explorer
-        storage_account_data_desired_state = storage.StorageAccount(
-            f"{self._name}_storage_account_data_desired_state",
-            # Storage account names have a maximum of 24 characters
-            account_name=alphanumeric(
-                f"{''.join(truncate_tokens(stack_name.split('-'), 11))}desiredstate{sha256hash(self._name)}"
-            )[:24],
-            enable_https_traffic_only=True,
-            enable_nfs_v3=True,
-            encryption=storage.EncryptionArgs(
-                key_source=storage.KeySource.MICROSOFT_STORAGE,
-                services=storage.EncryptionServicesArgs(
-                    blob=storage.EncryptionServiceArgs(
-                        enabled=True, key_type=storage.KeyType.ACCOUNT
-                    ),
-                    file=storage.EncryptionServiceArgs(
-                        enabled=True, key_type=storage.KeyType.ACCOUNT
-                    ),
-                ),
-            ),
-            kind=storage.Kind.BLOCK_BLOB_STORAGE,
-            is_hns_enabled=True,
-            location=props.location,
-            minimum_tls_version=storage.MinimumTlsVersion.TLS1_2,
-            network_rule_set=storage.NetworkRuleSetArgs(
-                bypass=storage.Bypass.AZURE_SERVICES,
-                default_action=storage.DefaultAction.DENY,
-                ip_rules=Output.from_input(props.data_configuration_ip_addresses).apply(
-                    lambda ip_ranges: [
-                        storage.IPRuleArgs(
-                            action=storage.Action.ALLOW,
-                            i_p_address_or_range=str(ip_address),
-                        )
-                        for ip_range in sorted(ip_ranges)
-                        for ip_address in AzureIPv4Range.from_cidr(ip_range).all_ips()
-                    ]
-                ),
-                virtual_network_rules=[
-                    storage.VirtualNetworkRuleArgs(
-                        virtual_network_resource_id=props.subnet_data_desired_state_id,
-                    )
-                ],
-            ),
-            resource_group_name=props.resource_group_name,
-            sku=storage.SkuArgs(name=storage.SkuName.PREMIUM_ZRS),
-            opts=child_opts,
-            tags=child_tags,
-        )
-        # Deploy desired state share
-        container_desired_state = storage.BlobContainer(
-            f"{self._name}_blob_desired_state",
-            account_name=storage_account_data_desired_state.name,
-            container_name="desiredstate",
-            default_encryption_scope="$account-encryption-key",
-            deny_encryption_scope_override=False,
-            public_access=storage.PublicAccess.NONE,
-            resource_group_name=props.resource_group_name,
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(parent=storage_account_data_desired_state),
-            ),
-        )
-        # Set storage container ACLs
-        BlobContainerAcl(
-            f"{container_desired_state._name}_acl",
-            BlobContainerAclProps(
-                acl_user="r-x",
-                acl_group="r-x",
-                acl_other="r-x",
-                # ensure that the above permissions are also set on any newly created
-                # files (eg. with Azure Storage Explorer)
-                apply_default_permissions=True,
-                container_name=container_desired_state.name,
-                resource_group_name=props.resource_group_name,
-                storage_account_name=storage_account_data_desired_state.name,
-                subscription_name=props.subscription_name,
-            ),
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=container_desired_state)
-            ),
-        )
-        # Create file assets to upload
-        desired_state_directory = (resources_path / "workspace" / "ansible").absolute()
-        files_desired_state = [
-            (
-                FileAsset(str(file_path)),
-                file_path.name,
-                str(file_path.relative_to(desired_state_directory)),
-            )
-            for file_path in sorted(desired_state_directory.rglob("*"))
-            if file_path.is_file() and not file_path.name.startswith(".")
-        ]
-        # Upload file assets to desired state container
-        for file_asset, file_name, file_path in files_desired_state:
-            storage.Blob(
-                f"{container_desired_state._name}_blob_{file_name}",
-                account_name=storage_account_data_desired_state.name,
-                blob_name=file_path,
-                container_name=container_desired_state.name,
-                resource_group_name=props.resource_group_name,
-                source=file_asset,
-            )
-        # Set up a private endpoint for the desired state storage account
-        storage_account_data_desired_state_endpoint = network.PrivateEndpoint(
-            f"{storage_account_data_desired_state._name}_private_endpoint",
-            location=props.location,
-            private_endpoint_name=f"{stack_name}-pep-storage-account-data-desired-state",
-            private_link_service_connections=[
-                network.PrivateLinkServiceConnectionArgs(
-                    group_ids=["blob"],
-                    name=f"{stack_name}-cnxn-pep-storage-account-data-private-sensitive",
-                    private_link_service_id=storage_account_data_desired_state.id,
-                )
-            ],
-            resource_group_name=props.resource_group_name,
-            subnet=network.SubnetArgs(id=props.subnet_data_desired_state_id),
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(
-                    ignore_changes=["custom_dns_configs"],
-                    parent=storage_account_data_desired_state,
-                ),
-            ),
-            tags=child_tags,
-        )
-        # Add a private DNS record for each desired state endpoint custom DNS config
-        network.PrivateDnsZoneGroup(
-            f"{storage_account_data_desired_state._name}_private_dns_zone_group",
-            private_dns_zone_configs=[
-                network.PrivateDnsZoneConfigArgs(
-                    name=replace_separators(
-                        f"{stack_name}-storage-account-data-desired-state-to-{dns_zone_name}",
-                        "-",
-                    ),
-                    private_dns_zone_id=props.dns_private_zones[dns_zone_name].id,
-                )
-                for dns_zone_name in AzureDnsZoneNames.STORAGE_ACCOUNT
-            ],
-            private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-desired-state",
-            private_endpoint_name=storage_account_data_desired_state_endpoint.name,
-            resource_group_name=props.resource_group_name,
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(parent=storage_account_data_desired_state),
-            ),
-        )
-
         # Deploy sensitive data blob storage account
-        # - This holds the /data and /output containers that are mounted by workspaces
+        # - This holds the /mnt/input and /mnt/output containers that are mounted by workspaces
         # - Azure blobs have worse NFS support but can be accessed with Azure Storage Explorer
-        storage_account_data_private_sensitive = storage.StorageAccount(
+        storage_account_data_private_sensitive = WrappedNFSV3StorageAccount(
             f"{self._name}_storage_account_data_private_sensitive",
             # Storage account names have a maximum of 24 characters
             account_name=alphanumeric(
                 f"{''.join(truncate_tokens(stack_name.split('-'), 11))}sensitivedata{sha256hash(self._name)}"
             )[:24],
-            enable_https_traffic_only=True,
-            enable_nfs_v3=True,
-            encryption=storage.EncryptionArgs(
-                key_source=storage.KeySource.MICROSOFT_STORAGE,
-                services=storage.EncryptionServicesArgs(
-                    blob=storage.EncryptionServiceArgs(
-                        enabled=True, key_type=storage.KeyType.ACCOUNT
-                    ),
-                    file=storage.EncryptionServiceArgs(
-                        enabled=True, key_type=storage.KeyType.ACCOUNT
-                    ),
-                ),
-            ),
-            kind=storage.Kind.BLOCK_BLOB_STORAGE,
-            is_hns_enabled=True,
+            allowed_ip_addresses=props.data_private_sensitive_ip_addresses,
             location=props.location,
-            minimum_tls_version=storage.MinimumTlsVersion.TLS1_2,
-            network_rule_set=storage.NetworkRuleSetArgs(
-                bypass=storage.Bypass.AZURE_SERVICES,
-                default_action=storage.DefaultAction.DENY,
-                ip_rules=Output.from_input(
-                    props.data_private_sensitive_ip_addresses
-                ).apply(
-                    lambda ip_ranges: [
-                        storage.IPRuleArgs(
-                            action=storage.Action.ALLOW,
-                            i_p_address_or_range=str(ip_address),
-                        )
-                        for ip_range in sorted(ip_ranges)
-                        for ip_address in AzureIPv4Range.from_cidr(ip_range).all_ips()
-                    ]
-                ),
-                virtual_network_rules=[
-                    storage.VirtualNetworkRuleArgs(
-                        virtual_network_resource_id=props.subnet_data_private_id,
-                    )
-                ],
-            ),
+            subnet_id=props.subnet_data_private_id,
             resource_group_name=props.resource_group_name,
-            sku=storage.SkuArgs(name=storage.SkuName.PREMIUM_ZRS),
             opts=child_opts,
             tags=child_tags,
         )
         # Deploy storage containers
-        storage_container_egress = storage.BlobContainer(
+        NFSV3BlobContainerComponent(
             f"{self._name}_blob_egress",
-            account_name=storage_account_data_private_sensitive.name,
-            container_name="egress",
-            default_encryption_scope="$account-encryption-key",
-            deny_encryption_scope_override=False,
-            public_access=storage.PublicAccess.NONE,
-            resource_group_name=props.resource_group_name,
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(parent=storage_account_data_private_sensitive),
-            ),
-        )
-        storage_container_ingress = storage.BlobContainer(
-            f"{self._name}_blob_ingress",
-            account_name=storage_account_data_private_sensitive.name,
-            container_name="ingress",
-            default_encryption_scope="$account-encryption-key",
-            deny_encryption_scope_override=False,
-            public_access=storage.PublicAccess.NONE,
-            resource_group_name=props.resource_group_name,
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(parent=storage_account_data_private_sensitive),
-            ),
-        )
-        # Set storage container ACLs
-        BlobContainerAcl(
-            f"{storage_container_egress._name}_acl",
-            BlobContainerAclProps(
+            NFSV3BlobContainerProps(
                 acl_user="rwx",
                 acl_group="rwx",
                 acl_other="rwx",
                 # due to an Azure bug `apply_default_permissions=True` also gives user
                 # 65533 ownership of the fileshare (preventing use inside the SRE)
                 apply_default_permissions=False,
-                container_name=storage_container_egress.name,
+                container_name="egress",
                 resource_group_name=props.resource_group_name,
-                storage_account_name=storage_account_data_private_sensitive.name,
+                storage_account=storage_account_data_private_sensitive,
                 subscription_name=props.subscription_name,
             ),
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=storage_container_egress)
-            ),
         )
-        BlobContainerAcl(
-            f"{storage_container_ingress._name}_acl",
-            BlobContainerAclProps(
+        NFSV3BlobContainerComponent(
+            f"{self._name}_blob_ingress",
+            NFSV3BlobContainerProps(
                 acl_user="rwx",
                 acl_group="r-x",
                 acl_other="r-x",
                 # ensure that the above permissions are also set on any newly created
                 # files (eg. with Azure Storage Explorer)
                 apply_default_permissions=True,
-                container_name=storage_container_ingress.name,
+                container_name="ingress",
                 resource_group_name=props.resource_group_name,
-                storage_account_name=storage_account_data_private_sensitive.name,
+                storage_account=storage_account_data_private_sensitive,
                 subscription_name=props.subscription_name,
-            ),
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=storage_container_ingress)
             ),
         )
         # Set up a private endpoint for the sensitive data storage account
@@ -792,7 +569,7 @@ class SREDataComponent(ComponentResource):
         )
 
         # Deploy data_private_user files storage account
-        # - This holds the /home and /shared containers that are mounted by workspaces
+        # - This holds the /home and /mnt/shared containers that are mounted by workspaces
         # - Azure Files has better NFS support but cannot be accessed with Azure Storage Explorer
         # - Allows root-squashing to be configured
         # From https://learn.microsoft.com/en-us/azure/storage/files/files-nfs-protocol
@@ -921,9 +698,6 @@ class SREDataComponent(ComponentResource):
         )
         self.storage_account_data_configuration_name = (
             storage_account_data_configuration.name
-        )
-        self.storage_account_data_desired_state_name = (
-            storage_account_data_desired_state.name
         )
         self.managed_identity = identity_key_vault_reader
         self.password_nexus_admin = Output.secret(password_nexus_admin.result)

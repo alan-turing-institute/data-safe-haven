@@ -2,6 +2,8 @@
 - name: Desired state configuration
   hosts: localhost
   become: true
+  vars_files:
+    - vars/pulumi_vars.yaml
 
   tasks:
     - name: Update package cache
@@ -27,7 +29,7 @@
       tags: apt
       ansible.builtin.script:
         executable: /bin/bash
-        cmd: "/desired_state/install_deb.sh {{ item.source }} {{ item.filename }} {{ item.sha256 }}"
+        cmd: "/var/local/ansible/install_deb.sh {{ item.source }} {{ item.filename }} {{ item.sha256 }}"
         creates: "{{ item.creates }}"
       loop: "{{ deb_packages[ansible_facts.distribution_release] }}"
 
@@ -84,6 +86,12 @@
         path: /etc/nsswitch.conf
         regexp: '^(passwd|group|shadow)(:.*)(?<!ldap)$'
         replace: '\1\2 ldap'
+
+    - name: Template nslcd configuration
+      ansible.builtin.template:
+        src: etc/nslcd.conf.j2
+        dest: /etc/nslcd.conf
+        mode: '0400'
 
     - name: Ensure home directories are created on LDAP login
       community.general.pamd:
@@ -200,21 +208,21 @@
 
     - name: Copy desktop icons directory
       ansible.builtin.copy:
-        src: "usr/local/share/icons/"
-        dest: "/usr/local/share/icons/"
+        src: usr/local/share/icons/
+        dest: /usr/local/share/icons/
         mode: '0444'
 
     - name: Copy desktop files directory
       ansible.builtin.copy:
-        src: "etc/skel/Desktop/"
-        dest: "/etc/skel/Desktop/"
+        src: etc/skel/Desktop/
+        dest: /etc/skel/Desktop/
         mode: '0755'
 
-    - name: Set desktop file URLs
-      ansible.builtin.lineinfile:
-        path: "/etc/skel/Desktop/{{ item }}.desktop"
-        line: "{{ lookup('file', '/root/{{ item }}.url') }}"
-        state: present
+    - name: Template Gitea and Hedgedoc desktop files
+      ansible.builtin.template:
+        src: "etc/skel/Desktop/{{ item }}.desktop.j2"
+        dest: "/etc/skel/Desktop/{{ item }}.desktop"
+        mode: '0755'
       loop:
         - gitea
         - hedgedoc
@@ -285,7 +293,7 @@
     - name: Set freshclam private mirror
       ansible.builtin.lineinfile:
         path: /etc/clamav/freshclam.conf
-        line: "{{ lookup('file', '/etc/clamav/freshclam-mirror.conf') }}"
+        line: "PrivateMirror {{ clamav_mirror_hostname }}"
         state: present
 
     # This is required to fetch definitions for the clamav daemon to run
@@ -297,7 +305,7 @@
 
     - name: Copy ClamAV services directory
       ansible.builtin.copy:
-        src: "etc/systemd/system/"
+        src: etc/systemd/system/
         dest: /etc/systemd/system/
         mode: '0644'
       notify: Systemd daemon reload
@@ -320,12 +328,28 @@
         enabled: true
         state: started
 
+    - name: Template pip and CRAN global configuration
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: '0444'
+      loop:
+        - src: etc/pip.conf.j2
+          dest: /etc/pip.conf
+        - src: etc/R/Rprofile.site.j2
+          dest: /etc/R/Rprofile.site
+
     - name: Copy smoke test files directory
       ansible.builtin.copy:
-        src: "usr/local/smoke_tests/"
+        src: usr/local/smoke_tests/
         dest: /usr/local/smoke_tests/
         mode: '0755'
 
+    - name: Write database credential for smoke tests
+      ansible.builtin.template:
+        src: etc/database_credential.j2
+        dest: /etc/database_credential
+        mode: '0400'
 
   handlers:
     - name: Restart auditd
