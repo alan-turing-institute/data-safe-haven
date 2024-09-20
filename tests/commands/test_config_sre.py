@@ -284,7 +284,9 @@ class TestUploadSRE:
         assert result.exit_code == 1
         assert "Configuration file 'fake_config.yaml' not found." in result.stdout
 
-    def test_upload_invalid_config(self, mocker, runner, context, sre_config_file, sre_config_yaml):
+    def test_upload_invalid_config(
+        self, mocker, runner, context, sre_config_file, sre_config_yaml
+    ):
         sre_name = "SandBox"
         sre_filename = sre_config_name(sre_name)
 
@@ -292,13 +294,40 @@ class TestUploadSRE:
         mocker.patch.object(
             SREConfig, "remote_yaml_diff", side_effect=DataSafeHavenTypeError(" ")
         )
-        mocker.patch.object(
-            AzureSdk, "download_blob", return_value=sre_config_yaml
-        )
+        mocker.patch.object(AzureSdk, "download_blob", return_value=sre_config_yaml)
 
         result = runner.invoke(config_command_group, ["upload", str(sre_config_file)])
 
-        mock_exists.assert_called_once_with(context, filename=sre_filename)
         assert result.exit_code == 1
+
+        mock_exists.assert_called_once_with(context, filename=sre_filename)
         assert sre_config_yaml in result.stdout
-        assert "To overwrite the remote config, use `dsh config upload --force`" in result.stdout
+        assert (
+            "To overwrite the remote config, use `dsh config upload --force`"
+            in result.stdout
+        )
+
+    def test_upload_invalid_config_force(
+        self, mocker, runner, context, sre_config_file, sre_config_yaml
+    ):
+        sre_name = "SandBox"
+        sre_filename = sre_config_name(sre_name)
+
+        mocker.patch.object(
+            SREConfig, "remote_yaml_diff", side_effect=DataSafeHavenTypeError(" ")
+        )
+        mock_upload = mocker.patch.object(AzureSdk, "upload_blob", return_value=None)
+
+        result = runner.invoke(
+            config_command_group, ["upload", "--force", str(sre_config_file)]
+        )
+
+        assert result.exit_code == 0
+
+        mock_upload.assert_called_once_with(
+            sre_config_yaml,
+            sre_filename,
+            context.resource_group_name,
+            context.storage_account_name,
+            context.storage_container_name,
+        )
