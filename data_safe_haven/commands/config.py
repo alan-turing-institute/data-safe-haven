@@ -155,17 +155,7 @@ def show(
         )
         raise typer.Exit(1) from exc
     except DataSafeHavenTypeError as exc:
-        logger.warning(
-            f"Remote configuration for SRE '{name}' is not valid. Dumping remote file."
-        )
-        azure_sdk = AzureSdk(subscription_name=context.subscription_name)
-        config_yaml = azure_sdk.download_blob(
-            sre_config_name(name),
-            context.resource_group_name,
-            context.storage_account_name,
-            context.storage_container_name,
-        )
-        console.print(config_yaml)
+        dump_remote_config(context, name, logger)
         raise typer.Exit(1) from exc
 
     config_yaml = sre_config.to_yaml()
@@ -204,7 +194,13 @@ def template(
 
 @config_command_group.command()
 def upload(
-    file: Annotated[Path, typer.Argument(help="Path to configuration file")],
+    file: Annotated[Path, typer.Argument(help="Path to configuration file.")],
+    force: Annotated[  # noqa: FBT002
+        bool,
+        typer.Option(
+            help="Skip validation and difference calculation of remote configuration."
+        ),
+    ] = False,
 ) -> None:
     """Upload an SRE configuration to the Data Safe Haven context"""
     context = ContextManager.from_file().assert_context()
@@ -220,24 +216,45 @@ def upload(
     config = SREConfig.from_yaml(config_yaml)
 
     # Present diff to user
-    if SREConfig.remote_exists(context, filename=config.filename):
-        if diff := config.remote_yaml_diff(context, filename=config.filename):
-            for line in "".join(diff).splitlines():
-                logger.info(line)
-            if not console.confirm(
-                (
-                    "Configuration has changed, "
-                    "do you want to overwrite the remote configuration?"
-                ),
-                default_to_yes=False,
-            ):
+    if (not force) and SREConfig.remote_exists(context, filename=config.filename):
+        try:
+            if diff := config.remote_yaml_diff(context, filename=config.filename):
+                for line in "".join(diff).splitlines():
+                    logger.info(line)
+                if not console.confirm(
+                    (
+                        "Configuration has changed, "
+                        "do you want to overwrite the remote configuration?"
+                    ),
+                    default_to_yes=False,
+                ):
+                    raise typer.Exit()
+            else:
+                console.print("No changes, won't upload configuration.")
                 raise typer.Exit()
-        else:
-            console.print("No changes, won't upload configuration.")
-            raise typer.Exit()
+        except DataSafeHavenError as exc:
+            dump_remote_config(context, config.name, logger)
+            console.print(
+                "To overwrite the remote config, use `dsh config upload --force`"
+            )
+            raise typer.Exit(1) from exc
 
     try:
         config.upload(context, filename=config.filename)
     except DataSafeHavenError as exc:
         logger.critical("No infrastructure found for the selected context.")
         raise typer.Exit(1) from exc
+
+
+def dump_remote_config(context, name, logger):
+    logger.warning(
+        f"Remote configuration for SRE '{name}' is not valid. Dumping remote file."
+    )
+    azure_sdk = AzureSdk(subscription_name=context.subscription_name)
+    config_yaml = azure_sdk.download_blob(
+        sre_config_name(name),
+        context.resource_group_name,
+        context.storage_account_name,
+        context.storage_container_name,
+    )
+    console.print(config_yaml)
