@@ -234,7 +234,7 @@ def upload(
             else:
                 console.print("No changes, won't upload configuration.")
                 raise typer.Exit()
-        except DataSafeHavenError as exc:
+        except DataSafeHavenTypeError as exc:
             dump_remote_config(context, config.name, logger)
             console.print(
                 "To overwrite the remote config, use `dsh config upload --force`"
