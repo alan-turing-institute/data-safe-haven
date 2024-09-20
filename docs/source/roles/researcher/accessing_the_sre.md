@@ -175,5 +175,5 @@ When you are connected to a workspace, you may switch to another by bringing up 
 :::
 
 :::{tip}
-Any files in the **/output/**, **/home/** or **/shared** folders on other workspaces will be available in this workspace too.
+Any files in the **/mnt/output/**, **/home/** or **/mnt/shared** folders on other workspaces will be available in this workspace too.
 :::

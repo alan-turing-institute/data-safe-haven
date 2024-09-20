@@ -102,12 +102,12 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 ### Turing configuration setting::
 
-- Users can write to the `/output` volume.
-- A {ref}`role_system_manager` can view and download data in the `/output` volume via **Azure Storage Explorer**.
+- Users can write to the `/mnt/output` volume.
+- A {ref}`role_system_manager` can view and download data in the `/mnt/output` volume via **Azure Storage Explorer**.
 
 ### Implication:
 
-- SRE users can mark data as ready for egress approval by placing it in the `/output` volume.
+- SRE users can mark data as ready for egress approval by placing it in the `/mnt/output` volume.
 
 ## 9. Software ingress
 
