@@ -281,5 +281,24 @@ class TestUploadSRE:
     def test_upload_file_does_not_exist(self, mocker, runner):
         mocker.patch.object(Path, "is_file", return_value=False)
         result = runner.invoke(config_command_group, ["upload", "fake_config.yaml"])
-        assert "Configuration file 'fake_config.yaml' not found." in result.stdout
         assert result.exit_code == 1
+        assert "Configuration file 'fake_config.yaml' not found." in result.stdout
+
+    def test_upload_invalid_config(self, mocker, runner, context, sre_config_file, sre_config_yaml):
+        sre_name = "SandBox"
+        sre_filename = sre_config_name(sre_name)
+
+        mock_exists = mocker.patch.object(SREConfig, "remote_exists", return_value=True)
+        mocker.patch.object(
+            SREConfig, "remote_yaml_diff", side_effect=DataSafeHavenTypeError(" ")
+        )
+        mocker.patch.object(
+            AzureSdk, "download_blob", return_value=sre_config_yaml
+        )
+
+        result = runner.invoke(config_command_group, ["upload", str(sre_config_file)])
+
+        mock_exists.assert_called_once_with(context, filename=sre_filename)
+        assert result.exit_code == 1
+        assert sre_config_yaml in result.stdout
+        assert "To overwrite the remote config, use `dsh config upload --force`" in result.stdout
