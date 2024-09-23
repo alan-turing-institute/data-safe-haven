@@ -1,0 +1,6 @@
+# Use the CRAN proxy for package installation
+local({
+    r <- getOption("repos")
+    r["CRAN"] <- "http://{{ software_repository_hostname }}/repository/cran-proxy"
+    options(repos = r)
+})

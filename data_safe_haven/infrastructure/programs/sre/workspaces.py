@@ -24,56 +24,30 @@ class SREWorkspacesProps:
         self,
         admin_password: Input[str],
         apt_proxy_server_hostname: Input[str],
-        clamav_mirror_hostname: Input[str],
         data_collection_endpoint_id: Input[str],
         data_collection_rule_id: Input[str],
-        database_service_admin_password: Input[str],
-        internal_gitea_hostname: Input[str],
-        hedgedoc_hostname: Input[str],
-        ldap_group_filter: Input[str],
-        ldap_group_search_base: Input[str],
-        ldap_server_hostname: Input[str],
-        ldap_server_port: Input[int],
-        ldap_user_filter: Input[str],
-        ldap_user_search_base: Input[str],
         location: Input[str],
         maintenance_configuration_id: Input[str],
         resource_group_name: Input[str],
-        software_repository_hostname: Input[str],
         sre_name: Input[str],
-        storage_account_data_desired_state_name: Input[str],
+        storage_account_desired_state_name: Input[str],
         storage_account_data_private_sensitive_name: Input[str],
         storage_account_data_private_user_name: Input[str],
         subnet_workspaces: Input[network.GetSubnetResult],
         subscription_name: Input[str],
         virtual_network: Input[network.VirtualNetwork],
         vm_details: list[tuple[int, str]],  # this must *not* be passed as an Input[T]
-        external_gitea_hostname: Input[str] | None = None,
     ) -> None:
         self.admin_password = Output.secret(admin_password)
         self.admin_username = "dshadmin"
         self.apt_proxy_server_hostname = apt_proxy_server_hostname
-        self.clamav_mirror_hostname = clamav_mirror_hostname
         self.data_collection_rule_id = data_collection_rule_id
         self.data_collection_endpoint_id = data_collection_endpoint_id
-        self.database_service_admin_password = database_service_admin_password
-        self.internal_gitea_hostname = internal_gitea_hostname
-        self.external_gitea_hostname = external_gitea_hostname
-        self.hedgedoc_hostname = hedgedoc_hostname
-        self.ldap_group_filter = ldap_group_filter
-        self.ldap_group_search_base = ldap_group_search_base
-        self.ldap_server_hostname = ldap_server_hostname
-        self.ldap_server_port = Output.from_input(ldap_server_port).apply(str)
-        self.ldap_user_filter = ldap_user_filter
-        self.ldap_user_search_base = ldap_user_search_base
         self.location = location
         self.maintenance_configuration_id = maintenance_configuration_id
         self.resource_group_name = resource_group_name
-        self.software_repository_hostname = software_repository_hostname
         self.sre_name = sre_name
-        self.storage_account_data_desired_state_name = (
-            storage_account_data_desired_state_name
-        )
+        self.storage_account_desired_state_name = storage_account_desired_state_name
         self.storage_account_data_private_user_name = (
             storage_account_data_private_user_name
         )
@@ -120,18 +94,7 @@ class SREWorkspacesComponent(ComponentResource):
         # Load cloud-init file
         cloudinit = Output.all(
             apt_proxy_server_hostname=props.apt_proxy_server_hostname,
-            clamav_mirror_hostname=props.clamav_mirror_hostname,
-            database_service_admin_password=props.database_service_admin_password,
-            gitea_hostname=props.internal_gitea_hostname,
-            hedgedoc_hostname=props.hedgedoc_hostname,
-            ldap_group_filter=props.ldap_group_filter,
-            ldap_group_search_base=props.ldap_group_search_base,
-            ldap_server_hostname=props.ldap_server_hostname,
-            ldap_server_port=props.ldap_server_port,
-            ldap_user_filter=props.ldap_user_filter,
-            ldap_user_search_base=props.ldap_user_search_base,
-            software_repository_hostname=props.software_repository_hostname,
-            storage_account_data_desired_state_name=props.storage_account_data_desired_state_name,
+            storage_account_desired_state_name=props.storage_account_desired_state_name,
             storage_account_data_private_user_name=props.storage_account_data_private_user_name,
             storage_account_data_private_sensitive_name=props.storage_account_data_private_sensitive_name,
         ).apply(lambda kwargs: self.template_cloudinit(**kwargs))

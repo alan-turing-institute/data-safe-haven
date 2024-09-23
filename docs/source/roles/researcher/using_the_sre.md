@@ -53,8 +53,8 @@ For instance, describing in detail what a dataset contains and how it will be us
 SREs are designed to be ephemeral and only deployed for as long as necessary.
 It is likely that the infrastructure, and data, will be permanently deleted when work has concluded.
 
-The `/output/` directory is designed for storing output to be kept after a project concludes.
-You should move such data to the `/output/` directory and contact your designated contact about data egress.
+The `/mnt/output/` directory is designed for storing output to be kept after a project concludes.
+You should move such data to the `/mnt/output/` directory and contact your designated contact about data egress.
 
 :::{important}
 You are responsible for deciding what is worth archiving.
@@ -63,8 +63,8 @@ You are responsible for deciding what is worth archiving.
 While working on the project:
 
 - store all your code in a **Gitea** repository.
-- store all resources that might be useful to the rest of the project in the **/shared/** folder.
-- store anything that might form an output from the project (_e.g._ images, documents or output datasets) in the **/output/** folder.
+- store all resources that might be useful to the rest of the project in the **/mnt/shared/** folder.
+- store anything that might form an output from the project (_e.g._ images, documents or output datasets) in the **/mnt/output/** folder.
 
 See {ref}`the section on sharing files <role_researcher_shared_storage>` to find out more about where to store your files.
 
@@ -244,45 +244,45 @@ Type `yes` to install the packages.
 
 There are several shared folder on each workspace that all collaborators within a research project team can see and access:
 
-- [input data](#input-data): in the **/data/** folder
-- [shared space](#shared-space): in the **/shared/** folder
-- [output resources](#output-resources): in the **/output/** folder
+- [input data](#input-data): in the **/mnt/input/** folder
+- [shared space](#shared-space): in the **/mnt/shared/** folder
+- [output resources](#output-resources): in the **/mnt/output/** folder
 
 ### Input data
 
-Data that has been approved and brought into the secure research environment can be found in the **/data/** folder.
+Data that has been approved and brought into the secure research environment can be found in the **/mnt/input/** folder.
 
-- The contents of **/data/** will be identical on all workspaces in your SRE.
+- The contents of **/mnt/input/** will be identical on all workspaces in your SRE.
 - Everyone working on your project will be able to access it.
 - Everyone has **read-only access** to the files stored here.
 
-If you are using the Data Safe Haven as part of an organised event, you might find additional resources in the **/data/** folder, such as example slides or document templates.
+If you are using the Data Safe Haven as part of an organised event, you might find additional resources in the **/mnt/input/** folder, such as example slides or document templates.
 
 :::{important}
-You will not be able to change any of the files in **/data/**.
-If you want to make derived datasets, for example cleaned and reformatted data, please add those to the **/shared/** or **/output/** folders.
+You will not be able to change any of the files in **/mnt/input/**.
+If you want to make derived datasets, for example cleaned and reformatted data, please add those to the **/mnt/shared/** or **/mnt/output/** folders.
 :::
 
 ### Shared space
 
-The **/shared/** folder should be used for any work that you want to share with your group.
+The **/mnt/shared/** folder should be used for any work that you want to share with your group.
 
-- The contents of **/shared/** will be identical on all workspaces in your SRE.
+- The contents of **/mnt/shared/** will be identical on all workspaces in your SRE.
 - Everyone working on your project will be able to access it
 - Everyone has **read-and-write access** to the files stored here.
 
 ### Output resources
 
-Any outputs that you want to extract from the secure environment should be placed in the **/output/** folder on the workspace.
+Any outputs that you want to extract from the secure environment should be placed in the **/mnt/output/** folder on the workspace.
 
-- The contents of **/output/** will be identical on all workspaces in your SRE.
+- The contents of **/mnt/output/** will be identical on all workspaces in your SRE.
 - Everyone working on your project will be able to access it
 - Everyone has **read-and-write access** to the files stored here.
 
 Anything placed in here will be considered for data egress - removal from the secure research environment - by the project's principal investigator together with the data provider.
 
 :::{tip}
-You may want to consider having subfolders of **/output/** to make the review of this directory easier.
+You may want to consider having subfolders of **/mnt/output/** to make the review of this directory easier.
 :::
 
 ## {{pill}} Version control using Gitea

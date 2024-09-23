@@ -27,7 +27,7 @@ We have developed:
 - A proposed default set of technical security measures for each tier.
 - A set of infrastructure-as-code tools which will allow anyone to deploy their own isolated research environment.
 
-If this sounds interesting to you, take a look at our GitHub releases: [![Data Safe Haven releases](https://img.shields.io/static/v1?label=Data%20Safe%20Haven&message=Releases&style=flat&logo=github)](https://github.com/alan-turing-institute/data-safe-haven/releases).
+If this sounds interesting to you, take a look at our GitHub releases: [![Data Safe Haven releases](https://img.shields.io/static/v1?label=Data%20Safe%20Haven&message=Releases&style=flat&logo=github)](https://github.com/alan-turing-institute/mnt/input-safe-haven/releases).
 
 ## Documentation structure
 

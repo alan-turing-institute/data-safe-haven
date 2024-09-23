@@ -74,7 +74,7 @@ class TestYAMLSerialisableModel:
         )
         with raises(
             DataSafeHavenTypeError,
-            match="Could not load Example configuration.",
+            match="Example configuration is invalid.",
         ):
             ExampleYAMLSerialisableModel.from_yaml(yaml)
 
