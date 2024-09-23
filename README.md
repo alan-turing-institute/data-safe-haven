@@ -13,7 +13,7 @@
 | data\_safe\_haven/administration/users/user\_handler.py                           |      100 |       78 |     22% |22-24, 32-69, 75-81, 85, 91-97, 105-124, 132-137, 145-159, 167-206, 214-219 |
 | data\_safe\_haven/commands/\_\_init\_\_.py                                        |        2 |        0 |    100% |           |
 | data\_safe\_haven/commands/cli.py                                                 |       28 |        3 |     89% |56, 59, 99 |
-| data\_safe\_haven/commands/config.py                                              |      111 |        6 |     95% |99-103, 206-208 |
+| data\_safe\_haven/commands/config.py                                              |      126 |        6 |     95% |117-121, 246-248 |
 | data\_safe\_haven/commands/context.py                                             |       72 |        0 |    100% |           |
 | data\_safe\_haven/commands/pulumi.py                                              |       22 |        0 |    100% |           |
 | data\_safe\_haven/commands/shm.py                                                 |       78 |       25 |     68% |52, 67, 69, 71, 73-100, 119-124, 135 |
@@ -97,7 +97,7 @@
 | data\_safe\_haven/provisioning/\_\_init\_\_.py                                    |        2 |        0 |    100% |           |
 | data\_safe\_haven/provisioning/sre\_provisioning\_manager.py                      |       48 |       34 |     29% |29-57, 69-72, 76-77, 81-86, 90-130, 140-142 |
 | data\_safe\_haven/serialisers/\_\_init\_\_.py                                     |        4 |        0 |    100% |           |
-| data\_safe\_haven/serialisers/azure\_serialisable\_model.py                       |       38 |        3 |     92% | 45-46, 78 |
+| data\_safe\_haven/serialisers/azure\_serialisable\_model.py                       |       41 |        3 |     93% | 45-46, 81 |
 | data\_safe\_haven/serialisers/context\_base.py                                    |       15 |        2 |     87% |    15, 20 |
 | data\_safe\_haven/serialisers/yaml\_serialisable\_model.py                        |       48 |        0 |    100% |           |
 | data\_safe\_haven/singleton.py                                                    |        8 |        0 |    100% |           |
@@ -111,7 +111,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       23 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       65 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4564** | **2157** | **53%** |           |
+|                                                                         **TOTAL** | **4582** | **2157** | **53%** |           |
 
 
 ## Setup coverage badge
