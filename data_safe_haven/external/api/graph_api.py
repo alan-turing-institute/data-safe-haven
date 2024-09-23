@@ -515,7 +515,7 @@ class GraphApi:
         except (DataSafeHavenMicrosoftGraphError, StopIteration):
             return None
 
-    def get_id_from_groupname(self, group_name: str) -> str | None:
+    def get_id_from_groupname(self, group_name: str) -> str:
         try:
             return str(
                 next(
@@ -525,7 +525,8 @@ class GraphApi:
                 )["id"]
             )
         except (DataSafeHavenMicrosoftGraphError, StopIteration):
-            return None
+            msg = "Admin group not found. Check that the group exists and that you have the correct permissions."
+            raise DataSafeHavenMicrosoftGraphError(msg) from None
 
     def get_id_from_username(self, username: str) -> str | None:
         try:
