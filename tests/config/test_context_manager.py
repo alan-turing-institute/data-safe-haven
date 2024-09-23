@@ -114,7 +114,7 @@ class TestContextManager:
         )
         with pytest.raises(
             DataSafeHavenTypeError,
-            match="Could not load ContextManager configuration.",
+            match="ContextManager configuration is invalid.",
         ):
             ContextManager.from_yaml(context_yaml)
 
@@ -124,7 +124,7 @@ class TestContextManager:
         )
         with pytest.raises(
             DataSafeHavenTypeError,
-            match="Could not load ContextManager configuration.",
+            match="ContextManager configuration is invalid.",
         ):
             ContextManager.from_yaml(context_yaml)
 

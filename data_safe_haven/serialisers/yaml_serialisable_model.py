@@ -56,7 +56,7 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
                 logger.error(
                     f"[red]{'.'.join(map(str, error.get('loc', [])))}: {error.get('input', '')}[/] - {error.get('msg', '')}"
                 )
-            msg = f"Could not load {cls.config_type} configuration."
+            msg = f"{cls.config_type} configuration is invalid."
             raise DataSafeHavenTypeError(msg) from exc
 
     def to_filepath(self, config_file_path: PathType) -> None:
