@@ -8,36 +8,47 @@
   tasks:
     - name: Install packages
       ansible.builtin.import_tasks: tasks/packages.yaml
+      tags: packages
 
     - name: Disable Ubuntu Pro services
       ansible.builtin.import_tasks: tasks/ubuntu_pro.yaml
+      tags: ubuntu_pro
 
     - name: Configure auditd
       ansible.builtin.import_tasks: tasks/auditd.yaml
+      tags: auditd
 
     - name: Configure sshd
       ansible.builtin.import_tasks: tasks/sshd.yaml
+      tags: sshd
 
     - name: Configure ClamAV
       ansible.builtin.import_tasks: tasks/clamav.yaml
+      tags: clamav
 
     - name: Globally configure default user settings
-      ansible.builtin.import_tasks: tasks/global_config.yaml
+      ansible.builtin.import_tasks: tasks/user_config.yaml
+      tags: user_conf
 
     - name: Configure LDAP
       ansible.builtin.import_tasks: tasks/ldap.yaml
+      tags: ldap
 
     - name: Configure Xrdp
       ansible.builtin.import_tasks: tasks/xrdp.yaml
+      tags: xrdp
 
     - name: Configure Xfce
       ansible.builtin.import_tasks: tasks/xfce.yaml
+      tags: xfce
 
     - name: Configure package proxies
       ansible.builtin.import_tasks: tasks/package_proxy.yaml
+      tags: package_proxies
 
     - name: Provision smoke tests
       ansible.builtin.import_tasks: tasks/smoke_tests.yaml
+      tags: smoke_tests
 
   handlers:
     - name: Restart auditd

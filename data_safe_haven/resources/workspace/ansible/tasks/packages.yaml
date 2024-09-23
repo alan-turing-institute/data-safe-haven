@@ -28,6 +28,7 @@
   loop: "{{ deb_packages[ansible_facts.distribution_release] }}"
 
 - name: Install snap packages
+  tags: snap
   community.general.snap:
     name: "{{ item.name }}"
     classic: "{{ item.classic }}"
