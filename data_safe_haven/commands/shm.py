@@ -10,6 +10,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
     DataSafeHavenConfigError,
     DataSafeHavenError,
+    DataSafeHavenMicrosoftGraphError,
 )
 from data_safe_haven.infrastructure import ImperativeSHM
 from data_safe_haven.logging import get_logger
@@ -103,6 +104,10 @@ def deploy(
                 fqdn=fqdn,
                 location=location,
             )
+    except DataSafeHavenMicrosoftGraphError as exc:
+        msg = "Cannot deploy SHM without appropriate admin group membership."
+        logger.critical(msg)
+        raise typer.Exit(1) from exc
     except DataSafeHavenError as exc:
         msg = "Failed to load SHM configuration."
         logger.critical(msg)
