@@ -34,11 +34,13 @@
       systemctl stop clamav-freshclam && freshclam && systemctl start clamav-freshclam
     creates: '/var/lib/clamav/main.{c[vl]d,inc}'
 
-- name: Copy ClamAV services directory
+- name: Copy ClamAV services
   ansible.builtin.copy:
-    src: etc/systemd/system/
+    src: "{{ item }}"
     dest: /etc/systemd/system/
     mode: '0644'
+  with_fileglob:
+    - "etc/systemd/system/clamav-*"
   notify: Systemd daemon reload
 
 - name: Enable and start freshclam

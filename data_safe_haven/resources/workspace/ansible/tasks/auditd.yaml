@@ -1,21 +1,18 @@
 ---
 
 - name: Enable and start auditd service
-  tags: auditd
   ansible.builtin.systemd:
     name: auditd
     enabled: true
     state: started
 
 - name: Get minimum uid  # noqa: inline-env-var
-  tags: auditd
   ansible.builtin.command:
     cmd: awk '/^\s*UID_MIN/{print $2}' /etc/login.defs
   register: uid_min
   changed_when: false
 
 - name: Template auditd rules
-  tags: auditd
   ansible.builtin.template:
     src: etc/audit/rules.d/audit.rules.j2
     dest: /etc/audit/rules.d/audit.rules
@@ -23,14 +20,12 @@
   notify: Restart auditd
 
 - name: Copy auditd privileged executable rules script
-  tags: auditd
   ansible.builtin.copy:
     src: usr/local/bin/privileged-rules
     dest: /usr/local/bin/privileged-rules
     mode: '0500'
 
 - name: Generate auditd privileged executable rules
-  tags: auditd
   ansible.builtin.shell:
     cmd: /usr/local/bin/privileged-rules > /etc/audit/rules.d/50-privileged.rules
     creates: /etc/audit/rules.d/50-privileged.rules
