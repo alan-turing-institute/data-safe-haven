@@ -65,7 +65,8 @@ class SREDesiredStateProps:
         self.clamav_mirror_hostname = clamav_mirror_hostname
         self.database_service_admin_password = database_service_admin_password
         self.dns_private_zones = dns_private_zones
-        self.gitea_hostname = internal_gitea_hostname
+        self.internal_gitea_hostname = internal_gitea_hostname
+        self.external_gitea_hostname = external_gitea_hostname
         self.hedgedoc_hostname = hedgedoc_hostname
         self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
