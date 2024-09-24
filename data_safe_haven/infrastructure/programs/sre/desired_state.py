@@ -46,7 +46,7 @@ class SREDesiredStateProps:
         clamav_mirror_hostname: Input[str],
         database_service_admin_password: Input[str],
         dns_private_zones: Input[dict[str, network.PrivateZone]],
-        internal_gitea_hostname: Input[str],
+        gitea_hostnames: Input[dict[str, str]],
         hedgedoc_hostname: Input[str],
         ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
@@ -59,14 +59,13 @@ class SREDesiredStateProps:
         software_repository_hostname: Input[str],
         subscription_name: Input[str],
         subnet_desired_state: Input[network.GetSubnetResult],
-        external_gitea_hostname: Input[str] | None = None,
     ) -> None:
         self.admin_ip_addresses = admin_ip_addresses
         self.clamav_mirror_hostname = clamav_mirror_hostname
         self.database_service_admin_password = database_service_admin_password
         self.dns_private_zones = dns_private_zones
-        self.internal_gitea_hostname = internal_gitea_hostname
-        self.external_gitea_hostname = external_gitea_hostname
+        self.internal_gitea_hostname = gitea_hostnames.get("internal")
+        self.external_gitea_hostname = gitea_hostnames.get("external")
         self.hedgedoc_hostname = hedgedoc_hostname
         self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
