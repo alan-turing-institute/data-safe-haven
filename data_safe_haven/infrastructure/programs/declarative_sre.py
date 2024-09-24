@@ -349,8 +349,10 @@ class DeclarativeSRE:
                 clamav_mirror_hostname=clamav_mirror.hostname,
                 database_service_admin_password=data.password_database_service_admin,
                 dns_private_zones=dns.private_zones,
-                internal_gitea_hostname=user_services.gitea_server[0].hostname,
-                external_gitea_hostname=user_services.gitea_server[1].hostname,
+                gitea_hostnames={
+                    availability: server.hostname
+                    for (availability, server) in user_services.gitea_server.items()
+                },
                 hedgedoc_hostname=user_services.hedgedoc_server.hostname,
                 ldap_group_filter=ldap_group_filter,
                 ldap_group_search_base=ldap_group_search_base,
