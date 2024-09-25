@@ -140,11 +140,7 @@ class GraphApi:
         """
         try:
             user_id = self.get_id_from_username(username)
-            if self.entra_group_exists(group_name):
-                group_id = self.get_id_from_groupname(group_name)
-            else:
-                msg = f"Group '{group_name}' not found."
-                raise DataSafeHavenMicrosoftGraphError(msg)
+            group_id = self.validate_entra_group(group_name)
             json_response = self.http_get(
                 f"{self.base_endpoint}/groups/{group_id}/members",
             ).json()
@@ -325,7 +321,7 @@ class GraphApi:
             DataSafeHavenMicrosoftGraphError if the group could not be created
         """
         try:
-            if self.entra_group_exists(group_name):
+            if self.get_id_from_groupname(group_name):
                 self.logger.info(
                     f"Found existing Entra group '[green]{group_name}[/]'.",
                 )
@@ -519,17 +515,30 @@ class GraphApi:
         except (DataSafeHavenMicrosoftGraphError, StopIteration):
             return None
 
-    def entra_group_exists(self, group_name: str) -> bool:
-        return bool(any(x["displayName"] == group_name for x in self.read_groups()))
+    def validate_entra_group(self, group_name: str) -> str:
+        """
+        Ensure that an Entra group exists and return its ID
 
-    def get_id_from_groupname(self, group_name: str) -> str:
-        return str(
-            next(
-                group
-                for group in self.read_groups()
-                if group["displayName"] == group_name
-            )["id"]
-        )
+        Raises:
+            DataSafeHavenMicrosoftGraphError if the group does not exist
+        """
+        if group_id := self.get_id_from_groupname(group_name):
+            return group_id
+        else:
+            msg = f"Group '{group_name}' not found."
+            raise DataSafeHavenMicrosoftGraphError(msg)
+
+    def get_id_from_groupname(self, group_name: str) -> str | None:
+        try:
+            return str(
+                next(
+                    group
+                    for group in self.read_groups()
+                    if group["displayName"] == group_name
+                )["id"]
+            )
+        except (DataSafeHavenMicrosoftGraphError, StopIteration):
+            return None
 
     def get_id_from_username(self, username: str) -> str | None:
         try:
@@ -1019,10 +1028,7 @@ class GraphApi:
         """
         try:
             user_id = self.get_id_from_username(username)
-            if not self.entra_group_exists(group_name):
-                msg = f"Group '{group_name}' not found."
-                raise DataSafeHavenMicrosoftGraphError(msg)
-            group_id = self.get_id_from_groupname(group_name)
+            group_id = self.validate_entra_group(group_name)
             # Check whether user is in group
             json_response = self.http_get(
                 f"{self.base_endpoint}/groups/{group_id}/members",
