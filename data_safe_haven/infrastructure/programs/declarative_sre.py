@@ -140,6 +140,7 @@ class DeclarativeSRE:
                 resource_group_name=resource_group.name,
                 shm_fqdn=shm_fqdn,
                 shm_resource_group_name=self.context.resource_group_name,
+                shm_subscription_id=...,
                 shm_zone_name=shm_fqdn,
                 sre_name=self.config.name,
                 user_public_ip_ranges=self.config.sre.research_user_ip_addresses,
