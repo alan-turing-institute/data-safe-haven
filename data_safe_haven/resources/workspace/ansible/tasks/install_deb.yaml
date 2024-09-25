@@ -5,6 +5,7 @@
     url: "{{ item.source }}/{{ item.filename }}"
     dest: /tmp/build/
     checksum: "sha256:{{ item.sha256 }}"
+    mode: '0400'
   register: debfile
 
 - name: Install deb
