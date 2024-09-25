@@ -1859,10 +1859,11 @@ class SRENetworkingComponent(ComponentResource):
             tags=child_tags,
         )
         shm_provider = provider.Provider(
+            "shm_provider",
             provider.ProviderArgs(
                 location=props.location,
                 subscription_id=props.shm_subscription_id,
-            )
+            ),
         )
         shm_ns_record = network.RecordSet(
             f"{self._name}_ns_record",
