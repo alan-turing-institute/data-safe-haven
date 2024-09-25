@@ -114,9 +114,7 @@ class TestDSHPulumiConfig:
 
     def test_from_yaml_validation_error(self):
         not_valid = "projects: -3"
-        with raises(
-            DataSafeHavenTypeError, match="Could not load Pulumi configuration."
-        ):
+        with raises(DataSafeHavenTypeError, match="Pulumi configuration is invalid."):
             DSHPulumiConfig.from_yaml(not_valid)
 
     def test_upload(self, mocker, pulumi_config, context):

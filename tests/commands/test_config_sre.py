@@ -4,9 +4,10 @@ from data_safe_haven.commands.config import config_command_group
 from data_safe_haven.config import ContextManager, SREConfig
 from data_safe_haven.config.sre_config import sre_config_name
 from data_safe_haven.exceptions import (
+    DataSafeHavenAzureError,
     DataSafeHavenAzureStorageError,
     DataSafeHavenConfigError,
-    DataSafeHavenError,
+    DataSafeHavenTypeError,
 )
 from data_safe_haven.external import AzureSdk
 
@@ -41,6 +42,25 @@ class TestShowSRE:
             template_text = f.read()
         assert sre_config_yaml in template_text
 
+    def test_show_invalid_config(self, mocker, runner, context, sre_config_yaml):
+        mocker.patch.object(
+            SREConfig, "from_remote_by_name", side_effect=DataSafeHavenTypeError(" ")
+        )
+        mock_method = mocker.patch.object(
+            AzureSdk, "download_blob", return_value=sre_config_yaml
+        )
+        sre_name = "sandbox"
+        result = runner.invoke(config_command_group, ["show", sre_name])
+
+        assert result.exit_code == 1
+        assert sre_config_yaml in result.stdout
+        mock_method.assert_called_once_with(
+            sre_config_name(sre_name),
+            context.resource_group_name,
+            context.storage_account_name,
+            context.storage_container_name,
+        )
+
     def test_no_context(self, mocker, runner):
         sre_name = "sandbox"
         mocker.patch.object(
@@ -73,7 +93,7 @@ class TestShowSRE:
     def test_incorrect_sre_name(self, mocker, runner):
         sre_name = "sandbox"
         mocker.patch.object(
-            SREConfig, "from_remote_by_name", side_effect=DataSafeHavenError(" ")
+            SREConfig, "from_remote_by_name", side_effect=DataSafeHavenAzureError(" ")
         )
         result = runner.invoke(config_command_group, ["show", sre_name])
         assert "No configuration exists for an SRE" in result.stdout
@@ -261,5 +281,53 @@ class TestUploadSRE:
     def test_upload_file_does_not_exist(self, mocker, runner):
         mocker.patch.object(Path, "is_file", return_value=False)
         result = runner.invoke(config_command_group, ["upload", "fake_config.yaml"])
-        assert "Configuration file 'fake_config.yaml' not found." in result.stdout
         assert result.exit_code == 1
+        assert "Configuration file 'fake_config.yaml' not found." in result.stdout
+
+    def test_upload_invalid_config(
+        self, mocker, runner, context, sre_config_file, sre_config_yaml
+    ):
+        sre_name = "SandBox"
+        sre_filename = sre_config_name(sre_name)
+
+        mock_exists = mocker.patch.object(SREConfig, "remote_exists", return_value=True)
+        mocker.patch.object(
+            SREConfig, "remote_yaml_diff", side_effect=DataSafeHavenTypeError(" ")
+        )
+        mocker.patch.object(AzureSdk, "download_blob", return_value=sre_config_yaml)
+
+        result = runner.invoke(config_command_group, ["upload", str(sre_config_file)])
+
+        assert result.exit_code == 1
+
+        mock_exists.assert_called_once_with(context, filename=sre_filename)
+        assert sre_config_yaml in result.stdout
+        assert (
+            "To overwrite the remote config, use `dsh config upload --force`"
+            in result.stdout
+        )
+
+    def test_upload_invalid_config_force(
+        self, mocker, runner, context, sre_config_file, sre_config_yaml
+    ):
+        sre_name = "SandBox"
+        sre_filename = sre_config_name(sre_name)
+
+        mocker.patch.object(
+            SREConfig, "remote_yaml_diff", side_effect=DataSafeHavenTypeError(" ")
+        )
+        mock_upload = mocker.patch.object(AzureSdk, "upload_blob", return_value=None)
+
+        result = runner.invoke(
+            config_command_group, ["upload", "--force", str(sre_config_file)]
+        )
+
+        assert result.exit_code == 0
+
+        mock_upload.assert_called_once_with(
+            sre_config_yaml,
+            sre_filename,
+            context.resource_group_name,
+            context.storage_account_name,
+            context.storage_container_name,
+        )

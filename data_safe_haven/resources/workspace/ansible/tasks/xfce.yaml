@@ -1,0 +1,73 @@
+---
+
+- name: Xfce terminal
+  tags: xfce_terminal
+  block:
+    - name: Set default terminal
+      ansible.builtin.lineinfile:
+        path: /etc/xdg/xfce4/helpers.rc
+        regexp: '^TerminalEmulator='
+        line: 'TerminalEmulator=xfce4-terminal'
+
+    - name: Copy default terminal colourscheme
+      ansible.builtin.copy:
+        src: etc/xdg/xfce4/terminal/
+        dest: /etc/xdg/xfce4/terminal/
+        mode: '0444'
+
+- name: Xfce screen saver
+  tags: xfce_screensaver
+  block:
+    # This doesn't work
+    # Possibly a bug in xfce4 < 4.18
+    # https://gitlab.xfce.org/apps/xfce4-screensaver/-/issues/55
+    - name: Disable xfce4 screen saver (screen lock)
+      ansible.builtin.lineinfile:
+        path: /etc/xdg/autostart/xfce4-screensaver.desktop
+        line: 'Hidden=true'
+        state: present
+
+    - name: Use a blank screensaver
+      ansible.builtin.lineinfile:
+        path: /etc/X11/Xresources/x11-common
+        line: 'xscreensaver.mode: blank'
+        state: present
+
+- name: Set default keyboard
+  ansible.builtin.replace:
+    path: /etc/default/keyboard
+    regexp: "^{{ item.key }}="
+    replace: "{{ item.key }}={{ item.value }}"
+  loop:
+    - {key: "XKBMODEL", value: "pc105"}
+    - {key: "XKBLAYOUT", value: "gb"}
+
+- name: Desktop configuration
+  tags: xfce_desktop
+  block:
+    - name: Copy desktop icons directory
+      ansible.builtin.copy:
+        src: usr/local/share/icons/
+        dest: /usr/local/share/icons/
+        mode: '0444'
+
+    - name: Copy desktop files directory
+      ansible.builtin.copy:
+        src: etc/skel/Desktop/
+        dest: /etc/skel/Desktop/
+        mode: '0755'
+
+    - name: Template Gitea and Hedgedoc desktop files
+      ansible.builtin.template:
+        src: "etc/skel/Desktop/{{ item }}.desktop.j2"
+        dest: "/etc/skel/Desktop/{{ item }}.desktop"
+        mode: '0755'
+      loop:
+        - gitea
+        - hedgedoc
+
+- name: Add polkit rule to allow colord
+  ansible.builtin.copy:
+    src: etc/polkit-1/localauthority/50-local.d/50-colord.pkla
+    dest: /etc/polkit-1/localauthority/50-local.d/50-colord.pkla
+    mode: '0644'
