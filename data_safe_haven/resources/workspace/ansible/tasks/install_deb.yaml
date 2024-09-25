@@ -3,7 +3,7 @@
 - name: Fetch deb
   ansible.builtin.get_url:
     url: "{{ item.source }}/{{ item.filename }}"
-    dest: /tmp/build/
+    dest: "/tmp/{{ item.filename }}"
     checksum: "sha256:{{ item.sha256 }}"
     mode: '0400'
   register: debfile
