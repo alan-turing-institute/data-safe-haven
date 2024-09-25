@@ -96,6 +96,11 @@ def deploy(
             shm_config.shm.fqdn,
             replace=True,
         )
+        stack.add_option(
+            "shm-subscription-id",
+            shm_config.azure.subscription_id,
+            replace=True,
+        )
 
         # Deploy Azure infrastructure with Pulumi
         try:

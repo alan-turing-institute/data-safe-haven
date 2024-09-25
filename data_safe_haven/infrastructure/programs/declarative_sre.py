@@ -53,6 +53,7 @@ class DeclarativeSRE:
         shm_admin_group_id = self.pulumi_opts.require("shm-admin-group-id")
         shm_entra_tenant_id = self.pulumi_opts.require("shm-entra-tenant-id")
         shm_fqdn = self.pulumi_opts.require("shm-fqdn")
+        shm_subscription_id = self.pulumi_opts.require("shm-subscription-id")
 
         # Construct DockerHubCredentials
         dockerhub_credentials = DockerHubCredentials(
@@ -141,7 +142,7 @@ class DeclarativeSRE:
                 resource_group_name=resource_group.name,
                 shm_fqdn=shm_fqdn,
                 shm_resource_group_name=self.context.resource_group_name,
-                shm_subscription_id=...,
+                shm_subscription_id=shm_subscription_id,
                 shm_zone_name=shm_fqdn,
                 sre_name=self.config.name,
                 user_public_ip_ranges=self.config.sre.research_user_ip_addresses,
