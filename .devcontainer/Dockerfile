@@ -6,8 +6,7 @@ RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
         git \
-        libssl-dev \
-        python3-sphinx
+        libssl-dev
 
 # Install Azure-CLI
 RUN apt-get update \
