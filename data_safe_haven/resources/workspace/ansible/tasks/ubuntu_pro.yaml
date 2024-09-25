@@ -1,0 +1,10 @@
+---
+
+- name: Disable and stop Ubuntu Pro services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  loop:
+    - apt-news
+    - esm-cache

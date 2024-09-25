@@ -1,0 +1,13 @@
+---
+
+- name: Copy smoke test files directory
+  ansible.builtin.copy:
+    src: usr/local/smoke_tests/
+    dest: /usr/local/smoke_tests/
+    mode: '0755'
+
+- name: Write database credential for smoke tests
+  ansible.builtin.template:
+    src: etc/database_credential.j2
+    dest: /etc/database_credential
+    mode: '0400'

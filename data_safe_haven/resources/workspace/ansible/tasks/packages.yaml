@@ -1,0 +1,43 @@
+---
+
+- name: Apt packages
+  tags: apt
+  block:
+    - name: Update package cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 600
+
+    - name: List apt packages to install
+      ansible.builtin.debug:
+        msg: "{{ apt_packages.common | union(apt_packages[ansible_facts.distribution_release]) }}"
+
+    - name: Install apt packages
+      ansible.builtin.apt:
+        name: "{{ apt_packages.common | union(apt_packages[ansible_facts.distribution_release]) }}"
+        state: present
+      async: 3600
+      poll: 30
+
+- name: Install deb packages
+  tags: deb
+  ansible.builtin.script:
+    executable: /bin/bash
+    cmd: "/var/local/ansible/install_deb.sh {{ item.source }} {{ item.filename }} {{ item.sha256 }}"
+    creates: "{{ item.creates }}"
+  loop: "{{ deb_packages[ansible_facts.distribution_release] }}"
+
+- name: Install snap packages
+  tags: snap
+  community.general.snap:
+    name: "{{ item.name }}"
+    classic: "{{ item.classic }}"
+    state: present
+  loop: "{{ snap_packages }}"
+
+# https://ubuntu.com/server/docs/nvidia-drivers-installation#installing-the-drivers-on-servers-andor-for-computing-purposes
+- name: Use ubuntu-drivers to install Nvidia drivers  # noqa: no-handler
+  tags: nvidia
+  ansible.builtin.command:
+    cmd: ubuntu-drivers install --gpgpu
+    creates: /usr/bin/nvidia-smi

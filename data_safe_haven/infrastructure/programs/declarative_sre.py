@@ -1,6 +1,7 @@
 """Pulumi declarative program"""
 
 import pulumi
+from pulumi import ResourceOptions
 from pulumi_azure_native import resources
 
 from data_safe_haven.config import Context, SREConfig
@@ -385,6 +386,7 @@ class DeclarativeSRE:
                 virtual_network=networking.virtual_network,
                 vm_details=list(enumerate(self.config.sre.workspace_skus)),
             ),
+            opts=ResourceOptions(depends_on=[desired_state]),
             tags=self.tags,
         )
 
