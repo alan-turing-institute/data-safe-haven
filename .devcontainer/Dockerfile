@@ -22,7 +22,7 @@ RUN mkdir -p /etc/apt/keyrings \
     && chmod go+r /etc/apt/keyrings/microsoft.gpg
 
 # Set package versions
-ARG AZURE_CLI_VERSION="2.59.0"
+ARG AZURE_CLI_VERSION="2.64.0"
 ARG DISTRIBUTION
 
 # Add the Azure CLI repository
@@ -51,10 +51,6 @@ RUN groupadd --gid $USER_GID $USERNAME \
 
 # Set the default user
 USER $USERNAME
-
-# Install Sphinx dependencies
-COPY ./docs/requirements.txt /build/requirements.txt
-RUN pip3 install -r /build/requirements.txt
 
 # Set PATH for pulumi - pulumi installed as feature to work round installing as root
 ENV PATH=$PATH:/home/${USERNAME}/.pulumi/bin
