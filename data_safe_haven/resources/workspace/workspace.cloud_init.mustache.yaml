@@ -93,5 +93,7 @@ runcmd:
 
   # Run desired state service
   # -------------------------
+  - echo ">=== Waiting for Pulumi vars file... ===<"
+  - while (! test -f /var/local/ansible/vars/pulumi_vars.yaml) do sleep 5; done
   - echo ">=== Running initial desired state configuration... ===<"
   - systemctl start desired-state

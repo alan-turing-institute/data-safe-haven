@@ -1,0 +1,46 @@
+---
+
+- name: Copy xrdp settings
+  ansible.builtin.copy:
+    src: etc/xrdp/
+    dest: /etc/xrdp/
+    mode: '0644'
+
+- name: Copy xrdp logo
+  ansible.builtin.copy:
+    src: usr/local/share/xrdp/
+    dest: /usr/local/share/xrdp/
+    mode: '0444'
+
+- name: Disable xrdp root login
+  ansible.builtin.lineinfile:
+    path: /etc/xrdp/sesman.ini
+    regexp: '^AllowRootLogin='
+    line: 'AllowRootLogin=false'
+
+- name: Kill disconnected xrdp sessions
+  ansible.builtin.lineinfile:
+    path: /etc/xrdp/sesman.ini
+    regexp: '^DisconnectedTimeLimit='
+    line: 'DisconnectedTimeLimit=60'
+
+- name: Set disconnected xrdp session time limit
+  ansible.builtin.lineinfile:
+    path: /etc/xrdp/sesman.ini
+    regexp: '^KillDisconnected='
+    line: 'KillDisconnected=true'
+
+- name: Copy xsession skeleton
+  ansible.builtin.copy:
+    src: etc/skel/xsession
+    dest: /etc/skel/.xsession
+    mode: '0444'
+
+- name: Enable and start xrdp services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - xrdp
+    - xrdp-sesman
