@@ -137,12 +137,10 @@ deb_packages:
     - source: https://download1.rstudio.org/electron/jammy/amd64
       filename: rstudio-2024.04.2-764-amd64.deb
       sha256: 1d0bd2f54215f514a8a78a4d035c7804218bb8fafa417aa5083d341e174e6452
-      creates: /usr/bin/rstudio
   noble:
     - source: https://download1.rstudio.org/electron/jammy/amd64
       filename: rstudio-2024.04.2-764-amd64.deb
       sha256: 1d0bd2f54215f514a8a78a4d035c7804218bb8fafa417aa5083d341e174e6452
-      creates: /usr/bin/rstudio
 
 snap_packages:
   - name: codium
