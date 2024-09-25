@@ -28,14 +28,13 @@ class SHMConfig(AzureSerialisableModel):
     ) -> SHMConfig:
         """Construct an SHMConfig from arguments."""
         azure_sdk = AzureSdk(subscription_name=context.subscription_name)
-        try:
+        if azure_sdk.entra_directory.entra_group_exists(context.admin_group_name):
             admin_group_id = azure_sdk.entra_directory.get_id_from_groupname(
                 context.admin_group_name
             )
-        except DataSafeHavenMicrosoftGraphError as exc:
-            msg = f"Failed to get ID for group '{context.admin_group_name}'"
-            raise DataSafeHavenMicrosoftGraphError(msg) from exc
-
+        else:
+            msg = f"Admin group '{context.admin_group_name}' not found. Check the group name."
+            raise DataSafeHavenMicrosoftGraphError(msg)
         return SHMConfig.model_construct(
             azure=ConfigSectionAzure.model_construct(
                 location=location,
