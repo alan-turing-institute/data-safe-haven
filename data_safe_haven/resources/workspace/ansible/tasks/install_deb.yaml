@@ -1,0 +1,14 @@
+---
+
+- name: Fetch deb
+  ansible.builtin.get_url:
+    url: "{{ item.source }}/{{ item.filename }}"
+    dest: "/tmp/{{ item.filename }}"
+    checksum: "sha256:{{ item.sha256 }}"
+    mode: '0400'
+  register: debfile
+
+- name: Install deb
+  ansible.builtin.apt:
+    deb: "{{ debfile.dest }}"
+    state: present

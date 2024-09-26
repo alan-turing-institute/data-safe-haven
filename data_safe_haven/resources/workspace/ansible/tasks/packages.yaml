@@ -21,10 +21,8 @@
 
 - name: Install deb packages
   tags: deb
-  ansible.builtin.script:
-    executable: /bin/bash
-    cmd: "/var/local/ansible/install_deb.sh {{ item.source }} {{ item.filename }} {{ item.sha256 }}"
-    creates: "{{ item.creates }}"
+  ansible.builtin.include_tasks:
+    file: tasks/install_deb.yaml
   loop: "{{ deb_packages[ansible_facts.distribution_release] }}"
 
 - name: Install snap packages

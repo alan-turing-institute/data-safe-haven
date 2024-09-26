@@ -77,6 +77,9 @@ def deploy(
             sre_config.azure.subscription_id,
             replace=False,
         )
+        logger.info(
+            f"SRE will be deployed to subscription '[green]{sre_config.azure.subscription_id}[/]'"
+        )
         stack.add_option(
             "azure-native:tenantId", sre_config.azure.tenant_id, replace=False
         )
@@ -101,6 +104,8 @@ def deploy(
             shm_config.azure.subscription_id,
             replace=True,
         )
+        logger.info(f"SRE will be registered in SHM '[green]{shm_config.shm.fqdn}[/]'")
+        logger.info(f"SHM subscription '[green]{shm_config.azure.subscription_id}[/]'")
 
         # Deploy Azure infrastructure with Pulumi
         try:
