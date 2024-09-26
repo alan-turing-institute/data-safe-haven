@@ -26,6 +26,7 @@ class SRENetworkingProps:
         location: Input[str],
         resource_group_name: Input[str],
         shm_fqdn: Input[str],
+        shm_location: Input[str],
         shm_resource_group_name: Input[str],
         shm_subscription_id: Input[str],
         shm_zone_name: Input[str],
@@ -44,6 +45,7 @@ class SRENetworkingProps:
         self.location = location
         self.resource_group_name = resource_group_name
         self.shm_fqdn = shm_fqdn
+        self.shm_location = shm_location
         self.shm_resource_group_name = shm_resource_group_name
         self.shm_subscription_id = shm_subscription_id
         self.shm_zone_name = shm_zone_name
@@ -1861,7 +1863,7 @@ class SRENetworkingComponent(ComponentResource):
         shm_provider = provider.Provider(
             "shm_provider",
             provider.ProviderArgs(
-                location=props.location,
+                location=props.shm_location,
                 subscription_id=props.shm_subscription_id,
             ),
         )

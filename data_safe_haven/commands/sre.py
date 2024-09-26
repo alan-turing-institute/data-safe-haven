@@ -100,6 +100,11 @@ def deploy(
             replace=True,
         )
         stack.add_option(
+            "shm-location",
+            shm_config.azure.location,
+            replace=True,
+        )
+        stack.add_option(
             "shm-subscription-id",
             shm_config.azure.subscription_id,
             replace=True,
