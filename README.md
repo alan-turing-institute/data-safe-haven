@@ -25,7 +25,7 @@
 | data\_safe\_haven/config/context\_manager.py                                      |       93 |        4 |     96% |97-100, 112-115 |
 | data\_safe\_haven/config/dsh\_pulumi\_config.py                                   |       40 |        0 |    100% |           |
 | data\_safe\_haven/config/dsh\_pulumi\_project.py                                  |       11 |        2 |     82% |    15, 19 |
-| data\_safe\_haven/config/shm\_config.py                                           |       18 |        3 |     83% |     29-34 |
+| data\_safe\_haven/config/shm\_config.py                                           |       23 |        7 |     70% |     30-38 |
 | data\_safe\_haven/config/sre\_config.py                                           |       48 |       15 |     69% |51-53, 55-57, 59-61, 63-65, 67-69 |
 | data\_safe\_haven/console/\_\_init\_\_.py                                         |        4 |        0 |    100% |           |
 | data\_safe\_haven/console/format.py                                               |       11 |        0 |    100% |           |
@@ -37,7 +37,7 @@
 | data\_safe\_haven/external/api/\_\_init\_\_.py                                    |        0 |        0 |    100% |           |
 | data\_safe\_haven/external/api/azure\_sdk.py                                      |      455 |      301 |     34% |122-128, 130-131, 157-158, 177-190, 192-193, 228-232, 234-235, 255-283, 301-324, 340-363, 380-440, 455-476, 492-510, 523-552, 569-595, 612-632, 646-655, 688-701, 709-722, 759, 761-762, 791-819, 822-847, 862-868, 896-900, 914, 922-923, 926-928, 940-965, 982-997, 1010-1041, 1053-1106, 1114-1150, 1167-1202, 1219-1238, 1252-1284, 1318-1333 |
 | data\_safe\_haven/external/api/credentials.py                                     |       92 |        4 |     96% |   211-214 |
-| data\_safe\_haven/external/api/graph\_api.py                                      |      428 |      325 |     24% |110, 124-125, 127-129, 141-166, 180-263, 276-315, 323-349, 359-385, 398-469, 480-494, 497-504, 509-516, 519-528, 531-540, 563-571, 586-627, 642-691, 703, 716-730, 753, 786-790, 801-814, 825-841, 852-861, 874-884, 898-900, 914-921, 925-934, 947-984, 995-1004, 1016-1039, 1049-1102 |
+| data\_safe\_haven/external/api/graph\_api.py                                      |      433 |      329 |     24% |110, 124-125, 127-129, 141-166, 180-263, 276-315, 323-349, 359-385, 398-469, 480-494, 497-504, 509-516, 525-529, 532-541, 544-553, 576-584, 599-640, 655-704, 716, 729-743, 766, 799-803, 814-827, 838-854, 865-874, 887-897, 911-913, 927-934, 938-947, 960-997, 1008-1017, 1029-1052, 1062-1115 |
 | data\_safe\_haven/external/interface/\_\_init\_\_.py                              |        0 |        0 |    100% |           |
 | data\_safe\_haven/external/interface/azure\_container\_instance.py                |       56 |       39 |     30% |26-29, 33-34, 38-47, 52-90, 100-125 |
 | data\_safe\_haven/external/interface/azure\_ipv4\_range.py                        |       37 |        4 |     89% |23-24, 48-49 |
@@ -111,7 +111,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       23 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       65 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4585** | **2157** | **53%** |           |
+|                                                                         **TOTAL** | **4595** | **2165** | **53%** |           |
 
 
 ## Setup coverage badge
