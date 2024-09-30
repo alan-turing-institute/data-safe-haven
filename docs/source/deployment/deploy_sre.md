@@ -103,6 +103,19 @@ The NC and ND families a recommended as they feature GPUs designed for general p
 There is no key to distinguish SKUs with Nvidia GPUs, however newer SKUs contain the name of the accelerator.
 :::
 
+:::{hint}
+Picking a good VM size depends on a lot of variables.
+You should think about your expected use case and what kind of resources you need.
+
+As some general recommendations,
+
+- For general purpose the D family gives decent performance and a good balance of CPU and memory.
+  The [Dsv6 series](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/general-purpose/dsv6-series#sizes-in-series) is a good starting point and can be scaled from 2 CPUs and 8 GB RAM to 128 CPUs and 512 GB RAM.
+  `Standard_D8s_v6` should give reasonable performance for a single concurrent user.
+- For GPU accelerated fork, the NC family provides Nvidia GPUs and a good balance of CPU and memory.
+  In order of increasing throughput, the `NCv3` series features Nvidia V100 GPUs, the `NC_A100_v4` series features Nvidia A100 GPUs, and the `NCads_H100_v5` series features Nvidia H100 GPUs.
+:::
+
 ## Upload the configuration file
 
 - Upload the config to Azure. This will validate your file and report any problems.
