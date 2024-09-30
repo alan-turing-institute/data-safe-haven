@@ -95,6 +95,14 @@ This usage will roughly double for a short period each day while its database is
 You should take this into account when choosing a VM size and pick a SKU with enough memory overhead for your workload and the antivirus service.
 :::
 
+:::{imporant}
+Only GPUs supported by CUDA and the Nvidia GPU drivers can be used.
+['N' series](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/overview#gpu-accelerated) SKUs feature GPUs.
+The NC and ND families a recommended as they feature GPUs designed for general purpose computation rather than graphics processing.
+
+There is no key to distinguish SKUs with Nvidia GPUs, however newer SKUs contain the name of the accelerator.
+:::
+
 ## Upload the configuration file
 
 - Upload the config to Azure. This will validate your file and report any problems.
