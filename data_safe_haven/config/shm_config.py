@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import ClassVar, Self
 
+from data_safe_haven.exceptions import DataSafeHavenMicrosoftGraphError
 from data_safe_haven.external import AzureSdk
 from data_safe_haven.serialisers import AzureSerialisableModel, ContextBase
 
@@ -27,10 +28,13 @@ class SHMConfig(AzureSerialisableModel):
     ) -> SHMConfig:
         """Construct an SHMConfig from arguments."""
         azure_sdk = AzureSdk(subscription_name=context.subscription_name)
-        admin_group_id = (
-            azure_sdk.entra_directory.get_id_from_groupname(context.admin_group_name)
-            or "admin-group-id-not-found"
-        )
+        try:
+            admin_group_id = azure_sdk.entra_directory.validate_entra_group(
+                context.admin_group_name
+            )
+        except DataSafeHavenMicrosoftGraphError as exc:
+            msg = f"Admin group '{context.admin_group_name}' not found. Check the group name."
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
         return SHMConfig.model_construct(
             azure=ConfigSectionAzure.model_construct(
                 location=location,
