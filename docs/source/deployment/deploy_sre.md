@@ -86,7 +86,13 @@ All VM SKUs you want to deploy must have CPUs with the `x86_64` architecture.
 
 - SKUs with a lower case 'p' in their name have the ARM architecture and should not be used.
 - See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/vm-naming-conventions) for a full naming convention explanation.
+:::
 
+:::{important}
+The antivirus process running on each workspace consumes around 1.3 GiB at idle.
+This usage will roughly double for a short period each day while its database is updated.
+
+You should take this into account when choosing a VM size and pick a SKU with enough memory overhead for your workload and the antivirus service.
 :::
 
 ## Upload the configuration file
