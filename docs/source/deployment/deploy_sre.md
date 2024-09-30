@@ -73,6 +73,8 @@ sre:
 All VM SKUs you want to deploy must support premium SSDs.
 
 - See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-types#premium-ssds) for more details on premium SSD support.
+- SKUs that support premium SSD have a lower case 's' in their name.
+  See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/vm-naming-conventions) for a full naming convention explanation.
 - See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/) for a full list of valid SKUs
 
 :::
