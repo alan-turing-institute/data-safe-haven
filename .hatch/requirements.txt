@@ -15,16 +15,16 @@
 # - azure-mgmt-rdbms==10.1.0
 # - azure-mgmt-resource==23.1.1
 # - azure-mgmt-storage==21.2.1
-# - azure-storage-blob==12.23.0
+# - azure-storage-blob==12.23.1
 # - azure-storage-file-datalake==12.17.0
 # - azure-storage-file-share==12.18.0
 # - chevron==0.14.0
 # - cryptography==43.0.1
 # - fqdn==1.5.1
-# - psycopg==3.2.2
-# - pulumi-azure-native==2.62.0
-# - pulumi-random==4.16.5
-# - pulumi==3.133.0
+# - psycopg==3.2.3
+# - pulumi-azure-native==2.63.0
+# - pulumi-random==4.16.6
+# - pulumi==3.134.1
 # - pydantic==2.9.2
 # - pyjwt[crypto]==2.9.0
 # - pytz==2024.2
@@ -101,7 +101,7 @@ azure-mgmt-resource==23.1.1
     # via hatch.envs.default
 azure-mgmt-storage==21.2.1
     # via hatch.envs.default
-azure-storage-blob==12.23.0
+azure-storage-blob==12.23.1
     # via
     #   hatch.envs.default
     #   azure-storage-file-datalake
@@ -133,9 +133,9 @@ cryptography==43.0.1
     #   msal
     #   pyjwt
     #   pyopenssl
-debugpy==1.8.5
+debugpy==1.8.6
     # via pulumi
-dill==0.3.8
+dill==0.3.9
     # via pulumi
 dnspython==2.6.1
     # via simple-acme-dns
@@ -186,16 +186,16 @@ portalocker==2.10.1
     # via msal-extensions
 protobuf==4.25.5
     # via pulumi
-psycopg==3.2.2
+psycopg==3.2.3
     # via hatch.envs.default
-pulumi==3.133.0
+pulumi==3.134.1
     # via
     #   hatch.envs.default
     #   pulumi-azure-native
     #   pulumi-random
-pulumi-azure-native==2.62.0
+pulumi-azure-native==2.63.0
     # via hatch.envs.default
-pulumi-random==4.16.5
+pulumi-random==4.16.6
     # via hatch.envs.default
 pycparser==2.22
     # via cffi
