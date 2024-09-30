@@ -219,7 +219,7 @@ def upload(
         config = SREConfig.from_yaml(config_yaml)
     except DataSafeHavenTypeError as exc:
         logger.error("Check for missing or incorrect fields in the configuration.")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from exc
 
     # Present diff to user
     if (not force) and SREConfig.remote_exists(context, filename=config.filename):
