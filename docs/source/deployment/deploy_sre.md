@@ -74,7 +74,7 @@ See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/) for 
 :::
 
 :::{important}
-All VM SKUs you want to deploy must support premium SSDs.
+All VM SKUs you deploy must support premium SSDs.
 
 - SKUs that support premium SSDs have a lower case 's' in their name.
 - See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/vm-naming-conventions) for a full naming convention explanation.
@@ -83,7 +83,7 @@ All VM SKUs you want to deploy must support premium SSDs.
 :::
 
 :::{important}
-All VM SKUs you want to deploy must have CPUs with the `x86_64` architecture.
+All VM SKUs you deploy must have CPUs with the `x86_64` architecture.
 
 - SKUs with a lower case 'p' in their name have the ARM architecture and should not be used.
 - See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/vm-naming-conventions) for a full naming convention explanation.
