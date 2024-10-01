@@ -70,7 +70,7 @@ sre:
 ::::
 
 :::{hint}
-- See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/) for a full list of valid Azure VM SKUs
+See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/) for a full list of valid Azure VM SKUs
 :::
 
 :::{important}
@@ -79,6 +79,7 @@ All VM SKUs you want to deploy must support premium SSDs.
 - SKUs that support premium SSD have a lower case 's' in their name.
 - See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/vm-naming-conventions) for a full naming convention explanation.
 - See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-types#premium-ssds) for more details on premium SSD support.
+
 :::
 
 :::{important}
@@ -86,6 +87,7 @@ All VM SKUs you want to deploy must have CPUs with the `x86_64` architecture.
 
 - SKUs with a lower case 'p' in their name have the ARM architecture and should not be used.
 - See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/vm-naming-conventions) for a full naming convention explanation.
+
 :::
 
 :::{important}
@@ -111,12 +113,13 @@ As some general recommendations,
 
 - For general purpose the D family gives decent performance and a good balance of CPU and memory.
   The [Dsv6 series](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/general-purpose/dsv6-series#sizes-in-series) is a good starting point and can be scaled from 2 CPUs and 8 GB RAM to 128 CPUs and 512 GB RAM.
-  - `Standard_D8s_v6` should give reasonable performance for a single concurrent user.
+    - `Standard_D8s_v6` should give reasonable performance for a single concurrent user.
 - For GPU accelerated fork, the NC family provides Nvidia GPUs and a good balance of CPU and memory.
   In order of increasing throughput, the `NCv3` series features Nvidia V100 GPUs, the `NC_A100_v4` series features Nvidia A100 GPUs, and the `NCads_H100_v5` series features Nvidia H100 GPUs.
-  - `Stanard_NC6s_v3` should give reasonable performance for a single concurrent user with AI/ML workloads.
+    - `Stanard_NC6s_v3` should give reasonable performance for a single concurrent user with AI/ML workloads.
     Scaling up in the same series (for example `Standard_NC12s_v3`) gives more accelerators of the same type.
     Alternatively a series with more recent GPUs should give better performance.
+
 :::
 
 ## Upload the configuration file
