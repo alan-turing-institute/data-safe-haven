@@ -7,7 +7,7 @@
 # - mypy==1.11.2
 # - pandas-stubs==2.2.2.240909
 # - pydantic==2.9.2
-# - ruff==0.6.7
+# - ruff==0.6.8
 # - types-appdirs==1.4.3.5
 # - types-chevron==0.14.2.20240310
 # - types-pytz==2024.2.0.20240913
@@ -62,7 +62,7 @@ black==24.8.0
     # via
     #   hatch.envs.lint
     #   ansible-lint
-bracex==2.5
+bracex==2.5.post1
     # via wcmatch
 cachetools==5.5.0
     # via tox
@@ -235,7 +235,7 @@ ruamel-yaml==0.18.6
     # via ansible-lint
 ruamel-yaml-clib==0.2.8
     # via ruamel-yaml
-ruff==0.6.7
+ruff==0.6.8
     # via hatch.envs.lint
 subprocess-tee==0.4.2
     # via
@@ -263,13 +263,13 @@ typing-extensions==4.12.2
     #   mypy
     #   pydantic
     #   pydantic-core
-tzdata==2024.1
+tzdata==2024.2
     # via ansible-navigator
 urllib3==2.2.3
     # via types-requests
-virtualenv==20.26.5
+virtualenv==20.26.6
     # via tox
-wcmatch==9.0
+wcmatch==10.0
     # via
     #   ansible-lint
     #   molecule

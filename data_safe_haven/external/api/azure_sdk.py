@@ -436,7 +436,7 @@ class AzureSdk:
             )
             return key_vaults[0]
         except AzureError as exc:
-            msg = f"Failed to create key vault {key_vault_name}."
+            msg = f"Failed to create key vault {key_vault_name}. Check if a key vault with the same name already exists in a deleted state."
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_keyvault_key(
