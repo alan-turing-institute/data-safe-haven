@@ -242,7 +242,7 @@ subprocess-tee==0.4.2
     #   ansible-compat
     #   ansible-dev-environment
     #   ansible-lint
-tox==4.20.0
+tox==4.21.0
     # via tox-ansible
 tox-ansible==24.9.0
     # via ansible-dev-tools

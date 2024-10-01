@@ -23,6 +23,7 @@
 # - fqdn==1.5.1
 # - psycopg==3.2.3
 # - pulumi-azure-native==2.63.0
+# - pulumi-azuread==5.53.4
 # - pulumi-random==4.16.6
 # - pulumi==3.134.1
 # - pydantic==2.9.2
@@ -181,6 +182,7 @@ oauthlib==3.2.2
 parver==0.5
     # via
     #   pulumi-azure-native
+    #   pulumi-azuread
     #   pulumi-random
 portalocker==2.10.1
     # via msal-extensions
@@ -192,8 +194,11 @@ pulumi==3.134.1
     # via
     #   hatch.envs.default
     #   pulumi-azure-native
+    #   pulumi-azuread
     #   pulumi-random
 pulumi-azure-native==2.63.0
+    # via hatch.envs.default
+pulumi-azuread==5.53.4
     # via hatch.envs.default
 pulumi-random==4.16.6
     # via hatch.envs.default
@@ -241,6 +246,7 @@ semver==2.13.0
     # via
     #   pulumi
     #   pulumi-azure-native
+    #   pulumi-azuread
     #   pulumi-random
 shellingham==1.5.4
     # via typer
