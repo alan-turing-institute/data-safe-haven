@@ -29,6 +29,9 @@ class TestContext:
         ):
             Context(**context_dict)
 
+    def test_entra_application_name(self, context):
+        assert context.entra_application_name == "Data Safe Haven (Acme Deployment) Pulumi Service Principal"
+
     def test_tags(self, context):
         assert context.tags["description"] == "Acme Deployment"
         assert context.tags["project"] == "Data Safe Haven"
