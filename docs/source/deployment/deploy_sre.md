@@ -70,7 +70,7 @@ sre:
 ::::
 
 :::{hint}
-See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/) for a full list of valid Azure VM SKUs
+See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/) for a full list of valid Azure VM SKUs.
 :::
 
 :::{important}
