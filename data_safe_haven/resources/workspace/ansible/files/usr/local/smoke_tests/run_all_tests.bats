@@ -58,8 +58,8 @@ check_db_credentials() {
     run bash test_mounted_drives.sh -d mnt/shared
     [ "$status" -eq 0 ]
 }
-@test "Mounted drives (/var/local/desired_state)" {
-    run bash test_mounted_drives.sh -d var/local/desired_state
+@test "Mounted drives (/var/local/ansible)" {
+    run bash test_mounted_drives.sh -d var/local/ansible
     [ "$status" -eq 0 ]
 }
 
