@@ -124,6 +124,7 @@ features = ["docs"]
 
 [tool.hatch.envs.docs.scripts]
 build = "sphinx-build -M html docs/source/ docs/build/ --fail-on-warning"
+lint = "mdl --style .mdlstyle.rb ./docs/source"
 
 [tool.hatch.envs.lint]
 type = "pip-compile"
