@@ -529,7 +529,7 @@ Official tutorials for [MSSQL](https://learn.microsoft.com/en-us/sql/sql-server/
 :class: dropdown note
 
 - **Server name** : mssql._SRE\_URL_ (e.g. mssql.sandbox.projects.example.org)
-- **Username**: databaseadmin
+- **Username**: databaseadmin@shm-_SHM\_NAME_-sre-_SRE\_NAME_-db-server-mssql
 - **Password**: provided by your {ref}`System Manager <role_system_manager>`
 - **Database name**: provided by your {ref}`System Manager <role_system_manager>`
 - **Port**: 1433
