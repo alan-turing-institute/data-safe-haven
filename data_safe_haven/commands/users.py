@@ -85,7 +85,7 @@ def list_users(
 
         if sre not in pulumi_config.project_names:
             msg = f"Could not load Pulumi settings for '{sre}'. Is the SRE deployed?"
-            logger.info(msg)
+            logger.error(msg)
             raise typer.Exit(1)
         # List users from all sources
         users = UserHandler(context, graph_api)
