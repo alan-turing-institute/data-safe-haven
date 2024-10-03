@@ -1838,6 +1838,13 @@ class SRENetworkingComponent(ComponentResource):
         )
 
         # Define SRE DNS zone
+        shm_provider = provider.Provider(
+            "shm_provider",
+            provider.ProviderArgs(
+                location=props.shm_location,
+                subscription_id=props.shm_subscription_id,
+            ),
+        )
         shm_dns_zone = Output.all(
             resource_group_name=props.shm_resource_group_name,
             zone_name=props.shm_zone_name,
@@ -1862,13 +1869,6 @@ class SRENetworkingComponent(ComponentResource):
             zone_type=network.ZoneType.PUBLIC,
             opts=child_opts,
             tags=child_tags,
-        )
-        shm_provider = provider.Provider(
-            "shm_provider",
-            provider.ProviderArgs(
-                location=props.shm_location,
-                subscription_id=props.shm_subscription_id,
-            ),
         )
         shm_ns_record = network.RecordSet(
             f"{self._name}_ns_record",

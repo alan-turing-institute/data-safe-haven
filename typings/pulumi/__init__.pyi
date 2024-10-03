@@ -11,6 +11,7 @@ from pulumi.output import (
 )
 from pulumi.resource import (
     ComponentResource,
+    InvokeOptions,
     Resource,
     ResourceOptions,
     export,
@@ -24,6 +25,7 @@ __all__ = [
     "export",
     "FileAsset",
     "Input",
+    "InvokeOptions",
     "Output",
     "Resource",
     "ResourceOptions",
