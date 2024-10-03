@@ -436,7 +436,11 @@ class AzureSdk:
             )
             return key_vaults[0]
         except AzureError as exc:
-            msg = f"Failed to create key vault {key_vault_name}. Check if a key vault with the same name already exists in a deleted state."
+            msg = f"Failed to create key vault {key_vault_name}."
+            if "MissingSubscriptionRegistration" in exc.message:
+                msg += " Subscription is not registered to use the key vault resource provider. See https://learn.microsoft.com/en-us/azure/azure-resource-manager/troubleshooting/error-register-resource-provider"
+            else:
+                msg += " Check if a key vault with the same name already exists in a deleted state."
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_keyvault_key(
