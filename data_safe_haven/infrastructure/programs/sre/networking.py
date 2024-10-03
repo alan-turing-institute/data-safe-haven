@@ -2,7 +2,7 @@
 
 from collections.abc import Mapping
 
-from pulumi import ComponentResource, Input, Output, ResourceOptions
+from pulumi import ComponentResource, Input, InvokeOptions, Output, ResourceOptions
 from pulumi_azure_native import network, provider
 
 from data_safe_haven.functions import alphanumeric, replace_separators
@@ -1845,6 +1845,9 @@ class SRENetworkingComponent(ComponentResource):
             lambda kwargs: network.get_zone(
                 resource_group_name=kwargs["resource_group_name"],
                 zone_name=kwargs["zone_name"],
+                opts=InvokeOptions(
+                    provider=shm_provider,
+                ),
             )
         )
         sre_subdomain = Output.from_input(props.sre_name).apply(
