@@ -37,6 +37,8 @@ write_files:
       popd
 
 mounts:
+  # Mount ephemeral storage at resource instead of default /mnt
+  - [ephemeral0, /mnt/resource]
   # Desired state configuration is in a blob container mounted as NFSv3
   - ["{{storage_account_desired_state_name}}.blob.core.windows.net:/{{storage_account_desired_state_name}}/desiredstate", /var/local/ansible, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
   # Secure data is in a blob container mounted as NFSv3
