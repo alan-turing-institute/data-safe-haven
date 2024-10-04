@@ -135,7 +135,7 @@ def deploy(
             location=sre_config.azure.location,
             sre_name=sre_config.name,
             sre_stack=stack,
-            subscription_name=context.subscription_name,
+            subscription_name=sre_subscription_name,
             timezone=sre_config.sre.timezone,
         )
         manager.run()
