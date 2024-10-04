@@ -29,7 +29,7 @@
   tags: snap
   community.general.snap:
     name: "{{ item.name }}"
-    classic: "{{ item.classic }}"
+    classic: "{{ item.classic | default('false') }}"
     state: present
   loop: "{{ snap_packages }}"
 

@@ -529,7 +529,7 @@ Official tutorials for [MSSQL](https://learn.microsoft.com/en-us/sql/sql-server/
 :class: dropdown note
 
 - **Server name** : mssql._SRE\_URL_ (e.g. mssql.sandbox.projects.example.org)
-- **Username**: databaseadmin
+- **Username**: databaseadmin@shm-_SHM\_NAME_-sre-_SRE\_NAME_-db-server-mssql
 - **Password**: provided by your {ref}`System Manager <role_system_manager>`
 - **Database name**: provided by your {ref}`System Manager <role_system_manager>`
 - **Port**: 1433
@@ -547,111 +547,57 @@ Official tutorials for [MSSQL](https://learn.microsoft.com/en-us/sql/sql-server/
 
 :::
 
-Examples are given below for connecting using **DBeaver**, **Python** and **R**.
+Examples are given below for connecting using **Beekeeper Studio**, **Python** and **R**.
 The instructions for using other graphical interfaces or programming languages will be similar.
 
-### {{bear}} Connecting using DBeaver
+### {{bee}} Connecting using Beekeeper Studio
 
-#### Microsoft SQL
-
-::::{admonition} 1. Create new Microsoft SQL server connection
+::::{admonition} Microsoft SQL
 :class: dropdown note
 
-Click on the **{guilabel}`New database connection`** button (which looks a bit like an electrical plug with a plus sign next to it)
-
+- Click on the **{guilabel}`+ New Connection`** button
 - Select **SQL Server** as the database type
+- Enter the connection details
+    - **Authentication**: Username/Password
+    - **Host**: as above
+    - **Port**: as above
+    - **Enable SSL**: false
+    - **User**: as above
+    - **Password**: as above
+    - **Domain**: empty
+    - **Trust Server Certificate**: true
+    - **Default Database**: master
+- Click on **{guilabel}`Test`** to test the connection settings
+- Click on **{guilabel}`Connect`** to connect to the database or enter a name and click **{guilabel}`Save`** to save the connection settings for future use
 
-    :::{image} images/db_dbeaver_select_mssql.png
-    :alt: DBeaver select Microsoft SQL
+    :::{image} images/db_beekeeper_studio_mssql.png
+    :alt: Beekeeper Studio MS SQL connection configuration
     :align: center
     :width: 90%
     :::
-
 ::::
 
-::::{admonition} 2. Provide connection details
+::::{admonition} PostgreSQL
 :class: dropdown note
 
-- **Host**: as above
-- **Database**: as above
-- **Authentication**: SQL Server Authentication
-- **Username**: as above
-- **Password**: as above
-- Tick **Show All Schemas**
-- Tick **Trust server certificate**
+- Click on the **{guilabel}`+ New Connection`** button
+- Select **Postgres** as the database type
+- Enter the connection details
+    - **Connection Mode**: Host and Port
+    - **Host**: as above
+    - **Port**: as above
+    - **Enable SSL**: false
+    - **User**: as above
+    - **Password**: as above
+    - **Default Database**: postgres
+- Click on **{guilabel}`Test`** to test the connection settings
+- Click on **{guilabel}`Connect`** to connect to the database or enter a name and click **{guilabel}`Save`** to save the connection settings for future use
 
-    :::{image} images/db_dbeaver_connect_mssql.png
-    :alt: DBeaver connect with Microsoft SQL
+    :::{image} images/db_beekeeper_studio_postgres.png
+    :alt: Beekeeper Studio PostgreSQL connection configuration
     :align: center
     :width: 90%
     :::
-
-::::
-
-::::{admonition} 3. Download drivers if needed
-:class: dropdown note
-
-- After clicking finish, you may be prompted to download driver files even though they should be pre-installed.
-- Click on the **{guilabel}`Download`** button if this happens.
-
-    :::{image} images/db_dbeaver_driver_download.png
-    :alt: DBeaver driver download for Microsoft SQL
-    :align: center
-    :width: 90%
-    :::
-
-- If drivers are not available contact your {ref}`System Manager <role_system_manager>`
-
-::::
-
-#### PostgreSQL
-
-::::{admonition} 1. Create new PostgreSQL server connection
-:class: dropdown note
-
-Click on the **{guilabel}`New database connection`** button (which looks a bit like an electrical plug with a plus sign next to it)
-
-- Select **PostgreSQL** as the database type
-
-    :::{image} images/db_dbeaver_select_postgresql.png
-    :alt: DBeaver select PostgreSQL
-    :align: center
-    :width: 90%
-    :::
-
-::::
-
-::::{admonition} 2. Provide connection details
-:class: dropdown note
-
-- **Host**: as above
-- **Database**: as above
-- **Authentication**: Database Native
-- **Username**: as above
-- **Password**: as above
-
-    :::{image} images/db_dbeaver_connect_postgresql.png
-    :alt: DBeaver connect with PostgreSQL
-    :align: center
-    :width: 90%
-    :::
-
-::::
-
-::::{admonition} 3. Download drivers if needed
-:class: dropdown note
-
-- After clicking finish, you may be prompted to download driver files even though they should be pre-installed.
-- Click on the **{guilabel}`Download`** button if this happens.
-
-    :::{image} images/db_dbeaver_driver_download.png
-    :alt: DBeaver driver download for PostgreSQL
-    :align: center
-    :width: 90%
-    :::
-
-- If drivers are not available contact your {ref}`System Manager <role_system_manager>`
-
 ::::
 
 ### {{snake}} Connecting using Python
