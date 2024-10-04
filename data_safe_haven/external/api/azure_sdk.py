@@ -778,6 +778,20 @@ class AzureSdk:
         msg = f"Could not find subscription '{subscription_name}'"
         raise DataSafeHavenValueError(msg)
 
+    def get_subscription_name(self, subscription_id: str) -> str:
+        """Get an Azure subscription name by id."""
+        try:
+            subscription_client = SubscriptionClient(self.credential())
+            subscription = subscription_client.subscriptions.get(subscription_id)
+        except ClientAuthenticationError as exc:
+            msg = "Failed to authenticate with Azure API."
+            raise DataSafeHavenAzureAPIAuthenticationError(msg) from exc
+        except AzureError as exc:
+            msg = f"Failed to get name of subscription {subscription_id}."
+            raise DataSafeHavenAzureError(msg) from exc
+
+        return subscription.display_name
+
     def import_keyvault_certificate(
         self,
         certificate_name: str,

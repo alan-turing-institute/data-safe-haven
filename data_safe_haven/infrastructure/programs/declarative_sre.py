@@ -55,6 +55,7 @@ class DeclarativeSRE:
         shm_fqdn = self.pulumi_opts.require("shm-fqdn")
         shm_location = self.pulumi_opts.require("shm-location")
         shm_subscription_id = self.pulumi_opts.require("shm-subscription-id")
+        sre_subscription_name = self.pulumi_opts.require("sre-subscription-name")
 
         # Construct DockerHubCredentials
         dockerhub_credentials = DockerHubCredentials(
@@ -192,7 +193,7 @@ class DeclarativeSRE:
                 subnet_data_configuration=networking.subnet_data_configuration,
                 subnet_data_private=networking.subnet_data_private,
                 subscription_id=self.config.azure.subscription_id,
-                subscription_name=self.context.subscription_name,
+                subscription_name=sre_subscription_name,
                 tenant_id=self.config.azure.tenant_id,
             ),
             tags=self.tags,
@@ -364,7 +365,7 @@ class DeclarativeSRE:
                 resource_group=resource_group,
                 software_repository_hostname=user_services.software_repositories.hostname,
                 subnet_desired_state=networking.subnet_desired_state,
-                subscription_name=self.context.subscription_name,
+                subscription_name=sre_subscription_name,
             ),
         )
 
@@ -385,7 +386,7 @@ class DeclarativeSRE:
                 storage_account_data_private_user_name=data.storage_account_data_private_user_name,
                 storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
                 subnet_workspaces=networking.subnet_workspaces,
-                subscription_name=self.context.subscription_name,
+                subscription_name=sre_subscription_name,
                 virtual_network=networking.virtual_network,
                 vm_details=list(enumerate(self.config.sre.workspace_skus)),
             ),
