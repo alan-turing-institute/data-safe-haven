@@ -6,7 +6,7 @@ import typer
 
 from data_safe_haven.config import ContextManager, DSHPulumiConfig, SHMConfig, SREConfig
 from data_safe_haven.exceptions import DataSafeHavenConfigError, DataSafeHavenError
-from data_safe_haven.external import GraphApi, AzureSdk
+from data_safe_haven.external import AzureSdk, GraphApi
 from data_safe_haven.functions import current_ip_address, ip_address_in_list
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.logging import get_logger
@@ -82,7 +82,9 @@ def deploy(
         )
         # Get SRE subscription name
         azure_sdk = AzureSdk(subscription_name=context.subscription_name)
-        sre_subscription_name = azure_sdk.get_subscription_name(sre_config.azure.subscription_id)
+        sre_subscription_name = azure_sdk.get_subscription_name(
+            sre_config.azure.subscription_id
+        )
         stack.add_option(
             "sre-subscription-name",
             sre_subscription_name,
