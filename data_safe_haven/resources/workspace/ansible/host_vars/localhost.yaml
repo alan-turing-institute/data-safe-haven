@@ -145,7 +145,6 @@ deb_packages:
 snap_packages:
   - name: codium
     classic: true
-  - name: dbeaver-ce
-    classic: false
+  - name: beekeeper-studio
   - name: pycharm-community
     classic: true

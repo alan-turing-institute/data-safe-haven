@@ -44,7 +44,7 @@ dependencies = [
   "chevron==0.14.0",
   "cryptography==43.0.1",
   "fqdn==1.5.1",
-  "psycopg==3.2.3",
+  "psycopg[binary]==3.2.3",
   "pulumi-azure-native==2.63.0",
   "pulumi-random==4.16.6",
   "pulumi==3.134.1",
