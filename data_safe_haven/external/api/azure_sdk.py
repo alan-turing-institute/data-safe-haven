@@ -790,7 +790,8 @@ class AzureSdk:
             msg = f"Failed to get name of subscription {subscription_id}."
             raise DataSafeHavenAzureError(msg) from exc
 
-        return subscription.display_name
+        subscription_name: str = subscription.display_name
+        return subscription_name
 
     def import_keyvault_certificate(
         self,
