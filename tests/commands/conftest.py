@@ -189,7 +189,7 @@ def mock_sre_project_manager_teardown_then_exit(mocker):
 
 
 @fixture
-def runner(tmp_contexts):
+def runner(tmp_contexts) -> CliRunner:
     runner = CliRunner(
         env={
             "DSH_CONFIG_DIRECTORY": str(tmp_contexts),
