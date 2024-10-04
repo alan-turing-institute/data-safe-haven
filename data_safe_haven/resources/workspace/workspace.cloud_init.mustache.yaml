@@ -71,9 +71,6 @@ package_update: true
 package_upgrade: true
 
 runcmd:
-  # Restart services
-  - systemctl restart nslcd
-
   # Mount all external volumes
   # --------------------------
   - echo ">=== Mounting all external volumes... ===<"
@@ -99,3 +96,6 @@ runcmd:
   - while (! test -f /var/local/ansible/vars/pulumi_vars.yaml) do sleep 5; done
   - echo ">=== Running initial desired state configuration... ===<"
   - systemctl start desired-state
+
+  # Restart services
+  - systemctl restart nslcd
