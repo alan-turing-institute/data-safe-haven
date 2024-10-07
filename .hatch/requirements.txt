@@ -21,15 +21,16 @@
 # - chevron==0.14.0
 # - cryptography==43.0.1
 # - fqdn==1.5.1
-# - psycopg==3.2.3
-# - pulumi-azure-native==2.63.0
+# - psycopg[binary]==3.2.3
+# - pulumi-azure-native==2.64.3
+# - pulumi-azuread==5.53.4
 # - pulumi-random==4.16.6
-# - pulumi==3.134.1
+# - pulumi==3.135.1
 # - pydantic==2.9.2
 # - pyjwt[crypto]==2.9.0
 # - pytz==2024.2
 # - pyyaml==6.0.2
-# - rich==13.8.1
+# - rich==13.9.2
 # - simple-acme-dns==3.1.0
 # - typer==0.12.5
 # - websocket-client==1.8.0
@@ -181,6 +182,7 @@ oauthlib==3.2.2
 parver==0.5
     # via
     #   pulumi-azure-native
+    #   pulumi-azuread
     #   pulumi-random
 portalocker==2.10.1
     # via msal-extensions
@@ -188,12 +190,17 @@ protobuf==4.25.5
     # via pulumi
 psycopg==3.2.3
     # via hatch.envs.default
-pulumi==3.134.1
+psycopg-binary==3.2.3
+    # via psycopg
+pulumi==3.135.1
     # via
     #   hatch.envs.default
     #   pulumi-azure-native
+    #   pulumi-azuread
     #   pulumi-random
-pulumi-azure-native==2.63.0
+pulumi-azure-native==2.64.3
+    # via hatch.envs.default
+pulumi-azuread==5.53.4
     # via hatch.envs.default
 pulumi-random==4.16.6
     # via hatch.envs.default
@@ -233,7 +240,7 @@ requests==2.32.3
     #   requests-oauthlib
 requests-oauthlib==2.0.0
     # via msrest
-rich==13.8.1
+rich==13.9.2
     # via
     #   hatch.envs.default
     #   typer
@@ -241,6 +248,7 @@ semver==2.13.0
     # via
     #   pulumi
     #   pulumi-azure-native
+    #   pulumi-azuread
     #   pulumi-random
 shellingham==1.5.4
     # via typer

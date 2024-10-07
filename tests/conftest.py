@@ -38,6 +38,7 @@ from data_safe_haven.logging import init_logging
 def pytest_configure(config):
     """Define constants for use across multiple tests"""
     config.guid_admin = "00edec65-b071-4d26-8779-a9fe791c6e14"
+    config.guid_application = "aa78dceb-4116-4713-8554-cf2b3027e119"
     config.guid_entra = "48b2425b-5f2c-4cbd-9458-0441daa8994c"
     config.guid_subscription = "35ebced1-4e7a-4c1f-b634-c0886937085d"
     config.guid_tenant = "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd"
@@ -202,6 +203,15 @@ def mock_azuresdk_get_subscription(mocker, request):
         AzureSdk,
         "get_subscription",
         return_value=subscription,
+    )
+
+
+@fixture
+def mock_azuresdk_get_subscription_name(mocker):
+    mocker.patch.object(
+        AzureSdk,
+        "get_subscription_name",
+        return_value="Data Safe Haven Acme",
     )
 
 

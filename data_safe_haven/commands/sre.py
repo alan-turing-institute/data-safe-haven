@@ -6,7 +6,7 @@ import typer
 
 from data_safe_haven.config import ContextManager, DSHPulumiConfig, SHMConfig, SREConfig
 from data_safe_haven.exceptions import DataSafeHavenConfigError, DataSafeHavenError
-from data_safe_haven.external import GraphApi
+from data_safe_haven.external import AzureSdk, GraphApi
 from data_safe_haven.functions import current_ip_address, ip_address_in_list
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.logging import get_logger
@@ -77,11 +77,37 @@ def deploy(
             sre_config.azure.subscription_id,
             replace=False,
         )
-        logger.info(
-            f"SRE will be deployed to subscription '[green]{sre_config.azure.subscription_id}[/]'"
-        )
         stack.add_option(
             "azure-native:tenantId", sre_config.azure.tenant_id, replace=False
+        )
+        # Get SRE subscription name
+        azure_sdk = AzureSdk(subscription_name=context.subscription_name)
+        sre_subscription_name = azure_sdk.get_subscription_name(
+            sre_config.azure.subscription_id
+        )
+        stack.add_option(
+            "sre-subscription-name",
+            sre_subscription_name,
+            replace=True,
+        )
+        logger.info(
+            f"SRE will be deployed to subscription '[green]{sre_subscription_name}[/]'"
+            f" ('[bold]{sre_config.azure.subscription_id}[/]')"
+        )
+        # Set Entra options
+        application = graph_api.get_application_by_name(context.entra_application_name)
+        if not application:
+            msg = f"No Entra application '{context.entra_application_name}' was found. Please redeploy your SHM."
+            raise DataSafeHavenConfigError(msg)
+        stack.add_option("azuread:clientId", application.get("appId", ""), replace=True)
+        if not context.entra_application_secret:
+            msg = f"No Entra application secret '{context.entra_application_secret_name}' was found. Please redeploy your SHM."
+            raise DataSafeHavenConfigError(msg)
+        stack.add_secret(
+            "azuread:clientSecret", context.entra_application_secret, replace=True
+        )
+        stack.add_option(
+            "azuread:tenantId", shm_config.shm.entra_tenant_id, replace=True
         )
         # Load SHM outputs
         stack.add_option(
@@ -99,7 +125,18 @@ def deploy(
             shm_config.shm.fqdn,
             replace=True,
         )
-        logger.info(f"SRE will be registered in shm '[green]{shm_config.shm.fqdn}[/]'")
+        stack.add_option(
+            "shm-location",
+            shm_config.azure.location,
+            replace=True,
+        )
+        stack.add_option(
+            "shm-subscription-id",
+            shm_config.azure.subscription_id,
+            replace=True,
+        )
+        logger.info(f"SRE will be registered in SHM '[green]{shm_config.shm.fqdn}[/]'")
+        logger.info(f"SHM subscription '[green]{shm_config.azure.subscription_id}[/]'")
 
         # Deploy Azure infrastructure with Pulumi
         try:
@@ -114,7 +151,7 @@ def deploy(
             location=sre_config.azure.location,
             sre_name=sre_config.name,
             sre_stack=stack,
-            subscription_name=context.subscription_name,
+            subscription_name=sre_subscription_name,
             timezone=sre_config.sre.timezone,
         )
         manager.run()

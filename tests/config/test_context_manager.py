@@ -4,10 +4,12 @@ from pydantic import ValidationError
 
 from data_safe_haven.config import Context, ContextManager
 from data_safe_haven.exceptions import (
+    DataSafeHavenAzureError,
     DataSafeHavenConfigError,
     DataSafeHavenTypeError,
     DataSafeHavenValueError,
 )
+from data_safe_haven.external import AzureSdk
 from data_safe_haven.version import __version__
 
 
@@ -28,6 +30,35 @@ class TestContext:
             ValidationError, match="String should have at most 80 characters"
         ):
             Context(**context_dict)
+
+    def test_entra_application_name(self, context: Context) -> None:
+        assert (
+            context.entra_application_name
+            == "Data Safe Haven (Acme Deployment) Pulumi Service Principal"
+        )
+
+    def test_entra_application_secret(self, context: Context, mocker) -> None:
+        mocker.patch.object(
+            AzureSdk, "get_keyvault_secret", return_value="secret-value"
+        )
+        assert context.entra_application_secret == "secret-value"  # noqa: S105
+
+    def test_entra_application_secret_missing(self, context: Context, mocker) -> None:
+        mocker.patch.object(
+            AzureSdk,
+            "get_keyvault_secret",
+            side_effect=DataSafeHavenAzureError("Error message"),
+        )
+        assert context.entra_application_secret == ""
+
+    def test_entra_application_secret_setter(self, context: Context, mocker) -> None:
+        mock_set_keyvault_secret = mocker.patch.object(AzureSdk, "set_keyvault_secret")
+        context.entra_application_secret = "secret-value"  # noqa: S105
+        mock_set_keyvault_secret.assert_called_once_with(
+            key_vault_name="shm-acmedeployment-kv",
+            secret_name="pulumi-deployment-secret",
+            secret_value="secret-value",
+        )
 
     def test_tags(self, context):
         assert context.tags["description"] == "Acme Deployment"

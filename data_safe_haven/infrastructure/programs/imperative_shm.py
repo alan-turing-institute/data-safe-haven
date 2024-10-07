@@ -114,17 +114,18 @@ class ImperativeSHM:
             msg = "Failed to create SHM resources."
             raise DataSafeHavenAzureError(msg) from exc
 
+        # Connect to GraphAPI
+        graph_api = GraphApi.from_scopes(
+            scopes=[
+                "Application.ReadWrite.All",
+                "Domain.ReadWrite.All",
+                "Group.ReadWrite.All",
+            ],
+            tenant_id=self.config.shm.entra_tenant_id,
+        )
         # Add the SHM domain to the Entra ID via interactive GraphAPI
         try:
             # Generate the verification record
-            graph_api = GraphApi.from_scopes(
-                scopes=[
-                    "Application.ReadWrite.All",
-                    "Domain.ReadWrite.All",
-                    "Group.ReadWrite.All",
-                ],
-                tenant_id=self.config.shm.entra_tenant_id,
-            )
             verification_record = graph_api.add_custom_domain(self.config.shm.fqdn)
             # Add the record to DNS
             self.azure_sdk.ensure_dns_txt_record(
@@ -141,6 +142,28 @@ class ImperativeSHM:
             )
         except (DataSafeHavenMicrosoftGraphError, DataSafeHavenAzureError) as exc:
             msg = f"Failed to add custom domain '{self.config.shm.fqdn}' to Entra ID."
+            raise DataSafeHavenAzureError(msg) from exc
+        # Create an application for use by the pulumi-azuread module
+        try:
+            graph_api.create_application(
+                self.context.entra_application_name,
+                application_scopes=["Group.ReadWrite.All"],
+                delegated_scopes=[],
+                request_json={
+                    "displayName": self.context.entra_application_name,
+                    "signInAudience": "AzureADMyOrg",
+                },
+            )
+            # Ensure that the application secret exists
+            if not self.context.entra_application_secret:
+                self.context.entra_application_secret = (
+                    graph_api.create_application_secret(
+                        self.context.entra_application_name,
+                        self.context.entra_application_secret_name,
+                    )
+                )
+        except DataSafeHavenMicrosoftGraphError as exc:
+            msg = "Failed to create deployment application in Entra ID."
             raise DataSafeHavenAzureError(msg) from exc
 
     def teardown(self) -> None:

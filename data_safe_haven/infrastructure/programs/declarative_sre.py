@@ -18,6 +18,7 @@ from .sre.clamav_mirror import SREClamAVMirrorComponent, SREClamAVMirrorProps
 from .sre.data import SREDataComponent, SREDataProps
 from .sre.desired_state import SREDesiredStateComponent, SREDesiredStateProps
 from .sre.dns_server import SREDnsServerComponent, SREDnsServerProps
+from .sre.entra import SREEntraComponent, SREEntraProps
 from .sre.firewall import SREFirewallComponent, SREFirewallProps
 from .sre.identity import SREIdentityComponent, SREIdentityProps
 from .sre.monitoring import SREMonitoringComponent, SREMonitoringProps
@@ -53,6 +54,9 @@ class DeclarativeSRE:
         shm_admin_group_id = self.pulumi_opts.require("shm-admin-group-id")
         shm_entra_tenant_id = self.pulumi_opts.require("shm-entra-tenant-id")
         shm_fqdn = self.pulumi_opts.require("shm-fqdn")
+        shm_location = self.pulumi_opts.require("shm-location")
+        shm_subscription_id = self.pulumi_opts.require("shm-subscription-id")
+        sre_subscription_name = self.pulumi_opts.require("sre-subscription-name")
 
         # Construct DockerHubCredentials
         dockerhub_credentials = DockerHubCredentials(
@@ -108,6 +112,14 @@ class DeclarativeSRE:
             ]
         )
 
+        # Deploy Entra resources
+        SREEntraComponent(
+            "sre_entra",
+            SREEntraProps(
+                group_names=ldap_group_names,
+            ),
+        )
+
         # Deploy resource group
         resource_group = resources.ResourceGroup(
             "sre_resource_group",
@@ -140,7 +152,9 @@ class DeclarativeSRE:
                 location=self.config.azure.location,
                 resource_group_name=resource_group.name,
                 shm_fqdn=shm_fqdn,
+                shm_location=shm_location,
                 shm_resource_group_name=self.context.resource_group_name,
+                shm_subscription_id=shm_subscription_id,
                 shm_zone_name=shm_fqdn,
                 sre_name=self.config.name,
                 user_public_ip_ranges=self.config.sre.research_user_ip_addresses,
@@ -188,7 +202,7 @@ class DeclarativeSRE:
                 subnet_data_configuration=networking.subnet_data_configuration,
                 subnet_data_private=networking.subnet_data_private,
                 subscription_id=self.config.azure.subscription_id,
-                subscription_name=self.context.subscription_name,
+                subscription_name=sre_subscription_name,
                 tenant_id=self.config.azure.tenant_id,
             ),
             tags=self.tags,
@@ -360,7 +374,7 @@ class DeclarativeSRE:
                 resource_group=resource_group,
                 software_repository_hostname=user_services.software_repositories.hostname,
                 subnet_desired_state=networking.subnet_desired_state,
-                subscription_name=self.context.subscription_name,
+                subscription_name=sre_subscription_name,
             ),
         )
 
@@ -381,7 +395,7 @@ class DeclarativeSRE:
                 storage_account_data_private_user_name=data.storage_account_data_private_user_name,
                 storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
                 subnet_workspaces=networking.subnet_workspaces,
-                subscription_name=self.context.subscription_name,
+                subscription_name=sre_subscription_name,
                 virtual_network=networking.virtual_network,
                 vm_details=list(enumerate(self.config.sre.workspace_skus)),
             ),
