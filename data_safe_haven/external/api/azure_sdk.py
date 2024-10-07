@@ -14,7 +14,7 @@ from azure.core.exceptions import (
 )
 from azure.keyvault.certificates import CertificateClient, KeyVaultCertificate
 from azure.keyvault.keys import KeyClient, KeyVaultKey
-from azure.keyvault.secrets import SecretClient
+from azure.keyvault.secrets import KeyVaultSecret, SecretClient
 from azure.mgmt.compute.v2021_07_01 import ComputeManagementClient
 from azure.mgmt.compute.v2021_07_01.models import (
     ResourceSkuCapabilities,
@@ -451,7 +451,7 @@ class AzureSdk:
         """Ensure that a key exists in the KeyVault
 
         Returns:
-            str: The key ID
+            KeyVaultKey: The key
 
         Raises:
             DataSafeHavenAzureError if the existence of the key could not be verified
@@ -476,7 +476,7 @@ class AzureSdk:
             )
             return key
         except AzureError as exc:
-            msg = f"Failed to create key {key_name}."
+            msg = f"Failed to create key '{key_name}' in KeyVault '{key_vault_name}'."
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_managed_identity(
@@ -693,7 +693,7 @@ class AzureSdk:
             credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
             vault_url=f"https://{key_vault_name}.vault.azure.net",
         )
-        # Ensure that secret exists
+        # Get secret if it exists
         try:
             secret = secret_client.get_secret(secret_name)
             if secret.value:
@@ -1300,6 +1300,38 @@ class AzureSdk:
             directory_client.set_access_control_recursive(acl=desired_acl)
         except AzureError as exc:
             msg = f"Failed to set ACL '{desired_acl}' on container '{container_name}'."
+            raise DataSafeHavenAzureError(msg) from exc
+
+    def set_keyvault_secret(
+        self,
+        secret_name: str,
+        secret_value: str,
+        key_vault_name: str,
+    ) -> KeyVaultSecret:
+        """Ensure that a secret exists in the KeyVault
+
+        Returns:
+            KeyVaultSecret: The secret
+
+        Raises:
+            DataSafeHavenAzureError if the secret could not be set
+        """
+        try:
+            # Connect to Azure clients
+            secret_client = SecretClient(
+                credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
+                vault_url=f"https://{key_vault_name}.vault.azure.net",
+            )
+
+            # Set secret to given value
+            self.logger.debug(f"Setting secret [green]{secret_name}[/]...")
+            secret = secret_client.set_secret(secret_name, secret_value)
+            self.logger.info(f"Set secret [green]{secret_name}[/].")
+            return secret
+        except AzureError as exc:
+            msg = (
+                f"Failed to set secret '{secret_name}' in KeyVault '{key_vault_name}'."
+            )
             raise DataSafeHavenAzureError(msg) from exc
 
     def storage_exists(

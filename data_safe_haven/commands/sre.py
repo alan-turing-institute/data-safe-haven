@@ -91,7 +91,23 @@ def deploy(
             replace=True,
         )
         logger.info(
-            f"SRE will be deployed to subscription '[green]{sre_config.azure.subscription_id}[/]', '[green]{sre_subscription_name}[/]'"
+            f"SRE will be deployed to subscription '[green]{sre_subscription_name}[/]'"
+            f" ('[bold]{sre_config.azure.subscription_id}[/]')"
+        )
+        # Set Entra options
+        application = graph_api.get_application_by_name(context.entra_application_name)
+        if not application:
+            msg = f"No Entra application '{context.entra_application_name}' was found. Please redeploy your SHM."
+            raise DataSafeHavenConfigError(msg)
+        stack.add_option("azuread:clientId", application.get("appId", ""), replace=True)
+        if not context.entra_application_secret:
+            msg = f"No Entra application secret '{context.entra_application_secret_name}' was found. Please redeploy your SHM."
+            raise DataSafeHavenConfigError(msg)
+        stack.add_secret(
+            "azuread:clientSecret", context.entra_application_secret, replace=True
+        )
+        stack.add_option(
+            "azuread:tenantId", shm_config.shm.entra_tenant_id, replace=True
         )
         # Load SHM outputs
         stack.add_option(
