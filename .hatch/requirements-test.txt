@@ -23,7 +23,7 @@
 # - chevron==0.14.0
 # - cryptography==43.0.1
 # - fqdn==1.5.1
-# - psycopg[binary]==3.2.3
+# - psycopg[binary]==3.1.19
 # - pulumi-azure-native==2.64.3
 # - pulumi-azuread==5.53.4
 # - pulumi-random==4.16.6
@@ -287,11 +287,11 @@ protobuf==4.25.5
     # via
     #   -c .hatch/requirements.txt
     #   pulumi
-psycopg==3.2.3
+psycopg==3.1.19
     # via
     #   -c .hatch/requirements.txt
     #   hatch.envs.test
-psycopg-binary==3.2.3
+psycopg-binary==3.1.19
     # via
     #   -c .hatch/requirements.txt
     #   psycopg
