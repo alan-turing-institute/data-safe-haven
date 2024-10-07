@@ -333,22 +333,14 @@ class TestUploadSRE:
         )
 
     def test_upload_missing_field(
-        self, mocker, runner, context, sre_config_file, sre_config_yaml_missing_field
+        self, runner, tmp_path, sre_config_yaml_missing_field
     ):
-        sre_name = "SandBox"
-        sre_filename = sre_config_name(sre_name)
+        config_file_path = tmp_path / "config.yaml"
+        with open(config_file_path, "w") as f:
+            f.write(sre_config_yaml_missing_field)
 
-        mock_exists = mocker.patch.object(SREConfig, "remote_exists", return_value=True)
-
-        mocker.patch.object(
-            AzureSdk, "download_blob", return_value=sre_config_yaml_missing_field
-        )
-
-        result = runner.invoke(config_command_group, ["upload", str(sre_config_file)])
-
-        assert result.exit_code == 1
-
-        mock_exists.assert_called_once_with(context, filename=sre_filename)
+        result = runner.invoke(config_command_group, ["upload", str(config_file_path)])
 
         assert result.exit_code == 1
         assert "validation errors" in result.stdout
+        assert "Check for missing" in result.stdout
