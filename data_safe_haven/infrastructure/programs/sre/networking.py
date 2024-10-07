@@ -2,8 +2,8 @@
 
 from collections.abc import Mapping
 
-from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import network
+from pulumi import ComponentResource, Input, InvokeOptions, Output, ResourceOptions
+from pulumi_azure_native import network, provider
 
 from data_safe_haven.functions import alphanumeric, replace_separators
 from data_safe_haven.infrastructure.common import (
@@ -26,7 +26,9 @@ class SRENetworkingProps:
         location: Input[str],
         resource_group_name: Input[str],
         shm_fqdn: Input[str],
+        shm_location: Input[str],
         shm_resource_group_name: Input[str],
+        shm_subscription_id: Input[str],
         shm_zone_name: Input[str],
         sre_name: Input[str],
         user_public_ip_ranges: Input[list[str]],
@@ -43,7 +45,9 @@ class SRENetworkingProps:
         self.location = location
         self.resource_group_name = resource_group_name
         self.shm_fqdn = shm_fqdn
+        self.shm_location = shm_location
         self.shm_resource_group_name = shm_resource_group_name
+        self.shm_subscription_id = shm_subscription_id
         self.shm_zone_name = shm_zone_name
         self.sre_name = sre_name
         self.user_public_ip_ranges = user_public_ip_ranges
@@ -1834,6 +1838,13 @@ class SRENetworkingComponent(ComponentResource):
         )
 
         # Define SRE DNS zone
+        shm_provider = provider.Provider(
+            "shm_provider",
+            provider.ProviderArgs(
+                location=props.shm_location,
+                subscription_id=props.shm_subscription_id,
+            ),
+        )
         shm_dns_zone = Output.all(
             resource_group_name=props.shm_resource_group_name,
             zone_name=props.shm_zone_name,
@@ -1841,6 +1852,9 @@ class SRENetworkingComponent(ComponentResource):
             lambda kwargs: network.get_zone(
                 resource_group_name=kwargs["resource_group_name"],
                 zone_name=kwargs["zone_name"],
+                opts=InvokeOptions(
+                    provider=shm_provider,
+                ),
             )
         )
         sre_subdomain = Output.from_input(props.sre_name).apply(
@@ -1867,7 +1881,11 @@ class SRENetworkingComponent(ComponentResource):
             ttl=3600,
             zone_name=shm_dns_zone.name,
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=sre_dns_zone)
+                child_opts,
+                ResourceOptions(
+                    parent=sre_dns_zone,
+                    provider=shm_provider,
+                ),
             ),
         )
         network.RecordSet(

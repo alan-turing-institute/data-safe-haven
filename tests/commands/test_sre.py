@@ -5,6 +5,7 @@ class TestDeploySRE:
     def test_deploy(
         self,
         runner,
+        mock_azuresdk_get_subscription_name,  # noqa: ARG002
         mock_graph_api_token,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
         mock_pulumi_config_from_remote_or_create,  # noqa: ARG002

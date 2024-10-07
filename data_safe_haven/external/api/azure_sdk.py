@@ -436,7 +436,11 @@ class AzureSdk:
             )
             return key_vaults[0]
         except AzureError as exc:
-            msg = f"Failed to create key vault {key_vault_name}. Check if a key vault with the same name already exists in a deleted state."
+            msg = f"Failed to create key vault {key_vault_name}."
+            if "MissingSubscriptionRegistration" in exc.message:
+                msg += " Subscription is not registered to use the key vault resource provider. See https://learn.microsoft.com/en-us/azure/azure-resource-manager/troubleshooting/error-register-resource-provider"
+            else:
+                msg += " Check if a key vault with the same name already exists in a deleted state."
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_keyvault_key(
@@ -773,6 +777,21 @@ class AzureSdk:
             raise DataSafeHavenAzureAPIAuthenticationError(msg) from exc
         msg = f"Could not find subscription '{subscription_name}'"
         raise DataSafeHavenValueError(msg)
+
+    def get_subscription_name(self, subscription_id: str) -> str:
+        """Get an Azure subscription name by id."""
+        try:
+            subscription_client = SubscriptionClient(self.credential())
+            subscription = subscription_client.subscriptions.get(subscription_id)
+        except ClientAuthenticationError as exc:
+            msg = "Failed to authenticate with Azure API."
+            raise DataSafeHavenAzureAPIAuthenticationError(msg) from exc
+        except AzureError as exc:
+            msg = f"Failed to get name of subscription {subscription_id}."
+            raise DataSafeHavenAzureError(msg) from exc
+
+        subscription_name: str = subscription.display_name
+        return subscription_name
 
     def import_keyvault_certificate(
         self,
