@@ -37,6 +37,8 @@ write_files:
       popd
 
 mounts:
+  # Mount ephemeral storage at resource instead of default /mnt
+  - [ephemeral0, /mnt/scratch]
   # Desired state configuration is in a blob container mounted as NFSv3
   - ["{{storage_account_desired_state_name}}.blob.core.windows.net:/{{storage_account_desired_state_name}}/desiredstate", /var/local/ansible, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
   # Secure data is in a blob container mounted as NFSv3
@@ -69,9 +71,6 @@ package_update: true
 package_upgrade: true
 
 runcmd:
-  # Restart services
-  - systemctl restart nslcd
-
   # Mount all external volumes
   # --------------------------
   - echo ">=== Mounting all external volumes... ===<"
@@ -97,3 +96,6 @@ runcmd:
   - while (! test -f /var/local/ansible/vars/pulumi_vars.yaml) do sleep 5; done
   - echo ">=== Running initial desired state configuration... ===<"
   - systemctl start desired-state
+
+  # Restart services
+  - systemctl restart nslcd

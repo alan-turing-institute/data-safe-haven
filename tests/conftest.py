@@ -207,6 +207,15 @@ def mock_azuresdk_get_subscription(mocker, request):
 
 
 @fixture
+def mock_azuresdk_get_subscription_name(mocker):
+    mocker.patch.object(
+        AzureSdk,
+        "get_subscription_name",
+        return_value="Data Safe Haven Acme",
+    )
+
+
+@fixture
 def mock_azuresdk_get_credential(mocker):
     class MockCredential(TokenCredential):
         def get_token(*args, **kwargs):  # noqa: ARG002

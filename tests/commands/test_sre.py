@@ -12,6 +12,7 @@ class TestDeploySRE:
     def test_deploy(
         self,
         runner: CliRunner,
+        mock_azuresdk_get_subscription_name,  # noqa: ARG002
         mock_graph_api_token,  # noqa: ARG002
         mock_contextmanager_assert_context,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
@@ -31,6 +32,7 @@ class TestDeploySRE:
         self,
         caplog: LogCaptureFixture,
         runner: CliRunner,
+        mock_azuresdk_get_subscription_name,  # noqa: ARG002
         mock_contextmanager_assert_context,  # noqa: ARG002
         mock_graph_api_token,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
@@ -52,6 +54,7 @@ class TestDeploySRE:
         runner: CliRunner,
         context: Context,
         mocker: MockerFixture,
+        mock_azuresdk_get_subscription_name,  # noqa: ARG002
         mock_graph_api_get_application_by_name,  # noqa: ARG002
         mock_graph_api_token,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
