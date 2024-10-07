@@ -18,6 +18,7 @@ from .sre.clamav_mirror import SREClamAVMirrorComponent, SREClamAVMirrorProps
 from .sre.data import SREDataComponent, SREDataProps
 from .sre.desired_state import SREDesiredStateComponent, SREDesiredStateProps
 from .sre.dns_server import SREDnsServerComponent, SREDnsServerProps
+from .sre.entra import SREEntraComponent, SREEntraProps
 from .sre.firewall import SREFirewallComponent, SREFirewallProps
 from .sre.identity import SREIdentityComponent, SREIdentityProps
 from .sre.monitoring import SREMonitoringComponent, SREMonitoringProps
@@ -109,6 +110,14 @@ class DeclarativeSRE:
                 ")",
                 ")",
             ]
+        )
+
+        # Deploy Entra resources
+        SREEntraComponent(
+            "sre_entra",
+            SREEntraProps(
+                group_names=ldap_group_names,
+            ),
         )
 
         # Deploy resource group
