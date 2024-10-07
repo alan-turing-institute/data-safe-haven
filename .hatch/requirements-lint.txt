@@ -7,10 +7,10 @@
 # - mypy==1.11.2
 # - pandas-stubs==2.2.2.240909
 # - pydantic==2.9.2
-# - ruff==0.6.8
+# - ruff==0.6.9
 # - types-appdirs==1.4.3.5
 # - types-chevron==0.14.2.20240310
-# - types-pytz==2024.2.0.20240913
+# - types-pytz==2024.2.0.20241003
 # - types-pyyaml==6.0.12.20240917
 # - types-requests==2.32.0.20240914
 #
@@ -135,7 +135,7 @@ mypy-extensions==1.0.0
     # via
     #   black
     #   mypy
-numpy==2.1.1
+numpy==2.1.2
     # via pandas-stubs
 onigurumacffi==1.3.0
     # via ansible-navigator
@@ -222,7 +222,7 @@ referencing==0.35.1
     #   jsonschema-specifications
 resolvelib==1.0.1
     # via ansible-core
-rich==13.8.1
+rich==13.9.2
     # via
     #   ansible-lint
     #   enrich
@@ -235,14 +235,14 @@ ruamel-yaml==0.18.6
     # via ansible-lint
 ruamel-yaml-clib==0.2.8
     # via ruamel-yaml
-ruff==0.6.8
+ruff==0.6.9
     # via hatch.envs.lint
 subprocess-tee==0.4.2
     # via
     #   ansible-compat
     #   ansible-dev-environment
     #   ansible-lint
-tox==4.20.0
+tox==4.21.2
     # via tox-ansible
 tox-ansible==24.9.0
     # via ansible-dev-tools
@@ -250,7 +250,7 @@ types-appdirs==1.4.3.5
     # via hatch.envs.lint
 types-chevron==0.14.2.20240310
     # via hatch.envs.lint
-types-pytz==2024.2.0.20240913
+types-pytz==2024.2.0.20241003
     # via
     #   hatch.envs.lint
     #   pandas-stubs
