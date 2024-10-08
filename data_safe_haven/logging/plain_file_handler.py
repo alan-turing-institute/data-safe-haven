@@ -34,7 +34,5 @@ class PlainFileHandler(logging.FileHandler):
         if isinstance(record.msg, Text):
             # Convert rich.text.Text objects to strings
             record.msg = str(record.msg)
-            record.msg = self.strip_ansi_escapes(self.strip_rich_formatting(
-                record.msg
-            ))
+            record.msg = self.strip_ansi_escapes(self.strip_rich_formatting(record.msg))
         super().emit(record)
