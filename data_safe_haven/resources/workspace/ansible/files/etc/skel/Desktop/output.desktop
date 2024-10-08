@@ -4,4 +4,4 @@ Type=Link
 Name=output
 Comment=
 Icon=drive-removable-media
-URL=/output
+URL=/mnt/output
