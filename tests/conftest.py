@@ -535,36 +535,11 @@ def sre_config_yaml(request):
 
 
 @fixture
-def sre_config_yaml_missing_field(request):
-    content = """---
-    azure:
-        location: uksouth
-        subscription_id: guid_subscription
-        tenant_id: guid_tenant
-    description: Sandbox Project
-    dockerhub:
-        access_token: dummytoken
-        username: exampleuser
-    name: sandbox
-    sre:
-        admin_ip_addresses:
-        - 1.2.3.4/32
-        data_provider_ip_addresses: []
-        databases: []
-        remote_desktop:
-            allow_copy: false
-            allow_paste: false
-        research_user_ip_addresses: []
-        software_packages: none
-        storage_quota_gb:
-            home: 100
-            shared: 100
-        timezone: Europe/London
-        workspace_skus: []
-    """.replace(
-        "guid_subscription", request.config.guid_subscription
-    ).replace(
-        "guid_tenant", request.config.guid_tenant
+def sre_config_yaml_missing_field(request, sre_config_yaml):
+    content = (
+        sre_config_yaml.replace("admin_email_address: example.admin.com\n", "")
+        .replace("guid_subscription", request.config.guid_subscription)
+        .replace("guid_tenant", request.config.guid_tenant)
     )
     return yaml.dump(yaml.safe_load(content))
 
