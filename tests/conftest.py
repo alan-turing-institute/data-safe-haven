@@ -535,12 +535,8 @@ def sre_config_yaml(request):
 
 
 @fixture
-def sre_config_yaml_missing_field(request, sre_config_yaml):
-    content = (
-        sre_config_yaml.replace("admin_email_address: example.admin.com\n", "")
-        .replace("guid_subscription", request.config.guid_subscription)
-        .replace("guid_tenant", request.config.guid_tenant)
-    )
+def sre_config_yaml_missing_field(sre_config_yaml):
+    content = sre_config_yaml.replace("admin_email_address: admin@example.com", "")
     return yaml.dump(yaml.safe_load(content))
 
 
