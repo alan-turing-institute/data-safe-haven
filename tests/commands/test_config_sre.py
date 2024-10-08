@@ -331,3 +331,16 @@ class TestUploadSRE:
             context.storage_account_name,
             context.storage_container_name,
         )
+
+    def test_upload_missing_field(
+        self, runner, tmp_path, sre_config_yaml_missing_field
+    ):
+        config_file_path = tmp_path / "config.yaml"
+        with open(config_file_path, "w") as f:
+            f.write(sre_config_yaml_missing_field)
+
+        result = runner.invoke(config_command_group, ["upload", str(config_file_path)])
+
+        assert result.exit_code == 1
+        assert "validation errors" in result.stdout
+        assert "Check for missing" in result.stdout

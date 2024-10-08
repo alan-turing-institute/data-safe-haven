@@ -535,6 +535,12 @@ def sre_config_yaml(request):
 
 
 @fixture
+def sre_config_yaml_missing_field(sre_config_yaml):
+    content = sre_config_yaml.replace("admin_email_address: admin@example.com", "")
+    return yaml.dump(yaml.safe_load(content))
+
+
+@fixture
 def sre_project_manager(
     context_no_secrets,
     sre_config,
