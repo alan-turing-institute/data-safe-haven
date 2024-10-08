@@ -70,12 +70,16 @@ class TestYAMLSerialisableModel:
 
     def test_from_yaml_validation_errors(self, caplog):
         yaml = "\n".join(
-            ["string: 'abc'", "integer: 'not an integer'", "list_of_integers: [-1,0,z,1]"]
+            [
+                "string: 'abc'",
+                "integer: 'not an integer'",
+                "list_of_integers: [-1,0,z,1]",
+            ]
         )
         with raises(
             DataSafeHavenTypeError,
             match="Example configuration is invalid.",
-        ) as exc:
+        ):
             ExampleYAMLSerialisableModel.from_yaml(yaml)
         assert "Input should be a valid integer" in caplog.text
         assert "Original input: not an integer" in caplog.text
