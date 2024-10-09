@@ -94,7 +94,7 @@
 | data\_safe\_haven/logging/\_\_init\_\_.py                                         |        2 |        0 |    100% |           |
 | data\_safe\_haven/logging/logger.py                                               |       38 |        0 |    100% |           |
 | data\_safe\_haven/logging/non\_logging\_singleton.py                              |        7 |        1 |     86% |        14 |
-| data\_safe\_haven/logging/plain\_file\_handler.py                                 |       16 |        1 |     94% |        29 |
+| data\_safe\_haven/logging/plain\_file\_handler.py                                 |       21 |        1 |     95% |        36 |
 | data\_safe\_haven/provisioning/\_\_init\_\_.py                                    |        2 |        0 |    100% |           |
 | data\_safe\_haven/provisioning/sre\_provisioning\_manager.py                      |       44 |       31 |     30% |29-57, 69-72, 76-81, 85-125, 135-136 |
 | data\_safe\_haven/serialisers/\_\_init\_\_.py                                     |        4 |        0 |    100% |           |
@@ -112,7 +112,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       23 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       65 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4677** | **2181** | **53%** |           |
+|                                                                         **TOTAL** | **4682** | **2181** | **53%** |           |
 
 
 ## Setup coverage badge
