@@ -27,6 +27,11 @@ class AzureSdkCredentialScope(str, Enum):
 
 
 @verify(UNIQUE)
+class AzureServiceTag(str, Enum):
+    INTERNET = "Internet"
+
+
+@verify(UNIQUE)
 class DatabaseSystem(str, Enum):
     MICROSOFT_SQL_SERVER = "mssql"
     POSTGRESQL = "postgresql"

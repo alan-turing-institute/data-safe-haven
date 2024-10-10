@@ -93,8 +93,6 @@ class TestValidateIpAddress:
             ("127.0.0.1", "127.0.0.1/32"),
             ("0.0.0.0/0", "0.0.0.0/0"),
             ("192.168.171.1/32", "192.168.171.1/32"),
-            ("Internet", "internet"),
-            ("internet", "internet"),
         ],
     )
     def test_ip_address(self, ip_address, output):
