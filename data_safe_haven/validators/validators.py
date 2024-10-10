@@ -122,9 +122,11 @@ def entra_group_name(entra_group_name: str) -> str:
 
 def ip_address(ip_address: str) -> str:
     try:
+        if ip_address.lower() == "internet":
+            return "internet"
         return str(ipaddress.ip_network(ip_address))
     except Exception as exc:
-        msg = "Expected valid IPv4 address, for example '1.1.1.1'."
+        msg = "Expected valid IPv4 address, for example '1.1.1.1', or 'Internet'."
         raise ValueError(msg) from exc
 
 
