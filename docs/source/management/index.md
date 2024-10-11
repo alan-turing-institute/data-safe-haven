@@ -97,7 +97,7 @@ $ dsh config available
 
 which will give output like the following
 
-```
+```{code} shell
 Available SRE configurations for context 'green':
 ┏━━━━━━━━━━━━━━┳━━━━━━━━━━┓
 ┃ SRE Name     ┃ Deployed ┃
