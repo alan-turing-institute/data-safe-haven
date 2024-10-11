@@ -1,0 +1,34 @@
+---
+
+- name: Add ldap to /etc/nsswitch.conf
+  ansible.builtin.replace:
+    path: /etc/nsswitch.conf
+    regexp: '^(passwd|group|shadow)(:.*)(?<!ldap)$'
+    replace: '\1\2 ldap'
+
+- name: Template nslcd configuration
+  ansible.builtin.template:
+    src: etc/nslcd.conf.j2
+    dest: /etc/nslcd.conf
+    mode: '0400'
+
+- name: Ensure home directories are created on LDAP login
+  community.general.pamd:
+    name: common-session
+    type: session
+    control: optional
+    module_path: pam_systemd.so
+    new_type: session
+    new_control: optional
+    new_module_path: pam_mkhomedir.so
+    module_arguments: 'skel=/etc/skel umask=0022'
+    state: after
+
+- name: Don't prompt to change expired passwords via ldap
+  community.general.pamd:
+    name: common-account
+    type: account
+    control: '[success=ok new_authtok_reqd=done ignore=ignore user_unknown=ignore authinfo_unavail=ignore default=bad]'
+    module_path: pam_ldap.so
+    new_control: '[success=ok ignore=ignore user_unknown=ignore authinfo_unavail=ignore default=bad]'
+    state: updated

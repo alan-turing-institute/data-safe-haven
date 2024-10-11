@@ -26,7 +26,7 @@ CAN_DELETE="$([[ "$(touch "${directory_path}/${testfile}" 2>&1 1>/dev/null && rm
 
 # Check that permissions are as expected for each directory
 case "$directory" in
-    data)
+    mnt/input)
         if [ "$CAN_CREATE" = 1 ]; then echo "Able to create files in ${directory_path}!"; nfailed=$((nfailed + 1)); fi
         if [ "$CAN_WRITE" = 1 ]; then echo "Able to write files in ${directory_path}!"; nfailed=$((nfailed + 1)); fi
         if [ "$CAN_DELETE" = 1 ]; then echo "Able to delete files in ${directory_path}!"; nfailed=$((nfailed + 1)); fi
@@ -38,16 +38,22 @@ case "$directory" in
         if [ "$CAN_DELETE" = 0 ]; then echo "Unable to delete files in ${directory_path}!"; nfailed=$((nfailed + 1)); fi
         ;;
 
-    output)
+    mnt/output)
         if [ "$CAN_CREATE" = 0 ]; then echo "Unable to create files in ${directory_path}!"; nfailed=$((nfailed + 1)); fi
         if [ "$CAN_WRITE" = 0 ]; then echo "Unable to write files in ${directory_path}!"; nfailed=$((nfailed + 1)); fi
         if [ "$CAN_DELETE" = 0 ]; then echo "Unable to delete files in ${directory_path}!"; nfailed=$((nfailed + 1)); fi
         ;;
 
-    shared)
+    mnt/shared)
         if [ "$CAN_CREATE" = 0 ]; then echo "Unable to create files in ${directory_path}!"; nfailed=$((nfailed + 1)); fi
         if [ "$CAN_WRITE" = 0 ]; then echo "Unable to write files in ${directory_path}!"; nfailed=$((nfailed + 1)); fi
         if [ "$CAN_DELETE" = 0 ]; then echo "Unable to delete files in ${directory_path}!"; nfailed=$((nfailed + 1)); fi
+        ;;
+
+    var/local/ansible)
+        if [ "$CAN_CREATE" = 1 ]; then echo "Able to create files in ${directory_path}!"; nfailed=$((nfailed + 1)); fi
+        if [ "$CAN_WRITE" = 1 ]; then echo "Able to write files in ${directory_path}!"; nfailed=$((nfailed + 1)); fi
+        if [ "$CAN_DELETE" = 1 ]; then echo "Able to delete files in ${directory_path}!"; nfailed=$((nfailed + 1)); fi
         ;;
 
     *)

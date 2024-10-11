@@ -38,21 +38,22 @@ dependencies = [
   "azure-mgmt-rdbms==10.1.0",
   "azure-mgmt-resource==23.1.1",
   "azure-mgmt-storage==21.2.1",
-  "azure-storage-blob==12.23.0",
+  "azure-storage-blob==12.23.1",
   "azure-storage-file-datalake==12.17.0",
   "azure-storage-file-share==12.18.0",
   "chevron==0.14.0",
   "cryptography==43.0.1",
   "fqdn==1.5.1",
-  "psycopg==3.2.2",
-  "pulumi-azure-native==2.62.0",
-  "pulumi-random==4.16.5",
-  "pulumi==3.133.0",
+  "psycopg[binary]==3.2.3",
+  "pulumi-azure-native==2.64.3",
+  "pulumi-azuread==5.53.4",
+  "pulumi-random==4.16.6",
+  "pulumi==3.135.1",
   "pydantic==2.9.2",
   "pyjwt[crypto]==2.9.0",
   "pytz==2024.2",
   "pyyaml==6.0.2",
-  "rich==13.8.1",
+  "rich==13.9.2",
   "simple-acme-dns==3.1.0",
   "typer==0.12.5",
   "websocket-client==1.8.0",
@@ -65,7 +66,7 @@ Source = "https://github.com/alan-turing-institute/data-safe-haven"
 
 [project.optional-dependencies]
 docs = [
-  "emoji==2.13.0",
+  "emoji==2.14.0",
   "myst-parser==4.0.0",
   "pydata-sphinx-theme==0.15.4",
   "sphinx-togglebutton==0.3.2",
@@ -78,10 +79,10 @@ lint = [
   "mypy==1.11.2",
   "pandas-stubs==2.2.2.240909",
   "pydantic==2.9.2",
-  "ruff==0.6.7",
+  "ruff==0.6.9",
   "types-appdirs==1.4.3.5",
   "types-chevron==0.14.2.20240310",
-  "types-pytz==2024.2.0.20240913",
+  "types-pytz==2024.2.0.20241003",
   "types-pyyaml==6.0.12.20240917",
   "types-requests==2.32.0.20240914",
 ]
@@ -124,6 +125,7 @@ features = ["docs"]
 
 [tool.hatch.envs.docs.scripts]
 build = "sphinx-build -M html docs/source/ docs/build/ --fail-on-warning"
+lint = "mdl --style .mdlstyle.rb ./docs/source"
 
 [tool.hatch.envs.lint]
 type = "pip-compile"
@@ -183,6 +185,7 @@ module = [
     "numpy.*",
     "psycopg.*",
     "pulumi_azure_native.*",
+    "pulumi_azuread.*",
     "pulumi_random.*",
     "pulumi.*",
     "pymssql.*",

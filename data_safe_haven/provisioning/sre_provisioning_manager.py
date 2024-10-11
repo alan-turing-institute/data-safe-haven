@@ -71,11 +71,6 @@ class SREProvisioningManager:
             self._available_vm_skus = azure_sdk.list_available_vm_skus(self.location)
         return self._available_vm_skus
 
-    def create_security_groups(self) -> None:
-        """Create groups in Entra ID"""
-        for group_name in self.security_group_params.values():
-            self.graph_api.create_group(group_name)
-
     def restart_remote_desktop_containers(self) -> None:
         """Restart the Guacamole container group"""
         guacamole_provisioner = AzureContainerInstance(
@@ -137,6 +132,5 @@ class SREProvisioningManager:
 
     def run(self) -> None:
         """Apply SRE configuration"""
-        self.create_security_groups()
         self.update_remote_desktop_connections()
         self.restart_remote_desktop_containers()

@@ -26,6 +26,17 @@ class TestListUsers:
         assert result.exit_code == 1
         assert "Have you deployed the SHM?" in result.stdout
 
+    def test_invalid_sre(
+        self,
+        mock_pulumi_config_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote,  # noqa: ARG002
+        runner,
+    ):
+        result = runner.invoke(users_command_group, ["list", "my_sre"])
+
+        assert result.exit_code == 1
+        assert "Is the SRE deployed?" in result.stdout
+
 
 class TestRegister:
     def test_invalid_shm(

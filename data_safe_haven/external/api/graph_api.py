@@ -16,7 +16,6 @@ from data_safe_haven.exceptions import (
     DataSafeHavenMicrosoftGraphError,
     DataSafeHavenValueError,
 )
-from data_safe_haven.functions import alphanumeric
 from data_safe_haven.logging import get_logger, get_null_logger
 
 from .credentials import DeferredCredential, GraphApiCredential
@@ -140,7 +139,7 @@ class GraphApi:
         """
         try:
             user_id = self.get_id_from_username(username)
-            group_id = self.get_id_from_groupname(group_name)
+            group_id = self.validate_entra_group(group_name)
             json_response = self.http_get(
                 f"{self.base_endpoint}/groups/{group_id}/members",
             ).json()
@@ -314,40 +313,6 @@ class GraphApi:
             msg = f"Could not create application secret '{application_secret_name}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
-    def create_group(self, group_name: str) -> None:
-        """Create an Entra group if it does not already exist
-
-        Raises:
-            DataSafeHavenMicrosoftGraphError if the group could not be created
-        """
-        try:
-            if self.get_id_from_groupname(group_name):
-                self.logger.info(
-                    f"Found existing Entra group '[green]{group_name}[/]'.",
-                )
-                return
-            self.logger.debug(
-                f"Creating Entra group '[green]{group_name}[/]'...",
-            )
-            request_json = {
-                "description": group_name,
-                "displayName": group_name,
-                "groupTypes": [],
-                "mailEnabled": False,
-                "mailNickname": alphanumeric(group_name).lower(),
-                "securityEnabled": True,
-            }
-            self.http_post(
-                f"{self.base_endpoint}/groups",
-                json=request_json,
-            ).json()
-            self.logger.info(
-                f"Created Entra group '[green]{group_name}[/]'.",
-            )
-        except Exception as exc:
-            msg = f"Could not create Entra group '{group_name}'."
-            raise DataSafeHavenMicrosoftGraphError(msg) from exc
-
     def ensure_application_service_principal(
         self, application_name: str
     ) -> dict[str, Any]:
@@ -514,6 +479,19 @@ class GraphApi:
             )
         except (DataSafeHavenMicrosoftGraphError, StopIteration):
             return None
+
+    def validate_entra_group(self, group_name: str) -> str:
+        """
+        Ensure that an Entra group exists and return its ID
+
+        Raises:
+            DataSafeHavenMicrosoftGraphError if the group does not exist
+        """
+        if group_id := self.get_id_from_groupname(group_name):
+            return group_id
+        else:
+            msg = f"Group '{group_name}' not found."
+            raise DataSafeHavenMicrosoftGraphError(msg)
 
     def get_id_from_groupname(self, group_name: str) -> str | None:
         try:
@@ -1015,7 +993,7 @@ class GraphApi:
         """
         try:
             user_id = self.get_id_from_username(username)
-            group_id = self.get_id_from_groupname(group_name)
+            group_id = self.validate_entra_group(group_name)
             # Check whether user is in group
             json_response = self.http_get(
                 f"{self.base_endpoint}/groups/{group_id}/members",
@@ -1047,17 +1025,17 @@ class GraphApi:
             DataSafeHavenMicrosoftGraphError if domain could not be verified
         """
         try:
-            # Create the Entra custom domain if it does not already exist
+            # Check whether the domain has been added to Entra ID
             domains = self.read_domains()
             if not any(d["id"] == domain_name for d in domains):
                 msg = f"Domain {domain_name} has not been added to Entra ID."
                 raise DataSafeHavenMicrosoftGraphError(msg)
-            # Wait until domain delegation is complete
+            # Loop until domain delegation is complete
             while True:
                 # Check whether all expected nameservers are active
                 with suppress(resolver.NXDOMAIN):
                     self.logger.debug(
-                        f"Checking [green]{domain_name}[/] domain verification status ..."
+                        f"Checking [green]{domain_name}[/] domain registration status ..."
                     )
                     active_nameservers = [
                         str(ns) for ns in iter(resolver.resolve(domain_name, "NS"))
@@ -1067,11 +1045,11 @@ class GraphApi:
                         for nameserver in expected_nameservers
                     ):
                         self.logger.info(
-                            f"Verified that domain [green]{domain_name}[/] is delegated to Azure."
+                            f"Verified that [green]{domain_name}[/] is registered as a custom Entra ID domain."
                         )
                         break
                 self.logger.warning(
-                    f"Domain [green]{domain_name}[/] is not currently delegated to Azure."
+                    f"Domain [green]{domain_name}[/] is not currently registered as a custom Entra ID domain."
                 )
                 # Prompt user to set domain delegation manually
                 docs_link = "https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain"
@@ -1080,15 +1058,13 @@ class GraphApi:
                 )
                 ns_list = ", ".join([f"[green]{n}[/]" for n in expected_nameservers])
                 self.logger.info(
-                    f"You will need to create an NS record pointing to: {ns_list}"
+                    f"You will need to create NS records pointing to: {ns_list}"
                 )
                 if not console.confirm(
                     f"Are you ready to check whether [green]{domain_name}[/] has been delegated to Azure?",
                     default_to_yes=True,
                 ):
-                    self.logger.error(
-                        "Please use `az login` to connect to the correct Azure CLI account"
-                    )
+                    self.logger.error("User terminated check for domain delegation.")
                     raise typer.Exit(1)
             # Send verification request if needed
             if not any((d["id"] == domain_name and d["isVerified"]) for d in domains):

@@ -42,20 +42,24 @@ check_db_credentials() {
 
 # Mounted drives
 # --------------
-@test "Mounted drives (/data)" {
-    run bash test_mounted_drives.sh -d data
+@test "Mounted drives (/mnt/input)" {
+    run bash test_mounted_drives.sh -d mnt/input
     [ "$status" -eq 0 ]
 }
 @test "Mounted drives (/home)" {
     run bash test_mounted_drives.sh -d home
     [ "$status" -eq 0 ]
 }
-@test "Mounted drives (/output)" {
-    run bash test_mounted_drives.sh -d output
+@test "Mounted drives (/mnt/output)" {
+    run bash test_mounted_drives.sh -d mnt/output
     [ "$status" -eq 0 ]
 }
-@test "Mounted drives (/shared)" {
-    run bash test_mounted_drives.sh -d shared
+@test "Mounted drives (/mnt/shared)" {
+    run bash test_mounted_drives.sh -d mnt/shared
+    [ "$status" -eq 0 ]
+}
+@test "Mounted drives (/var/local/ansible)" {
+    run bash test_mounted_drives.sh -d var/local/ansible
     [ "$status" -eq 0 ]
 }
 

@@ -146,6 +146,10 @@ class ProjectManager:
         """Add a public configuration option"""
         self._options[name] = (value, False, replace)
 
+    def add_secret(self, name: str, value: str, *, replace: bool) -> None:
+        """Add a secret configuration option"""
+        self._options[name] = (value, True, replace)
+
     def apply_config_options(self) -> None:
         """Set Pulumi config options"""
         try:

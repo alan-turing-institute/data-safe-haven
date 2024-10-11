@@ -23,8 +23,11 @@ def sre_config_name(sre_name: str) -> str:
 
 
 class SREConfig(AzureSerialisableModel):
+    """Serialisable config for a secure research environment component."""
+
     config_type: ClassVar[str] = "SREConfig"
     default_filename: ClassVar[str] = "sre.yaml"
+
     azure: ConfigSectionAzure
     description: str
     dockerhub: ConfigSectionDockerHub
