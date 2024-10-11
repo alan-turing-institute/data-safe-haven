@@ -97,14 +97,16 @@ $ dsh config available
 
 which will give output like the following
 
-    Available SRE configurations for context 'green':
-    ┏━━━━━━━━━━━━━━┳━━━━━━━━━━┓
-    ┃ SRE Name     ┃ Deployed ┃
-    ┡━━━━━━━━━━━━━━╇━━━━━━━━━━┩
-    │ emerald      │ x        │
-    │ jade         │          │
-    │ olive        │          │
-    └──────────────┴──────────┘
+```
+Available SRE configurations for context 'green':
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━┓
+┃ SRE Name     ┃ Deployed ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━┩
+│ emerald      │ x        │
+│ jade         │          │
+│ olive        │          │
+└──────────────┴──────────┘
+```
 
 ## Removing a deployed Data Safe Haven
 
