@@ -318,6 +318,7 @@ class DeclarativeSRE:
                 dns_server_ip=dns.ip_address,
                 dockerhub_credentials=dockerhub_credentials,
                 gitea_database_password=data.password_gitea_database_admin,
+                external_git_mirror=self.config.sre.external_git_mirror,
                 hedgedoc_database_password=data.password_hedgedoc_database_admin,
                 ldap_server_hostname=identity.hostname,
                 ldap_server_port=identity.server_port,
@@ -334,6 +335,7 @@ class DeclarativeSRE:
                 subnet_containers=networking.subnet_user_services_containers,
                 subnet_containers_support=networking.subnet_user_services_containers_support,
                 subnet_databases=networking.subnet_user_services_databases,
+                subnet_external_git_mirror=networking.subnet_external_git_mirror,
                 subnet_software_repositories=networking.subnet_user_services_software_repositories,
             ),
             tags=self.tags,
@@ -362,7 +364,10 @@ class DeclarativeSRE:
                 clamav_mirror_hostname=clamav_mirror.hostname,
                 database_service_admin_password=data.password_database_service_admin,
                 dns_private_zones=dns.private_zones,
-                gitea_hostname=user_services.gitea_server.hostname,
+                gitea_hostnames={
+                    availability: server.hostname
+                    for (availability, server) in user_services.gitea_server.items()
+                },
                 hedgedoc_hostname=user_services.hedgedoc_server.hostname,
                 ldap_group_filter=ldap_group_filter,
                 ldap_group_search_base=ldap_group_search_base,

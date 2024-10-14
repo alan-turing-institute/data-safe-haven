@@ -28,6 +28,7 @@ class SREUserServicesProps:
         dns_server_ip: Input[str],
         dockerhub_credentials: DockerHubCredentials,
         gitea_database_password: Input[str],
+        external_git_mirror: Input[bool],
         hedgedoc_database_password: Input[str],
         ldap_server_hostname: Input[str],
         ldap_server_port: Input[int],
@@ -44,6 +45,7 @@ class SREUserServicesProps:
         subnet_containers: Input[network.GetSubnetResult],
         subnet_containers_support: Input[network.GetSubnetResult],
         subnet_databases: Input[network.GetSubnetResult],
+        subnet_external_git_mirror: Input[network.GetSubnetResult],
         subnet_software_repositories: Input[network.GetSubnetResult],
     ) -> None:
         self.database_service_admin_password = database_service_admin_password
@@ -51,6 +53,7 @@ class SREUserServicesProps:
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
         self.gitea_database_password = gitea_database_password
+        self.external_git_mirror = external_git_mirror
         self.hedgedoc_database_password = hedgedoc_database_password
         self.ldap_server_hostname = ldap_server_hostname
         self.ldap_server_port = ldap_server_port
@@ -73,6 +76,9 @@ class SREUserServicesProps:
         self.subnet_databases_id = Output.from_input(subnet_databases).apply(
             get_id_from_subnet
         )
+        self.subnet_external_git_mirror_id = Output.from_input(
+            subnet_external_git_mirror
+        ).apply(get_id_from_subnet)
         self.subnet_software_repositories_id = Output.from_input(
             subnet_software_repositories
         ).apply(get_id_from_subnet)
@@ -93,30 +99,43 @@ class SREUserServicesComponent(ComponentResource):
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = {"component": "user services"} | (tags if tags else {})
 
-        # Deploy the Gitea server
-        self.gitea_server = SREGiteaServerComponent(
-            "sre_gitea_server",
-            stack_name,
-            SREGiteaServerProps(
-                containers_subnet_id=props.subnet_containers_id,
-                database_subnet_id=props.subnet_containers_support_id,
-                database_password=props.gitea_database_password,
-                dns_server_ip=props.dns_server_ip,
-                dockerhub_credentials=props.dockerhub_credentials,
-                ldap_server_hostname=props.ldap_server_hostname,
-                ldap_server_port=props.ldap_server_port,
-                ldap_username_attribute=props.ldap_username_attribute,
-                ldap_user_filter=props.ldap_user_filter,
-                ldap_user_search_base=props.ldap_user_search_base,
-                location=props.location,
-                resource_group_name=props.resource_group_name,
-                sre_fqdn=props.sre_fqdn,
-                storage_account_key=props.storage_account_key,
-                storage_account_name=props.storage_account_name,
-            ),
-            opts=child_opts,
-            tags=child_tags,
-        )
+        # Deploy the Gitea servers
+        self.gitea_server = {}  # type: dict[str, SREGiteaServerComponent]
+        if props.external_git_mirror:
+            gitea_servers = ["internal", "external"]
+            subnet = {
+                "internal": props.subnet_containers_id,
+                "external": props.subnet_external_git_mirror_id,
+            }
+        else:
+            gitea_servers = ["internal"]
+            subnet = {"internal": props.subnet_containers_id}
+
+        for gitea_server in gitea_servers:
+            self.gitea_server[gitea_server] = SREGiteaServerComponent(
+                f"sre_{gitea_server}_gitea_server",
+                stack_name,
+                SREGiteaServerProps(
+                    containers_subnet_id=subnet[gitea_server],
+                    database_subnet_id=props.subnet_containers_support_id,
+                    database_password=props.gitea_database_password,
+                    dns_server_ip=props.dns_server_ip,
+                    dockerhub_credentials=props.dockerhub_credentials,
+                    gitea_server=gitea_server,
+                    ldap_server_hostname=props.ldap_server_hostname,
+                    ldap_server_port=props.ldap_server_port,
+                    ldap_username_attribute=props.ldap_username_attribute,
+                    ldap_user_filter=props.ldap_user_filter,
+                    ldap_user_search_base=props.ldap_user_search_base,
+                    location=props.location,
+                    resource_group_name=props.resource_group_name,
+                    sre_fqdn=props.sre_fqdn,
+                    storage_account_key=props.storage_account_key,
+                    storage_account_name=props.storage_account_name,
+                ),
+                opts=child_opts,
+                tags=child_tags,
+            )
 
         # Deploy the HedgeDoc server
         self.hedgedoc_server = SREHedgeDocServerComponent(

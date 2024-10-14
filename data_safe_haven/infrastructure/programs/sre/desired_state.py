@@ -46,7 +46,7 @@ class SREDesiredStateProps:
         clamav_mirror_hostname: Input[str],
         database_service_admin_password: Input[str],
         dns_private_zones: Input[dict[str, network.PrivateZone]],
-        gitea_hostname: Input[str],
+        gitea_hostnames: Input[dict[str, str]],
         hedgedoc_hostname: Input[str],
         ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
@@ -64,7 +64,8 @@ class SREDesiredStateProps:
         self.clamav_mirror_hostname = clamav_mirror_hostname
         self.database_service_admin_password = database_service_admin_password
         self.dns_private_zones = dns_private_zones
-        self.gitea_hostname = gitea_hostname
+        self.internal_gitea_hostname = gitea_hostnames.get("internal")
+        self.external_gitea_hostname = gitea_hostnames.get("external")
         self.hedgedoc_hostname = hedgedoc_hostname
         self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
@@ -161,7 +162,7 @@ class SREDesiredStateComponent(ComponentResource):
             source=Output.all(
                 clamav_mirror_hostname=props.clamav_mirror_hostname,
                 database_service_admin_password=props.database_service_admin_password,
-                gitea_hostname=props.gitea_hostname,
+                gitea_hostname=props.internal_gitea_hostname,
                 hedgedoc_hostname=props.hedgedoc_hostname,
                 ldap_group_filter=props.ldap_group_filter,
                 ldap_group_search_base=props.ldap_group_search_base,

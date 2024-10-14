@@ -29,6 +29,7 @@ class SREGiteaServerProps:
         database_subnet_id: Input[str],
         dns_server_ip: Input[str],
         dockerhub_credentials: DockerHubCredentials,
+        gitea_server: Input[str],
         ldap_server_hostname: Input[str],
         ldap_server_port: Input[int],
         ldap_username_attribute: Input[str],
@@ -49,6 +50,7 @@ class SREGiteaServerProps:
         )
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
+        self.gitea_server = gitea_server
         self.ldap_server_hostname = ldap_server_hostname
         self.ldap_server_port = ldap_server_port
         self.ldap_username_attribute = ldap_username_attribute
@@ -82,7 +84,7 @@ class SREGiteaServerComponent(ComponentResource):
             access_tier=storage.ShareAccessTier.TRANSACTION_OPTIMIZED,
             account_name=props.storage_account_name,
             resource_group_name=props.resource_group_name,
-            share_name="gitea-caddy",
+            share_name=f"{props.gitea_server}-gitea-caddy",
             share_quota=1,
             signed_identifiers=[],
             opts=child_opts,
@@ -92,7 +94,7 @@ class SREGiteaServerComponent(ComponentResource):
             access_tier=storage.ShareAccessTier.TRANSACTION_OPTIMIZED,
             account_name=props.storage_account_name,
             resource_group_name=props.resource_group_name,
-            share_name="gitea-gitea",
+            share_name=f"{props.gitea_server}-gitea-gitea",
             share_quota=1,
             signed_identifiers=[],
             opts=child_opts,
@@ -117,9 +119,14 @@ class SREGiteaServerComponent(ComponentResource):
         )
 
         # Upload Gitea configuration script
-        gitea_configure_sh_reader = FileReader(
-            resources_path / "gitea" / "gitea" / "configure.mustache.sh"
-        )
+        if props.gitea_server == "external":
+            gitea_configure_sh_reader = FileReader(
+                resources_path / "gitea_external" / "gitea" / "configure.mustache.sh"
+            )
+        else:
+            gitea_configure_sh_reader = FileReader(
+                resources_path / "gitea" / "gitea" / "configure.mustache.sh"
+            )
         gitea_configure_sh = Output.all(
             admin_email="dshadmin@example.com",
             admin_username="dshadmin",
@@ -167,12 +174,12 @@ class SREGiteaServerComponent(ComponentResource):
         # Define a PostgreSQL server and default database
         db_gitea_repository_name = "gitea"
         db_server_gitea = PostgresqlDatabaseComponent(
-            f"{self._name}_db_gitea",
+            f"{self._name}_db_gitea_{props.gitea_server}",
             PostgresqlDatabaseProps(
                 database_names=[db_gitea_repository_name],
                 database_password=props.database_password,
                 database_resource_group_name=props.resource_group_name,
-                database_server_name=f"{stack_name}-db-server-gitea",
+                database_server_name=f"{stack_name}-db-server-gitea-{props.gitea_server}",
                 database_subnet_id=props.database_subnet_id,
                 database_username=props.database_username,
                 disable_secure_transport=False,
@@ -182,10 +189,10 @@ class SREGiteaServerComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Define the container group with guacd, guacamole and caddy
+        # Define the container group with gitea and caddy
         container_group = containerinstance.ContainerGroup(
             f"{self._name}_container_group",
-            container_group_name=f"{stack_name}-container-group-gitea",
+            container_group_name=f"{stack_name}-container-group-gitea-{props.gitea_server}",
             containers=[
                 containerinstance.ContainerArgs(
                     image="caddy:2.8.4",
@@ -341,7 +348,7 @@ class SREGiteaServerComponent(ComponentResource):
             LocalDnsRecordProps(
                 base_fqdn=props.sre_fqdn,
                 private_ip_address=get_ip_address_from_container_group(container_group),
-                record_name="gitea",
+                record_name=f"{props.gitea_server}-gitea",
                 resource_group_name=props.resource_group_name,
             ),
             opts=ResourceOptions.merge(

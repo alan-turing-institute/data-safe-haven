@@ -54,6 +54,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     # Mutable objects can be used as default arguments in Pydantic:
     # https://docs.pydantic.dev/latest/concepts/models/#fields-with-non-hashable-default-values
     admin_email_address: EmailAddress
+    external_git_mirror: bool = False
     admin_ip_addresses: list[IpAddress] = []
     databases: UniqueList[DatabaseSystem] = []
     data_provider_ip_addresses: list[IpAddress] = []
