@@ -19,11 +19,9 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureStorageError,
     DataSafeHavenConfigError,
     DataSafeHavenError,
-    DataSafeHavenPulumiError,
     DataSafeHavenTypeError,
 )
 from data_safe_haven.external.api.azure_sdk import AzureSdk
-from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.logging import get_logger
 from data_safe_haven.serialisers import ContextBase
 
@@ -97,31 +95,12 @@ def available() -> None:
         logger.info(f"No configurations found for context '{context.name}'.")
         raise typer.Exit(0)
 
+    config_names = [blob.removeprefix("sre-").removesuffix(".yaml") for blob in blobs]
     pulumi_config = DSHPulumiConfig.from_remote(context)
-    sre_status = {}
-    for blob in blobs:
-        sre_config = SREConfig.from_remote_by_name(
-            context, blob.removeprefix("sre-").removesuffix(".yaml")
-        )
-        stack = SREProjectManager(
-            context=context,
-            config=sre_config,
-            pulumi_config=pulumi_config,
-            create_project=True,
-        )
-
-        try:
-            sre_status[sre_config.name] = (
-                "No output values" not in stack.run_pulumi_command("stack output")
-            )
-        except DataSafeHavenPulumiError as exc:
-            logger.error(
-                f"Failed to run Pulumi command querying stack outputs for SRE '{sre_config.name}'."
-            )
-            raise typer.Exit(1) from exc
+    deployed = pulumi_config.project_names
 
     headers = ["SRE Name", "Deployed"]
-    rows = [[name, "x" if deployed else ""] for name, deployed in sre_status.items()]
+    rows = [[name, "x" if name in deployed else ""] for name in config_names]
     console.print(f"Available SRE configurations for context '{context.name}':")
     console.tabulate(headers, rows)
 
