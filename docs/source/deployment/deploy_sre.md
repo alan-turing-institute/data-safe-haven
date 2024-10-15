@@ -69,6 +69,48 @@ sre:
 
 ::::
 
+:::{admonition} Supported Azure regions
+:class: dropdown important
+
+Some of the SRE resources are not available in all Azure regions.
+
+- Workspace virtual machines use zone redundant storage managed disks which have [limited regional availability](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-redundancy).
+- Some shares mounted on workspace virtual machines require premium file shares which have [limited regional availability](https://learn.microsoft.com/en-us/azure/storage/files/redundancy-premium-file-shares).
+
+The regions which satisfy all requirements are,
+
+- Australia East
+- Brazil South
+- Canada Central
+- Central India
+- China North 3
+- East Asia
+- East US
+- East US 2
+- France Central
+- Germany West Central
+- Israel Central
+- Italy North
+- Japan East
+- Korea Central
+- North Europe
+- Norway East
+- Poland Central
+- Qatar Central
+- South Africa North
+- South Central US
+- Southeast Asia
+- Sweden Central
+- Switzerland North
+- UAE North
+- UK South
+- US Gov Virginia
+- West Europe
+- West US 2
+- West US 3
+
+:::
+
 :::{hint}
 See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/) for a full list of valid Azure VM SKUs.
 :::
