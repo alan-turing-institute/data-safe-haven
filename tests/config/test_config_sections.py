@@ -9,7 +9,11 @@ from data_safe_haven.config.config_sections import (
     ConfigSubsectionRemoteDesktopOpts,
     ConfigSubsectionStorageQuotaGB,
 )
-from data_safe_haven.types import AzureServiceTag, DatabaseSystem, SoftwarePackageCategory
+from data_safe_haven.types import (
+    AzureServiceTag,
+    DatabaseSystem,
+    SoftwarePackageCategory,
+)
 
 
 class TestConfigSectionAzure:
@@ -193,7 +197,7 @@ class TestConfigSectionSRE:
             admin_email_address="admin@example.com",
             remote_desktop=config_subsection_remote_desktop,
             storage_quota_gb=config_subsection_storage_quota_gb,
-            research_user_ip_addresses="Internet"
+            research_user_ip_addresses="Internet",
         )
         assert isinstance(sre_config.research_user_ip_addresses, AzureServiceTag)
         assert sre_config.research_user_ip_addresses == "Internet"
