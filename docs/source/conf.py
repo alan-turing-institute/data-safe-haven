@@ -5,7 +5,9 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 import datetime
 import emoji
-
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))
 
 # -- Project information -----------------------------------------------------
 
@@ -55,6 +57,7 @@ html_context["doc_path"] = "docs"
 extensions = [
     "myst_parser",
     "sphinx_togglebutton",
+    "sphinxcontrib.typer",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
