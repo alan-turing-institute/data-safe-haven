@@ -52,7 +52,6 @@
 :make-sections:
 :::
 
-
 ## Pulumi commands
 
 :::{typer} data_safe_haven.commands.pulumi:pulumi_command_group
