@@ -1,6 +1,6 @@
 # Reference
 
-## Main command
+## `dsh` command line interface
 
 :::{typer} data_safe_haven.commands.cli:application
 :prog: dsh
