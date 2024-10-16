@@ -288,9 +288,16 @@ class ProjectManager:
     def ensure_config(self, name: str, value: str, *, secret: bool) -> None:
         """Ensure that config values have been set, setting them if they do not exist"""
         try:
-            self.stack.get_config(name)
+            existing_value = self.stack.get_config(name)
         except automation.CommandError:
             self.set_config(name, value, secret=secret)
+
+        if existing_value != value:
+            msg = (
+                f"Unchangeable configuration variable '{name}' not consistent, "
+                f"your configuration: '{value}', Pulumi workspace: '{existing_value}'."
+            )
+            raise DataSafeHavenPulumiError(msg)
 
     def evaluate(self, result: str) -> None:
         """Evaluate a Pulumi operation."""
