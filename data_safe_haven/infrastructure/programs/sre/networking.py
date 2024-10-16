@@ -12,7 +12,7 @@ from data_safe_haven.infrastructure.common import (
     get_id_from_vnet,
     get_name_from_vnet,
 )
-from data_safe_haven.types import NetworkingPriorities, Ports
+from data_safe_haven.types import AzureServiceTag, NetworkingPriorities, Ports
 
 
 class SRENetworkingProps:
@@ -31,7 +31,7 @@ class SRENetworkingProps:
         shm_subscription_id: Input[str],
         shm_zone_name: Input[str],
         sre_name: Input[str],
-        user_public_ip_ranges: Input[list[str]],
+        user_public_ip_ranges: Input[list[str]] | AzureServiceTag,
     ) -> None:
         # Other variables
         self.dns_private_zones = dns_private_zones
@@ -67,6 +67,13 @@ class SRENetworkingComponent(ComponentResource):
         super().__init__("dsh:sre:NetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = {"component": "networking"} | (tags if tags else {})
+
+        if isinstance(props.user_public_ip_ranges, list):
+            user_public_ip_ranges = props.user_public_ip_ranges
+            user_service_tag = None
+        else:
+            user_public_ip_ranges = None
+            user_service_tag = props.user_public_ip_ranges
 
         # Define route table
         route_table = network.RouteTable(
@@ -125,7 +132,8 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowUsersInternetInbound",
                     priority=NetworkingPriorities.AUTHORISED_EXTERNAL_USER_IPS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefixes=props.user_public_ip_ranges,
+                    source_address_prefix=user_service_tag,
+                    source_address_prefixes=user_public_ip_ranges,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
