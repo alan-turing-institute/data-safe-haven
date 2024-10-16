@@ -3,7 +3,6 @@
 ## Main command
 
 :::{typer} data_safe_haven.commands.cli:application
-:preferred: text
 :prog: dsh
 :width: 65
 :::
