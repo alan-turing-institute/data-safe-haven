@@ -10,6 +10,7 @@ from pydantic import BaseModel, field_validator
 from data_safe_haven.types import (
     AzureLocation,
     AzurePremiumFileShareSize,
+    AzureServiceTag,
     AzureVmSku,
     DatabaseSystem,
     EmailAddress,
@@ -58,7 +59,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     databases: UniqueList[DatabaseSystem] = []
     data_provider_ip_addresses: list[IpAddress] = []
     remote_desktop: ConfigSubsectionRemoteDesktopOpts
-    research_user_ip_addresses: list[IpAddress] = []
+    research_user_ip_addresses: list[IpAddress] | AzureServiceTag = []
     storage_quota_gb: ConfigSubsectionStorageQuotaGB
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
     timezone: TimeZone = "Etc/UTC"
@@ -67,7 +68,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     @field_validator(
         "admin_ip_addresses",
         "data_provider_ip_addresses",
-        "research_user_ip_addresses",
+        # "research_user_ip_addresses",
         mode="after",
     )
     @classmethod
@@ -78,3 +79,16 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
                 msg = "IP addresses must not overlap."
                 raise ValueError(msg)
         return v
+
+    @field_validator(
+        "research_user_ip_addresses",
+        mode="after",
+    )
+    @classmethod
+    def ensure_non_overlapping_or_tag(
+        cls, v: list[IpAddress] | AzureServiceTag
+    ) -> list[IpAddress] | AzureServiceTag:
+        if isinstance(v, list):
+            return cls.ensure_non_overlapping(v)
+        else:
+            return v
