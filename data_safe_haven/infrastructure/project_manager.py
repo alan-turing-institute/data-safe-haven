@@ -294,7 +294,7 @@ class ProjectManager:
 
         if existing_value != value:
             msg = (
-                f"Unchangeable configuration variable '{name}' not consistent, "
+                f"Unchangeable configuration option '{name}' not consistent, "
                 f"your configuration: '{value}', Pulumi workspace: '{existing_value}'."
             )
             raise DataSafeHavenPulumiError(msg)
