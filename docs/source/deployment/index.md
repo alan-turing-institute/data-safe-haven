@@ -21,6 +21,7 @@ Deploying an instance of the Data Safe Haven involves the following steps:
 
 Install the following requirements before starting
 
+- [Python 3.12](https://wiki.python.org/moin/BeginnersGuide/Download)
 - [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
 - [pipx](https://pipx.pypa.io/stable/installation/)
 - [Pulumi](https://www.pulumi.com/docs/get-started/install/)
