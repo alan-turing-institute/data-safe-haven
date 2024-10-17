@@ -288,7 +288,7 @@ class ProjectManager:
     def ensure_config(self, name: str, value: str, *, secret: bool) -> None:
         """Ensure that config values have been set, setting them if they do not exist"""
         try:
-            existing_value = self.stack.get_config(name)
+            existing_value = self.stack.get_config(name).value
         except automation.CommandError:
             self.set_config(name, value, secret=secret)
 
