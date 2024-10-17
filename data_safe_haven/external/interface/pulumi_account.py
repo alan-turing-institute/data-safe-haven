@@ -1,5 +1,6 @@
 """Manage Pulumi accounts"""
 
+import sys
 from shutil import which
 from typing import Any
 
@@ -39,5 +40,6 @@ class PulumiAccount:
                 "AZURE_STORAGE_ACCOUNT": self.storage_account_name,
                 "AZURE_STORAGE_KEY": str(storage_account_keys[0].value),
                 "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
+                "PULUMI_PYTHON_CMD": sys.executable,
             }
         return self._env
