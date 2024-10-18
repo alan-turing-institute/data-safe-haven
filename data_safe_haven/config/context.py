@@ -35,7 +35,7 @@ class Context(ContextBase, BaseModel, validate_assignment=True):
 
     @property
     def entra_application_name(self) -> str:
-        return f"Data Safe Haven ({self.description}) Pulumi Service Principal"
+        return f"Data Safe Haven ({self.name}) Pulumi Service Principal"
 
     @property
     def entra_application_secret(self) -> str:
