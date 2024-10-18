@@ -34,7 +34,7 @@ class TestContext:
     def test_entra_application_name(self, context: Context) -> None:
         assert (
             context.entra_application_name
-            == "Data Safe Haven (Acme Deployment) Pulumi Service Principal"
+            == "Data Safe Haven (acmedeployment) Pulumi Service Principal"
         )
 
     def test_entra_application_secret(self, context: Context, mocker) -> None:
