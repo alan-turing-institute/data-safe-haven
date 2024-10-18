@@ -43,7 +43,7 @@ class TestDeploySRE:
         result = runner.invoke(sre_command_group, ["deploy", "sandbox"])
         assert result.exit_code == 1
         assert (
-            "No Entra application 'Data Safe Haven (Acme Deployment) Pulumi Service Principal' was found."
+            "No Entra application 'Data Safe Haven (acmedeployment) Pulumi Service Principal' was found."
             in caplog.text
         )
         assert "Please redeploy your SHM." in caplog.text
