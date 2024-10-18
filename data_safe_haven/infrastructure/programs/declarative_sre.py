@@ -117,6 +117,8 @@ class DeclarativeSRE:
             "sre_entra",
             SREEntraProps(
                 group_names=ldap_group_names,
+                shm_name=self.context.name,
+                sre_name=self.config.name,
             ),
         )
 
