@@ -57,7 +57,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     admin_email_address: EmailAddress
     admin_ip_addresses: list[IpAddress] = []
     databases: UniqueList[DatabaseSystem] = []
-    data_provider_ip_addresses: list[IpAddress] = []
+    data_provider_ip_addresses: list[IpAddress] | AzureServiceTag = []
     remote_desktop: ConfigSubsectionRemoteDesktopOpts
     research_user_ip_addresses: list[IpAddress] | AzureServiceTag = []
     storage_quota_gb: ConfigSubsectionStorageQuotaGB
@@ -67,8 +67,6 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
 
     @field_validator(
         "admin_ip_addresses",
-        "data_provider_ip_addresses",
-        # "research_user_ip_addresses",
         mode="after",
     )
     @classmethod
@@ -81,6 +79,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
         return v
 
     @field_validator(
+        "data_provider_ip_addresses",
         "research_user_ip_addresses",
         mode="after",
     )
