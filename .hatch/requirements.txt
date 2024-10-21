@@ -4,9 +4,9 @@
 # - appdirs==1.4.4
 # - azure-core==1.31.0
 # - azure-identity==1.19.0
-# - azure-keyvault-certificates==4.8.0
-# - azure-keyvault-keys==4.9.0
-# - azure-keyvault-secrets==4.8.0
+# - azure-keyvault-certificates==4.9.0
+# - azure-keyvault-keys==4.10.0
+# - azure-keyvault-secrets==4.9.0
 # - azure-mgmt-compute==33.0.0
 # - azure-mgmt-containerinstance==10.1.0
 # - azure-mgmt-dns==8.1.0
@@ -19,13 +19,13 @@
 # - azure-storage-file-datalake==12.17.0
 # - azure-storage-file-share==12.19.0
 # - chevron==0.14.0
-# - cryptography==43.0.1
+# - cryptography==43.0.3
 # - fqdn==1.5.1
 # - psycopg[binary]==3.2.3
-# - pulumi-azure-native==2.66.0
-# - pulumi-azuread==6.0.0
-# - pulumi-random==4.16.6
-# - pulumi==3.136.1
+# - pulumi-azure-native==2.67.0
+# - pulumi-azuread==6.0.1
+# - pulumi-random==4.16.7
+# - pulumi==3.137.0
 # - pydantic==2.9.2
 # - pyjwt[crypto]==2.9.0
 # - pytz==2024.2
@@ -70,11 +70,11 @@ azure-core==1.31.0
     #   msrest
 azure-identity==1.19.0
     # via hatch.envs.default
-azure-keyvault-certificates==4.8.0
+azure-keyvault-certificates==4.9.0
     # via hatch.envs.default
-azure-keyvault-keys==4.9.0
+azure-keyvault-keys==4.10.0
     # via hatch.envs.default
-azure-keyvault-secrets==4.8.0
+azure-keyvault-secrets==4.9.0
     # via hatch.envs.default
 azure-mgmt-compute==33.0.0
     # via hatch.envs.default
@@ -122,7 +122,7 @@ chevron==0.14.0
     # via hatch.envs.default
 click==8.1.7
     # via typer
-cryptography==43.0.1
+cryptography==43.0.3
     # via
     #   hatch.envs.default
     #   acme
@@ -192,17 +192,17 @@ psycopg==3.2.3
     # via hatch.envs.default
 psycopg-binary==3.2.3
     # via psycopg
-pulumi==3.136.1
+pulumi==3.137.0
     # via
     #   hatch.envs.default
     #   pulumi-azure-native
     #   pulumi-azuread
     #   pulumi-random
-pulumi-azure-native==2.66.0
+pulumi-azure-native==2.67.0
     # via hatch.envs.default
-pulumi-azuread==6.0.0
+pulumi-azuread==6.0.1
     # via hatch.envs.default
-pulumi-random==4.16.6
+pulumi-random==4.16.7
     # via hatch.envs.default
 pycparser==2.22
     # via cffi
