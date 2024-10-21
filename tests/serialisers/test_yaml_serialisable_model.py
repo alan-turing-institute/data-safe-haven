@@ -68,15 +68,24 @@ class TestYAMLSerialisableModel:
         ):
             ExampleYAMLSerialisableModel.from_yaml(yaml)
 
-    def test_from_yaml_validation_error(self):
+    def test_from_yaml_validation_errors(self, caplog):
         yaml = "\n".join(
-            ["string: 'abc'", "integer: 'not an integer'", "list_of_integers: [-1,0,1]"]
+            [
+                "string: 'abc'",
+                "integer: 'not an integer'",
+                "list_of_integers: [-1,0,z,1]",
+            ]
         )
         with raises(
             DataSafeHavenTypeError,
             match="Example configuration is invalid.",
         ):
             ExampleYAMLSerialisableModel.from_yaml(yaml)
+        assert "Input should be a valid integer" in caplog.text
+        assert "Original input: not an integer" in caplog.text
+        assert "unable to parse string as an integer" in caplog.text
+        assert "list_of_integers.2" in caplog.text
+        assert "Original input: z" in caplog.text
 
     def test_to_filepath(self, tmp_path, example_config_class):
         filepath = tmp_path / "test.yaml"

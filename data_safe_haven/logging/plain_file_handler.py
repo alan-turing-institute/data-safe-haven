@@ -16,9 +16,16 @@ class PlainFileHandler(logging.FileHandler):
         super().__init__(*args, **kwargs)
 
     @staticmethod
-    def strip_formatting(input_string: str) -> str:
+    def strip_rich_formatting(input_string: str) -> str:
         """Strip console markup formatting from a string"""
         text = Text.from_markup(input_string)
+        text.spans = []
+        return str(text)
+
+    @staticmethod
+    def strip_ansi_escapes(input_string: str) -> str:
+        """Strip ANSI escape sequences from a string"""
+        text = Text.from_ansi(input_string)
         text.spans = []
         return str(text)
 
@@ -27,5 +34,5 @@ class PlainFileHandler(logging.FileHandler):
         if isinstance(record.msg, Text):
             # Convert rich.text.Text objects to strings
             record.msg = str(record.msg)
-        record.msg = self.strip_formatting(record.msg)
+        record.msg = self.strip_ansi_escapes(self.strip_rich_formatting(record.msg))
         super().emit(record)

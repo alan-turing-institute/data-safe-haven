@@ -87,6 +87,27 @@ If you have manually created a user and want to enable SSPR, do the following
         - **Email:** enter the user's email address here
     - Click the **{guilabel}`Save`** icon in the top panel
 
+## Listing available SRE configurations and deployment status
+
+- Run the following if you want to check what SRE configurations are available in the current context, and whether those SREs are deployed
+
+```{code} shell
+$ dsh config available
+```
+
+which will give output like the following
+
+```{code} shell
+Available SRE configurations for context 'green':
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━┓
+┃ SRE Name     ┃ Deployed ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━┩
+│ emerald      │ x        │
+│ jade         │          │
+│ olive        │          │
+└──────────────┴──────────┘
+```
+
 ## Removing a deployed Data Safe Haven
 
 - Run the following if you want to teardown a deployed SRE:
