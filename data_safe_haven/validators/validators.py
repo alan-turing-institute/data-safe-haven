@@ -124,7 +124,7 @@ def ip_address(ip_address: str) -> str:
     try:
         return str(ipaddress.ip_network(ip_address))
     except Exception as exc:
-        msg = "Expected valid IPv4 address, for example '1.1.1.1', or 'Internet'."
+        msg = "Expected valid IPv4 address, for example '1.1.1.1'."
         raise ValueError(msg) from exc
 
 
