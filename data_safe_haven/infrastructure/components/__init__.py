@@ -13,8 +13,6 @@ from .composite import (
 from .dynamic import (
     BlobContainerAcl,
     BlobContainerAclProps,
-    EntraApplication,
-    EntraApplicationProps,
     FileShareFile,
     FileShareFileProps,
     SSLCertificate,
@@ -28,8 +26,6 @@ from .wrapped import (
 __all__ = [
     "BlobContainerAcl",
     "BlobContainerAclProps",
-    "EntraApplication",
-    "EntraApplicationProps",
     "FileShareFile",
     "FileShareFileProps",
     "LinuxVMComponentProps",
