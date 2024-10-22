@@ -32,7 +32,7 @@ class SRERemoteDesktopProps:
         database_password: Input[str],
         dns_server_ip: Input[str],
         dockerhub_credentials: DockerHubCredentials,
-        entra_application_fqdn: Input[str],
+        entra_application_url: Input[str],
         entra_application_name: Input[str],
         entra_auth_token: str,
         entra_tenant_id: Input[str],
@@ -59,7 +59,7 @@ class SRERemoteDesktopProps:
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
         self.entra_application_name = entra_application_name
-        self.entra_application_url = Output.concat("https://", entra_application_fqdn)
+        self.entra_application_url = entra_application_url
         self.entra_auth_token = entra_auth_token
         self.entra_tenant_id = entra_tenant_id
         self.ldap_group_filter = ldap_group_filter

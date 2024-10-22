@@ -160,8 +160,8 @@ class DeclarativeSRE:
             SREEntraProps(
                 group_names=ldap_group_names,
                 shm_name=self.context.name,
+                sre_fqdn=networking.sre_fqdn,
                 sre_name=self.config.name,
-                remote_desktop_fqdn=networking.sre_fqdn,
             ),
         )
 
@@ -291,7 +291,7 @@ class DeclarativeSRE:
                 database_password=data.password_user_database_admin,
                 dns_server_ip=dns.ip_address,
                 dockerhub_credentials=dockerhub_credentials,
-                entra_application_fqdn=networking.sre_fqdn,
+                entra_application_url=entra.remote_desktop_url,
                 entra_application_name=f"sre-{self.config.name}-guacamole",
                 entra_auth_token=self.graph_api_token,
                 entra_tenant_id=shm_entra_tenant_id,

@@ -19,15 +19,13 @@ class SREEntraProps:
     def __init__(
         self,
         group_names: Mapping[str, str],
-        remote_desktop_fqdn: Input[str],
+        sre_fqdn: Input[str],
         shm_name: Input[str],
         sre_name: Input[str],
     ) -> None:
         self.group_names = group_names
-        self.remote_desktop_url = Output.from_input(remote_desktop_fqdn).apply(
-            lambda fqdn: f"https://{fqdn.strip('/')}/"
-        )
         self.shm_name = shm_name
+        self.sre_fqdn = sre_fqdn
         self.sre_name = sre_name
 
 
@@ -99,6 +97,9 @@ class SREEntraComponent(ComponentResource):
         # - only used as part of the OAuth 2.0 authorization flow
         # - does not need any application permissions
         # - does not need an application secret
+        self.remote_desktop_url = Output.from_input(props.sre_fqdn).apply(
+            lambda fqdn: f"https://{str(fqdn).strip('/')}/"
+        )
         self.remote_desktop_application = EntraApplicationComponent(
             f"{self._name}_remote_desktop",
             EntraWebApplicationProps(
@@ -111,7 +112,7 @@ class SREEntraComponent(ComponentResource):
                 ),
                 application_permissions=[],
                 msgraph_service_principal=msgraph_service_principal,
-                redirect_url=props.remote_desktop_url,
+                redirect_url=self.remote_desktop_url,
             ),
             opts=child_opts,
         )
