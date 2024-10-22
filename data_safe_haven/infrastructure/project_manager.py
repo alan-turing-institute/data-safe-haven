@@ -286,11 +286,28 @@ class ProjectManager:
             raise DataSafeHavenPulumiError(msg) from exc
 
     def ensure_config(self, name: str, value: str, *, secret: bool) -> None:
-        """Ensure that config values have been set, setting them if they do not exist"""
+        """
+        Ensure that config values have been set.
+
+        Values will be set if they do not exist.
+
+        If the value is already set and does not match the `value` argument,
+        `DataSafeHavenPulumiError` will be raised.
+        """
         try:
-            self.stack.get_config(name)
+            existing_value = self.stack.get_config(name).value
         except automation.CommandError:
+            # Set value if it does not already exist
             self.set_config(name, value, secret=secret)
+
+        # If the value does already exist, ensure it is consistent with the declared
+        # value
+        if existing_value != value:
+            msg = (
+                f"Unchangeable configuration option '{name}' not consistent, "
+                f"your configuration: '{value}', Pulumi workspace: '{existing_value}'."
+            )
+            raise DataSafeHavenPulumiError(msg)
 
     def evaluate(self, result: str) -> None:
         """Evaluate a Pulumi operation."""
