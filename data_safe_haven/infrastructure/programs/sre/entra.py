@@ -115,3 +115,10 @@ class SREEntraComponent(ComponentResource):
             ),
             opts=child_opts,
         )
+
+        # Register outputs
+        self.identity_application_id = self.identity_application.application.id
+        self.identity_application_secret = self.identity_application_secret.value
+        self.remote_desktop_application_id = (
+            self.remote_desktop_application.application.id
+        )

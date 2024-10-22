@@ -155,7 +155,7 @@ class DeclarativeSRE:
         )
 
         # Deploy Entra resources
-        SREEntraComponent(
+        entra = SREEntraComponent(
             "sre_entra",
             SREEntraProps(
                 group_names=ldap_group_names,
@@ -251,8 +251,8 @@ class DeclarativeSRE:
             SREIdentityProps(
                 dns_server_ip=dns.ip_address,
                 dockerhub_credentials=dockerhub_credentials,
-                entra_application_name=f"sre-{self.config.name}-apricot",
-                entra_auth_token=self.graph_api_token,
+                entra_application_id=entra.identity_application_id,
+                entra_application_secret=entra.identity_application_secret,
                 entra_tenant_id=shm_entra_tenant_id,
                 location=self.config.azure.location,
                 resource_group_name=resource_group.name,
