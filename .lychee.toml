@@ -90,6 +90,7 @@ glob_ignore_case = false
 # Exclude URLs and mail addresses from checking (supports regex).
 # exclude = [ '.*\.github.com\.*' ]
 exclude = [
+  'code\.visualstudio\.com',  # 403
   'doi\.org',  # 403
   'entra.microsoft\.com',  # Requires authentication (403)
   'example\.org',  # domain used for examples only

@@ -3,7 +3,7 @@
 #
 # - appdirs==1.4.4
 # - azure-core==1.31.0
-# - azure-identity==1.18.0
+# - azure-identity==1.19.0
 # - azure-keyvault-certificates==4.8.0
 # - azure-keyvault-keys==4.9.0
 # - azure-keyvault-secrets==4.8.0
@@ -17,15 +17,15 @@
 # - azure-mgmt-storage==21.2.1
 # - azure-storage-blob==12.23.1
 # - azure-storage-file-datalake==12.17.0
-# - azure-storage-file-share==12.18.0
+# - azure-storage-file-share==12.19.0
 # - chevron==0.14.0
 # - cryptography==43.0.1
 # - fqdn==1.5.1
 # - psycopg[binary]==3.1.19
-# - pulumi-azure-native==2.64.3
-# - pulumi-azuread==5.53.4
+# - pulumi-azure-native==2.66.0
+# - pulumi-azuread==6.0.0
 # - pulumi-random==4.16.6
-# - pulumi==3.135.1
+# - pulumi==3.136.1
 # - pydantic==2.9.2
 # - pyjwt[crypto]==2.9.0
 # - pytz==2024.2
@@ -68,7 +68,7 @@ azure-core==1.31.0
     #   azure-storage-file-datalake
     #   azure-storage-file-share
     #   msrest
-azure-identity==1.18.0
+azure-identity==1.19.0
     # via hatch.envs.default
 azure-keyvault-certificates==4.8.0
     # via hatch.envs.default
@@ -108,7 +108,7 @@ azure-storage-blob==12.23.1
     #   azure-storage-file-datalake
 azure-storage-file-datalake==12.17.0
     # via hatch.envs.default
-azure-storage-file-share==12.18.0
+azure-storage-file-share==12.19.0
     # via hatch.envs.default
 certifi==2024.8.30
     # via
@@ -116,7 +116,7 @@ certifi==2024.8.30
     #   requests
 cffi==1.17.1
     # via cryptography
-charset-normalizer==3.3.2
+charset-normalizer==3.4.0
     # via requests
 chevron==0.14.0
     # via hatch.envs.default
@@ -134,7 +134,7 @@ cryptography==43.0.1
     #   msal
     #   pyjwt
     #   pyopenssl
-debugpy==1.8.6
+debugpy==1.8.7
     # via pulumi
 dill==0.3.9
     # via pulumi
@@ -142,11 +142,11 @@ dnspython==2.6.1
     # via simple-acme-dns
 fqdn==1.5.1
     # via hatch.envs.default
-grpcio==1.60.2
+grpcio==1.66.2
     # via pulumi
 idna==3.10
     # via requests
-isodate==0.6.1
+isodate==0.7.2
     # via
     #   azure-keyvault-certificates
     #   azure-keyvault-keys
@@ -192,15 +192,15 @@ psycopg==3.1.19
     # via hatch.envs.default
 psycopg-binary==3.1.19
     # via psycopg
-pulumi==3.135.1
+pulumi==3.136.1
     # via
     #   hatch.envs.default
     #   pulumi-azure-native
     #   pulumi-azuread
     #   pulumi-random
-pulumi-azure-native==2.64.3
+pulumi-azure-native==2.66.0
     # via hatch.envs.default
-pulumi-azuread==5.53.4
+pulumi-azuread==6.0.0
     # via hatch.envs.default
 pulumi-random==4.16.6
     # via hatch.envs.default
@@ -257,7 +257,6 @@ simple-acme-dns==3.1.0
 six==1.16.0
     # via
     #   azure-core
-    #   isodate
     #   pulumi
 typer==0.12.5
     # via hatch.envs.default
