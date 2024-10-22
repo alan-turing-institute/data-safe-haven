@@ -112,16 +112,6 @@ class DeclarativeSRE:
             ]
         )
 
-        # Deploy Entra resources
-        SREEntraComponent(
-            "sre_entra",
-            SREEntraProps(
-                group_names=ldap_group_names,
-                shm_name=self.context.name,
-                sre_name=self.config.name,
-            ),
-        )
-
         # Deploy resource group
         resource_group = resources.ResourceGroup(
             "sre_resource_group",
@@ -162,6 +152,17 @@ class DeclarativeSRE:
                 user_public_ip_ranges=self.config.sre.research_user_ip_addresses,
             ),
             tags=self.tags,
+        )
+
+        # Deploy Entra resources
+        SREEntraComponent(
+            "sre_entra",
+            SREEntraProps(
+                group_names=ldap_group_names,
+                shm_name=self.context.name,
+                sre_name=self.config.name,
+                remote_desktop_fqdn=networking.sre_fqdn,
+            ),
         )
 
         # Deploy SRE firewall

@@ -8,7 +8,8 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from data_safe_haven.functions import replace_separators
 from data_safe_haven.infrastructure.components.composite.entra_application import (
     EntraApplicationComponent,
-    EntraApplicationProps,
+    EntraDesktopApplicationProps,
+    EntraWebApplicationProps,
 )
 
 
@@ -18,10 +19,14 @@ class SREEntraProps:
     def __init__(
         self,
         group_names: Mapping[str, str],
+        remote_desktop_fqdn: Input[str],
         shm_name: Input[str],
         sre_name: Input[str],
     ) -> None:
         self.group_names = group_names
+        self.remote_desktop_url = Output.from_input(remote_desktop_fqdn).apply(
+            lambda fqdn: f"https://{fqdn.strip('/')}/"
+        )
         self.shm_name = shm_name
         self.sre_name = sre_name
 
@@ -65,7 +70,7 @@ class SREEntraComponent(ComponentResource):
         # - needs an application secret for authentication
         self.identity_application = EntraApplicationComponent(
             f"{self._name}_identity",
-            EntraApplicationProps(
+            EntraDesktopApplicationProps(
                 application_name=Output.concat(
                     "Data Safe Haven (",
                     props.shm_name,
@@ -88,4 +93,25 @@ class SREEntraComponent(ComponentResource):
             f"{self._name}_identity_application_secret",
             application_id=self.identity_application.application.id,
             display_name="Apricot Authentication Secret",
+        )
+
+        # Remote desktop application
+        # - only used as part of the OAuth 2.0 authorization flow
+        # - does not need any application permissions
+        # - does not need an application secret
+        self.remote_desktop_application = EntraApplicationComponent(
+            f"{self._name}_remote_desktop",
+            EntraWebApplicationProps(
+                application_name=Output.concat(
+                    "Data Safe Haven (",
+                    props.shm_name,
+                    " - ",
+                    props.sre_name,
+                    ") Remote Desktop Service Principal",
+                ),
+                application_permissions=[],
+                msgraph_service_principal=msgraph_service_principal,
+                redirect_url=props.remote_desktop_url,
+            ),
+            opts=child_opts,
         )
