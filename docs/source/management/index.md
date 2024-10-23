@@ -135,7 +135,7 @@ $ dsh shm teardown
 
 ::::{admonition} Tearing down an SHM
 All SREs associated with the SHM must be torn down before the SHM can be torn down.
-Tearing down the SHM deletes any remotely stored SRE configurations.
+Tearing down the SHM permanently deletes **all** remotely stored configuration and state data.
 ::::
 
 ## Managing data ingress and egress
