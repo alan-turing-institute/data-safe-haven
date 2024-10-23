@@ -118,8 +118,8 @@ class SREEntraComponent(ComponentResource):
         )
 
         # Register outputs
-        self.identity_application_id = self.identity_application.application.id
+        self.identity_application_id = self.identity_application.application.client_id
         self.identity_application_secret = self.identity_application_secret.value
         self.remote_desktop_application_id = (
-            self.remote_desktop_application.application.id
+            self.remote_desktop_application.application.client_id
         )
