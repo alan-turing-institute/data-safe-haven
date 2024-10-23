@@ -92,7 +92,7 @@ def deploy(
         )
         logger.info(
             f"SRE will be deployed to subscription '[green]{sre_subscription_name}[/]'"
-            f" ('[bold]{sre_config.azure.subscription_id}[/]')"
+            f" ({sre_config.azure.subscription_id})"
         )
         # Set Entra options
         application = graph_api.get_application_by_name(context.entra_application_name)
@@ -136,7 +136,13 @@ def deploy(
             replace=True,
         )
         logger.info(f"SRE will be registered in SHM '[green]{shm_config.shm.fqdn}[/]'")
-        logger.info(f"SHM subscription '[green]{shm_config.azure.subscription_id}[/]'")
+        shm_subscription_name = azure_sdk.get_subscription_name(
+            shm_config.azure.subscription_id
+        )
+        logger.info(
+            f"SHM is deployed to subscription '[green]{shm_subscription_name}[/]'"
+            f" ({shm_config.azure.subscription_id})"
+        )
 
         # Deploy Azure infrastructure with Pulumi
         try:
