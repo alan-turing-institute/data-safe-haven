@@ -97,4 +97,3 @@ md5sum -c hashes.txt | grep FAILED
 ```
 
 To use the `sha256` algorithm, replace `md5sum` with `sha256` in the above commands.
-
