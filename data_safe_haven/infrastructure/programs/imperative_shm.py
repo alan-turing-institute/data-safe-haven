@@ -1,4 +1,4 @@
-from data_safe_haven.config import Context, SHMConfig, DSHPulumiConfig
+from data_safe_haven.config import Context, DSHPulumiConfig, SHMConfig
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenMicrosoftGraphError,
@@ -176,7 +176,7 @@ class ImperativeSHM:
         deployed = pulumi_config.project_names
         if deployed:
             logger.info(f"Found deployed Pulumi SREs: {deployed}.")
-            msg = f"Deployed SREs must be torn down before the SHM can be torn down."
+            msg = "Deployed SREs must be torn down before the SHM can be torn down."
             raise DataSafeHavenAzureError(msg)
         try:
             logger.info(
