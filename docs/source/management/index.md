@@ -120,10 +120,10 @@ Available SRE configurations for context 'green':
 $ dsh sre teardown YOUR_SRE_NAME
 ```
 
-::::{admonition} Tearing down an SRE deletes ALL data and resources
-Running `dsh sre teardown` will remove all resources deployed within the SRE.
-Ensure that any desired outputs have been egressed before deleting the SRE.
-Any data remaining on the SRE will be deleted.
+::::{danger} Tearing down an SRE is destructive and irreversible 
+Running `dsh sre teardown` will destroy **all** resources deployed within the SRE.
+Ensure that any desired outputs have been extracted before deleting the SRE.
+**All** data remaining on the SRE will be deleted.
 The user groups for the SRE on Microsoft Entra ID will also be deleted.
 ::::
 
