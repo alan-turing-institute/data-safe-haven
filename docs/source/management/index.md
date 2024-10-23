@@ -178,7 +178,7 @@ The following steps show how to generate a temporary write-only upload token tha
 Assessment of output must be completed **before** an egress link is created.
 ```
 
-The {ref}`role_system_manager` creates a time-limited and IP restricted link to remove data from the environment, after the outputs have been classified and approved for release.
+The {ref}`role_system_manager` creates a time-limited and IP restricted link to remove data from the environment.
 
 - In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM
 - Search for the resource group: `shm-<YOUR_SHM_NAME>-sre-<YOUR_SRE_NAME>-rg`, then click through to the storage account called: `sh<first three letters of SHM name>sre<first three letters of SRE name>sensitivedata`
