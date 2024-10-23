@@ -2,7 +2,7 @@
 
 ## Managing users
 
-###  Add users to the Data Safe Haven
+### Add users to the Data Safe Haven
 
 :::{important}
 You will need a full name, phone number, email address and country for each user.
