@@ -1055,14 +1055,13 @@ class GraphApi:
                 self.logger.info(
                     f"To proceed you will need to delegate [green]{domain_name}[/] to specific Azure nameservers"
                 )
-                ns_list = ", ".join([f"[green]{n}[/]" for n in expected_nameservers])
                 domain_parent = ".".join(domain_name.split(".")[1:])
                 self.logger.info(
-                    f"Create {len(ns_list)} [green]NS[/] records for [green]{domain_name}[/] (for example in the zone of {domain_parent})"
+                    f"Create {len(expected_nameservers)} [green]NS[/] records for [green]{domain_name}[/] (for example in the zone of {domain_parent})"
                 )
                 console.tabulate(
                     header=["domain", "record type", "value"],
-                    rows=[[domain_name, "NS", ns_item] for ns_item in ns_list],
+                    rows=[[domain_name, "NS", nameserver] for nameserver in expected_nameservers],
                 )
                 docs_link = (
                     "https://www.cloudflare.com/learning/dns/dns-records/dns-ns-record/"

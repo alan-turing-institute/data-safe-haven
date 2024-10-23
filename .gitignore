@@ -51,3 +51,5 @@ expanded.yaml
 
 # ruff cache
 .ruff_cache
+
+**/venv
