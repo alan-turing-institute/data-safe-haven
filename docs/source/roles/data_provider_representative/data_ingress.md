@@ -12,10 +12,12 @@ It may be convenient to use [Azure Storage Explorer](https://azure.microsoft.com
 In this case you will not need log-in credentials, as your {ref}`role_system_manager` can provide a short-lived secure access token which will let you upload data.
 
 ```{tip}
-You may want to keep the following considerations in mind when transferring data in order to reduce the chance of a data breach
-- use of short-lived access tokens limits the time within which an attacker can operate
-- letting your {ref}`role_system_manager` know a fixed IP address you will be connecting from (eg. a corporate VPN) limits the places an attacker can operate from
-- communicating with your {ref}`role_system_manager` through a secure out-of-band channel (eg. encrypted email) reduces the chances that an attacker can intercept or alter your messages in transit
+You may want to keep the following considerations in mind when transferring data in order to reduce the chance of a data breach.
+
+- Use of short-lived access tokens limits the time within which an attacker can operate.
+- Letting your {ref}`role_system_manager` know a fixed IP address you will be connecting from (_e.g._ a corporate VPN) limits the places an attacker can operate from.
+- Communicating with your {ref}`role_system_manager` through a secure out-of-band channel (_e.g._ encrypted email) reduces the chances that an attacker can intercept or alter your messages in transit.
+
 ```
 
 ## Preparing input data for the Data Safe Haven
