@@ -11,6 +11,7 @@ from data_safe_haven.infrastructure.components.composite.entra_application impor
     EntraDesktopApplicationProps,
     EntraWebApplicationProps,
 )
+from data_safe_haven.types import EntraAppPermissionType
 
 
 class SREEntraProps:
@@ -77,9 +78,9 @@ class SREEntraComponent(ComponentResource):
                     ") Identity Service Principal",
                 ),
                 application_permissions=[
-                    ("Role", "User.Read.All"),
-                    ("Role", "GroupMember.Read.All"),
-                    ("Scope", "User.Read.All"),
+                    (EntraAppPermissionType.APPLICATION, "User.Read.All"),
+                    (EntraAppPermissionType.APPLICATION, "GroupMember.Read.All"),
+                    (EntraAppPermissionType.DELEGATED, "User.Read.All"),
                 ],
                 msgraph_service_principal=msgraph_service_principal,
             ),

@@ -17,6 +17,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenValueError,
 )
 from data_safe_haven.logging import get_logger, get_null_logger
+from data_safe_haven.types import EntraAppPermissionType
 
 from .credentials import DeferredCredential, GraphApiCredential
 
@@ -193,7 +194,6 @@ class GraphApi:
                 if not request_json:
                     request_json = {
                         "displayName": application_name,
-                        "signInAudience": "AzureADMyOrg",
                         "passwordCredentials": [],
                         "publicClient": {
                             "redirectUris": [
@@ -201,18 +201,19 @@ class GraphApi:
                                 "urn:ietf:wg:oauth:2.0:oob",
                             ]
                         },
+                        "signInAudience": "AzureADMyOrg",
                     }
                 # Add scopes if there are any
                 scopes = [
                     {
                         "id": self.uuid_application[application_scope],
-                        "type": "Role",  # 'Role' is the type for application permissions
+                        "type": EntraAppPermissionType.APPLICATION.value,
                     }
                     for application_scope in application_scopes
                 ] + [
                     {
                         "id": self.uuid_delegated[delegated_scope],
-                        "type": "Scope",  # 'Scope' is the type for delegated permissions
+                        "type": EntraAppPermissionType.DELEGATED.value,
                     }
                     for delegated_scope in delegated_scopes
                 ]

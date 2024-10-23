@@ -7,6 +7,7 @@ import pulumi_azuread as entra
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 
 from data_safe_haven.functions import replace_separators
+from data_safe_haven.types import EntraAppPermissionType
 
 
 class EntraApplicationProps:
@@ -15,7 +16,7 @@ class EntraApplicationProps:
     def __init__(
         self,
         application_name: Input[str],
-        application_permissions: list[tuple[str, str]],
+        application_permissions: list[tuple[EntraAppPermissionType, str]],
         msgraph_service_principal: Input[entra.ServicePrincipal],
         application_kwargs: Mapping[str, Any],
     ) -> None:
@@ -31,10 +32,8 @@ class EntraApplicationProps:
             delegated=msgraph_service_principal.oauth2_permission_scope_ids,
         ).apply(
             lambda kwargs: {
-                # 'Role' permissions belong to the application
-                "Role": kwargs["application"],
-                # 'Scope' permissions are delegated to users
-                "Scope": kwargs["delegated"],
+                EntraAppPermissionType.APPLICATION: kwargs["application"],
+                EntraAppPermissionType.DELEGATED: kwargs["delegated"],
             }
         )
 
@@ -48,7 +47,7 @@ class EntraDesktopApplicationProps(EntraApplicationProps):
     def __init__(
         self,
         application_name: Input[str],
-        application_permissions: list[tuple[str, str]],
+        application_permissions: list[tuple[EntraAppPermissionType, str]],
         msgraph_service_principal: Input[entra.ServicePrincipal],
     ):
         super().__init__(
@@ -72,7 +71,7 @@ class EntraWebApplicationProps(EntraApplicationProps):
     def __init__(
         self,
         application_name: Input[str],
-        application_permissions: list[tuple[str, str]],
+        application_permissions: list[tuple[EntraAppPermissionType, str]],
         msgraph_service_principal: Input[entra.ServicePrincipal],
         redirect_url: Input[str],
     ):
@@ -112,10 +111,12 @@ class EntraApplicationComponent(ComponentResource):
                     entra.ApplicationRequiredResourceAccessArgs(
                         resource_accesses=[
                             entra.ApplicationRequiredResourceAccessResourceAccessArgs(
-                                id=props.msgraph_permissions[scope][permission],
-                                type=scope,
+                                id=props.msgraph_permissions[permission_type][
+                                    permission
+                                ],
+                                type=permission_type.value,
                             )
-                            for scope, permission in props.application_permissions
+                            for permission_type, permission in props.application_permissions
                         ],
                         resource_app_id=props.msgraph_client_id,
                     )
@@ -134,23 +135,23 @@ class EntraApplicationComponent(ComponentResource):
         )
 
         # Grant admin approval for requested application permissions
-        for scope, permission in props.application_permissions:
-            if scope == "application":
+        for permission_type, permission in props.application_permissions:
+            if permission_type == EntraAppPermissionType.APPLICATION:
                 entra.AppRoleAssignment(
                     replace_separators(
-                        f"{self._name}_application_grant_{scope}_{permission}".lower(),
+                        f"{self._name}_application_role_grant_{permission_type.value}_{permission}",
                         "_",
-                    ),
-                    app_role_id=props.msgraph_permissions[scope][permission],
+                    ).lower(),
+                    app_role_id=props.msgraph_permissions[permission_type][permission],
                     principal_object_id=self.application_service_principal.object_id,
                     resource_object_id=props.msgraph_object_id,
                 )
-            if scope == "delegated":
+            if permission_type == EntraAppPermissionType.DELEGATED:
                 entra.ServicePrincipalDelegatedPermissionGrant(
                     replace_separators(
-                        f"{self._name}_application_delegated_grant_{scope}_{permission}".lower(),
+                        f"{self._name}_application_delegated_grant_{permission_type.value}_{permission}",
                         "_",
-                    ),
+                    ).lower(),
                     claim_values=[permission],
                     resource_service_principal_object_id=props.msgraph_object_id,
                     service_principal_object_id=self.application_service_principal.object_id,
