@@ -22,7 +22,7 @@
 # - cryptography==43.0.3
 # - fqdn==1.5.1
 # - psycopg[binary]==3.2.3
-# - pulumi-azure-native==2.67.0
+# - pulumi-azure-native==2.68.0
 # - pulumi-azuread==6.0.1
 # - pulumi-random==4.16.7
 # - pulumi==3.137.0
@@ -198,7 +198,7 @@ pulumi==3.137.0
     #   pulumi-azure-native
     #   pulumi-azuread
     #   pulumi-random
-pulumi-azure-native==2.67.0
+pulumi-azure-native==2.68.0
     # via hatch.envs.default
 pulumi-azuread==6.0.1
     # via hatch.envs.default
