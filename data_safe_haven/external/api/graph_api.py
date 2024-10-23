@@ -1061,7 +1061,10 @@ class GraphApi:
                 )
                 console.tabulate(
                     header=["domain", "record type", "value"],
-                    rows=[[domain_name, "NS", nameserver] for nameserver in expected_nameservers],
+                    rows=[
+                        [domain_name, "NS", nameserver]
+                        for nameserver in expected_nameservers
+                    ],
                 )
                 docs_link = (
                     "https://www.cloudflare.com/learning/dns/dns-records/dns-ns-record/"
