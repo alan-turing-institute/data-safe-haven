@@ -1,4 +1,7 @@
 from .composite import (
+    EntraApplicationComponent,
+    EntraDesktopApplicationProps,
+    EntraWebApplicationProps,
     LinuxVMComponentProps,
     LocalDnsRecordComponent,
     LocalDnsRecordProps,
@@ -26,6 +29,9 @@ from .wrapped import (
 __all__ = [
     "BlobContainerAcl",
     "BlobContainerAclProps",
+    "EntraApplicationComponent",
+    "EntraDesktopApplicationProps",
+    "EntraWebApplicationProps",
     "FileShareFile",
     "FileShareFileProps",
     "LinuxVMComponentProps",

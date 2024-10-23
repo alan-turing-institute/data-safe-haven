@@ -6,7 +6,7 @@ import pulumi_azuread as entra
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 
 from data_safe_haven.functions import replace_separators
-from data_safe_haven.infrastructure.components.composite.entra_application import (
+from data_safe_haven.infrastructure.components import (
     EntraApplicationComponent,
     EntraDesktopApplicationProps,
     EntraWebApplicationProps,
