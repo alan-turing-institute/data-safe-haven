@@ -148,29 +148,29 @@ The following steps show how to generate a temporary write-only upload token tha
 
 - In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM
 - Search for the resource group: `shm-<YOUR_SHM_NAME>-sre-<YOUR_SRE_NAME>-rg`, then click through to the storage account called: `sh<first three letters of SHM name>sre<first three letters of SRE name>sensitivedata`
-- Click `Networking` under `Settings` and ensure that the data provider's IP address is one of those allowed under the `Firewall` header
+- Browse to **{menuselection}`Settings --> Networking`** and ensure that the data provider's IP address is one of those allowed under the **Firewall** header
     - If it is not listed, modify and reupload the SRE configuration and redeploy the SRE using the `dsh` CLI, as per {ref}`deploy_sre`
-- From the `Overview` tab, click the link to `Data storage` and then `Containers` (in the middle of the page)
-- Click `ingress`
-- Click `Shared access tokens` under `Settings` and do the following:
-    - Under `Signing method`, select `User delegation key`
-    - Under `Permissions`, check these boxes:
-        - `Write`
-        - `List`
-    - Set a 24 hour time window in the `Start and expiry date/time` (or an appropriate length of time)
-    - Leave everything else as default and click `Generate SAS token and URL`
-    - Copy the `Blob SAS URL`
+- Browse to **{menuselection}`Data storage --> Containers`** from the menu on the left hand side
+- Click **ingress**
+- Browse to **{menuselection}`Settings --> Shared access tokens`** and do the following:
+    - Under **Signing method**, select **User delegation key**
+    - Under **Permissions**, check these boxes:
+        - **Write**
+        - **List**
+    - Set a 24 hour time window in the **Start and expiry date/time** (or an appropriate length of time)
+    - Leave everything else as default and click **{guilabel}`Generate SAS token and URL`**
+    - Copy the **Blob SAS URL**
 
       ```{image} ingress_token_write_only.png
       :alt: write-only SAS token
       :align: center
       ```
 
-- Send the `Blob SAS URL` to the data provider through a secure channel
+- Send the **Blob SAS URL** to the data provider through a secure channel
 - The data provider should now be able to upload data
 - Validate successful data ingress
-    - From the `Overview` tab, click the link to `Data storage` and then `Containers` (in the middle of the page)
-    - Select the `ingress` container and ensure that the uploaded files are present
+    - Browse to **{menuselection}`Data storage --> Containers`** (in the middle of the page)
+    - Select the **ingress** container and ensure that the uploaded files are present
 
 ### Data egress
 
@@ -180,28 +180,28 @@ Assessment of output must be completed **before** an egress link is created.
 
 The {ref}`role_system_manager` creates a time-limited and IP restricted link to remove data from the environment.
 
-- In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM
+- In the Azure portal select **Subscriptions** then navigate to the subscription containing the relevant SHM
 - Search for the resource group: `shm-<YOUR_SHM_NAME>-sre-<YOUR_SRE_NAME>-rg`, then click through to the storage account called: `sh<first three letters of SHM name>sre<first three letters of SRE name>sensitivedata`
-- Click `Networking` under `Settings` to check the list of pre-approved IP addresses allowed under the `Firewall` header
+- Browse to **{menuselection}`Settings --> Networking`** and check the list of pre-approved IP addresses allowed under the **Firewall** header
     - Ensure that the IP address of the person to receive the outputs is listed
     - If it is not listed, modify and reupload the SRE configuration and redeploy the SRE using the `dsh` CLI, as per {ref}`deploy_sre`
-- Click `Containers` under `Data storage`
-- Click `egress`
-- Click `Shared access tokens` under `Settings` and do the following:
-    - Under `Signing method`, select `User delegation key`
-    - Under `Permissions`, check these boxes:
-        - `Read`
-        - `List`
-    - Set a time window in the `Start and expiry date/time` that gives enough time for the person who will perform the secure egress download to do so
-    - Leave everything else as default click `Generate SAS token and URL`
-    - Copy the `Blob SAS URL`
+- Browse to **{menuselection}`Data storage --> Containers`**
+- Select the **egress** container
+- Browse to **{menuselection}`Settings --> Shared access tokens`** and do the following:
+    - Under **Signing method**, select **User delegation key**
+    - Under **Permissions**, check these boxes:
+        - **Read**
+        - **List**
+    - Set a time window in the **Start and expiry date/time** that gives enough time for the person who will perform the secure egress download to do so
+    - Leave everything else as default and press **{guilabel}`Generate SAS token and URL`**
+    - Copy the **Blob SAS URL**
 
       ```{image} egress_token_read_only.png
       :alt: Read-only SAS token
       :align: center
       ```
 
-- Send the `Blob SAS URL` to the relevant person through a secure channel
+- Send the **Blob SAS URL** to the relevant person through a secure channel
 - The appropriate person should now be able to download data
 
 ### The output volume
