@@ -120,7 +120,7 @@ Available SRE configurations for context 'green':
 $ dsh sre teardown YOUR_SRE_NAME
 ```
 
-::::{danger} Tearing down an SRE is destructive and irreversible 
+::::{danger} Tearing down an SRE is destructive and irreversible
 Running `dsh sre teardown` will destroy **all** resources deployed within the SRE.
 Ensure that any desired outputs have been extracted before deleting the SRE.
 **All** data remaining on the SRE will be deleted.
@@ -133,7 +133,7 @@ The user groups for the SRE on Microsoft Entra ID will also be deleted.
 $ dsh shm teardown
 ```
 
-::::{admonition} Tearing down an SHM
+::::{warning} Tearing down an SHM
 All SREs associated with the SHM must be torn down before the SHM can be torn down.
 Tearing down the SHM permanently deletes **all** remotely stored configuration and state data.
 ::::
@@ -142,17 +142,14 @@ Tearing down the SHM permanently deletes **all** remotely stored configuration a
 
 ### Data Ingress
 
-It is the data provider's responsibility to upload the data required by the safe haven.
-
-```{important}
-Any data ingress must be signed off by the {ref}`role_data_provider_representative`, {ref}`role_investigator` and referee (if applicable).
-```
+It is the data provider representative's responsibility to upload the data required by the safe haven.
 
 The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider, enabling them to upload the data:
 
 - In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM
-- Search for the resource group: `shm-<SHM ID>-sre-<SRE ID>-rg`, then click through to the storage account called: `sh<first three letter of SHM ID>sre<first three letters of SRE ID>sensitivedata`
-- Click `Networking` under `Settings` and ensure that the data provider's IP address is one of those allowed under the `Firewall` header, then hit the save icon in the top left
+- Search for the resource group: `shm-<YOUR_SHM_NAME>-sre-<YOUR_SRE_NAME>-rg`, then click through to the storage account called: `sh<first three letters of SHM name>sre<first three letters of SRE name>sensitivedata`
+- Click `Networking` under `Settings` and ensure that the data provider's IP address is one of those allowed under the `Firewall` header
+    - If it is not listed, modify and reupload the SRE configuration and redeploy the SRE using the `dsh` CLI, as per {ref}`deploy_sre`
 - From the `Overview` tab, click the link to `Data storage` and then `Containers` (in the middle of the page)
 - Click `ingress`
 - Click `Shared access tokens` under `Settings` and do the following:
@@ -169,15 +166,13 @@ The following steps show how to generate a temporary write-only upload token tha
       :align: center
       ```
 
-- Send the `Blob SAS URL` to the data provider through a secure channel (for example, you could use the [Egress secure email](https://www.egress.com/) service)
+- Send the `Blob SAS URL` to the data provider through a secure channel
 - The data provider should now be able to upload data
-- You can validate successful data ingress by logging into a workspace in the SRE and checking the `/mnt/input` volume, where you should be able to view the data that the data provider has uploaded
+- Validate successful data ingress
+    - From the `Overview` tab, click the link to `Data storage` and then `Containers` (in the middle of the page)
+    - Select the `ingress` container and ensure that the uploaded files are present
 
 ### Data egress
-
-```{important}
-Any data egress must be signed off by the {ref}`role_data_provider_representative`, {ref}`role_investigator` and referee (if applicable).
-```
 
 ```{important}
 Assessment of output must be completed **before** an egress link is created.
@@ -186,9 +181,10 @@ Assessment of output must be completed **before** an egress link is created.
 The {ref}`role_system_manager` creates a time-limited and IP restricted link to remove data from the environment, after the outputs have been classified and approved for release.
 
 - In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM
-- Search for the resource group: `shm-<SHM ID>-sre-<SRE ID>-rg`, then click through to the storage account called: `sh<first three letter of SHM ID>sre<first three letters of SRE ID>sensitivedata`
+- Search for the resource group: `shm-<YOUR_SHM_NAME>-sre-<YOUR_SRE_NAME>-rg`, then click through to the storage account called: `sh<first three letters of SHM name>sre<first three letters of SRE name>sensitivedata`
 - Click `Networking` under `Settings` to check the list of pre-approved IP addresses allowed under the `Firewall` header
-    - Ensure that the IP address of the person to receive the outputs is listed and enter it if not
+    - Ensure that the IP address of the person to receive the outputs is listed
+    - If it is not listed, modify and reupload the SRE configuration and redeploy the SRE using the `dsh` CLI, as per {ref}`deploy_sre`
 - Click `Containers` under `Data storage`
 - Click `egress`
 - Click `Shared access tokens` under `Settings` and do the following:
@@ -205,11 +201,11 @@ The {ref}`role_system_manager` creates a time-limited and IP restricted link to 
       :align: center
       ```
 
-- Send the `Blob SAS URL` to the relevant person through a secure channel (for example, you could use the [Egress secure email](https://www.egress.com/) service)
+- Send the `Blob SAS URL` to the relevant person through a secure channel
 - The appropriate person should now be able to download data
 
 ### The output volume
 
 Once you have set up the egress connection in `Azure Storage Explorer`, you should be able to view data from the **output volume**, a read-write area intended for the extraction of results, such as figures for publication.
 On the workspaces, this volume is `/mnt/output` and is shared between all workspaces in an SRE.
-For more info on shared SRE storage volumes, consult the {ref}`Safe Haven User Guide <role_researcher_shared_storage>`.
+For more information on shared SRE storage volumes, consult the {ref}`Safe Haven User Guide <role_researcher_shared_storage>`.
