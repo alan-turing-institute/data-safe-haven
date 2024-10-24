@@ -142,12 +142,12 @@ Tearing down the SHM permanently deletes **all** remotely stored configuration a
 
 ### Data Ingress
 
-It is the data provider representative's responsibility to upload the data required by the safe haven.
+It is the {ref}`role_data_provider_representative`'s responsibility to upload the data required by the safe haven.
 
 The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider, enabling them to upload the data:
 
 - In the Azure portal select **Subscriptions** then navigate to the subscription containing the relevant SHM
-- Search for the resource group: **`shm-<YOUR_SHM_NAME>-sre-<YOUR_SRE_NAME>-rg`**, then click through to the storage account called: **`sh<first three letters of SHM name>sre<first three letters of SRE name>sensitivedata`**
+- Search for the resource group: **`shm-<YOUR_SHM_NAME>-sre-<YOUR_SRE_NAME>-rg`**, then click through to the storage account ending with **`sensitivedata`**
 - Browse to **{menuselection}`Settings --> Networking`** and ensure that the data provider's IP address is one of those allowed under the **Firewall** header
     - If it is not listed, modify and reupload the SRE configuration and redeploy the SRE using the `dsh` CLI, as per {ref}`deploy_sre`
 - Browse to **{menuselection}`Data storage --> Containers`** from the menu on the left hand side
