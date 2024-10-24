@@ -1035,7 +1035,7 @@ class GraphApi:
                 # Check whether all expected nameservers are active
                 with suppress(resolver.NXDOMAIN):
                     self.logger.debug(
-                        f"Checking [green]{domain_name}[/] domain registration status ..."
+                        f"Checking [green]{domain_name}[/] DNS delegation."
                     )
                     active_nameservers = [
                         str(ns) for ns in iter(resolver.resolve(domain_name, "NS"))
@@ -1045,23 +1045,35 @@ class GraphApi:
                         for nameserver in expected_nameservers
                     ):
                         self.logger.info(
-                            f"Verified that [green]{domain_name}[/] is registered as a custom Entra ID domain."
+                            f"[green]{domain_name}[/] DNS has been delegated correctly."
                         )
                         break
                 self.logger.warning(
-                    f"Domain [green]{domain_name}[/] is not currently registered as a custom Entra ID domain."
+                    f"[green]{domain_name}[/] DNS is not delegated correctly."
                 )
                 # Prompt user to set domain delegation manually
-                docs_link = "https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain"
                 self.logger.info(
-                    f"To proceed you will need to delegate [green]{domain_name}[/] to Azure ({docs_link})"
+                    f"To proceed you will need to delegate [green]{domain_name}[/] to specific Azure nameservers"
                 )
-                ns_list = ", ".join([f"[green]{n}[/]" for n in expected_nameservers])
+                domain_parent = ".".join(domain_name.split(".")[1:])
                 self.logger.info(
-                    f"You will need to create NS records pointing to: {ns_list}"
+                    f"Create {len(expected_nameservers)} [green]NS[/] records for [green]{domain_name}[/] (for example in the zone of {domain_parent})"
+                )
+                console.tabulate(
+                    header=["domain", "record type", "value"],
+                    rows=[
+                        [domain_name, "NS", nameserver]
+                        for nameserver in expected_nameservers
+                    ],
+                )
+                docs_link = (
+                    "https://www.cloudflare.com/learning/dns/dns-records/dns-ns-record/"
+                )
+                self.logger.info(
+                    f"You can learn more about NS records here: {docs_link}"
                 )
                 if not console.confirm(
-                    f"Are you ready to check whether [green]{domain_name}[/] has been delegated to Azure?",
+                    f"Are you ready to check whether [green]{domain_name}[/] has been delegated to the correct Azure nameservers?",
                     default_to_yes=True,
                 ):
                     self.logger.error("User terminated check for domain delegation.")
