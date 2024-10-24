@@ -91,7 +91,7 @@ If you have manually created a user and want to enable SSPR, do the following
 
 ## Managing SREs
 
-### Listing available SRE configurations and deployment status
+### List available SRE configurations and deployment status
 
 - Run the following if you want to check what SRE configurations are available in the current context, and whether those SREs are deployed
 
