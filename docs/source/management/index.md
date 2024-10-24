@@ -112,7 +112,7 @@ Available SRE configurations for context 'green':
 └──────────────┴──────────┘
 ```
 
-### Removing a deployed Data Safe Haven
+### Remove a deployed Data Safe Haven
 
 - Run the following if you want to teardown a deployed SRE:
 
