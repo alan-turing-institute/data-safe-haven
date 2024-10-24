@@ -75,7 +75,8 @@
         "question",
         "review",
         "security",
-        "test"
+        "test",
+        "talk"
       ]
     },
     {
@@ -578,7 +579,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/1616531?v=4",
       "profile": "https://carlos.gavidia.me/",
       "contributions": [
-        "bug"
+        "bug",
+        "ideas"
       ]
     },
     {
@@ -588,7 +590,8 @@
       "profile": "https://github.com/helendduncan",
       "contributions": [
         "bug",
-        "review"
+        "review",
+        "ideas"
       ]
     },
     {
@@ -607,7 +610,8 @@
       "profile": "https://github.com/dsj976",
       "contributions": [
         "bug",
-        "doc"
+        "doc",
+        "ideas"
       ]
     },
     {
