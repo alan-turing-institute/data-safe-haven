@@ -13,7 +13,6 @@ class TestDeploySRE:
         self,
         runner: CliRunner,
         mock_azuresdk_get_subscription_name,  # noqa: ARG002
-        mock_graph_api_token,  # noqa: ARG002
         mock_contextmanager_assert_context,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
         mock_pulumi_config_from_remote_or_create,  # noqa: ARG002
@@ -34,7 +33,6 @@ class TestDeploySRE:
         runner: CliRunner,
         mock_azuresdk_get_subscription_name,  # noqa: ARG002
         mock_contextmanager_assert_context,  # noqa: ARG002
-        mock_graph_api_token,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
         mock_pulumi_config_from_remote_or_create,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
@@ -56,7 +54,6 @@ class TestDeploySRE:
         mocker: MockerFixture,
         mock_azuresdk_get_subscription_name,  # noqa: ARG002
         mock_graph_api_get_application_by_name,  # noqa: ARG002
-        mock_graph_api_token,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
         mock_pulumi_config_from_remote_or_create,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
@@ -104,7 +101,6 @@ class TestTeardownSRE:
     def test_teardown(
         self,
         runner: CliRunner,
-        mock_graph_api_token,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
         mock_pulumi_config_from_remote,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002

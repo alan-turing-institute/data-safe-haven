@@ -35,11 +35,9 @@ class DeclarativeSRE:
         self,
         context: Context,
         config: SREConfig,
-        graph_api_token: str,
     ) -> None:
         self.context = context
         self.config = config
-        self.graph_api_token = graph_api_token
         self.stack_name = replace_separators(
             f"shm-{context.name}-sre-{config.name}", "-"
         )
@@ -293,7 +291,6 @@ class DeclarativeSRE:
                 dockerhub_credentials=dockerhub_credentials,
                 entra_application_id=entra.remote_desktop_application_id,
                 entra_application_url=entra.remote_desktop_url,
-                entra_auth_token=self.graph_api_token,
                 entra_tenant_id=shm_entra_tenant_id,
                 ldap_group_filter=ldap_group_filter,
                 ldap_group_search_base=ldap_group_search_base,

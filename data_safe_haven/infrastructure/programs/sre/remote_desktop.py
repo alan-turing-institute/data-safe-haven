@@ -32,7 +32,6 @@ class SRERemoteDesktopProps:
         dockerhub_credentials: DockerHubCredentials,
         entra_application_id: Input[str],
         entra_application_url: Input[str],
-        entra_auth_token: str,
         entra_tenant_id: Input[str],
         ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
@@ -58,7 +57,6 @@ class SRERemoteDesktopProps:
         self.dockerhub_credentials = dockerhub_credentials
         self.entra_application_id = entra_application_id
         self.entra_application_url = entra_application_url
-        self.entra_auth_token = entra_auth_token
         self.entra_tenant_id = entra_tenant_id
         self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
