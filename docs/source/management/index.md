@@ -134,8 +134,9 @@ $ dsh shm teardown
 ```
 
 ::::{warning} Tearing down an SHM
-All SREs associated with the SHM must be torn down before the SHM can be torn down.
 Tearing down the SHM permanently deletes **all** remotely stored configuration and state data.
+Tearing down the SHM also renders the SREs inaccessible to users and prevents them from being fully managed using the CLI.
+All SREs associated with the SHM should be torn down before the SHM is torn down.
 ::::
 
 ## Managing data ingress and egress
@@ -176,6 +177,7 @@ The following steps show how to generate a temporary write-only upload token tha
 
 ```{important}
 Assessment of output must be completed **before** an egress link is created.
+Outputs are potentially sensitive, and so an appropriate process must be applied to ensure that the outputs are suitable for egress.
 ```
 
 The {ref}`role_system_manager` creates a time-limited and IP restricted link to remove data from the environment.
