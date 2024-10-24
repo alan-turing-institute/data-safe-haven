@@ -170,6 +170,24 @@ class TestConfigSectionSRE:
                 databases=[DatabaseSystem.POSTGRESQL, DatabaseSystem.POSTGRESQL],
             )
 
+    def test_data_provider_tag_internet(
+        self,
+        config_subsection_remote_desktop: ConfigSubsectionRemoteDesktopOpts,
+        config_subsection_storage_quota_gb: ConfigSubsectionStorageQuotaGB,
+    ):
+        sre_config = ConfigSectionSRE(
+            admin_email_address="admin@example.com",
+            remote_desktop=config_subsection_remote_desktop,
+            storage_quota_gb=config_subsection_storage_quota_gb,
+            data_provider_ip_addresses="Internet",
+        )
+        assert isinstance(sre_config.data_provider_ip_addresses, AzureServiceTag)
+        assert sre_config.data_provider_ip_addresses == "Internet"
+
+    def test_data_provider_tag_invalid(self):
+        with pytest.raises(ValueError, match="Input should be 'Internet'"):
+            ConfigSectionSRE(data_provider_ip_addresses="Not a tag")
+
     def test_ip_overlap_admin(self):
         with pytest.raises(ValueError, match="IP addresses must not overlap."):
             ConfigSectionSRE(
