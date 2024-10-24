@@ -147,7 +147,12 @@ class ImperativeSHM:
         try:
             graph_api.create_application(
                 self.context.entra_application_name,
-                application_scopes=["Group.ReadWrite.All"],
+                application_scopes=[
+                    "Application.ReadWrite.All",
+                    "AppRoleAssignment.ReadWrite.All",
+                    "Directory.ReadWrite.All",
+                    "Group.ReadWrite.All",
+                ],
                 delegated_scopes=[],
                 request_json={
                     "displayName": self.context.entra_application_name,
@@ -155,13 +160,10 @@ class ImperativeSHM:
                 },
             )
             # Ensure that the application secret exists
-            if not self.context.entra_application_secret:
-                self.context.entra_application_secret = (
-                    graph_api.create_application_secret(
-                        self.context.entra_application_name,
-                        self.context.entra_application_secret_name,
-                    )
-                )
+            self.context.entra_application_secret = graph_api.create_application_secret(
+                self.context.entra_application_name,
+                self.context.entra_application_secret_name,
+            )
         except DataSafeHavenMicrosoftGraphError as exc:
             msg = "Failed to create deployment application in Entra ID."
             raise DataSafeHavenAzureError(msg) from exc

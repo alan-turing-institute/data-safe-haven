@@ -49,11 +49,6 @@ def mock_graph_api_get_application_by_name(mocker, request):
 
 
 @fixture
-def mock_graph_api_token(mocker):
-    mocker.patch.object(GraphApi, "token", return_value="dummy-token")
-
-
-@fixture
 def mock_imperative_shm_deploy(mocker):
     mocker.patch.object(
         ImperativeSHM,

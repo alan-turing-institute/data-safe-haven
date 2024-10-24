@@ -7,7 +7,6 @@ class TestDeploySHM:
         runner,
         mock_imperative_shm_deploy_then_exit,  # noqa: ARG002
         mock_graph_api_add_custom_domain,  # noqa: ARG002
-        mock_graph_api_token,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
         mock_shm_config_remote_exists,  # noqa: ARG002
         mock_shm_config_upload,  # noqa: ARG002

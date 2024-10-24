@@ -38,6 +38,12 @@ class DatabaseSystem(str, Enum):
 
 
 @verify(UNIQUE)
+class EntraAppPermissionType(str, Enum):
+    APPLICATION = "Role"
+    DELEGATED = "Scope"
+
+
+@verify(UNIQUE)
 class FirewallPriorities(int, Enum):
     """Priorities for firewall rules."""
 
