@@ -36,17 +36,18 @@ Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundament
 Use the following settings:
 
 - **Basics** tab:
-    - **User principal name:** entra.admin._FIRST_NAME_._LAST_NAME_
+    - **User principal name:** entra.admin._first_name_._last_name_
         - If you have a choice of domains use _YOUR_ORGANISATION_.onmicrosoft.com, which will create a clearer separation between administrators and users
-    - **Display name:** Entra Admin - _FIRST_NAME_ _LAST_NAME_
+    - **Display name:** Entra Admin - _first_name_ _last_name_
     - **Other fields:** leave them with their default values
 - **Properties** tab:
     - **Usage location:** set to the country being used for this deployment
-- **Assigments** tab:
+- **Assignments** tab:
     - Click the **{guilabel}`+ Add role`** button
     - Search for **Global Administrator**, and check the box
     - Click the **{guilabel}`Select`** button
 
+Click the **{guilabel}`Review + Create`** button
 :::
 
 ## Register allowed authentication methods

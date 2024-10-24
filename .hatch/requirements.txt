@@ -21,7 +21,7 @@
 # - chevron==0.14.0
 # - cryptography==43.0.3
 # - fqdn==1.5.1
-# - psycopg[binary]==3.2.3
+# - psycopg[binary]==3.1.19
 # - pulumi-azure-native==2.68.0
 # - pulumi-azuread==6.0.1
 # - pulumi-random==4.16.7
@@ -188,9 +188,9 @@ portalocker==2.10.1
     # via msal-extensions
 protobuf==4.25.5
     # via pulumi
-psycopg==3.2.3
+psycopg==3.1.19
     # via hatch.envs.default
-psycopg-binary==3.2.3
+psycopg-binary==3.1.19
     # via psycopg
 pulumi==3.137.0
     # via

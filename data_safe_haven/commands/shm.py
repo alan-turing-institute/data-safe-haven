@@ -41,7 +41,7 @@ def deploy(
         ),
     ] = None,
 ) -> None:
-    """Deploy a Safe Haven Management environment."""
+    """Deploy a Safe Haven Management environment using the current context."""
     logger = get_logger()
 
     # Load selected context
@@ -126,7 +126,7 @@ def deploy(
 
 @shm_command_group.command()
 def teardown() -> None:
-    """Tear down a deployed a Safe Haven Management environment."""
+    """Tear down a deployed Safe Haven Management environment."""
     logger = get_logger()
     try:
         context = ContextManager.from_file().assert_context()

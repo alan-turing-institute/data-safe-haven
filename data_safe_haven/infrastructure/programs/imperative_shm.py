@@ -154,14 +154,13 @@ class ImperativeSHM:
                     "signInAudience": "AzureADMyOrg",
                 },
             )
-            # Ensure that the application secret exists
-            if not self.context.entra_application_secret:
-                self.context.entra_application_secret = (
-                    graph_api.create_application_secret(
-                        self.context.entra_application_name,
-                        self.context.entra_application_secret_name,
-                    )
-                )
+            # Always recreate the application secret.
+            # Otherwise the one in the key vault will be used which might be out of date
+            # An SRE deployment will read from the keyvault, and get the latest version
+            self.context.entra_application_secret = graph_api.create_application_secret(
+                self.context.entra_application_name,
+                self.context.entra_application_secret_name,
+            )
         except DataSafeHavenMicrosoftGraphError as exc:
             msg = "Failed to create deployment application in Entra ID."
             raise DataSafeHavenAzureError(msg) from exc

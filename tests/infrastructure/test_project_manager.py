@@ -49,6 +49,22 @@ class TestSREProjectManager:
         )
         assert "Purged Azure Key Vault shmacmedsresandbosecrets." in stdout
 
+    def test_ensure_config(self, sre_project_manager):
+        sre_project_manager.ensure_config(
+            "azure-native:location", "uksouth", secret=False
+        )
+        sre_project_manager.ensure_config("data-safe-haven:variable", "8", secret=False)
+
+    def test_ensure_config_exception(self, sre_project_manager):
+
+        with raises(
+            DataSafeHavenPulumiError,
+            match=r"Unchangeable configuration option 'azure-native:location'.*your configuration: 'ukwest', Pulumi workspace: 'uksouth'",
+        ):
+            sre_project_manager.ensure_config(
+                "azure-native:location", "ukwest", secret=False
+            )
+
     def test_new_project(
         self,
         context_no_secrets,

@@ -17,7 +17,7 @@ However, you may choose to use multiple SHMs if, for example, you want to separa
 ## Requirements
 
 - A [Microsoft Entra](https://learn.microsoft.com/en-us/entra/fundamentals/) tenant for managing your users
-    - An account with [Global Administrator](https://learn.microsoft.com/en-us/entra/global-secure-access/reference-role-based-permissions#global-administrator) privileges on this tenant
+    - An account with [Global Administrator](https://learn.microsoft.com/en-us/entra/global-secure-access/reference-role-based-permissions#global-administrator) privileges on the tenant that you set up in the {ref}`configure_entra_id` step.
 - An Azure subscription where you will deploy your infrastructure
     - An account with at least [Contributor](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/general#contributor) permissions on this subscription
 
@@ -26,7 +26,7 @@ However, you may choose to use multiple SHMs if, for example, you want to separa
 Before deploying the Safe Haven Management (SHM) infrastructure you need to decide on a few parameters:
 
 **entra_tenant_id**
-: Tenant ID for the Entra ID used to manage TRE users
+: Tenant ID for the Entra tenant you will be using to manage the TRE users
 
     :::{admonition} How to find your Microsoft Entra Tenant ID
     :class: dropdown hint
