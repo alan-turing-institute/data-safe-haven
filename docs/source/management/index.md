@@ -179,7 +179,7 @@ The following steps show how to generate a temporary write-only upload token tha
 
 ```{important}
 Assessment of output must be completed **before** an egress link is created.
-Outputs are potentially sensitive, and so an appropriate process must be applied to ensure that the outputs are suitable for egress.
+Outputs are potentially sensitive, and so an appropriate process must be applied to ensure that they are suitable for egress.
 ```
 
 The {ref}`role_system_manager` creates a time-limited and IP restricted link to remove data from the environment.
