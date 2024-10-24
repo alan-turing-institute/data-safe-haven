@@ -42,7 +42,7 @@ Use the following settings:
     - **Other fields:** leave them with their default values
 - **Properties** tab:
     - **Usage location:** set to the country being used for this deployment
-- **Assigments** tab:
+- **Assignments** tab:
     - Click the **{guilabel}`+ Add role`** button
     - Search for **Global Administrator**, and check the box
     - Click the **{guilabel}`Select`** button
