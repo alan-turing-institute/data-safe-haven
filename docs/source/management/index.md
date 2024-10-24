@@ -147,7 +147,7 @@ All SREs associated with the SHM should be torn down before the SHM is torn down
 
 It is the {ref}`role_data_provider_representative`'s responsibility to upload the data required by the safe haven.
 
-The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider, enabling them to upload the data:
+The following steps show how to generate a temporary, write-only upload token that can be securely sent to the {ref}`role_data_provider_representative`, enabling them to upload the data:
 
 - In the Azure portal select **Subscriptions** then navigate to the subscription containing the relevant SHM
 - Search for the resource group: **`shm-<YOUR_SHM_NAME>-sre-<YOUR_SRE_NAME>-rg`**, then click through to the storage account ending with **`sensitivedata`**
