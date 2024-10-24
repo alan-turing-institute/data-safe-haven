@@ -29,7 +29,7 @@ Grace;Hopper;+18005550100;grace@nasa.gov;US
 $ dsh users add PATH_TO_MY_CSV_FILE
 ```
 
-### Listing available users
+### List available users
 
 - You can do this from the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 
