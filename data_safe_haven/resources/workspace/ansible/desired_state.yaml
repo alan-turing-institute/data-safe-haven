@@ -2,342 +2,53 @@
 - name: Desired state configuration
   hosts: localhost
   become: true
+  vars_files:
+    - vars/pulumi_vars.yaml
 
   tasks:
-    - name: Update package cache
-      tags: apt
-      ansible.builtin.apt:
-        update_cache: true
-        cache_valid_time: 600
+    - name: Install packages
+      ansible.builtin.import_tasks: tasks/packages.yaml
+      tags: packages
 
-    - name: List apt packages to install
-      tags: apt
-      ansible.builtin.debug:
-        msg: "{{ apt_packages.common | union(apt_packages[ansible_facts.distribution_release]) }}"
+    - name: Disable Ubuntu Pro services
+      ansible.builtin.import_tasks: tasks/ubuntu_pro.yaml
+      tags: ubuntu_pro
 
-    - name: Install apt packages
-      tags: apt
-      ansible.builtin.apt:
-        name: "{{ apt_packages.common | union(apt_packages[ansible_facts.distribution_release]) }}"
-        state: present
-      async: 3600
-      poll: 30
-
-    - name: Install deb packages
-      tags: apt
-      ansible.builtin.script:
-        executable: /bin/bash
-        cmd: "/desired_state/install_deb.sh {{ item.source }} {{ item.filename }} {{ item.sha256 }}"
-        creates: "{{ item.creates }}"
-      loop: "{{ deb_packages[ansible_facts.distribution_release] }}"
-
-    - name: Install snap packages
-      community.general.snap:
-        name: "{{ item.name }}"
-        classic: "{{ item.classic }}"
-        state: present
-      loop: "{{ snap_packages }}"
-
-    # https://ubuntu.com/server/docs/nvidia-drivers-installation#installing-the-drivers-on-servers-andor-for-computing-purposes
-    - name: Use ubuntu-drivers to install Nvidia drivers  # noqa: no-handler
-      tags: nvidia
-      ansible.builtin.command:
-        cmd: ubuntu-drivers install --gpgpu
-        creates: /usr/bin/nvidia-smi
-
-    - name: Disable and stop Ubuntu Pro services
-      ansible.builtin.systemd:
-        name: "{{ item }}"
-        state: stopped
-        enabled: false
-      loop:
-        - apt-news
-        - esm-cache
-
-    - name: Enable bash autocompletion globally
-      ansible.builtin.blockinfile:
-        path: /etc/bash.bashrc
-        block: |
-          # enable bash completion in interactive shells
-          if [ ! $(shopt -oq posix) ]; then
-            if [ -f /usr/share/bash-completion/bash_completion ]; then
-                . /usr/share/bash-completion/bash_completion
-            elif [ -f /etc/bash_completion ]; then
-                . /etc/bash_completion
-            fi
-          fi
-
-    # This will create directories if src or dest ends in '/'
-    - name: Copy bashrc skeleton
-      ansible.builtin.copy:
-        src: etc/skel/bashrc
-        dest: /etc/skel/.bashrc
-        mode: '0755'
-
-    # This will create directories if src or dest ends in '/'
-    - name: Copy xsession skeleton
-      ansible.builtin.copy:
-        src: etc/skel/xsession
-        dest: /etc/skel/.xsession
-        mode: '0444'
-
-    - name: Add ldap to /etc/nsswitch.conf
-      ansible.builtin.replace:
-        path: /etc/nsswitch.conf
-        regexp: '^(passwd|group|shadow)(:.*)(?<!ldap)$'
-        replace: '\1\2 ldap'
-
-    - name: Ensure home directories are created on LDAP login
-      community.general.pamd:
-        name: common-session
-        type: session
-        control: optional
-        module_path: pam_systemd.so
-        new_type: session
-        new_control: optional
-        new_module_path: pam_mkhomedir.so
-        module_arguments: 'skel=/etc/skel umask=0022'
-        state: after
-
-    - name: Don't prompt to change expired passwords via ldap
-      community.general.pamd:
-        name: common-account
-        type: account
-        control: '[success=ok new_authtok_reqd=done ignore=ignore user_unknown=ignore authinfo_unavail=ignore default=bad]'
-        module_path: pam_ldap.so
-        new_control: '[success=ok ignore=ignore user_unknown=ignore authinfo_unavail=ignore default=bad]'
-        state: updated
-
-    - name: Enable SSH password authentication
-      # Should look to migrate to https://github.com/dev-sec/ansible-collection-hardening
-      ansible.builtin.lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^PasswordAuthentication'
-        line: 'PasswordAuthentication yes'
-        validate: sshd -T -f %s
-      notify: Restart sshd
-
-    - name: Enable PAM SSH authentication
-      ansible.builtin.lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^UsePAM'
-        line: 'UsePAM yes'
-        validate: sshd -T -f %s
-      notify: Restart sshd
-
-    # This will create directories if src or dest ends in '/'
-    - name: Copy xrdp settings
-      ansible.builtin.copy:
-        src: etc/xrdp/
-        dest: /etc/xrdp/
-        mode: '0644'
-
-    # This will create directories if src or dest ends in '/'
-    - name: Copy xrdp logo
-      ansible.builtin.copy:
-        src: usr/local/share/xrdp/
-        dest: /usr/local/share/xrdp/
-        mode: '0444'
-
-    - name: Disable xrdp root login
-      ansible.builtin.lineinfile:
-        path: /etc/xrdp/sesman.ini
-        regexp: '^AllowRootLogin='
-        line: 'AllowRootLogin=false'
-
-    - name: Kill disconnected xrdp sessions
-      ansible.builtin.lineinfile:
-        path: /etc/xrdp/sesman.ini
-        regexp: '^DisconnectedTimeLimit='
-        line: 'DisconnectedTimeLimit=60'
-
-    - name: Set disconnected xrdp session time limit
-      ansible.builtin.lineinfile:
-        path: /etc/xrdp/sesman.ini
-        regexp: '^KillDisconnected='
-        line: 'KillDisconnected=true'
-
-    - name: Set default terminal
-      ansible.builtin.lineinfile:
-        path: /etc/xdg/xfce4/helpers.rc
-        regexp: '^TerminalEmulator='
-        line: 'TerminalEmulator=xfce4-terminal'
-
-    # This will create directories if src or dest ends in '/'
-    - name: Copy default terminal colourscheme
-      ansible.builtin.copy:
-        src: etc/xdg/xfce4/terminal/
-        dest: /etc/xdg/xfce4/terminal/
-        mode: '0444'
-
-    # This doesn't work
-    # Possibly a bug in xfce4 < 4.18
-    # https://gitlab.xfce.org/apps/xfce4-screensaver/-/issues/55
-    - name: Disable xfce4 screen saver (screen lock)
-      ansible.builtin.lineinfile:
-        path: /etc/xdg/autostart/xfce4-screensaver.desktop
-        line: 'Hidden=true'
-        state: present
-
-    - name: Use a blank screensaver
-      ansible.builtin.lineinfile:
-        path: /etc/X11/Xresources/x11-common
-        line: 'xscreensaver.mode: blank'
-        state: present
-
-    - name: Set default keyboard
-      ansible.builtin.replace:
-        path: /etc/default/keyboard
-        regexp: "^{{ item.key }}="
-        replace: "{{ item.key }}={{ item.value }}"
-      loop:
-        - {key: "XKBMODEL", value: "pc105"}
-        - {key: "XKBLAYOUT", value: "gb"}
-
-    - name: Enable and start xrdp services
-      ansible.builtin.systemd:
-        name: "{{ item }}"
-        enabled: true
-        state: started
-      loop:
-        - xrdp
-        - xrdp-sesman
-
-    # This will create directories if src or dest ends in '/'
-    - name: Copy desktop icons directory
-      ansible.builtin.copy:
-        src: "usr/local/share/icons/"
-        dest: "/usr/local/share/icons/"
-        mode: '0444'
-
-    # This will create directories if src or dest ends in '/'
-    - name: Copy desktop files directory
-      ansible.builtin.copy:
-        src: "etc/skel/Desktop/"
-        dest: "/etc/skel/Desktop/"
-        mode: '0755'
-
-    - name: Set desktop file URLs
-      ansible.builtin.lineinfile:
-        path: "/etc/skel/Desktop/{{ item }}.desktop"
-        line: "{{ lookup('file', '/root/{{ item }}.url') }}"
-        state: present
-      loop:
-        - gitea
-        - hedgedoc
-
-    # This will create directories if src or dest ends in '/'
-    - name: Add polkit rule to allow colord
-      ansible.builtin.copy:
-        src: etc/polkit-1/localauthority/50-local.d/50-colord.pkla
-        dest: /etc/polkit-1/localauthority/50-local.d/50-colord.pkla
-        mode: '0644'
-
-    - name: Enable and start auditd service
+    - name: Configure auditd
+      ansible.builtin.import_tasks: tasks/auditd.yaml
       tags: auditd
-      ansible.builtin.systemd:
-        name: auditd
-        enabled: true
-        state: started
 
-    - name: Get minimum uid  # noqa: inline-env-var
-      tags: auditd
-      ansible.builtin.command:
-        cmd: awk '/^\s*UID_MIN/{print $2}' /etc/login.defs
-      register: uid_min
-      changed_when: false
+    - name: Configure sshd
+      ansible.builtin.import_tasks: tasks/sshd.yaml
+      tags: sshd
 
-    - name: Template auditd rules
-      tags: auditd
-      ansible.builtin.template:
-        src: etc/audit/rules.d/audit.rules.j2
-        dest: /etc/audit/rules.d/audit.rules
-        mode: '0640'
-      notify: Restart auditd
+    - name: Configure ClamAV
+      ansible.builtin.import_tasks: tasks/clamav.yaml
+      tags: clamav
 
-    # This will create directories if src or dest ends in '/'
-    - name: Copy auditd privileged executable rules script
-      tags: auditd
-      ansible.builtin.copy:
-        src: usr/local/bin/privileged-rules
-        dest: /usr/local/bin/privileged-rules
-        mode: '0500'
+    - name: Globally configure default user settings
+      ansible.builtin.import_tasks: tasks/user_config.yaml
+      tags: user_conf
 
-    - name: Generate auditd privileged executable rules
-      tags: auditd
-      ansible.builtin.shell:
-        cmd: /usr/local/bin/privileged-rules > /etc/audit/rules.d/50-privileged.rules
-        creates: /etc/audit/rules.d/50-privileged.rules
-      notify: Restart auditd
+    - name: Configure LDAP
+      ansible.builtin.import_tasks: tasks/ldap.yaml
+      tags: ldap
 
-    # This will create directories if src or dest ends in '/'
-    - name: Copy ClamAV daemon configuration
-      ansible.builtin.copy:
-        src: etc/clamav/clamd.conf
-        dest: /etc/clamav/clamd.conf
-        mode: '0444'
-        owner: clamav
-        group: adm
-      register: clamd
+    - name: Configure Xrdp
+      ansible.builtin.import_tasks: tasks/xrdp.yaml
+      tags: xrdp
 
-    - name: Enable and start ClamAV daemon
-      ansible.builtin.systemd:
-        name: clamav-daemon
-        enabled: true
-        state: started
+    - name: Configure Xfce
+      ansible.builtin.import_tasks: tasks/xfce.yaml
+      tags: xfce
 
-    - name: Restart ClamAV daemon  # noqa: no-handler
-      ansible.builtin.systemd:
-        name: clamav-daemon
-        state: restarted
-      when: clamd.changed
+    - name: Configure package proxies
+      ansible.builtin.import_tasks: tasks/package_proxy.yaml
+      tags: package_proxies
 
-    - name: Set freshclam private mirror
-      ansible.builtin.lineinfile:
-        path: /etc/clamav/freshclam.conf
-        line: "{{ lookup('file', '/etc/clamav/freshclam-mirror.conf') }}"
-        state: present
-
-    # This is required to fetch definitions for the clamav daemon to run
-    - name: Initial freshclam run  # noqa: command-instead-of-module
-      ansible.builtin.shell:
-        cmd: |
-          systemctl stop clamav-freshclam && freshclam && systemctl start clamav-freshclam
-        creates: '/var/lib/clamav/main.{c[vl]d,inc}'
-
-    # This will create directories if src or dest ends in '/'
-    - name: Copy ClamAV services directory
-      ansible.builtin.copy:
-        src: "etc/systemd/system/"
-        dest: /etc/systemd/system/
-        mode: '0644'
-      notify: Systemd daemon reload
-
-    - name: Enable and start freshclam
-      ansible.builtin.systemd:
-        name: clamav-freshclam
-        state: started
-        enabled: true
-
-    - name: Enable and start ClamAV on access scan
-      ansible.builtin.systemd:
-        name: clamav-clamonacc
-        enabled: true
-        state: started
-
-    - name: Enable and start ClamAV timer
-      ansible.builtin.systemd:
-        name: clamav-clamdscan.timer
-        enabled: true
-        state: started
-
-    # This will create directories if src or dest ends in '/'
-    - name: Copy smoke test files directory
-      ansible.builtin.copy:
-        src: "usr/local/smoke_tests/"
-        dest: /usr/local/smoke_tests/
-        mode: '0755'
-
+    - name: Provision smoke tests
+      ansible.builtin.import_tasks: tasks/smoke_tests.yaml
+      tags: smoke_tests
 
   handlers:
     - name: Restart auditd

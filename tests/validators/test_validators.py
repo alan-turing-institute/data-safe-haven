@@ -86,6 +86,36 @@ class TestValidateFqdn:
             validators.fqdn(fqdn)
 
 
+class TestValidateIpAddress:
+    @pytest.mark.parametrize(
+        "ip_address,output",
+        [
+            ("127.0.0.1", "127.0.0.1/32"),
+            ("0.0.0.0/0", "0.0.0.0/0"),
+            ("192.168.171.1/32", "192.168.171.1/32"),
+        ],
+    )
+    def test_ip_address(self, ip_address, output):
+        assert validators.ip_address(ip_address) == output
+
+    @pytest.mark.parametrize(
+        "ip_address",
+        [
+            "example.com",
+            "University of Life",
+            "999.999.999.999",
+            "0.0.0.0/-1",
+            "255.255.255.0/2",
+        ],
+    )
+    def test_ip_address_fail(self, ip_address):
+        with pytest.raises(
+            ValueError,
+            match="Expected valid IPv4 address, for example '1.1.1.1', or 'Internet'.",
+        ):
+            validators.ip_address(ip_address)
+
+
 class TestValidateSafeString:
     @pytest.mark.parametrize(
         "safe_string",

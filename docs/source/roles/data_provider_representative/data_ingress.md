@@ -5,9 +5,22 @@
 The **Dataset Provider Representative** plays an important role in data ingress.
 As well as being involved in agreeing an appropriate security tier for a project, they may also prepare the data to be uploaded.
 
-## Preparing data
+## Bringing data into the environment
 
-This section has some recommendations for preparing input data for the Data Safe Haven.
+Talk to your {ref}`role_system_manager` to discuss possible methods of bringing data into the environments.
+It may be convenient to use [Azure Storage Explorer](https://azure.microsoft.com/en-us/products/storage/storage-explorer/).
+In this case you will not need log-in credentials, as your {ref}`role_system_manager` can provide a short-lived secure access token which will let you upload data.
+
+```{tip}
+You may want to keep the following considerations in mind when transferring data in order to reduce the chance of a data breach.
+
+- Use of short-lived access tokens limits the time within which an attacker can operate.
+- Letting your {ref}`role_system_manager` know a fixed IP address you will be connecting from (_e.g._ a corporate VPN) limits the places an attacker can operate from.
+- Communicating with your {ref}`role_system_manager` through a secure out-of-band channel (_e.g._ encrypted email) reduces the chances that an attacker can intercept or alter your messages in transit.
+
+```
+
+## Preparing input data for the Data Safe Haven
 
 ### Avoid archives
 
@@ -61,10 +74,10 @@ They are common algorithms built into many operating systems, and included in th
 You can generate a checksum file, which can be used to verify the integrity of files.
 If you upload this file then researchers will be able to independently verify data integrity within the environment.
 
-Here are instructions to generate a checksum file using the `md5sum` algorithm for a data set stored in a directory called `data`.
+Here are instructions to generate a checksum file using the `md5sum` algorithm for a data set stored in the `input` directory.
 
 ```console
-find ./data/ -type fl -exec md5sum {} + > hashes.txt
+find ./mnt/input/ -type fl -exec md5sum {} + > hashes.txt
 ```
 
 `find` searches the `data` directory for files and symbolic links (`-type fl`).
@@ -86,16 +99,3 @@ md5sum -c hashes.txt | grep FAILED
 ```
 
 To use the `sha256` algorithm, replace `md5sum` with `sha256` in the above commands.
-
-## Bringing data into the environment
-
-Talk to your {ref}`role_system_manager` to discuss possible methods of bringing data into the environments.
-It may be convenient to use [Azure Storage Explorer](https://azure.microsoft.com/en-us/products/storage/storage-explorer/).
-In this case you will not need log-in credentials, as your {ref}`role_system_manager` can provide a short-lived secure access token which will let you upload data.
-
-```{tip}
-You may want to keep the following considerations in mind when transferring data in order to reduce the chance of a data breach
-- use of short-lived access tokens limits the time within which an attacker can operate
-- letting your {ref}`role_system_manager` know a fixed IP address you will be connecting from (eg. a corporate VPN) limits the places an attacker can operate from
-- communicating with your {ref}`role_system_manager` through a secure out-of-band channel (eg. encrypted email) reduces the chances that an attacker can intercept or alter your messages in transit
-```

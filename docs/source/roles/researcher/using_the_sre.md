@@ -53,8 +53,8 @@ For instance, describing in detail what a dataset contains and how it will be us
 SREs are designed to be ephemeral and only deployed for as long as necessary.
 It is likely that the infrastructure, and data, will be permanently deleted when work has concluded.
 
-The `/output/` directory is designed for storing output to be kept after a project concludes.
-You should move such data to the `/output/` directory and contact your designated contact about data egress.
+The `/mnt/output/` directory is designed for storing output to be kept after a project concludes.
+You should move such data to the `/mnt/output/` directory and contact your designated contact about data egress.
 
 :::{important}
 You are responsible for deciding what is worth archiving.
@@ -63,8 +63,8 @@ You are responsible for deciding what is worth archiving.
 While working on the project:
 
 - store all your code in a **Gitea** repository.
-- store all resources that might be useful to the rest of the project in the **/shared/** folder.
-- store anything that might form an output from the project (_e.g._ images, documents or output datasets) in the **/output/** folder.
+- store all resources that might be useful to the rest of the project in the **/mnt/shared/** folder.
+- store anything that might form an output from the project (_e.g._ images, documents or output datasets) in the **/mnt/output/** folder.
 
 See {ref}`the section on sharing files <role_researcher_shared_storage>` to find out more about where to store your files.
 
@@ -244,45 +244,45 @@ Type `yes` to install the packages.
 
 There are several shared folder on each workspace that all collaborators within a research project team can see and access:
 
-- [input data](#input-data): in the **/data/** folder
-- [shared space](#shared-space): in the **/shared/** folder
-- [output resources](#output-resources): in the **/output/** folder
+- [input data](#input-data): in the **/mnt/input/** folder
+- [shared space](#shared-space): in the **/mnt/shared/** folder
+- [output resources](#output-resources): in the **/mnt/output/** folder
 
 ### Input data
 
-Data that has been approved and brought into the secure research environment can be found in the **/data/** folder.
+Data that has been approved and brought into the secure research environment can be found in the **/mnt/input/** folder.
 
-- The contents of **/data/** will be identical on all workspaces in your SRE.
+- The contents of **/mnt/input/** will be identical on all workspaces in your SRE.
 - Everyone working on your project will be able to access it.
 - Everyone has **read-only access** to the files stored here.
 
-If you are using the Data Safe Haven as part of an organised event, you might find additional resources in the **/data/** folder, such as example slides or document templates.
+If you are using the Data Safe Haven as part of an organised event, you might find additional resources in the **/mnt/input/** folder, such as example slides or document templates.
 
 :::{important}
-You will not be able to change any of the files in **/data/**.
-If you want to make derived datasets, for example cleaned and reformatted data, please add those to the **/shared/** or **/output/** folders.
+You will not be able to change any of the files in **/mnt/input/**.
+If you want to make derived datasets, for example cleaned and reformatted data, please add those to the **/mnt/shared/** or **/mnt/output/** folders.
 :::
 
 ### Shared space
 
-The **/shared/** folder should be used for any work that you want to share with your group.
+The **/mnt/shared/** folder should be used for any work that you want to share with your group.
 
-- The contents of **/shared/** will be identical on all workspaces in your SRE.
+- The contents of **/mnt/shared/** will be identical on all workspaces in your SRE.
 - Everyone working on your project will be able to access it
 - Everyone has **read-and-write access** to the files stored here.
 
 ### Output resources
 
-Any outputs that you want to extract from the secure environment should be placed in the **/output/** folder on the workspace.
+Any outputs that you want to extract from the secure environment should be placed in the **/mnt/output/** folder on the workspace.
 
-- The contents of **/output/** will be identical on all workspaces in your SRE.
+- The contents of **/mnt/output/** will be identical on all workspaces in your SRE.
 - Everyone working on your project will be able to access it
 - Everyone has **read-and-write access** to the files stored here.
 
 Anything placed in here will be considered for data egress - removal from the secure research environment - by the project's principal investigator together with the data provider.
 
 :::{tip}
-You may want to consider having subfolders of **/output/** to make the review of this directory easier.
+You may want to consider having subfolders of **/mnt/output/** to make the review of this directory easier.
 :::
 
 ## {{pill}} Version control using Gitea
@@ -529,7 +529,7 @@ Official tutorials for [MSSQL](https://learn.microsoft.com/en-us/sql/sql-server/
 :class: dropdown note
 
 - **Server name** : mssql._SRE\_URL_ (e.g. mssql.sandbox.projects.example.org)
-- **Username**: databaseadmin
+- **Username**: databaseadmin@shm-_SHM\_NAME_-sre-_SRE\_NAME_-db-server-mssql
 - **Password**: provided by your {ref}`System Manager <role_system_manager>`
 - **Database name**: provided by your {ref}`System Manager <role_system_manager>`
 - **Port**: 1433
@@ -547,111 +547,57 @@ Official tutorials for [MSSQL](https://learn.microsoft.com/en-us/sql/sql-server/
 
 :::
 
-Examples are given below for connecting using **DBeaver**, **Python** and **R**.
+Examples are given below for connecting using **Beekeeper Studio**, **Python** and **R**.
 The instructions for using other graphical interfaces or programming languages will be similar.
 
-### {{bear}} Connecting using DBeaver
+### {{bee}} Connecting using Beekeeper Studio
 
-#### Microsoft SQL
-
-::::{admonition} 1. Create new Microsoft SQL server connection
+::::{admonition} Microsoft SQL
 :class: dropdown note
 
-Click on the **{guilabel}`New database connection`** button (which looks a bit like an electrical plug with a plus sign next to it)
-
+- Click on the **{guilabel}`+ New Connection`** button
 - Select **SQL Server** as the database type
+- Enter the connection details
+    - **Authentication**: Username/Password
+    - **Host**: as above
+    - **Port**: as above
+    - **Enable SSL**: false
+    - **User**: as above
+    - **Password**: as above
+    - **Domain**: empty
+    - **Trust Server Certificate**: true
+    - **Default Database**: master
+- Click on **{guilabel}`Test`** to test the connection settings
+- Click on **{guilabel}`Connect`** to connect to the database or enter a name and click **{guilabel}`Save`** to save the connection settings for future use
 
-    :::{image} images/db_dbeaver_select_mssql.png
-    :alt: DBeaver select Microsoft SQL
+    :::{image} images/db_beekeeper_studio_mssql.png
+    :alt: Beekeeper Studio MS SQL connection configuration
     :align: center
     :width: 90%
     :::
-
 ::::
 
-::::{admonition} 2. Provide connection details
+::::{admonition} PostgreSQL
 :class: dropdown note
 
-- **Host**: as above
-- **Database**: as above
-- **Authentication**: SQL Server Authentication
-- **Username**: as above
-- **Password**: as above
-- Tick **Show All Schemas**
-- Tick **Trust server certificate**
+- Click on the **{guilabel}`+ New Connection`** button
+- Select **Postgres** as the database type
+- Enter the connection details
+    - **Connection Mode**: Host and Port
+    - **Host**: as above
+    - **Port**: as above
+    - **Enable SSL**: false
+    - **User**: as above
+    - **Password**: as above
+    - **Default Database**: postgres
+- Click on **{guilabel}`Test`** to test the connection settings
+- Click on **{guilabel}`Connect`** to connect to the database or enter a name and click **{guilabel}`Save`** to save the connection settings for future use
 
-    :::{image} images/db_dbeaver_connect_mssql.png
-    :alt: DBeaver connect with Microsoft SQL
+    :::{image} images/db_beekeeper_studio_postgres.png
+    :alt: Beekeeper Studio PostgreSQL connection configuration
     :align: center
     :width: 90%
     :::
-
-::::
-
-::::{admonition} 3. Download drivers if needed
-:class: dropdown note
-
-- After clicking finish, you may be prompted to download driver files even though they should be pre-installed.
-- Click on the **{guilabel}`Download`** button if this happens.
-
-    :::{image} images/db_dbeaver_driver_download.png
-    :alt: DBeaver driver download for Microsoft SQL
-    :align: center
-    :width: 90%
-    :::
-
-- If drivers are not available contact your {ref}`System Manager <role_system_manager>`
-
-::::
-
-#### PostgreSQL
-
-::::{admonition} 1. Create new PostgreSQL server connection
-:class: dropdown note
-
-Click on the **{guilabel}`New database connection`** button (which looks a bit like an electrical plug with a plus sign next to it)
-
-- Select **PostgreSQL** as the database type
-
-    :::{image} images/db_dbeaver_select_postgresql.png
-    :alt: DBeaver select PostgreSQL
-    :align: center
-    :width: 90%
-    :::
-
-::::
-
-::::{admonition} 2. Provide connection details
-:class: dropdown note
-
-- **Host**: as above
-- **Database**: as above
-- **Authentication**: Database Native
-- **Username**: as above
-- **Password**: as above
-
-    :::{image} images/db_dbeaver_connect_postgresql.png
-    :alt: DBeaver connect with PostgreSQL
-    :align: center
-    :width: 90%
-    :::
-
-::::
-
-::::{admonition} 3. Download drivers if needed
-:class: dropdown note
-
-- After clicking finish, you may be prompted to download driver files even though they should be pre-installed.
-- Click on the **{guilabel}`Download`** button if this happens.
-
-    :::{image} images/db_dbeaver_driver_download.png
-    :alt: DBeaver driver download for PostgreSQL
-    :align: center
-    :width: 90%
-    :::
-
-- If drivers are not available contact your {ref}`System Manager <role_system_manager>`
-
 ::::
 
 ### {{snake}} Connecting using Python

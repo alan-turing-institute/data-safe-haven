@@ -1,6 +1,7 @@
 """Pulumi declarative program"""
 
 import pulumi
+from pulumi import ResourceOptions
 from pulumi_azure_native import resources
 
 from data_safe_haven.config import Context, SREConfig
@@ -15,7 +16,9 @@ from .sre.apt_proxy_server import SREAptProxyServerComponent, SREAptProxyServerP
 from .sre.backup import SREBackupComponent, SREBackupProps
 from .sre.clamav_mirror import SREClamAVMirrorComponent, SREClamAVMirrorProps
 from .sre.data import SREDataComponent, SREDataProps
+from .sre.desired_state import SREDesiredStateComponent, SREDesiredStateProps
 from .sre.dns_server import SREDnsServerComponent, SREDnsServerProps
+from .sre.entra import SREEntraComponent, SREEntraProps
 from .sre.firewall import SREFirewallComponent, SREFirewallProps
 from .sre.identity import SREIdentityComponent, SREIdentityProps
 from .sre.monitoring import SREMonitoringComponent, SREMonitoringProps
@@ -51,6 +54,9 @@ class DeclarativeSRE:
         shm_admin_group_id = self.pulumi_opts.require("shm-admin-group-id")
         shm_entra_tenant_id = self.pulumi_opts.require("shm-entra-tenant-id")
         shm_fqdn = self.pulumi_opts.require("shm-fqdn")
+        shm_location = self.pulumi_opts.require("shm-location")
+        shm_subscription_id = self.pulumi_opts.require("shm-subscription-id")
+        sre_subscription_name = self.pulumi_opts.require("sre-subscription-name")
 
         # Construct DockerHubCredentials
         dockerhub_credentials = DockerHubCredentials(
@@ -106,6 +112,14 @@ class DeclarativeSRE:
             ]
         )
 
+        # Deploy Entra resources
+        SREEntraComponent(
+            "sre_entra",
+            SREEntraProps(
+                group_names=ldap_group_names,
+            ),
+        )
+
         # Deploy resource group
         resource_group = resources.ResourceGroup(
             "sre_resource_group",
@@ -138,7 +152,9 @@ class DeclarativeSRE:
                 location=self.config.azure.location,
                 resource_group_name=resource_group.name,
                 shm_fqdn=shm_fqdn,
+                shm_location=shm_location,
                 shm_resource_group_name=self.context.resource_group_name,
+                shm_subscription_id=shm_subscription_id,
                 shm_zone_name=shm_fqdn,
                 sre_name=self.config.name,
                 user_public_ip_ranges=self.config.sre.research_user_ip_addresses,
@@ -184,10 +200,9 @@ class DeclarativeSRE:
                 storage_quota_gb_home=self.config.sre.storage_quota_gb.home,
                 storage_quota_gb_shared=self.config.sre.storage_quota_gb.shared,
                 subnet_data_configuration=networking.subnet_data_configuration,
-                subnet_data_desired_state=networking.subnet_data_desired_state,
                 subnet_data_private=networking.subnet_data_private,
                 subscription_id=self.config.azure.subscription_id,
-                subscription_name=self.context.subscription_name,
+                subscription_name=sre_subscription_name,
                 tenant_id=self.config.azure.tenant_id,
             ),
             tags=self.tags,
@@ -338,17 +353,15 @@ class DeclarativeSRE:
             tags=self.tags,
         )
 
-        # Deploy workspaces
-        workspaces = SREWorkspacesComponent(
-            "sre_workspaces",
+        # Deploy desired state
+        desired_state = SREDesiredStateComponent(
+            "sre_desired_state",
             self.stack_name,
-            SREWorkspacesProps(
-                admin_password=data.password_workspace_admin,
-                apt_proxy_server_hostname=apt_proxy_server.hostname,
+            SREDesiredStateProps(
+                admin_ip_addresses=self.config.sre.admin_ip_addresses,
                 clamav_mirror_hostname=clamav_mirror.hostname,
-                data_collection_rule_id=monitoring.data_collection_rule_vms.id,
-                data_collection_endpoint_id=monitoring.data_collection_endpoint.id,
                 database_service_admin_password=data.password_database_service_admin,
+                dns_private_zones=dns.private_zones,
                 gitea_hostname=user_services.gitea_server.hostname,
                 hedgedoc_hostname=user_services.hedgedoc_server.hostname,
                 ldap_group_filter=ldap_group_filter,
@@ -358,18 +371,35 @@ class DeclarativeSRE:
                 ldap_user_filter=ldap_user_filter,
                 ldap_user_search_base=ldap_user_search_base,
                 location=self.config.azure.location,
+                resource_group=resource_group,
+                software_repository_hostname=user_services.software_repositories.hostname,
+                subnet_desired_state=networking.subnet_desired_state,
+                subscription_name=sre_subscription_name,
+            ),
+        )
+
+        # Deploy workspaces
+        workspaces = SREWorkspacesComponent(
+            "sre_workspaces",
+            self.stack_name,
+            SREWorkspacesProps(
+                admin_password=data.password_workspace_admin,
+                apt_proxy_server_hostname=apt_proxy_server.hostname,
+                data_collection_rule_id=monitoring.data_collection_rule_vms.id,
+                data_collection_endpoint_id=monitoring.data_collection_endpoint.id,
+                location=self.config.azure.location,
                 maintenance_configuration_id=monitoring.maintenance_configuration.id,
                 resource_group_name=resource_group.name,
-                software_repository_hostname=user_services.software_repositories.hostname,
                 sre_name=self.config.name,
-                storage_account_data_desired_state_name=data.storage_account_data_desired_state_name,
+                storage_account_desired_state_name=desired_state.storage_account_name,
                 storage_account_data_private_user_name=data.storage_account_data_private_user_name,
                 storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
                 subnet_workspaces=networking.subnet_workspaces,
-                subscription_name=self.context.subscription_name,
+                subscription_name=sre_subscription_name,
                 virtual_network=networking.virtual_network,
                 vm_details=list(enumerate(self.config.sre.workspace_skus)),
             ),
+            opts=ResourceOptions(depends_on=[desired_state]),
             tags=self.tags,
         )
 

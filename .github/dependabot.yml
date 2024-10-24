@@ -7,3 +7,15 @@ updates:
     directory: "/"  # The exact logic is unclear, but it recursively searches at least .github/workflows/
     schedule:
       interval: "weekly"
+  # Python package update PRs
+  - package-ecosystem: pip  # This will update 'pyproject.toml'
+    directory: "/"
+    ignore:
+      - dependency-name: "psycopg"  # 3.1.19 is the latest version to support on older MacOS versions
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
+    schedule:
+      interval: weekly

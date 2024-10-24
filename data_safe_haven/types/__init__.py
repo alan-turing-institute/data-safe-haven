@@ -15,6 +15,7 @@ from .annotated_types import (
 from .enums import (
     AzureDnsZoneNames,
     AzureSdkCredentialScope,
+    AzureServiceTag,
     DatabaseSystem,
     FirewallPriorities,
     ForbiddenDomains,
@@ -29,6 +30,7 @@ __all__ = [
     "AzureDnsZoneNames",
     "AzureLocation",
     "AzurePremiumFileShareSize",
+    "AzureServiceTag",
     "AzureSdkCredentialScope",
     "AzureSubscriptionName",
     "AzureVmSku",

@@ -23,8 +23,11 @@ def sre_config_name(sre_name: str) -> str:
 
 
 class SREConfig(AzureSerialisableModel):
+    """Serialisable config for a secure research environment component."""
+
     config_type: ClassVar[str] = "SREConfig"
     default_filename: ClassVar[str] = "sre.yaml"
+
     azure: ConfigSectionAzure
     description: str
     dockerhub: ConfigSectionDockerHub
@@ -95,7 +98,10 @@ class SREConfig(AzureSerialisableModel):
                     allow_copy=remote_desktop_allow_copy,
                     allow_paste=remote_desktop_allow_paste,
                 ),
-                research_user_ip_addresses=["List of IP addresses belonging to users"],
+                research_user_ip_addresses=[
+                    "List of IP addresses belonging to users",
+                    "You can also use the tag 'Internet' instead of a list",
+                ],
                 software_packages=software_packages,
                 storage_quota_gb=ConfigSubsectionStorageQuotaGB.model_construct(
                     home="Total size in GiB across all home directories [minimum: 100].",  # type: ignore

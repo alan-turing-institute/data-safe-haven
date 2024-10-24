@@ -2,8 +2,8 @@
 
 from collections.abc import Mapping
 
-from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import network
+from pulumi import ComponentResource, Input, InvokeOptions, Output, ResourceOptions
+from pulumi_azure_native import network, provider
 
 from data_safe_haven.functions import alphanumeric, replace_separators
 from data_safe_haven.infrastructure.common import (
@@ -12,7 +12,7 @@ from data_safe_haven.infrastructure.common import (
     get_id_from_vnet,
     get_name_from_vnet,
 )
-from data_safe_haven.types import NetworkingPriorities, Ports
+from data_safe_haven.types import AzureServiceTag, NetworkingPriorities, Ports
 
 
 class SRENetworkingProps:
@@ -26,10 +26,12 @@ class SRENetworkingProps:
         location: Input[str],
         resource_group_name: Input[str],
         shm_fqdn: Input[str],
+        shm_location: Input[str],
         shm_resource_group_name: Input[str],
+        shm_subscription_id: Input[str],
         shm_zone_name: Input[str],
         sre_name: Input[str],
-        user_public_ip_ranges: Input[list[str]],
+        user_public_ip_ranges: Input[list[str]] | AzureServiceTag,
     ) -> None:
         # Other variables
         self.dns_private_zones = dns_private_zones
@@ -43,7 +45,9 @@ class SRENetworkingProps:
         self.location = location
         self.resource_group_name = resource_group_name
         self.shm_fqdn = shm_fqdn
+        self.shm_location = shm_location
         self.shm_resource_group_name = shm_resource_group_name
+        self.shm_subscription_id = shm_subscription_id
         self.shm_zone_name = shm_zone_name
         self.sre_name = sre_name
         self.user_public_ip_ranges = user_public_ip_ranges
@@ -63,6 +67,13 @@ class SRENetworkingComponent(ComponentResource):
         super().__init__("dsh:sre:NetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = {"component": "networking"} | (tags if tags else {})
+
+        if isinstance(props.user_public_ip_ranges, list):
+            user_public_ip_ranges = props.user_public_ip_ranges
+            user_service_tag = None
+        else:
+            user_public_ip_ranges = None
+            user_service_tag = props.user_public_ip_ranges
 
         # Define route table
         route_table = network.RouteTable(
@@ -121,7 +132,8 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowUsersInternetInbound",
                     priority=NetworkingPriorities.AUTHORISED_EXTERNAL_USER_IPS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefixes=props.user_public_ip_ranges,
+                    source_address_prefix=user_service_tag,
+                    source_address_prefixes=user_public_ip_ranges,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -483,10 +495,10 @@ class SRENetworkingComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
-        nsg_data_desired_state = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_data_desired_state",
+        nsg_desired_state = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_desired_state",
             location=props.location,
-            network_security_group_name=f"{stack_name}-nsg-data-desired-state",
+            network_security_group_name=f"{stack_name}-nsg-desired-state",
             resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
@@ -1454,7 +1466,7 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to desired state data endpoints.",
-                    destination_address_prefix=SREIpRanges.data_desired_state.prefix,
+                    destination_address_prefix=SREIpRanges.desired_state.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDataDesiredStateEndpointsOutbound",
@@ -1558,7 +1570,7 @@ class SRENetworkingComponent(ComponentResource):
         subnet_apt_proxy_server_name = "AptProxyServerSubnet"
         subnet_clamav_mirror_name = "ClamAVMirrorSubnet"
         subnet_data_configuration_name = "DataConfigurationSubnet"
-        subnet_data_desired_state_name = "DataDesiredStateSubnet"
+        subnet_desired_state_name = "DataDesiredStateSubnet"
         subnet_data_private_name = "DataPrivateSubnet"
         subnet_firewall_name = "AzureFirewallSubnet"
         subnet_firewall_management_name = "AzureFirewallManagementSubnet"
@@ -1643,10 +1655,10 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # Desired state data subnet
                 network.SubnetArgs(
-                    address_prefix=SREIpRanges.data_desired_state.prefix,
-                    name=subnet_data_desired_state_name,
+                    address_prefix=SREIpRanges.desired_state.prefix,
+                    name=subnet_desired_state_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_data_desired_state.id
+                        id=nsg_desired_state.id
                     ),
                     route_table=network.RouteTableArgs(id=route_table.id),
                     service_endpoints=[
@@ -1834,6 +1846,13 @@ class SRENetworkingComponent(ComponentResource):
         )
 
         # Define SRE DNS zone
+        shm_provider = provider.Provider(
+            "shm_provider",
+            provider.ProviderArgs(
+                location=props.shm_location,
+                subscription_id=props.shm_subscription_id,
+            ),
+        )
         shm_dns_zone = Output.all(
             resource_group_name=props.shm_resource_group_name,
             zone_name=props.shm_zone_name,
@@ -1841,6 +1860,9 @@ class SRENetworkingComponent(ComponentResource):
             lambda kwargs: network.get_zone(
                 resource_group_name=kwargs["resource_group_name"],
                 zone_name=kwargs["zone_name"],
+                opts=InvokeOptions(
+                    provider=shm_provider,
+                ),
             )
         )
         sre_subdomain = Output.from_input(props.sre_name).apply(
@@ -1867,7 +1889,11 @@ class SRENetworkingComponent(ComponentResource):
             ttl=3600,
             zone_name=shm_dns_zone.name,
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=sre_dns_zone)
+                child_opts,
+                ResourceOptions(
+                    parent=sre_dns_zone,
+                    provider=shm_provider,
+                ),
             ),
         )
         network.RecordSet(
@@ -1966,13 +1992,13 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
-        self.subnet_data_desired_state = network.get_subnet_output(
-            subnet_name=subnet_data_desired_state_name,
+        self.subnet_desired_state = network.get_subnet_output(
+            subnet_name=subnet_desired_state_name,
             resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
-        self.subnet_data_desired_state = network.get_subnet_output(
-            subnet_name=subnet_data_desired_state_name,
+        self.subnet_desired_state = network.get_subnet_output(
+            subnet_name=subnet_desired_state_name,
             resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )

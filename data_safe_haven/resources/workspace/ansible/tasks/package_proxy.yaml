@@ -1,0 +1,12 @@
+---
+
+- name: Template pip and CRAN global configuration
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: '0444'
+  loop:
+    - src: etc/pip.conf.j2
+      dest: /etc/pip.conf
+    - src: etc/R/Rprofile.site.j2
+      dest: /etc/R/Rprofile.site

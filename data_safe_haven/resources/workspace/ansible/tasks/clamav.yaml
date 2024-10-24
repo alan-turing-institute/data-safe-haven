@@ -1,0 +1,62 @@
+---
+
+- name: Copy ClamAV daemon configuration
+  ansible.builtin.copy:
+    src: etc/clamav/clamd.conf
+    dest: /etc/clamav/clamd.conf
+    mode: '0444'
+    owner: clamav
+    group: adm
+  register: clamd
+
+- name: Enable and start ClamAV daemon
+  ansible.builtin.systemd:
+    name: clamav-daemon
+    enabled: true
+    state: started
+
+- name: Restart ClamAV daemon  # noqa: no-handler
+  ansible.builtin.systemd:
+    name: clamav-daemon
+    state: restarted
+  when: clamd.changed
+
+- name: Set freshclam private mirror
+  ansible.builtin.lineinfile:
+    path: /etc/clamav/freshclam.conf
+    line: "PrivateMirror {{ clamav_mirror_hostname }}"
+    state: present
+
+# This is required to fetch definitions for the clamav daemon to run
+- name: Initial freshclam run  # noqa: command-instead-of-module
+  ansible.builtin.shell:
+    cmd: |
+      systemctl stop clamav-freshclam && freshclam && systemctl start clamav-freshclam
+    creates: '/var/lib/clamav/main.{c[vl]d,inc}'
+
+- name: Copy ClamAV services
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: /etc/systemd/system/
+    mode: '0644'
+  with_fileglob:
+    - "etc/systemd/system/clamav-*"
+  notify: Systemd daemon reload
+
+- name: Enable and start freshclam
+  ansible.builtin.systemd:
+    name: clamav-freshclam
+    state: started
+    enabled: true
+
+- name: Enable and start ClamAV on access scan
+  ansible.builtin.systemd:
+    name: clamav-clamonacc
+    enabled: true
+    state: started
+
+- name: Enable and start ClamAV timer
+  ansible.builtin.systemd:
+    name: clamav-clamdscan.timer
+    enabled: true
+    state: started

@@ -4,4 +4,4 @@ Type=Link
 Name=shared
 Comment=
 Icon=drive-removable-media
-URL=/shared
+URL=/mnt/shared

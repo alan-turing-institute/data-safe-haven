@@ -1,6 +1,6 @@
 import pulumi.automation as automation
 import pulumi.dynamic as dynamic
-from pulumi.asset import FileAsset
+from pulumi.asset import FileAsset, StringAsset
 from pulumi.config import (
     Config,
 )
@@ -11,6 +11,7 @@ from pulumi.output import (
 )
 from pulumi.resource import (
     ComponentResource,
+    InvokeOptions,
     Resource,
     ResourceOptions,
     export,
@@ -24,8 +25,10 @@ __all__ = [
     "export",
     "FileAsset",
     "Input",
+    "InvokeOptions",
     "Output",
     "Resource",
     "ResourceOptions",
+    "StringAsset",
     "UNKNOWN",
 ]
