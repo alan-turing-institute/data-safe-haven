@@ -210,6 +210,6 @@ The {ref}`role_system_manager` creates a time-limited and IP restricted link to 
 
 ### The output volume
 
-Once you have set up the egress connection in `Azure Storage Explorer`, you should be able to view data from the **output volume**, a read-write area intended for the extraction of results, such as figures for publication.
+Once you have set up the egress connection in Azure Storage Explorer, you should be able to view data from the **output volume**, a read-write area intended for the extraction of results, such as figures for publication.
 On the workspaces, this volume is `/mnt/output` and is shared between all workspaces in an SRE.
 For more information on shared SRE storage volumes, consult the {ref}`Safe Haven User Guide <role_researcher_shared_storage>`.
