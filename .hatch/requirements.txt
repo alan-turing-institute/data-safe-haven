@@ -9,11 +9,11 @@
 # - azure-keyvault-secrets==4.9.0
 # - azure-mgmt-compute==33.0.0
 # - azure-mgmt-containerinstance==10.1.0
-# - azure-mgmt-dns==8.1.0
+# - azure-mgmt-dns==8.2.0
 # - azure-mgmt-keyvault==10.3.1
 # - azure-mgmt-msi==7.0.0
 # - azure-mgmt-rdbms==10.1.0
-# - azure-mgmt-resource==23.1.1
+# - azure-mgmt-resource==23.2.0
 # - azure-mgmt-storage==21.2.1
 # - azure-storage-blob==12.23.1
 # - azure-storage-file-datalake==12.17.0
@@ -30,7 +30,7 @@
 # - pyjwt[crypto]==2.9.0
 # - pytz==2024.2
 # - pyyaml==6.0.2
-# - rich==13.9.2
+# - rich==13.9.3
 # - simple-acme-dns==3.1.0
 # - typer==0.12.5
 # - websocket-client==1.8.0
@@ -90,7 +90,7 @@ azure-mgmt-core==1.4.0
     #   azure-mgmt-rdbms
     #   azure-mgmt-resource
     #   azure-mgmt-storage
-azure-mgmt-dns==8.1.0
+azure-mgmt-dns==8.2.0
     # via hatch.envs.default
 azure-mgmt-keyvault==10.3.1
     # via hatch.envs.default
@@ -98,7 +98,7 @@ azure-mgmt-msi==7.0.0
     # via hatch.envs.default
 azure-mgmt-rdbms==10.1.0
     # via hatch.envs.default
-azure-mgmt-resource==23.1.1
+azure-mgmt-resource==23.2.0
     # via hatch.envs.default
 azure-mgmt-storage==21.2.1
     # via hatch.envs.default
@@ -240,7 +240,7 @@ requests==2.32.3
     #   requests-oauthlib
 requests-oauthlib==2.0.0
     # via msrest
-rich==13.9.2
+rich==13.9.3
     # via
     #   hatch.envs.default
     #   typer
@@ -268,7 +268,9 @@ typing-extensions==4.12.2
     #   azure-keyvault-keys
     #   azure-keyvault-secrets
     #   azure-mgmt-compute
+    #   azure-mgmt-dns
     #   azure-mgmt-keyvault
+    #   azure-mgmt-resource
     #   azure-storage-blob
     #   azure-storage-file-datalake
     #   azure-storage-file-share

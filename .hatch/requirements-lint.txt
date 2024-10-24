@@ -4,7 +4,7 @@
 # - ansible-dev-tools==24.10.0
 # - ansible==10.5.0
 # - black==24.10.0
-# - mypy==1.12.1
+# - mypy==1.13.0
 # - pandas-stubs==2.2.3.241009
 # - pydantic==2.9.2
 # - ruff==0.7.0
@@ -129,7 +129,7 @@ mdurl==0.1.2
     # via markdown-it-py
 molecule==24.9.0
     # via ansible-dev-tools
-mypy==1.12.1
+mypy==1.13.0
     # via hatch.envs.lint
 mypy-extensions==1.0.0
     # via
