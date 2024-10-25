@@ -10,7 +10,7 @@ authors = [
   { name = "Data Safe Haven development team", email = "safehavendevs@turing.ac.uk" },
 ]
 readme = "README.md"
-requires-python = "==3.12.*"
+requires-python = "==3.13.*"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",
@@ -18,7 +18,7 @@ classifiers = [
   "License :: OSI Approved :: BSD License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Security",
   "Topic :: System :: Systems Administration",
 ]
@@ -44,7 +44,7 @@ dependencies = [
   "chevron==0.14.0",
   "cryptography==43.0.3",
   "fqdn==1.5.1",
-  "psycopg[binary]==3.1.19", # needed for installation on older MacOS versions
+  "psycopg[binary]==3.2.3",
   "pulumi-azure-native==2.68.0",
   "pulumi-azuread==6.0.1",
   "pulumi-random==4.16.7",
@@ -98,7 +98,7 @@ test = [
 dsh = "data_safe_haven.commands.cli:main"
 
 [tool.black]
-target-version = ["py312"]
+target-version = ["py313"]
 
 [tool.coverage.paths]
 source = ["data_safe_haven/"]
