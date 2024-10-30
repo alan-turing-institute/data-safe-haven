@@ -63,7 +63,7 @@ class SREBackupComponent(ComponentResource):
         )
 
         # Backup policy for blobs
-        backup_policy_blobs = dataprotection.BackupPolicy(
+        dataprotection.BackupPolicy(
             f"{self._name}_backup_policy_blobs",
             backup_policy_name="backup-policy-blobs",
             properties=dataprotection.BackupPolicyArgs(
@@ -163,31 +163,8 @@ class SREBackupComponent(ComponentResource):
         )
 
         # Backup instance for blobs
-        dataprotection.BackupInstance(
-            f"{self._name}_backup_instance_blobs",
-            backup_instance_name="backup-instance-blobs",
-            properties=dataprotection.BackupInstanceArgs(
-                data_source_info=dataprotection.DatasourceArgs(
-                    resource_id=props.storage_account_data_private_sensitive_id,
-                    datasource_type="Microsoft.Storage/storageAccounts/blobServices",
-                    object_type="Datasource",
-                    resource_location=props.location,
-                    resource_name=props.storage_account_data_private_sensitive_name,
-                    resource_type="Microsoft.Storage/storageAccounts",
-                    resource_uri=props.storage_account_data_private_sensitive_id,
-                ),
-                object_type="BackupInstance",
-                policy_info=dataprotection.PolicyInfoArgs(
-                    policy_id=backup_policy_blobs.id,
-                ),
-                friendly_name="BlobBackupSensitiveData",
-            ),
-            resource_group_name=props.resource_group_name,
-            vault_name=backup_vault.name,
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=backup_policy_blobs)
-            ),
-        )
+        # We currently have no blobs in StorageAccountV2 accounts to backup
+        # This may change in future, so we leave the policy above
 
         # Backup instance for disks
         # We currently have no disks except OS disks so no backup is needed
