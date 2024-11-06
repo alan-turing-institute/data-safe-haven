@@ -133,7 +133,7 @@ mypy-extensions==1.0.0
     # via
     #   black
     #   mypy
-numpy==2.1.2
+numpy==2.1.3
     # via pandas-stubs
 onigurumacffi==1.3.0
     # via ansible-navigator
@@ -220,12 +220,12 @@ referencing==0.35.1
     #   jsonschema-specifications
 resolvelib==1.0.1
     # via ansible-core
-rich==13.9.3
+rich==13.9.4
     # via
     #   ansible-lint
     #   enrich
     #   molecule
-rpds-py==0.20.0
+rpds-py==0.21.0
     # via
     #   jsonschema
     #   referencing
@@ -265,7 +265,7 @@ tzdata==2024.2
     # via ansible-navigator
 urllib3==2.2.3
     # via types-requests
-virtualenv==20.27.0
+virtualenv==20.27.1
     # via tox
 wcmatch==10.0
     # via

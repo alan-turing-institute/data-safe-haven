@@ -80,7 +80,7 @@ azure-mgmt-compute==33.0.0
     # via hatch.envs.default
 azure-mgmt-containerinstance==10.1.0
     # via hatch.envs.default
-azure-mgmt-core==1.4.0
+azure-mgmt-core==1.5.0
     # via
     #   azure-mgmt-compute
     #   azure-mgmt-containerinstance
@@ -220,13 +220,12 @@ pyopenssl==24.2.1
     # via
     #   acme
     #   josepy
-pyrfc3339==1.1
+pyrfc3339==2.0.1
     # via acme
 pytz==2024.2
     # via
     #   hatch.envs.default
     #   acme
-    #   pyrfc3339
 pyyaml==6.0.2
     # via
     #   hatch.envs.default
