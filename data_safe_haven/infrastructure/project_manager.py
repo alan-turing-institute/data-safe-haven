@@ -119,27 +119,46 @@ class ProjectManager:
         """Load the Pulumi stack, creating if needed."""
         if not self._stack:
             self.logger.debug(f"Creating/loading stack [green]{self.stack_name}[/].")
+            # Note: `create_or_select_stack` is not used here because
+            # when creating a stack, it generates a new encryption key rather than using the project's key
+            # There is no way to check if a stack exists other than trying to select it
+            #
             try:
-                self._stack = automation.create_or_select_stack(
+                self._stack = automation.select_stack(
                     opts=automation.LocalWorkspaceOptions(
                         env_vars=self.account.env,
                         project_settings=self.project_settings,
-                        secrets_provider=self.context.pulumi_secrets_provider_url,
                         stack_settings={self.stack_name: self.stack_settings},
+                        secrets_provider=self.context.pulumi_secrets_provider_url,
                     ),
                     program=self.program,
                     project_name=self.project_name,
                     stack_name=self.stack_name,
                 )
-                self.logger.info(f"Loaded stack [green]{self.stack_name}[/].")
-                # Ensure encrypted key is stored in the Pulumi configuration
-                self.update_dsh_pulumi_encrypted_key(self._stack.workspace)
-                # Ensure workspace plugins are installed
-                self.install_plugins(self._stack.workspace)
-            except automation.CommandError as exc:
-                self.log_exception(exc)
-                msg = f"Could not load Pulumi stack {self.stack_name}."
-                raise DataSafeHavenPulumiError(msg) from exc
+            except automation.CommandError:
+                try:
+                    self._stack = automation.create_stack(
+                        opts=automation.LocalWorkspaceOptions(
+                            env_vars=self.account.env,
+                            project_settings=self.project_settings,
+                            secrets_provider=self.context.pulumi_secrets_provider_url,
+                        ),
+                        program=self.program,
+                        project_name=self.project_name,
+                        stack_name=self.stack_name,
+                    )
+                    self._stack.workspace.save_stack_settings(
+                        self.stack_name, self.stack_settings
+                    )
+                except automation.CommandError as exc:
+                    self.log_exception(exc)
+                    msg = f"Could not create Pulumi stack {self.stack_name}."
+                    raise DataSafeHavenPulumiError(msg) from exc
+            self.logger.info(f"Loaded stack [green]{self.stack_name}[/].")
+            # Ensure encrypted key is stored in the Pulumi configuration
+            self.update_dsh_pulumi_encrypted_key(self._stack.workspace)
+            # Ensure workspace plugins are installed
+            self.install_plugins(self._stack.workspace)
         return self._stack
 
     def add_option(self, name: str, value: str, *, replace: bool) -> None:
@@ -428,7 +447,6 @@ class ProjectManager:
     def update_dsh_pulumi_encrypted_key(self, workspace: automation.Workspace) -> None:
         """Update encrypted key in the DSHPulumiProject object"""
         stack_key = workspace.stack_settings(stack_name=self.stack_name).encrypted_key
-
         if not self.pulumi_config.encrypted_key:
             self.pulumi_config.encrypted_key = stack_key
         elif self.pulumi_config.encrypted_key != stack_key:
