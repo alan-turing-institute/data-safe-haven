@@ -58,7 +58,7 @@
 | data\_safe\_haven/infrastructure/components/composite/microsoft\_sql\_database.py |       24 |       16 |     33% |22-28, 41-110 |
 | data\_safe\_haven/infrastructure/components/composite/nfsv3\_blob\_container.py   |       21 |       14 |     33% |22-29, 39-75 |
 | data\_safe\_haven/infrastructure/components/composite/postgresql\_database.py     |       27 |       19 |     30% |24-31, 44-143 |
-| data\_safe\_haven/infrastructure/components/composite/virtual\_machine.py         |       63 |       44 |     30% |37-58, 62, 66, 78-103, 116-282 |
+| data\_safe\_haven/infrastructure/components/composite/virtual\_machine.py         |       63 |       44 |     30% |37-58, 62, 66, 78-103, 116-285 |
 | data\_safe\_haven/infrastructure/components/dynamic/\_\_init\_\_.py               |        4 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/components/dynamic/blob\_container\_acl.py       |       43 |       27 |     37% |29-50, 56-68, 76-87, 97-98, 102, 114 |
 | data\_safe\_haven/infrastructure/components/dynamic/dsh\_resource\_provider.py    |       29 |       11 |     62% |41-54, 72-75, 133, 143, 162-164 |
