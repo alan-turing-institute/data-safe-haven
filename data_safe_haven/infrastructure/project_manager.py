@@ -119,10 +119,11 @@ class ProjectManager:
         """Load the Pulumi stack, creating if needed."""
         if not self._stack:
             self.logger.debug(f"Creating/loading stack [green]{self.stack_name}[/].")
-            # Note: `create_or_select_stack` is not used here because
-            # when creating a stack, it generates a new encryption key rather than using the project's key
-            # There is no way to check if a stack exists other than trying to select it
-            #
+            # Note: `create_or_select_stack` is not used here because we need to know whether the stack exists or not.
+            # There is no way to check if a stack exists other than trying to `create_stack` or `select_stack` and catching the error.
+            # `create_or_select_stack` never generates an error, and doesn't tell us whether the stack was created or selected.
+            # When creating a stack, it generates a new encryption key rather than using the project's key, so we need to set the key
+            # manually after creating the stack.
             try:
                 self._stack = automation.select_stack(
                     opts=automation.LocalWorkspaceOptions(
@@ -155,8 +156,6 @@ class ProjectManager:
                     msg = f"Could not create Pulumi stack {self.stack_name}."
                     raise DataSafeHavenPulumiError(msg) from exc
             self.logger.info(f"Loaded stack [green]{self.stack_name}[/].")
-            # Ensure encrypted key is stored in the Pulumi configuration
-            self.update_dsh_pulumi_encrypted_key(self._stack.workspace)
             # Ensure workspace plugins are installed
             self.install_plugins(self._stack.workspace)
         return self._stack
@@ -443,15 +442,6 @@ class ProjectManager:
             key: item.value for key, item in self.stack.get_all_config().items()
         }
         self.pulumi_project.stack_config = all_config_dict
-
-    def update_dsh_pulumi_encrypted_key(self, workspace: automation.Workspace) -> None:
-        """Update encrypted key in the DSHPulumiProject object"""
-        stack_key = workspace.stack_settings(stack_name=self.stack_name).encrypted_key
-        if not self.pulumi_config.encrypted_key:
-            self.pulumi_config.encrypted_key = stack_key
-        elif self.pulumi_config.encrypted_key != stack_key:
-            msg = "Stack encrypted key does not match project encrypted key"
-            raise DataSafeHavenPulumiError(msg)
 
 
 class SREProjectManager(ProjectManager):
