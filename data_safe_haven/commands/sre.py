@@ -50,6 +50,7 @@ def deploy(
         pulumi_config = DSHPulumiConfig.from_remote_or_create(
             context, encrypted_key=None, projects={}
         )
+
         sre_config = SREConfig.from_remote_by_name(context, name)
 
         # Check whether current IP address is authorised to take administrator actions
@@ -68,6 +69,7 @@ def deploy(
             pulumi_config=pulumi_config,
             create_project=True,
         )
+
         # Set Azure options
         stack.add_option(
             "azure-native:location", sre_config.azure.location, replace=False
