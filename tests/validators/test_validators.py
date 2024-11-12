@@ -111,7 +111,7 @@ class TestValidateIpAddress:
     def test_ip_address_fail(self, ip_address):
         with pytest.raises(
             ValueError,
-            match="Expected valid IPv4 address, for example '1.1.1.1', or 'Internet'.",
+            match="Expected valid IPv4 address, for example '1.1.1.1'.",
         ):
             validators.ip_address(ip_address)
 

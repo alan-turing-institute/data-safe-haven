@@ -140,9 +140,21 @@ def teardown() -> None:
 
     # Teardown Data Safe Haven SHM infrastructure.
     try:
-        config = SHMConfig.from_remote(context)
-        shm_infra = ImperativeSHM(context, config)
-        shm_infra.teardown()
+        if SHMConfig.remote_exists(context):
+            config = SHMConfig.from_remote(context)
+            shm_infra = ImperativeSHM(context, config)
+            console.print(
+                "Tearing down the Safe Haven Management environment will permanently delete all associated resources, including remotely stored configurations."
+            )
+            if not console.confirm(
+                "Do you wish to continue tearing down the SHM?", default_to_yes=False
+            ):
+                console.print("SHM teardown cancelled by user.")
+                raise typer.Exit(0)
+            shm_infra.teardown()
+        else:
+            logger.critical(f"No deployed SHM found for context [green]{context.name}.")
+            raise typer.Exit(1)
     except DataSafeHavenError as exc:
         logger.critical("Could not teardown Safe Haven Management environment.")
         raise typer.Exit(1) from exc

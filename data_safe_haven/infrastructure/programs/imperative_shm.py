@@ -1,10 +1,11 @@
-from data_safe_haven.config import Context, SHMConfig
+from data_safe_haven.config import Context, DSHPulumiConfig, SHMConfig
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenMicrosoftGraphError,
 )
 from data_safe_haven.external import AzureSdk, GraphApi
 from data_safe_haven.logging import get_logger
+from data_safe_haven.types import EntraSignInAudienceType
 
 
 class ImperativeSHM:
@@ -147,11 +148,16 @@ class ImperativeSHM:
         try:
             graph_api.create_application(
                 self.context.entra_application_name,
-                application_scopes=["Group.ReadWrite.All"],
+                application_scopes=[
+                    "Application.ReadWrite.All",  # For creating applications
+                    "AppRoleAssignment.ReadWrite.All",  # For application permissions
+                    "Directory.ReadWrite.All",  # For creating/deleting groups
+                    "Group.ReadWrite.All",  # For creating/deleting groups
+                ],
                 delegated_scopes=[],
                 request_json={
                     "displayName": self.context.entra_application_name,
-                    "signInAudience": "AzureADMyOrg",
+                    "signInAudience": EntraSignInAudienceType.THIS_TENANT.value,
                 },
             )
             # Always recreate the application secret.
@@ -172,6 +178,13 @@ class ImperativeSHM:
             DataSafeHavenAzureError if any resources cannot be destroyed
         """
         logger = get_logger()
+        if DSHPulumiConfig.remote_exists(self.context):
+            pulumi_config = DSHPulumiConfig.from_remote(self.context)
+            deployed = pulumi_config.project_names
+            if deployed:
+                logger.info(f"Found deployed SREs: {deployed}.")
+                msg = "Deployed SREs must be torn down before the SHM can be torn down."
+                raise DataSafeHavenAzureError(msg)
         try:
             logger.info(
                 f"Removing [green]{self.context.description}[/] resource group {self.context.resource_group_name}."

@@ -7,7 +7,6 @@ from data_safe_haven.config.config_sections import (
     ConfigSectionDockerHub,
     ConfigSectionSRE,
 )
-from data_safe_haven.config.sre_config import sre_config_name
 from data_safe_haven.exceptions import (
     DataSafeHavenTypeError,
 )
@@ -126,14 +125,5 @@ class TestConfig:
             context.storage_container_name,
         )
 
-
-@pytest.mark.parametrize(
-    "value,expected",
-    [
-        (r"Test SRE", "sre-testsre.yaml"),
-        (r"*a^b$c", "sre-abc.yaml"),
-        (r";'@-", "sre-.yaml"),
-    ],
-)
-def test_sre_config_name(value, expected):
-    assert sre_config_name(value) == expected
+    def test_sre_config_yaml_name(self, sre_config: SREConfig) -> None:
+        assert sre_config.filename == "sre-sandbox.yaml"

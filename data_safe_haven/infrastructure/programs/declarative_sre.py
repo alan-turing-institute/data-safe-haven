@@ -35,11 +35,9 @@ class DeclarativeSRE:
         self,
         context: Context,
         config: SREConfig,
-        graph_api_token: str,
     ) -> None:
         self.context = context
         self.config = config
-        self.graph_api_token = graph_api_token
         self.stack_name = replace_separators(
             f"shm-{context.name}-sre-{config.name}", "-"
         )
@@ -112,14 +110,6 @@ class DeclarativeSRE:
             ]
         )
 
-        # Deploy Entra resources
-        SREEntraComponent(
-            "sre_entra",
-            SREEntraProps(
-                group_names=ldap_group_names,
-            ),
-        )
-
         # Deploy resource group
         resource_group = resources.ResourceGroup(
             "sre_resource_group",
@@ -160,6 +150,17 @@ class DeclarativeSRE:
                 user_public_ip_ranges=self.config.sre.research_user_ip_addresses,
             ),
             tags=self.tags,
+        )
+
+        # Deploy Entra resources
+        entra = SREEntraComponent(
+            "sre_entra",
+            SREEntraProps(
+                group_names=ldap_group_names,
+                shm_name=self.context.name,
+                sre_fqdn=networking.sre_fqdn,
+                sre_name=self.config.name,
+            ),
         )
 
         # Deploy SRE firewall
@@ -248,8 +249,8 @@ class DeclarativeSRE:
             SREIdentityProps(
                 dns_server_ip=dns.ip_address,
                 dockerhub_credentials=dockerhub_credentials,
-                entra_application_name=f"sre-{self.config.name}-apricot",
-                entra_auth_token=self.graph_api_token,
+                entra_application_id=entra.identity_application_id,
+                entra_application_secret=entra.identity_application_secret,
                 entra_tenant_id=shm_entra_tenant_id,
                 location=self.config.azure.location,
                 resource_group_name=resource_group.name,
@@ -288,9 +289,8 @@ class DeclarativeSRE:
                 database_password=data.password_user_database_admin,
                 dns_server_ip=dns.ip_address,
                 dockerhub_credentials=dockerhub_credentials,
-                entra_application_fqdn=networking.sre_fqdn,
-                entra_application_name=f"sre-{self.config.name}-guacamole",
-                entra_auth_token=self.graph_api_token,
+                entra_application_id=entra.remote_desktop_application_id,
+                entra_application_url=entra.remote_desktop_url,
                 entra_tenant_id=shm_entra_tenant_id,
                 ldap_group_filter=ldap_group_filter,
                 ldap_group_search_base=ldap_group_search_base,

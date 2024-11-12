@@ -17,6 +17,11 @@ from data_safe_haven.exceptions import (
     DataSafeHavenValueError,
 )
 from data_safe_haven.logging import get_logger, get_null_logger
+from data_safe_haven.types import (
+    EntraApplicationId,
+    EntraAppPermissionType,
+    EntraSignInAudienceType,
+)
 
 from .credentials import DeferredCredential, GraphApiCredential
 
@@ -24,9 +29,6 @@ from .credentials import DeferredCredential, GraphApiCredential
 class GraphApi:
     """Interface to the Microsoft Graph REST API"""
 
-    application_ids: ClassVar[dict[str, str]] = {
-        "Microsoft Graph": "00000003-0000-0000-c000-000000000000",
-    }
     role_template_ids: ClassVar[dict[str, str]] = {
         "Global Administrator": "62e90394-69f5-4237-9190-012177145e10"
     }
@@ -34,6 +36,7 @@ class GraphApi:
         "Application.ReadWrite.All": "1bfefb4e-e0b5-418b-a88f-73c46d2cc8e9",
         "AppRoleAssignment.ReadWrite.All": "06b708a9-e830-4db3-a914-8e69da51d44f",
         "Directory.Read.All": "7ab1d382-f21e-4acd-a863-ba3e13f7da61",
+        "Directory.ReadWrite.All": "19dbc75e-c2e2-444c-a770-ec69d8559fc7",
         "Domain.Read.All": "dbb9058a-0e50-45d7-ae91-66909b5d4664",
         "Group.Read.All": "5b567255-7703-4780-807c-7be8301ae99b",
         "Group.ReadWrite.All": "62a82d76-70ea-41e2-9197-370581804d09",
@@ -192,7 +195,6 @@ class GraphApi:
                 if not request_json:
                     request_json = {
                         "displayName": application_name,
-                        "signInAudience": "AzureADMyOrg",
                         "passwordCredentials": [],
                         "publicClient": {
                             "redirectUris": [
@@ -200,25 +202,26 @@ class GraphApi:
                                 "urn:ietf:wg:oauth:2.0:oob",
                             ]
                         },
+                        "signInAudience": EntraSignInAudienceType.THIS_TENANT.value,
                     }
                 # Add scopes if there are any
                 scopes = [
                     {
                         "id": self.uuid_application[application_scope],
-                        "type": "Role",  # 'Role' is the type for application permissions
+                        "type": EntraAppPermissionType.APPLICATION.value,
                     }
                     for application_scope in application_scopes
                 ] + [
                     {
                         "id": self.uuid_delegated[delegated_scope],
-                        "type": "Scope",  # 'Scope' is the type for delegated permissions
+                        "type": EntraAppPermissionType.DELEGATED.value,
                     }
                     for delegated_scope in delegated_scopes
                 ]
                 if scopes:
                     request_json["requiredResourceAccess"] = [
                         {
-                            "resourceAppId": self.application_ids["Microsoft Graph"],
+                            "resourceAppId": EntraApplicationId.MICROSOFT_GRAPH.value,
                             "resourceAccess": scopes,
                         }
                     ]
@@ -589,9 +592,9 @@ class GraphApi:
                 f"Assigning application role '[green]{application_role_name}[/]' to '{application_name}'...",
             )
             request_json = {
+                "appRoleId": app_role_id,
                 "principalId": application_sp["id"],
                 "resourceId": microsoft_graph_sp["id"],
-                "appRoleId": app_role_id,
             }
             self.http_post(
                 f"{self.base_endpoint}/servicePrincipals/{microsoft_graph_sp['id']}/appRoleAssignments",

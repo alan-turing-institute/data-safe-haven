@@ -27,11 +27,6 @@ def get_key_vault_name(stack_name: str) -> str:
     return f"{''.join(truncate_tokens(stack_name.split('-'), 17))}secrets"
 
 
-def json_safe(input_string: str) -> str:
-    """Construct a JSON-safe version of an input string"""
-    return alphanumeric(input_string).lower()
-
-
 def next_occurrence(
     hour: int, minute: int, timezone: str, *, time_format: str = "iso"
 ) -> str:

@@ -199,6 +199,9 @@ class VMComponent(ComponentResource):
                 ),
             ),
             vm_name=props.vm_name,
+            identity=compute.VirtualMachineIdentityArgs(
+                type=compute.ResourceIdentityType.SYSTEM_ASSIGNED,
+            ),
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(

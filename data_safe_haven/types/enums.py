@@ -38,6 +38,25 @@ class DatabaseSystem(str, Enum):
 
 
 @verify(UNIQUE)
+class EntraApplicationId(str, Enum):
+    MICROSOFT_GRAPH = "00000003-0000-0000-c000-000000000000"
+
+
+@verify(UNIQUE)
+class EntraAppPermissionType(str, Enum):
+    APPLICATION = "Role"
+    DELEGATED = "Scope"
+
+
+@verify(UNIQUE)
+class EntraSignInAudienceType(str, Enum):
+    ANY_TENANT = "AzureADMultipleOrgs"
+    ANY_TENANT_OR_PERSONAL = "AzureADandPersonalMicrosoftAccount"
+    PERSONAL = "PersonalMicrosoftAccount"
+    THIS_TENANT = "AzureADMyOrg"
+
+
+@verify(UNIQUE)
 class FirewallPriorities(int, Enum):
     """Priorities for firewall rules."""
 

@@ -107,7 +107,10 @@ def available() -> None:
 
 @config_command_group.command()
 def show(
-    name: Annotated[str, typer.Argument(help="Name of SRE to show")],
+    name: Annotated[
+        str,
+        typer.Argument(help="Name of SRE to show"),
+    ],
     file: Annotated[
         Optional[Path],  # noqa: UP007
         typer.Option(help="File path to write configuration template to."),

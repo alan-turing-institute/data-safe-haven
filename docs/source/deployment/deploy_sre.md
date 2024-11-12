@@ -46,6 +46,7 @@ $ dsh config template --file PATH_YOU_WANT_TO_SAVE_YOUR_YAML_FILE_TO \
 
 :::{code} yaml
 azure:
+  location: # Azure location where SRE resources will be deployed
   subscription_id: # ID of the Azure subscription that the TRE will be deployed to
   tenant_id: # Home tenant for the Azure account used to deploy infrastructure: `az account show`
 description: # A free-text description of your SRE deployment
@@ -61,21 +62,30 @@ sre:
   remote_desktop:
     allow_copy: # True/False: whether to allow copying text out of the environment
     allow_paste: # True/False: whether to allow pasting text into the environment
-  research_user_ip_addresses: # List of IP addresses belonging to users
+  research_user_ip_addresses:
+    - # List of IP addresses belonging to users
+    - # You can also use the tag 'Internet' instead of a list
   software_packages: # Which Python/R packages to allow users to install: [any/pre-approved/none]
+  storage_quota_gb:
+    home: # Total size in GiB across all home directories
+    shared: #Total size in GiB for the shared directories
   timezone: # Timezone in pytz format (eg. Europe/London)
   workspace_skus: # List of Azure VM SKUs that will be used for data analysis.
 :::
 
 ::::
 
-:::{admonition} Supported Azure regions
-:class: dropdown important
+### Configuration guidance
+
+#### Choosing an Azure region
 
 Some of the SRE resources are not available in all Azure regions.
 
 - Workspace virtual machines use zone redundant storage managed disks which have [limited regional availability](https://learn.microsoft.com/en-us/azure/virtual-machines/disks-redundancy).
 - Some shares mounted on workspace virtual machines require premium file shares which have [limited regional availability](https://learn.microsoft.com/en-us/azure/storage/files/redundancy-premium-file-shares).
+
+:::{admonition} Supported Azure regions
+:class: dropdown important
 
 The regions which satisfy all requirements are,
 
@@ -110,6 +120,8 @@ The regions which satisfy all requirements are,
 - West US 3
 
 :::
+
+#### Choosing a VM SKU
 
 :::{hint}
 See [here](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/) for a full list of valid Azure VM SKUs.
@@ -163,6 +175,70 @@ As some general recommendations,
     Alternatively a series with more recent GPUs should give better performance.
 
 :::
+
+#### Copy and paste
+
+The [Guacamole clipboard](https://guacamole.apache.org/doc/gug/using-guacamole.html#using-the-clipboard) provides an interface between the local clipboard and the clipboard on the remote workspaces.
+Only text is allowed to be passed through the Guacamole clipboard.
+
+The ability to copy and paste text to or from SRE workspaces via the Guacamole clipboard can be controlled with the DSH configuration parameters `allow_copy` and `allow_paste`.
+`allow_copy` allows users to copy text from an SRE workspace to the Guacamole clipboard.
+`allow_paste` allows users to paste text into an SRE workspace from the Guacamole clipboard.
+These options have no impact on the ability to use copy and paste within a workspace.
+
+The impact of setting each of these options is detailed in the following table.
+
+<table class="table" id="id1">
+    <caption><span class="caption-text">Configuration of copy and paste</span><a class="headerlink" href="#id1" title="Link to this table">#</a></caption>
+    <thead>
+      <tr class="row-odd" style="border-bottom:hidden">
+        <th class="head" colspan = "2" style="text-align:center">Configuration setting</th>
+        <th class="head" colspan = "4" style="text-align:center">Resulting behaviour</th>
+      </tr>
+      <tr class="row-odd">
+        <th class="head"><tt>allow_copy</tt></th>
+        <th class="head"><tt>allow_paste</tt></th>
+        <th class="head">Copy/paste within workspace</th>
+        <th class="head">Copy/paste between workspaces</th>
+        <th class="head">Copy to local machine</th>
+        <th class="head">Paste from local machine</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="row-even">
+        <td>true</td>
+        <td>true</td>
+        <td>yes</td>
+        <td>yes (via local machine)</td>
+        <td>yes</td>
+        <td>yes</td>
+      </tr>
+      <tr class="row-odd">
+        <td>true</td>
+        <td>false</td>
+        <td>yes</td>
+        <td>no</td>
+        <td>yes</td>
+        <td>no</td>
+      </tr>
+      <tr>
+        <td>false</td>
+        <td>true</td>
+        <td>yes</td>
+        <td>no</td>
+        <td>no</td>
+        <td>yes</td>
+      </tr>
+      <tr>
+        <td>false</td>
+        <td>false</td>
+        <td>yes</td>
+        <td>no</td>
+        <td>no</td>
+        <td>no</td>
+      </tr>
+    </tbody>
+</table>
 
 ## Upload the configuration file
 

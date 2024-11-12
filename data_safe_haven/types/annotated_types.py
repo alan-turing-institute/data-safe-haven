@@ -21,6 +21,7 @@ EntraGroupName = Annotated[str, AfterValidator(validators.entra_group_name)]
 Fqdn = Annotated[str, AfterValidator(validators.fqdn)]
 Guid = Annotated[str, AfterValidator(validators.aad_guid)]
 IpAddress = Annotated[str, AfterValidator(validators.ip_address)]
+SafeSreName = Annotated[str, AfterValidator(validators.safe_sre_name)]
 SafeString = Annotated[str, AfterValidator(validators.safe_string)]
 TimeZone = Annotated[str, AfterValidator(validators.timezone)]
 TH = TypeVar("TH", bound=Hashable)

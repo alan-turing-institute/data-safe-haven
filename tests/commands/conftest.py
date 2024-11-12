@@ -49,11 +49,6 @@ def mock_graph_api_get_application_by_name(mocker, request):
 
 
 @fixture
-def mock_graph_api_token(mocker):
-    mocker.patch.object(GraphApi, "token", return_value="dummy-token")
-
-
-@fixture
 def mock_imperative_shm_deploy(mocker):
     mocker.patch.object(
         ImperativeSHM,
@@ -101,6 +96,15 @@ def mock_pulumi_config_from_remote(mocker, pulumi_config):
 
 
 @fixture
+def mock_pulumi_config_from_remote_fails(mocker):
+    mocker.patch.object(
+        DSHPulumiConfig,
+        "from_remote",
+        return_value=DataSafeHavenAzureError("mock from_remote failure"),
+    )
+
+
+@fixture
 def mock_pulumi_config_from_remote_or_create(mocker, pulumi_config_empty):
     mocker.patch.object(
         DSHPulumiConfig, "from_remote_or_create", return_value=pulumi_config_empty
@@ -117,6 +121,11 @@ def mock_pulumi_config_no_key_from_remote(mocker, pulumi_config_no_key):
 @fixture
 def mock_pulumi_config_upload(mocker):
     mocker.patch.object(DSHPulumiConfig, "upload", return_value=None)
+
+
+@fixture
+def mock_pulumi_config_remote_exists(mocker):
+    mocker.patch.object(DSHPulumiConfig, "remote_exists", return_value=True)
 
 
 @fixture

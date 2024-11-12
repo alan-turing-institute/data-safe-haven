@@ -11,8 +11,6 @@ from data_safe_haven.infrastructure.common import (
     get_id_from_subnet,
 )
 from data_safe_haven.infrastructure.components import (
-    EntraApplication,
-    EntraApplicationProps,
     FileShareFile,
     FileShareFileProps,
     PostgresqlDatabaseComponent,
@@ -32,9 +30,8 @@ class SRERemoteDesktopProps:
         database_password: Input[str],
         dns_server_ip: Input[str],
         dockerhub_credentials: DockerHubCredentials,
-        entra_application_fqdn: Input[str],
-        entra_application_name: Input[str],
-        entra_auth_token: str,
+        entra_application_id: Input[str],
+        entra_application_url: Input[str],
         entra_tenant_id: Input[str],
         ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
@@ -58,9 +55,8 @@ class SRERemoteDesktopProps:
         self.disable_paste = not allow_paste
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
-        self.entra_application_name = entra_application_name
-        self.entra_application_url = Output.concat("https://", entra_application_fqdn)
-        self.entra_auth_token = entra_auth_token
+        self.entra_application_id = entra_application_id
+        self.entra_application_url = entra_application_url
         self.entra_tenant_id = entra_tenant_id
         self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
@@ -118,17 +114,6 @@ class SRERemoteDesktopComponent(ComponentResource):
         super().__init__("dsh:sre:RemoteDesktopComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = {"component": "remote desktop"} | (tags if tags else {})
-
-        # Define Entra ID application
-        entra_application = EntraApplication(
-            f"{self._name}_entra_application",
-            EntraApplicationProps(
-                application_name=props.entra_application_name,
-                web_redirect_url=props.entra_application_url,
-            ),
-            auth_token=props.entra_auth_token,
-            opts=child_opts,
-        )
 
         # Define configuration file shares
         file_share = storage.FileShare(
@@ -224,7 +209,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_CLIENT_ID",
-                            value=entra_application.application_id,
+                            value=props.entra_application_id,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_ISSUER",

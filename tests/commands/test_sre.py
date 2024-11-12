@@ -13,7 +13,6 @@ class TestDeploySRE:
         self,
         runner: CliRunner,
         mock_azuresdk_get_subscription_name,  # noqa: ARG002
-        mock_graph_api_token,  # noqa: ARG002
         mock_contextmanager_assert_context,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
         mock_pulumi_config_from_remote_or_create,  # noqa: ARG002
@@ -34,7 +33,6 @@ class TestDeploySRE:
         runner: CliRunner,
         mock_azuresdk_get_subscription_name,  # noqa: ARG002
         mock_contextmanager_assert_context,  # noqa: ARG002
-        mock_graph_api_token,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
         mock_pulumi_config_from_remote_or_create,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
@@ -56,7 +54,6 @@ class TestDeploySRE:
         mocker: MockerFixture,
         mock_azuresdk_get_subscription_name,  # noqa: ARG002
         mock_graph_api_get_application_by_name,  # noqa: ARG002
-        mock_graph_api_token,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
         mock_pulumi_config_from_remote_or_create,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
@@ -104,14 +101,12 @@ class TestTeardownSRE:
     def test_teardown(
         self,
         runner: CliRunner,
-        mock_graph_api_token,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
         mock_pulumi_config_from_remote,  # noqa: ARG002
-        mock_shm_config_from_remote,  # noqa: ARG002
         mock_sre_config_from_remote,  # noqa: ARG002
         mock_sre_project_manager_teardown_then_exit,  # noqa: ARG002
     ) -> None:
-        result = runner.invoke(sre_command_group, ["teardown", "sandbox"])
+        result = runner.invoke(sre_command_group, ["teardown", "sandbox"], input="y")
         assert result.exit_code == 1
         assert "mock teardown" in result.stdout
 
@@ -142,3 +137,15 @@ class TestTeardownSRE:
         assert result.exit_code == 1
         assert "mock get_credential\n" in result.stdout
         assert "mock get_credential error" in result.stdout
+
+    def test_teardown_cancelled(
+        self,
+        runner: CliRunner,
+        mock_ip_1_2_3_4,  # noqa: ARG002
+        mock_pulumi_config_from_remote,  # noqa: ARG002
+        mock_sre_config_from_remote,  # noqa: ARG002
+        mock_sre_project_manager_teardown_then_exit,  # noqa: ARG002
+    ) -> None:
+        result = runner.invoke(sre_command_group, ["teardown", "sandbox"], input="n")
+        assert result.exit_code == 0
+        assert "cancelled by user" in result.stdout

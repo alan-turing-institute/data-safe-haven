@@ -46,7 +46,7 @@ jobs:
         run: hatch run docs:build
 
       - name: Link Checker
-        uses: lycheeverse/lychee-action@v2.0.2
+        uses: lycheeverse/lychee-action@v2.1.0
         with:
           args: --config='./.lychee.toml' --no-progress './docs/build/html/**/*.html'
           fail: true  # fail on broken links

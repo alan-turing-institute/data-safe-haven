@@ -4,7 +4,6 @@ from freezegun import freeze_time
 from data_safe_haven.exceptions import DataSafeHavenValueError
 from data_safe_haven.functions import (
     get_key_vault_name,
-    json_safe,
     next_occurrence,
 )
 
@@ -70,11 +69,3 @@ class TestNextOccurrence:
 )
 def test_get_key_vault_name(value, expected):
     assert get_key_vault_name(value) == expected
-
-
-@pytest.mark.parametrize(
-    "value,expected",
-    [(r"Test SRE", "testsre"), (r"%*aBc", "abc"), (r"MY_SRE", "mysre")],
-)
-def test_json_safe(value, expected):
-    assert json_safe(value) == expected
