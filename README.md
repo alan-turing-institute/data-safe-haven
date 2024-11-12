@@ -13,7 +13,7 @@
 | data\_safe\_haven/administration/users/user\_handler.py                           |      100 |       78 |     22% |22-24, 32-69, 75-81, 85, 91-97, 105-124, 132-137, 145-159, 167-206, 214-219 |
 | data\_safe\_haven/commands/\_\_init\_\_.py                                        |        2 |        0 |    100% |           |
 | data\_safe\_haven/commands/cli.py                                                 |       28 |        3 |     89% |56, 59, 99 |
-| data\_safe\_haven/commands/config.py                                              |      122 |        3 |     98% |   229-231 |
+| data\_safe\_haven/commands/config.py                                              |      122 |        3 |     98% |   232-234 |
 | data\_safe\_haven/commands/context.py                                             |       72 |        0 |    100% |           |
 | data\_safe\_haven/commands/pulumi.py                                              |       19 |        0 |    100% |           |
 | data\_safe\_haven/commands/shm.py                                                 |       85 |       27 |     68% |52, 67, 69, 71, 73-100, 119-124, 135, 156-157 |
@@ -26,7 +26,7 @@
 | data\_safe\_haven/config/dsh\_pulumi\_config.py                                   |       40 |        0 |    100% |           |
 | data\_safe\_haven/config/dsh\_pulumi\_project.py                                  |       11 |        2 |     82% |    15, 19 |
 | data\_safe\_haven/config/shm\_config.py                                           |       23 |        7 |     70% |     33-41 |
-| data\_safe\_haven/config/sre\_config.py                                           |       48 |       15 |     69% |54-56, 58-60, 62-64, 66-68, 70-72 |
+| data\_safe\_haven/config/sre\_config.py                                           |       47 |       15 |     68% |53-55, 57-59, 61-63, 65-67, 69-71 |
 | data\_safe\_haven/console/\_\_init\_\_.py                                         |        4 |        0 |    100% |           |
 | data\_safe\_haven/console/format.py                                               |       11 |        0 |    100% |           |
 | data\_safe\_haven/console/pretty.py                                               |        5 |        0 |    100% |           |
@@ -45,7 +45,7 @@
 | data\_safe\_haven/external/interface/pulumi\_account.py                           |       21 |        7 |     67% |27-28, 33-45 |
 | data\_safe\_haven/functions/\_\_init\_\_.py                                       |        3 |        0 |    100% |           |
 | data\_safe\_haven/functions/network.py                                            |       15 |        0 |    100% |           |
-| data\_safe\_haven/functions/strings.py                                            |       63 |       11 |     83% |22, 83-92, 107-109, 114 |
+| data\_safe\_haven/functions/strings.py                                            |       61 |       11 |     82% |22, 78-87, 102-104, 109 |
 | data\_safe\_haven/infrastructure/\_\_init\_\_.py                                  |        3 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/common/\_\_init\_\_.py                           |        4 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/common/dockerhub\_credentials.py                 |        6 |        0 |    100% |           |
@@ -103,16 +103,16 @@
 | data\_safe\_haven/serialisers/yaml\_serialisable\_model.py                        |       48 |        0 |    100% |           |
 | data\_safe\_haven/singleton.py                                                    |        8 |        0 |    100% |           |
 | data\_safe\_haven/types/\_\_init\_\_.py                                           |        4 |        0 |    100% |           |
-| data\_safe\_haven/types/annotated\_types.py                                       |       20 |        0 |    100% |           |
+| data\_safe\_haven/types/annotated\_types.py                                       |       21 |        0 |    100% |           |
 | data\_safe\_haven/types/enums.py                                                  |      110 |        0 |    100% |           |
 | data\_safe\_haven/types/types.py                                                  |        2 |        0 |    100% |           |
 | data\_safe\_haven/utility/\_\_init\_\_.py                                         |        2 |        0 |    100% |           |
 | data\_safe\_haven/utility/file\_reader.py                                         |       20 |        9 |     55% |16-17, 21, 25-30, 33 |
 | data\_safe\_haven/validators/\_\_init\_\_.py                                      |        3 |        0 |    100% |           |
-| data\_safe\_haven/validators/typer.py                                             |       23 |        0 |    100% |           |
-| data\_safe\_haven/validators/validators.py                                        |       65 |        0 |    100% |           |
+| data\_safe\_haven/validators/typer.py                                             |       24 |        0 |    100% |           |
+| data\_safe\_haven/validators/validators.py                                        |       70 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4691** | **2154** | **54%** |           |
+|                                                                         **TOTAL** | **4695** | **2154** | **54%** |           |
 
 
 ## Setup coverage badge
