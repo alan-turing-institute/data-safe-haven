@@ -17,7 +17,7 @@
 | data\_safe\_haven/commands/context.py                                             |       72 |        0 |    100% |           |
 | data\_safe\_haven/commands/pulumi.py                                              |       19 |        0 |    100% |           |
 | data\_safe\_haven/commands/shm.py                                                 |       85 |       27 |     68% |52, 67, 69, 71, 73-100, 119-124, 135, 156-157 |
-| data\_safe\_haven/commands/sre.py                                                 |       80 |       10 |     88% |57-61, 158-165, 208-212, 226-229 |
+| data\_safe\_haven/commands/sre.py                                                 |       81 |       11 |     86% |57-61, 158-167, 215-219, 233-236 |
 | data\_safe\_haven/commands/users.py                                               |      122 |       30 |     75% |39-50, 91-92, 138-159, 189-197, 243-269 |
 | data\_safe\_haven/config/\_\_init\_\_.py                                          |        7 |        0 |    100% |           |
 | data\_safe\_haven/config/config\_sections.py                                      |       48 |        0 |    100% |           |
@@ -68,7 +68,7 @@
 | data\_safe\_haven/infrastructure/components/wrapped/log\_analytics\_workspace.py  |       17 |        6 |     65% |22-23, 39, 46, 53-59 |
 | data\_safe\_haven/infrastructure/components/wrapped/nfsv3\_storage\_account.py    |       15 |        7 |     53% |     36-53 |
 | data\_safe\_haven/infrastructure/programs/\_\_init\_\_.py                         |        3 |        0 |    100% |           |
-| data\_safe\_haven/infrastructure/programs/declarative\_sre.py                     |       64 |       36 |     44% |    51-423 |
+| data\_safe\_haven/infrastructure/programs/declarative\_sre.py                     |       65 |       37 |     43% |    51-424 |
 | data\_safe\_haven/infrastructure/programs/imperative\_shm.py                      |       78 |       55 |     29% |27-31, 39-172, 188-195 |
 | data\_safe\_haven/infrastructure/programs/sre/\_\_init\_\_.py                     |        0 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/programs/sre/application\_gateway.py             |       25 |        0 |    100% |           |
@@ -112,7 +112,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       24 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       70 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4703** | **2170** | **54%** |           |
+|                                                                         **TOTAL** | **4705** | **2172** | **54%** |           |
 
 
 ## Setup coverage badge
