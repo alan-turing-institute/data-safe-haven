@@ -57,7 +57,7 @@
 | data\_safe\_haven/infrastructure/components/composite/local\_dns\_record.py       |       15 |        9 |     40% |15-18, 30-66 |
 | data\_safe\_haven/infrastructure/components/composite/microsoft\_sql\_database.py |       24 |       16 |     33% |22-28, 41-110 |
 | data\_safe\_haven/infrastructure/components/composite/nfsv3\_blob\_container.py   |       21 |       14 |     33% |22-29, 39-76 |
-| data\_safe\_haven/infrastructure/components/composite/nfsv3\_storage\_account.py  |       29 |       18 |     38% |24-30, 53-144 |
+| data\_safe\_haven/infrastructure/components/composite/nfsv3\_storage\_account.py  |       23 |       13 |     43% |22-27, 50-136 |
 | data\_safe\_haven/infrastructure/components/composite/postgresql\_database.py     |       27 |       19 |     30% |24-31, 44-143 |
 | data\_safe\_haven/infrastructure/components/composite/virtual\_machine.py         |       63 |       44 |     30% |37-58, 62, 66, 78-103, 116-285 |
 | data\_safe\_haven/infrastructure/components/dynamic/\_\_init\_\_.py               |        4 |        0 |    100% |           |
@@ -75,9 +75,9 @@
 | data\_safe\_haven/infrastructure/programs/sre/apt\_proxy\_server.py               |       27 |       17 |     37% |34-43, 57-196 |
 | data\_safe\_haven/infrastructure/programs/sre/backup.py                           |       18 |       11 |     39% |19-24, 40-166 |
 | data\_safe\_haven/infrastructure/programs/sre/clamav\_mirror.py                   |       25 |       16 |     36% |33-41, 55-170 |
-| data\_safe\_haven/infrastructure/programs/sre/data.py                             |       91 |       76 |     16% |68-92, 110-821 |
+| data\_safe\_haven/infrastructure/programs/sre/data.py                             |       87 |       72 |     17% |68-92, 110-815 |
 | data\_safe\_haven/infrastructure/programs/sre/database\_servers.py                |       24 |       16 |     33% |28-34, 48-100 |
-| data\_safe\_haven/infrastructure/programs/sre/desired\_state.py                   |       49 |       34 |     31% |66-88, 102-229, 233 |
+| data\_safe\_haven/infrastructure/programs/sre/desired\_state.py                   |       49 |       34 |     31% |66-88, 102-228, 232 |
 | data\_safe\_haven/infrastructure/programs/sre/dns\_server.py                      |       36 |       23 |     36% |36-40, 54-323 |
 | data\_safe\_haven/infrastructure/programs/sre/entra.py                            |       26 |       16 |     38% |27-30, 42-121 |
 | data\_safe\_haven/infrastructure/programs/sre/firewall.py                         |       31 |       21 |     32% |39-64, 80-379 |
@@ -112,7 +112,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       24 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       70 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4744** | **2174** | **54%** |           |
+|                                                                         **TOTAL** | **4734** | **2165** | **54%** |           |
 
 
 ## Setup coverage badge
