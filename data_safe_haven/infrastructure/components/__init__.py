@@ -9,6 +9,8 @@ from .composite import (
     MicrosoftSQLDatabaseProps,
     NFSV3BlobContainerComponent,
     NFSV3BlobContainerProps,
+    NFSV3StorageAccountComponent,
+    NFSV3StorageAccountProps,
     PostgresqlDatabaseComponent,
     PostgresqlDatabaseProps,
     VMComponent,
@@ -23,7 +25,6 @@ from .dynamic import (
 )
 from .wrapped import (
     WrappedLogAnalyticsWorkspace,
-    WrappedNFSV3StorageAccount,
 )
 
 __all__ = [
@@ -41,7 +42,8 @@ __all__ = [
     "MicrosoftSQLDatabaseProps",
     "NFSV3BlobContainerComponent",
     "NFSV3BlobContainerProps",
-    "WrappedNFSV3StorageAccount",
+    "NFSV3StorageAccountComponent",
+    "NFSV3StorageAccountProps",
     "PostgresqlDatabaseComponent",
     "PostgresqlDatabaseProps",
     "SSLCertificate",

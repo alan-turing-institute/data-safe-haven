@@ -11,6 +11,7 @@ from data_safe_haven.infrastructure.common import (
 from data_safe_haven.infrastructure.components import (
     LocalDnsRecordComponent,
     LocalDnsRecordProps,
+    WrappedLogAnalyticsWorkspace,
 )
 
 
@@ -22,6 +23,7 @@ class SREClamAVMirrorProps:
         dns_server_ip: Input[str],
         dockerhub_credentials: DockerHubCredentials,
         location: Input[str],
+        log_analytics_workspace: Input[WrappedLogAnalyticsWorkspace],
         resource_group_name: Input[str],
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
@@ -31,6 +33,7 @@ class SREClamAVMirrorProps:
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
         self.location = location
+        self.log_analytics_workspace = log_analytics_workspace
         self.resource_group_name = resource_group_name
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
@@ -95,6 +98,12 @@ class SREClamAVMirrorComponent(ComponentResource):
                     ],
                 ),
             ],
+            diagnostics=containerinstance.ContainerGroupDiagnosticsArgs(
+                log_analytics=containerinstance.LogAnalyticsArgs(
+                    workspace_id=props.log_analytics_workspace.workspace_id,
+                    workspace_key=props.log_analytics_workspace.workspace_key,
+                ),
+            ),
             dns_config=containerinstance.DnsConfigurationArgs(
                 name_servers=[props.dns_server_ip],
             ),

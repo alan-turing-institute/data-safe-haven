@@ -7,6 +7,7 @@ from data_safe_haven.infrastructure.common import (
     DockerHubCredentials,
     get_id_from_subnet,
 )
+from data_safe_haven.infrastructure.components import WrappedLogAnalyticsWorkspace
 from data_safe_haven.types import DatabaseSystem, SoftwarePackageCategory
 
 from .database_servers import SREDatabaseServerComponent, SREDatabaseServerProps
@@ -35,6 +36,7 @@ class SREUserServicesProps:
         ldap_user_filter: Input[str],
         ldap_user_search_base: Input[str],
         location: Input[str],
+        log_analytics_workspace: Input[WrappedLogAnalyticsWorkspace],
         nexus_admin_password: Input[str],
         resource_group_name: Input[str],
         software_packages: SoftwarePackageCategory,
@@ -58,6 +60,7 @@ class SREUserServicesProps:
         self.ldap_user_filter = ldap_user_filter
         self.ldap_user_search_base = ldap_user_search_base
         self.location = location
+        self.log_analytics_workspace = log_analytics_workspace
         self.nexus_admin_password = Output.secret(nexus_admin_password)
         self.resource_group_name = resource_group_name
         self.software_packages = software_packages
@@ -109,6 +112,7 @@ class SREUserServicesComponent(ComponentResource):
                 ldap_user_filter=props.ldap_user_filter,
                 ldap_user_search_base=props.ldap_user_search_base,
                 location=props.location,
+                log_analytics_workspace=props.log_analytics_workspace,
                 resource_group_name=props.resource_group_name,
                 sre_fqdn=props.sre_fqdn,
                 storage_account_key=props.storage_account_key,
@@ -134,6 +138,7 @@ class SREUserServicesComponent(ComponentResource):
                 ldap_user_filter=props.ldap_user_filter,
                 ldap_user_search_base=props.ldap_user_search_base,
                 location=props.location,
+                log_analytics_workspace=props.log_analytics_workspace,
                 resource_group_name=props.resource_group_name,
                 sre_fqdn=props.sre_fqdn,
                 storage_account_key=props.storage_account_key,
@@ -151,6 +156,7 @@ class SREUserServicesComponent(ComponentResource):
                 dns_server_ip=props.dns_server_ip,
                 dockerhub_credentials=props.dockerhub_credentials,
                 location=props.location,
+                log_analytics_workspace=props.log_analytics_workspace,
                 nexus_admin_password=props.nexus_admin_password,
                 resource_group_name=props.resource_group_name,
                 sre_fqdn=props.sre_fqdn,

@@ -28,6 +28,16 @@ class DataSafeHavenAzureError(DataSafeHavenError):
     pass
 
 
+class DataSafeHavenCachedCredentialError(DataSafeHavenError):
+    """
+    Exception class for handling errors related to cached credentials.
+
+    Raise this error when a cached credential is not the credential a user wants to use.
+    """
+
+    pass
+
+
 class DataSafeHavenAzureStorageError(DataSafeHavenAzureError):
     """
     Exception class for handling errors when interacting with Azure Storage.

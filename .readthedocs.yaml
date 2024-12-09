@@ -16,6 +16,8 @@ formats:
 python:
   install:
     - requirements: .hatch/requirements-docs.txt
+    - method: pip
+      path: .
 
 sphinx:
   configuration: docs/source/conf.py

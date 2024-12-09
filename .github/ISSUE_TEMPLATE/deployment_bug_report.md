@@ -29,7 +29,6 @@ Before reporting a problem please check the following. Replace the empty checkbo
 <summary>List of packages</summary>
 
 <!--
-Powershell: Run `deployment/CheckRequirements.ps1` and paste the output below
 Python: Run `hatch run pip freeze` and paste the output below
 -->
 

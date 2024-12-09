@@ -12,6 +12,7 @@ from data_safe_haven.infrastructure.components import (
     FileShareFileProps,
     LocalDnsRecordComponent,
     LocalDnsRecordProps,
+    WrappedLogAnalyticsWorkspace,
 )
 from data_safe_haven.types import PermittedDomains
 
@@ -24,6 +25,7 @@ class SREAptProxyServerProps:
         containers_subnet: Input[str],
         dns_server_ip: Input[str],
         location: Input[str],
+        log_analytics_workspace: Input[WrappedLogAnalyticsWorkspace],
         resource_group_name: Input[str],
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
@@ -34,6 +36,7 @@ class SREAptProxyServerProps:
         )
         self.dns_server_ip = dns_server_ip
         self.location = location
+        self.log_analytics_workspace = log_analytics_workspace
         self.resource_group_name = resource_group_name
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
@@ -119,6 +122,12 @@ class SREAptProxyServerComponent(ComponentResource):
                     ],
                 ),
             ],
+            diagnostics=containerinstance.ContainerGroupDiagnosticsArgs(
+                log_analytics=containerinstance.LogAnalyticsArgs(
+                    workspace_id=props.log_analytics_workspace.workspace_id,
+                    workspace_key=props.log_analytics_workspace.workspace_key,
+                ),
+            ),
             dns_config=containerinstance.DnsConfigurationArgs(
                 name_servers=[props.dns_server_ip],
             ),

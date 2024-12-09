@@ -21,6 +21,7 @@ $ az provider register --name Microsoft.Network
 Each project will have its own dedicated SRE.
 
 - Create a configuration file (optionally starting from one of our standard {ref}`policy_classification_sensitivity_tiers`)
+- The {typer}`dsh-config-template` command provides template configuration files
 
 ::::{admonition} EITHER start from a blank template
 :class: dropdown note
@@ -167,7 +168,7 @@ As some general recommendations,
 
 - For general purpose use, the D family gives decent performance and a good balance of CPU and memory.
   The [Dsv6 series](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/general-purpose/dsv6-series#sizes-in-series) is a good starting point and can be scaled from 2 CPUs and 8 GB RAM to 128 CPUs and 512 GB RAM.
-    - `Standard_D8s_v6` should give reasonable performance for a single concurrent user.
+    - `Standard_D8s_v5` should give reasonable performance for a single concurrent user.
 - For GPU accelerated work, the NC family provides Nvidia GPUs and a good balance of CPU and memory.
   In order of increasing throughput, the `NCv3` series features Nvidia V100 GPUs, the `NC_A100_v4` series features Nvidia A100 GPUs, and the `NCads_H100_v5` series features Nvidia H100 GPUs.
     - `Stanard_NC6s_v3` should give reasonable performance for a single concurrent user with AI/ML workloads.
@@ -254,7 +255,7 @@ If you want to make changes to the config, edit this file and then run `dsh conf
 
 ## Deployment
 
-- Deploy each SRE individually [approx 30 minutes]:
+- Deploy each SRE individually using {typer}`dsh sre deploy` [approx 30 minutes]:
 
 :::{code} shell
 $ dsh sre deploy YOUR_SRE_NAME

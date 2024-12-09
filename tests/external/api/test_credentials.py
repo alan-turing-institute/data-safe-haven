@@ -5,7 +5,10 @@ from azure.identity import (
 )
 
 from data_safe_haven.directories import config_dir
-from data_safe_haven.exceptions import DataSafeHavenAzureError
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureError,
+    DataSafeHavenCachedCredentialError,
+)
 from data_safe_haven.external.api.credentials import (
     AzureSdkCredential,
     DeferredCredential,
@@ -13,7 +16,7 @@ from data_safe_haven.external.api.credentials import (
 )
 
 
-class TestDeferredCredential:
+class TestAzureSdkCredential:
     def test_confirm_credentials_interactive(
         self,
         mock_confirm_yes,  # noqa: ARG002
@@ -33,14 +36,17 @@ class TestDeferredCredential:
         self,
         mock_confirm_no,  # noqa: ARG002
         mock_azureclicredential_get_token,  # noqa: ARG002
+        capsys,
     ):
         DeferredCredential.cache_ = set()
         credential = AzureSdkCredential(skip_confirmation=False)
         with pytest.raises(
-            DataSafeHavenAzureError,
-            match="Error getting account information from Azure CLI.",
+            DataSafeHavenCachedCredentialError,
+            match="Selected credentials are incorrect.",
         ):
             credential.get_credential()
+        out, _ = capsys.readouterr()
+        assert "Please authenticate with Azure: run 'az login'" in out
 
     def test_confirm_credentials_interactive_cache(
         self,
@@ -67,8 +73,6 @@ class TestDeferredCredential:
         ):
             credential.decode_token(credential.token)
 
-
-class TestAzureSdkCredential:
     def test_get_credential(self, mock_azureclicredential_get_token):  # noqa: ARG002
         credential = AzureSdkCredential(skip_confirmation=True)
         assert isinstance(credential.get_credential(), AzureCliCredential)

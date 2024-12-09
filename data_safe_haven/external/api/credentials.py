@@ -18,7 +18,11 @@ from azure.identity import (
 
 from data_safe_haven import console
 from data_safe_haven.directories import config_dir
-from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenValueError
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureError,
+    DataSafeHavenCachedCredentialError,
+    DataSafeHavenValueError,
+)
 from data_safe_haven.logging import get_logger
 from data_safe_haven.types import AzureSdkCredentialScope
 
@@ -28,6 +32,7 @@ class DeferredCredential(TokenCredential):
 
     tokens_: ClassVar[dict[str, AccessToken]] = {}
     cache_: ClassVar[set[tuple[str, str]]] = set()
+    name: ClassVar[str] = "Credential name"
 
     def __init__(
         self,
@@ -66,32 +71,28 @@ class DeferredCredential(TokenCredential):
 
     def confirm_credentials_interactive(
         self,
-        target_name: str,
         user_name: str,
         user_id: str,
         tenant_name: str,
         tenant_id: str,
-    ) -> None:
+    ) -> bool:
         """
         Allow user to confirm that credentials are correct.
 
         Responses are cached so the user will only be prompted once per run.
         If 'skip_confirmation' is set, then no confirmation will be performed.
-
-        Raises:
-            DataSafeHavenValueError: if the user indicates that the credentials are wrong
         """
         if self.skip_confirmation:
-            return
+            return True
         if (user_id, tenant_id) in DeferredCredential.cache_:
-            return
+            return True
+
         DeferredCredential.cache_.add((user_id, tenant_id))
-        self.logger.info(f"You are logged into the [blue]{target_name}[/] as:")
+        self.logger.info(f"You are logged into the [blue]{self.name}[/] as:")
         self.logger.info(f"\tuser: [green]{user_name}[/] ({user_id})")
         self.logger.info(f"\ttenant: [green]{tenant_name}[/] ({tenant_id})")
-        if not console.confirm("Are these details correct?", default_to_yes=True):
-            msg = "Selected credentials are incorrect."
-            raise DataSafeHavenValueError(msg)
+
+        return console.confirm("Are these details correct?", default_to_yes=True)
 
     def get_token(
         self,
@@ -119,6 +120,8 @@ class AzureSdkCredential(DeferredCredential):
     Uses AzureCliCredential for authentication
     """
 
+    name: ClassVar[str] = "Azure CLI"
+
     def __init__(
         self,
         scope: AzureSdkCredentialScope = AzureSdkCredentialScope.DEFAULT,
@@ -133,19 +136,22 @@ class AzureSdkCredential(DeferredCredential):
         # Confirm that these are the desired credentials
         try:
             decoded = self.decode_token(credential.get_token(*self.scopes).token)
-            self.confirm_credentials_interactive(
-                "Azure CLI",
-                user_name=decoded["name"],
-                user_id=decoded["oid"],
-                tenant_name=decoded["upn"].split("@")[1],
-                tenant_id=decoded["tid"],
-            )
         except (CredentialUnavailableError, DataSafeHavenValueError) as exc:
+            msg = "Error getting account information from Azure CLI."
+            raise DataSafeHavenAzureError(msg) from exc
+
+        if not self.confirm_credentials_interactive(
+            user_name=decoded["name"],
+            user_id=decoded["oid"],
+            tenant_name=decoded["upn"].split("@")[1],
+            tenant_id=decoded["tid"],
+        ):
             self.logger.error(
                 "Please authenticate with Azure: run '[green]az login[/]' using [bold]infrastructure administrator[/] credentials."
             )
-            msg = "Error getting account information from Azure CLI."
-            raise DataSafeHavenAzureError(msg) from exc
+            msg = "Selected credentials are incorrect."
+            raise DataSafeHavenCachedCredentialError(msg)
+
         return credential
 
 
@@ -155,6 +161,8 @@ class GraphApiCredential(DeferredCredential):
 
     Uses DeviceCodeCredential for authentication
     """
+
+    name: ClassVar[str] = "Microsoft Graph API"
 
     def __init__(
         self,
@@ -214,13 +222,17 @@ class GraphApiCredential(DeferredCredential):
             raise DataSafeHavenAzureError(msg) from exc
 
         # Confirm that these are the desired credentials
-        self.confirm_credentials_interactive(
-            "Microsoft Graph API",
+        if not self.confirm_credentials_interactive(
             user_name=new_auth_record.username,
             user_id=new_auth_record._home_account_id.split(".")[0],
             tenant_name=new_auth_record._username.split("@")[1],
             tenant_id=new_auth_record._tenant_id,
-        )
+        ):
+            self.logger.error(
+                f"Delete the cached credential file [green]{authentication_record_path}[/] and rerun dsh to authenticate with {self.name}"
+            )
+            msg = "Selected credentials are incorrect."
+            raise DataSafeHavenCachedCredentialError(msg)
 
         # Return the credential
         return credential

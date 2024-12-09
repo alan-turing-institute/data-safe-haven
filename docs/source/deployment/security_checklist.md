@@ -50,7 +50,7 @@ In each SRE configuration
 
 ### Accounts
 
-[Create a user account](../management/index.md#add-users-to-the-data-safe-haven) for the research user in your SHM.
+[Create a user account](../management/user.md#add-users-to-the-data-safe-haven) for the research user in your SHM.
 Do not register this user with any SRE yet.
 
 ## 1. Multifactor authentication and password strength

@@ -9,6 +9,7 @@ design/index.md
 deployment/index.md
 management/index.md
 roles/index.md
+reference/index.md
 contributing/index.md
 :::
 
@@ -42,6 +43,8 @@ You can read them through in order or simply jump to the section that you are mo
     - If you want to deploy your own Data Safe Haven.
 - [**Management**](management/index.md)
     - If you want to manage a Data Safe Haven that you (or someone else) has deployed.
+- [**CLI Reference**](reference/index.md)
+    - If you want details of all the Command Line Interface commands.
 - [**Roles**](roles/index.md)
     - Information about the different user roles in the Data Safe Haven.
     - Instructions and advice for the actions of different user roles.

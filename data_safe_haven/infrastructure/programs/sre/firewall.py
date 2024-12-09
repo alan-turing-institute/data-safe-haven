@@ -3,12 +3,13 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import network
+from pulumi_azure_native import insights, network
 
 from data_safe_haven.infrastructure.common import (
     get_address_prefixes_from_subnet,
     get_id_from_subnet,
 )
+from data_safe_haven.infrastructure.components import WrappedLogAnalyticsWorkspace
 from data_safe_haven.types import (
     FirewallPriorities,
     ForbiddenDomains,
@@ -23,6 +24,7 @@ class SREFirewallProps:
     def __init__(
         self,
         location: Input[str],
+        log_analytics_workspace: Input[WrappedLogAnalyticsWorkspace],
         resource_group_name: Input[str],
         route_table_name: Input[str],
         subnet_apt_proxy_server: Input[network.GetSubnetResult],
@@ -35,6 +37,7 @@ class SREFirewallProps:
         subnet_workspaces: Input[network.GetSubnetResult],
     ) -> None:
         self.location = location
+        self.log_analytics_workspace = log_analytics_workspace
         self.resource_group_name = resource_group_name
         self.route_table_name = route_table_name
         self.subnet_apt_proxy_server_prefixes = Output.from_input(
@@ -329,6 +332,36 @@ class SREFirewallComponent(ComponentResource):
             ),
             opts=child_opts,
             tags=child_tags,
+        )
+
+        # Add diagnostic settings for firewall
+        # This links the firewall to the log analytics workspace
+        insights.DiagnosticSetting(
+            f"{self._name}_firewall_diagnostic_settings",
+            name="firewall_diagnostic_settings",
+            log_analytics_destination_type="Dedicated",
+            logs=[
+                {
+                    "category_group": "allLogs",
+                    "enabled": True,
+                    "retention_policy": {
+                        "days": 0,
+                        "enabled": False,
+                    },
+                },
+            ],
+            metrics=[
+                {
+                    "category": "AllMetrics",
+                    "enabled": True,
+                    "retention_policy": {
+                        "days": 0,
+                        "enabled": False,
+                    },
+                }
+            ],
+            resource_uri=firewall.id,
+            workspace_id=props.log_analytics_workspace.id,
         )
 
         # Retrieve the private IP address for the firewall

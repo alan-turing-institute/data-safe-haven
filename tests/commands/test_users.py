@@ -52,6 +52,26 @@ class TestRegister:
         assert result.exit_code == 1
         assert "Have you deployed the SHM?" in result.stdout
 
+    def test_mismatched_domain(
+        self,
+        mock_graphapi_get_credential,  # noqa: ARG002
+        mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote,  # noqa: ARG002
+        mock_sre_config_from_remote,  # noqa: ARG002
+        mock_entra_user_list,  # noqa: ARG002
+        runner,
+        tmp_contexts,  # noqa: ARG002
+    ):
+        result = runner.invoke(
+            users_command_group, ["register", "-u", "harry.lime", "sandbox"]
+        )
+
+        assert result.exit_code == 0
+        assert (
+            "principal domain name must match the domain of the SRE to be registered"
+            in result.stdout
+        )
+
     def test_invalid_sre(
         self,
         mock_pulumi_config_from_remote,  # noqa: ARG002

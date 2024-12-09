@@ -31,7 +31,9 @@ from data_safe_haven.infrastructure.common import (
 from data_safe_haven.infrastructure.components import (
     NFSV3BlobContainerComponent,
     NFSV3BlobContainerProps,
-    WrappedNFSV3StorageAccount,
+    NFSV3StorageAccountComponent,
+    NFSV3StorageAccountProps,
+    WrappedLogAnalyticsWorkspace,
 )
 from data_safe_haven.resources import resources_path
 from data_safe_haven.types import AzureDnsZoneNames
@@ -55,6 +57,7 @@ class SREDesiredStateProps:
         ldap_user_filter: Input[str],
         ldap_user_search_base: Input[str],
         location: Input[str],
+        log_analytics_workspace: Input[WrappedLogAnalyticsWorkspace],
         resource_group: Input[resources.ResourceGroup],
         software_repository_hostname: Input[str],
         subscription_name: Input[str],
@@ -73,6 +76,7 @@ class SREDesiredStateProps:
         self.ldap_user_filter = ldap_user_filter
         self.ldap_user_search_base = ldap_user_search_base
         self.location = location
+        self.log_analytics_workspace = log_analytics_workspace
         self.resource_group_id = Output.from_input(resource_group).apply(get_id_from_rg)
         self.resource_group_name = Output.from_input(resource_group).apply(
             get_name_from_rg
@@ -102,19 +106,22 @@ class SREDesiredStateComponent(ComponentResource):
         # Deploy desired state storage account
         # - This holds the /var/local/ansible container that is mounted by workspaces
         # - Azure blobs have worse NFS support but can be accessed with Azure Storage Explorer
-        storage_account = WrappedNFSV3StorageAccount(
+        storage_component = NFSV3StorageAccountComponent(
             f"{self._name}_storage_account",
-            account_name=alphanumeric(
-                f"{''.join(truncate_tokens(stack_name.split('-'), 11))}desiredstate{sha256hash(self._name)}"
-            )[:24],
-            allowed_ip_addresses=props.admin_ip_addresses,
-            allowed_service_tag=None,
-            location=props.location,
-            resource_group_name=props.resource_group_name,
-            subnet_id=props.subnet_desired_state_id,
+            NFSV3StorageAccountProps(
+                account_name=alphanumeric(
+                    f"{''.join(truncate_tokens(stack_name.split('-'), 11))}desiredstate{sha256hash(self._name)}"
+                )[:24],
+                allowed_ip_addresses=props.admin_ip_addresses,
+                location=props.location,
+                log_analytics_workspace=props.log_analytics_workspace,
+                resource_group_name=props.resource_group_name,
+                subnet_id=props.subnet_desired_state_id,
+            ),
             opts=child_opts,
             tags=child_tags,
         )
+        storage_account = storage_component.storage_account
         # Deploy desired state share
         container_desired_state = NFSV3BlobContainerComponent(
             f"{self._name}_blob_desired_state",

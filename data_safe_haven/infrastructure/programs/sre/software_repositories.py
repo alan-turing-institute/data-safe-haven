@@ -14,6 +14,7 @@ from data_safe_haven.infrastructure.components import (
     FileShareFileProps,
     LocalDnsRecordComponent,
     LocalDnsRecordProps,
+    WrappedLogAnalyticsWorkspace,
 )
 from data_safe_haven.resources import resources_path
 from data_safe_haven.types import Ports, SoftwarePackageCategory
@@ -28,6 +29,7 @@ class SRESoftwareRepositoriesProps:
         dns_server_ip: Input[str],
         dockerhub_credentials: DockerHubCredentials,
         location: Input[str],
+        log_analytics_workspace: Input[WrappedLogAnalyticsWorkspace],
         nexus_admin_password: Input[str],
         resource_group_name: Input[str],
         software_packages: SoftwarePackageCategory,
@@ -39,6 +41,7 @@ class SRESoftwareRepositoriesProps:
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
         self.location = location
+        self.log_analytics_workspace = log_analytics_workspace
         self.nexus_admin_password = Output.secret(nexus_admin_password)
         self.nexus_packages: str | None = {
             SoftwarePackageCategory.ANY: "all",
@@ -250,6 +253,12 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         ],
                     ),
                 ],
+                diagnostics=containerinstance.ContainerGroupDiagnosticsArgs(
+                    log_analytics=containerinstance.LogAnalyticsArgs(
+                        workspace_id=props.log_analytics_workspace.workspace_id,
+                        workspace_key=props.log_analytics_workspace.workspace_key,
+                    ),
+                ),
                 dns_config=containerinstance.DnsConfigurationArgs(
                     name_servers=[props.dns_server_ip],
                 ),

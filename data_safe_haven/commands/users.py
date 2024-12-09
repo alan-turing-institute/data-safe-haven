@@ -5,6 +5,7 @@ from typing import Annotated
 
 import typer
 
+from data_safe_haven import console
 from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import ContextManager, DSHPulumiConfig, SHMConfig, SREConfig
 from data_safe_haven.exceptions import DataSafeHavenError
@@ -120,9 +121,9 @@ def register(
         # Load SHMConfig
         try:
             shm_config = SHMConfig.from_remote(context)
-        except DataSafeHavenError:
+        except DataSafeHavenError as exc:
             logger.error("Have you deployed the SHM?")
-            raise
+            raise typer.Exit(1) from exc
 
         # Load Pulumi config
         pulumi_config = DSHPulumiConfig.from_remote(context)
@@ -132,7 +133,7 @@ def register(
         if sre_config.name not in pulumi_config.project_names:
             msg = f"Could not load Pulumi settings for '{sre_config.name}'. Have you deployed the SRE?"
             logger.error(msg)
-            raise DataSafeHavenError(msg)
+            raise typer.Exit(1)
 
         # Load GraphAPI
         graph_api = GraphApi.from_scopes(
@@ -146,16 +147,29 @@ def register(
 
         # List users
         users = UserHandler(context, graph_api)
-        available_usernames = users.get_usernames_entra_id()
+        available_users = users.entra_users.list()
+        user_dict = {
+            user.preferred_username.split("@")[0]: user.preferred_username.split("@")[1]
+            for user in available_users
+        }
         usernames_to_register = []
         for username in usernames:
-            if username in available_usernames:
-                usernames_to_register.append(username)
+            if user_domain := user_dict.get(username):
+                if shm_config.shm.fqdn not in user_domain:
+                    console.print(
+                        f"User [green]'{username}[/green]'s principal domain name is [blue]'{user_domain}'[/blue].\n"
+                        f"SRE [yellow]'{sre}'[/yellow] belongs to SHM domain [blue]'{shm_config.shm.fqdn}'[/blue]."
+                    )
+                    logger.error(
+                        "The user's principal domain name must match the domain of the SRE to be registered."
+                    )
+                else:
+                    usernames_to_register.append(username)
             else:
                 logger.error(
                     f"Username '{username}' does not belong to this Data Safe Haven deployment."
-                    " Please use 'dsh users add' to create it."
                 )
+                console.print("Please use 'dsh users add' to create this user.")
         users.register(sre_config.name, usernames_to_register)
     except DataSafeHavenError as exc:
         logger.critical(f"Could not register Data Safe Haven users with SRE '{sre}'.")
@@ -259,8 +273,8 @@ def unregister(
             else:
                 logger.error(
                     f"Username '{username}' does not belong to this Data Safe Haven deployment."
-                    " Please use 'dsh users add' to create it."
                 )
+                console.print("Please use 'dsh users add' to create it.")
         for group_name in (
             f"{sre_config.name} Users",
             f"{sre_config.name} Privileged Users",

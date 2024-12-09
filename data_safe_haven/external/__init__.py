@@ -6,10 +6,10 @@ from .interface.azure_postgresql_database import AzurePostgreSQLDatabase
 from .interface.pulumi_account import PulumiAccount
 
 __all__ = [
-    "AzureSdk",
     "AzureContainerInstance",
     "AzureIPv4Range",
     "AzurePostgreSQLDatabase",
+    "AzureSdk",
     "GraphApi",
     "PulumiAccount",
 ]

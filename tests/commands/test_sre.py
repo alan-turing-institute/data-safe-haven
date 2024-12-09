@@ -5,7 +5,7 @@ from typer.testing import CliRunner
 from data_safe_haven.commands.sre import sre_command_group
 from data_safe_haven.config import Context, ContextManager
 from data_safe_haven.exceptions import DataSafeHavenAzureError
-from data_safe_haven.external import AzureSdk
+from data_safe_haven.external import AzureSdk, GraphApi
 
 
 class TestDeploySRE:
@@ -31,13 +31,17 @@ class TestDeploySRE:
         self,
         caplog: LogCaptureFixture,
         runner: CliRunner,
+        mocker,
         mock_azuresdk_get_subscription_name,  # noqa: ARG002
         mock_contextmanager_assert_context,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
         mock_pulumi_config_from_remote_or_create,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
         mock_sre_config_from_remote,  # noqa: ARG002
+        mock_graphapi_get_credential,  # noqa: ARG002
     ) -> None:
+        mocker.patch.object(GraphApi, "get_application_by_name", return_value=None)
+
         result = runner.invoke(sre_command_group, ["deploy", "sandbox"])
         assert result.exit_code == 1
         assert (

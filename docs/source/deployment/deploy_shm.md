@@ -54,7 +54,7 @@ Before deploying the Safe Haven Management (SHM) infrastructure you need to deci
   Use the short name without spaces, _e.g._ **uksouth** not **UK South**
   :::
 
-Once you've decided on these, run the following command: [approx 5 minutes]:
+Once you've decided on these, run the {typer}`dsh-shm-deploy` command: [approx 5 minutes]:
 
 :::{code} shell
 $ dsh shm deploy --entra-tenant-id YOUR_ENTRA_TENANT_ID \

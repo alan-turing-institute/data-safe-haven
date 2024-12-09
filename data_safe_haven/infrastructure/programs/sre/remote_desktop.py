@@ -15,6 +15,7 @@ from data_safe_haven.infrastructure.components import (
     FileShareFileProps,
     PostgresqlDatabaseComponent,
     PostgresqlDatabaseProps,
+    WrappedLogAnalyticsWorkspace,
 )
 from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader
@@ -40,6 +41,7 @@ class SRERemoteDesktopProps:
         ldap_user_filter: Input[str],
         ldap_user_search_base: Input[str],
         location: Input[str],
+        log_analytics_workspace: Input[WrappedLogAnalyticsWorkspace],
         resource_group_name: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
@@ -65,6 +67,7 @@ class SRERemoteDesktopProps:
         self.ldap_user_filter = ldap_user_filter
         self.ldap_user_search_base = ldap_user_search_base
         self.location = location
+        self.log_analytics_workspace = log_analytics_workspace
         self.resource_group_name = resource_group_name
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
@@ -348,6 +351,12 @@ class SRERemoteDesktopComponent(ComponentResource):
                     ),
                 ),
             ],
+            diagnostics=containerinstance.ContainerGroupDiagnosticsArgs(
+                log_analytics=containerinstance.LogAnalyticsArgs(
+                    workspace_id=props.log_analytics_workspace.workspace_id,
+                    workspace_key=props.log_analytics_workspace.workspace_key,
+                ),
+            ),
             dns_config=containerinstance.DnsConfigurationArgs(
                 name_servers=[props.dns_server_ip],
             ),

@@ -1,6 +1,8 @@
 from pytest import fixture
 from typer.testing import CliRunner
 
+from data_safe_haven.administration.users.entra_users import EntraUsers
+from data_safe_haven.administration.users.research_user import ResearchUser
 from data_safe_haven.config import (
     Context,
     ContextManager,
@@ -260,3 +262,14 @@ def tmp_contexts_none(tmp_path, context_yaml):
     with open(config_file_path, "w") as f:
         f.write(context_yaml)
     return tmp_path
+
+
+@fixture
+def mock_entra_user_list(mocker):
+    test_user = ResearchUser(
+        given_name="Harry",
+        surname="Lime",
+        sam_account_name="harry.lime",
+        user_principal_name="harry.lime@acme.testing",
+    )
+    mocker.patch.object(EntraUsers, "list", return_value=[test_user])

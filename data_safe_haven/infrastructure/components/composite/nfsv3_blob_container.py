@@ -1,7 +1,7 @@
 from pulumi import ComponentResource, Input, ResourceOptions
 from pulumi_azure_native import storage
 
-from data_safe_haven.infrastructure.components.dynamic.blob_container_acl import (
+from data_safe_haven.infrastructure.components.dynamic import (
     BlobContainerAcl,
     BlobContainerAclProps,
 )
@@ -52,6 +52,7 @@ class NFSV3BlobContainerComponent(ComponentResource):
                 ResourceOptions(parent=props.storage_account),
             ),
         )
+
         BlobContainerAcl(
             f"{storage_container._name}_acl",
             BlobContainerAclProps(

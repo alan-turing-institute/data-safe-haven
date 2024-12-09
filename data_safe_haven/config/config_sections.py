@@ -57,7 +57,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     admin_email_address: EmailAddress
     admin_ip_addresses: list[IpAddress] = []
     databases: UniqueList[DatabaseSystem] = []
-    data_provider_ip_addresses: list[IpAddress] | AzureServiceTag = []
+    data_provider_ip_addresses: list[IpAddress] = []
     remote_desktop: ConfigSubsectionRemoteDesktopOpts
     research_user_ip_addresses: list[IpAddress] | AzureServiceTag = []
     storage_quota_gb: ConfigSubsectionStorageQuotaGB

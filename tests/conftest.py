@@ -29,7 +29,10 @@ from data_safe_haven.config.config_sections import (
 )
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureSdk, PulumiAccount
-from data_safe_haven.external.api.credentials import AzureSdkCredential
+from data_safe_haven.external.api.credentials import (
+    AzureSdkCredential,
+    GraphApiCredential,
+)
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.infrastructure.project_manager import ProjectManager
 from data_safe_haven.logging import init_logging
@@ -212,6 +215,19 @@ def mock_azuresdk_get_subscription_name(mocker):
         AzureSdk,
         "get_subscription_name",
         return_value="Data Safe Haven Acme",
+    )
+
+
+@fixture
+def mock_graphapi_get_credential(mocker):
+    class MockCredential(TokenCredential):
+        def get_token(*args, **kwargs):  # noqa: ARG002
+            return AccessToken("dummy-token", 0)
+
+    mocker.patch.object(
+        GraphApiCredential,
+        "get_credential",
+        return_value=MockCredential(),
     )
 
 

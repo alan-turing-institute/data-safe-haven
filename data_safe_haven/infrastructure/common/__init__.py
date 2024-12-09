@@ -16,6 +16,8 @@ from .transformations import (
 
 __all__ = [
     "DockerHubCredentials",
+    "SREDnsIpRanges",
+    "SREIpRanges",
     "get_address_prefixes_from_subnet",
     "get_available_ips_from_subnet",
     "get_id_from_rg",
@@ -27,6 +29,4 @@ __all__ = [
     "get_name_from_subnet",
     "get_name_from_vnet",
     "get_subscription_id_from_rg",
-    "SREDnsIpRanges",
-    "SREIpRanges",
 ]
