@@ -22,10 +22,10 @@
 # - cryptography==44.0.0
 # - fqdn==1.5.1
 # - psycopg[binary]==3.1.19
-# - pulumi-azure-native==2.76.0
-# - pulumi-azuread==6.0.1
-# - pulumi-random==4.16.7
-# - pulumi==3.142.0
+# - pulumi-azure-native==2.77.0
+# - pulumi-azuread==6.0.2
+# - pulumi-random==4.16.8
+# - pulumi==3.143.0
 # - pydantic==2.10.3
 # - pyjwt[crypto]==2.10.1
 # - pytz==2024.2
@@ -110,7 +110,7 @@ azure-storage-file-datalake==12.18.0
     # via hatch.envs.default
 azure-storage-file-share==12.20.0
     # via hatch.envs.default
-certifi==2024.8.30
+certifi==2024.12.14
     # via
     #   msrest
     #   requests
@@ -134,7 +134,7 @@ cryptography==44.0.0
     #   msal
     #   pyjwt
     #   pyopenssl
-debugpy==1.8.9
+debugpy==1.8.11
     # via pulumi
 dill==0.3.9
     # via pulumi
@@ -192,17 +192,17 @@ psycopg==3.1.19
     # via hatch.envs.default
 psycopg-binary==3.1.19
     # via psycopg
-pulumi==3.142.0
+pulumi==3.143.0
     # via
     #   hatch.envs.default
     #   pulumi-azure-native
     #   pulumi-azuread
     #   pulumi-random
-pulumi-azure-native==2.76.0
+pulumi-azure-native==2.77.0
     # via hatch.envs.default
-pulumi-azuread==6.0.1
+pulumi-azuread==6.0.2
     # via hatch.envs.default
-pulumi-random==4.16.7
+pulumi-random==4.16.8
     # via hatch.envs.default
 pycparser==2.22
     # via cffi

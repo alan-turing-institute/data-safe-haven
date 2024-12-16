@@ -7,7 +7,7 @@
 # - mypy==1.13.0
 # - pandas-stubs==2.2.3.241126
 # - pydantic==2.10.3
-# - ruff==0.8.2
+# - ruff==0.8.3
 # - types-appdirs==1.4.3.5
 # - types-chevron==0.14.2.20240310
 # - types-pytz==2024.2.0.20241003
@@ -38,15 +38,15 @@ ansible-core==2.18.1
     #   pytest-ansible
 ansible-creator==24.12.0
     # via ansible-dev-tools
-ansible-dev-environment==24.9.0
+ansible-dev-environment==24.12.0
     # via ansible-dev-tools
 ansible-dev-tools==24.11.0
     # via hatch.envs.lint
-ansible-lint==24.10.0
+ansible-lint==24.12.2
     # via
     #   ansible-dev-tools
     #   ansible-navigator
-ansible-navigator==24.10.0
+ansible-navigator==24.12.0
     # via ansible-dev-tools
 ansible-runner==2.4.0
     # via ansible-navigator
@@ -191,7 +191,7 @@ pytest==8.3.4
     #   pytest-ansible
     #   pytest-xdist
     #   tox-ansible
-pytest-ansible==24.9.0
+pytest-ansible==24.12.0
     # via
     #   ansible-dev-tools
     #   tox-ansible
@@ -222,7 +222,6 @@ resolvelib==1.0.1
     # via ansible-core
 rich==13.9.4
     # via
-    #   ansible-lint
     #   enrich
     #   molecule
 rpds-py==0.22.3
@@ -233,7 +232,7 @@ ruamel-yaml==0.18.6
     # via ansible-lint
 ruamel-yaml-clib==0.2.12
     # via ruamel-yaml
-ruff==0.8.2
+ruff==0.8.3
     # via hatch.envs.lint
 subprocess-tee==0.4.2
     # via
@@ -242,7 +241,7 @@ subprocess-tee==0.4.2
     #   ansible-lint
 tox==4.23.2
     # via tox-ansible
-tox-ansible==24.10.0
+tox-ansible==24.12.0
     # via ansible-dev-tools
 types-appdirs==1.4.3.5
     # via hatch.envs.lint
