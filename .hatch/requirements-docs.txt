@@ -54,7 +54,7 @@ appdirs==1.4.4
     # via hatch.envs.docs
 arpeggio==2.0.2
     # via parver
-attrs==24.2.0
+attrs==24.3.0
     # via parver
 azure-common==1.1.28
     # via
@@ -126,7 +126,7 @@ babel==2.16.0
     #   sphinx
 beautifulsoup4==4.12.3
     # via pydata-sphinx-theme
-certifi==2024.8.30
+certifi==2024.12.14
     # via
     #   msrest
     #   requests
@@ -136,7 +136,7 @@ charset-normalizer==3.4.0
     # via requests
 chevron==0.14.0
     # via hatch.envs.docs
-click==8.1.7
+click==8.1.8
     # via
     #   typer
     #   typer-slim
@@ -152,7 +152,7 @@ cryptography==44.0.0
     #   msal
     #   pyjwt
     #   pyopenssl
-debugpy==1.8.9
+debugpy==1.8.11
     # via pulumi
 dill==0.3.9
     # via pulumi
@@ -362,7 +362,7 @@ typing-extensions==4.12.2
     #   pydata-sphinx-theme
     #   typer
     #   typer-slim
-urllib3==2.2.3
+urllib3==2.3.0
     # via requests
 validators==0.34.0
     # via simple-acme-dns
