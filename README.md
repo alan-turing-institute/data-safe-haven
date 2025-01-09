@@ -8,7 +8,7 @@
 | data\_safe\_haven/administration/\_\_init\_\_.py                                  |        0 |        0 |    100% |           |
 | data\_safe\_haven/administration/users/\_\_init\_\_.py                            |        2 |        0 |    100% |           |
 | data\_safe\_haven/administration/users/entra\_users.py                            |       69 |       50 |     28% |34-69, 78-102, 114-117, 126-135, 144-151, 160-166 |
-| data\_safe\_haven/administration/users/guacamole\_users.py                        |       20 |       11 |     45% |20-45, 49-66 |
+| data\_safe\_haven/administration/users/guacamole\_users.py                        |       21 |       12 |     43% |20-48, 52-69 |
 | data\_safe\_haven/administration/users/research\_user.py                          |       31 |        9 |     71% |29, 35, 39-41, 44-51, 54 |
 | data\_safe\_haven/administration/users/user\_handler.py                           |      100 |       73 |     27% |32-69, 75-81, 85, 91-97, 105-124, 135-137, 145-159, 167-206, 214-219 |
 | data\_safe\_haven/commands/\_\_init\_\_.py                                        |        2 |        0 |    100% |           |
@@ -112,7 +112,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       24 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       70 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4734** | **2165** | **54%** |           |
+|                                                                         **TOTAL** | **4735** | **2166** | **54%** |           |
 
 
 ## Setup coverage badge
