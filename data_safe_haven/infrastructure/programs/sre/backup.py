@@ -17,6 +17,7 @@ class SREBackupProps:
         resource_group_name: Input[str],
         storage_account_data_private_sensitive_id: Input[str],
         storage_account_data_private_sensitive_name: Input[str],
+        subnet_backup_name: Input[str]
     ) -> None:
         self.location = location
         self.resource_group_name = resource_group_name
@@ -26,6 +27,7 @@ class SREBackupProps:
         self.storage_account_data_private_sensitive_name = (
             storage_account_data_private_sensitive_name
         )
+        self.subnet_backup_name = subnet_backup_name
 
 
 class SREBackupComponent(ComponentResource):
@@ -64,7 +66,7 @@ class SREBackupComponent(ComponentResource):
                 location=props.location,
                 maintenance_configuration_id=props.maintenance_configuration_id,
                 resource_group_name=props.resource_group_name,
-                subnet_name=props.subnet_workspaces_name,
+                subnet_name=props.subnet_backup_name,
                 virtual_network_name=props.virtual_network_name,
                 virtual_network_resource_group_name=props.resource_group_name,
                 vm_name=Output.concat(

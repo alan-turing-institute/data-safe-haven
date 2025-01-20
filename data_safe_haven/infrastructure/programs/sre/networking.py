@@ -1568,6 +1568,7 @@ class SRENetworkingComponent(ComponentResource):
         # Note that these names for AzureFirewall subnets are required by Azure
         subnet_application_gateway_name = "ApplicationGatewaySubnet"
         subnet_apt_proxy_server_name = "AptProxyServerSubnet"
+        subnet_backup_name = "BackupSubnet"
         subnet_clamav_mirror_name = "ClamAVMirrorSubnet"
         subnet_data_configuration_name = "DataConfigurationSubnet"
         subnet_desired_state_name = "DataDesiredStateSubnet"
@@ -1621,6 +1622,21 @@ class SRENetworkingComponent(ComponentResource):
                         id=nsg_apt_proxy_server.id
                     ),
                     route_table=network.RouteTableArgs(id=route_table.id),
+                ),
+                # Backupsubnet
+                network.SubnetArgs(
+                    address_prefix=SREIpRanges.backup.prefix,
+                    name=subnet_backup_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_backup.id
+                    ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
+                    service_endpoints=[
+                        network.ServiceEndpointPropertiesFormatArgs(
+                            locations=[props.location],
+                            service="Microsoft.Storage",
+                        )
+                    ],
                 ),
                 # ClamAV mirror
                 network.SubnetArgs(
