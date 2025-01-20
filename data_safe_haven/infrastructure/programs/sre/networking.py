@@ -311,18 +311,6 @@ class SRENetworkingComponent(ComponentResource):
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow inbound connections from SRE workspaces.",
-                    destination_address_prefix=SREIpRanges.clamav_mirror.prefix,
-                    destination_port_ranges=[Ports.SSH],
-                    direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowWorkspacesInbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=SREIpRanges.workspaces.prefix,
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
                     description="Deny all other inbound traffic.",
                     destination_address_prefix="*",
@@ -335,6 +323,30 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to private data endpoints.",
+                    destination_address_prefix=SREIpRanges.data_private.prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDataPrivateEndpointsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_PRIVATE,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=SREIpRanges.backup.prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to apt proxy server.",
+                    destination_address_prefix=SREIpRanges.apt_proxy_server.prefix,
+                    destination_port_ranges=[Ports.LINUX_UPDATE],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowAptProxyServerOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_APT_PROXY_SERVER,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=SREIpRanges.backup.prefix,
+                    source_port_range="*",
+                ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
                     description="Deny all other outbound traffic.",
@@ -610,6 +622,18 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from backup service.",
+                    destination_address_prefix=SREIpRanges.data_private.prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowBackupInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_BACKUP,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=SREIpRanges.backup.prefix,
+                    source_port_range="*",
+                ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from SRE workspaces.",
@@ -1461,18 +1485,6 @@ class SRENetworkingComponent(ComponentResource):
                     priority=NetworkingPriorities.AZURE_PLATFORM_DNS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix="*",
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow outbound connections backup service.",
-                    destination_address_prefix=SREIpRanges.backup.prefix,
-                    destination_port_ranges=[Ports.SSH],
-                    direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowBackupOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_BACKUP,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
