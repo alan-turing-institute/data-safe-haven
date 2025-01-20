@@ -303,6 +303,54 @@ class SRENetworkingComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
+        nsg_backup = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_backup",
+            location=props.location,
+            network_security_group_name=f"{stack_name}-nsg-backup",
+            resource_group_name=props.resource_group_name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from SRE workspaces.",
+                    destination_address_prefix=SREIpRanges.clamav_mirror.prefix,
+                    destination_port_ranges=[Ports.SSH],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowWorkspacesInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+            ],
+            opts=child_opts,
+            tags=child_tags,
+        )
         nsg_clamav_mirror = network.NetworkSecurityGroup(
             f"{self._name}_nsg_clamav_mirror",
             location=props.location,
@@ -1413,6 +1461,18 @@ class SRENetworkingComponent(ComponentResource):
                     priority=NetworkingPriorities.AZURE_PLATFORM_DNS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections backup service.",
+                    destination_address_prefix=SREIpRanges.backup.prefix,
+                    destination_port_ranges=[Ports.SSH],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowBackupOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_BACKUP,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
