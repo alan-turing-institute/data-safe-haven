@@ -16,6 +16,8 @@ Refer to the [Deployment](https://data-safe-haven.readthedocs.io/en/latest/deplo
 
 - [ ] Consult the `data-safe-haven/VERSIONING.md` guide and determine the version number of the new release. Record it in the title of this issue
 - [ ] Create a release branch called e.g. `release-v0.0.1`
+    - If this is a hotfix release then this branch should be based off `latest`
+    - In all other cases it should be based off `develop`
 - [ ] Draft a changelog for the release similar to our [previous releases](https://github.com/alan-turing-institute/data-safe-haven/releases)
 
 ### For patch releases only
@@ -25,11 +27,9 @@ Refer to the [Deployment](https://data-safe-haven.readthedocs.io/en/latest/deplo
 ### For minor releases and above
 
 - [ ] Deploy an SHM from this branch and save a transcript of the deployment logs
-- Using the new image, deploy a tier 2 and a tier 3 SRE
-    - [ ] Save the transcript of your tier 2 SRE deployment
-    - [ ] Save the transcript of your tier 3 SRE deployment
+- [ ] Deploy a tier 2 SRE from this branch and save the transcript of the deployment logs
+- [ ] Deploy a tier 3 SRE from this branch and save the transcript of the deployment logs
 - [ ] Complete the [Security evaluation checklist](https://data-safe-haven.readthedocs.io/en/latest/deployment/security_checklist.html) from the deployment documentation
-- [ ] Add the new versions tag as an active build on [Read The Docs](https://readthedocs.org) (You can add as a hidden build, before release, to preview)
 
 ### For major releases only
 
@@ -52,6 +52,7 @@ Refer to the [Deployment](https://data-safe-haven.readthedocs.io/en/latest/deplo
 - [ ] Ensure docs for the latest version are built and deployed on ReadTheDocs
 - [ ] Push a build to PyPI
 - [ ] Announce release on communications channels
+- [ ] Create a PR from `latest` into `develop` to ensure that release-specific changes are not lost
 
 ## :deciduous_tree: Deployment problems
 

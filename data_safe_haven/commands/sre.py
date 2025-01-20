@@ -52,6 +52,18 @@ def deploy(
         )
         sre_config = SREConfig.from_remote_by_name(context, name)
 
+        # Confirm outbound internet access from workspaces
+        if sre_config.sre.allow_workspace_internet:
+            logger.warning(
+                "Workspaces will be allowed outbound access to the internet "
+                "data may be moved out of the SRE WITHOUT OVERSIGHT OR APPROVAL."
+            )
+            if not console.confirm(
+                "Do you wish to continue deploying the SRE?", default_to_yes=False
+            ):
+                console.print("SRE deployment cancelled by user.")
+                raise typer.Exit(0)
+
         # Check whether current IP address is authorised to take administrator actions
         if not ip_address_in_list(sre_config.sre.admin_ip_addresses):
             logger.warning(

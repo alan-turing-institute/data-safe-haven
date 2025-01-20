@@ -530,6 +530,7 @@ def sre_config_yaml(request):
         admin_email_address: admin@example.com
         admin_ip_addresses:
         - 1.2.3.4/32
+        allow_workspace_internet: false
         data_provider_ip_addresses: []
         databases: []
         remote_desktop:

@@ -8,6 +8,7 @@ Organisations are responsible for making their own decisions about the suitabili
 ```
 
 In this check list we aim to evaluate our deployment against the {ref}`security configuration <design_turing_security_configuration>` that we apply at the Alan Turing Institute.
+A copy of this template in Markdown format is {download}`available for download <security_checklist/security_checklist_template.md>`.
 The security checklist currently focuses on checks that can evaluate these security requirements for {ref}`policy_tier_2` (or greater) SREs (with some steps noted as specific to a tier):
 
 ## How to use this checklist
@@ -19,6 +20,8 @@ Work your way through the actions described in each section, taking care to noti
 - {{camera}} Where you see the camera icon, there should be accompanying screenshot(s) of evidence for this item in the checklist (you may wish to save your own equivalent screenshots as evidence)
 - {{white_check_mark}} This indicates a checklist item for which a screenshot is either not appropriate or difficult
 ```
+
+You can use {download}`this template Markdown file <./security_checklist/security_checklist_template.md>` to complete the checklist.
 
 ## Prerequisites
 

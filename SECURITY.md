@@ -5,10 +5,10 @@
 Only the latest version of the Data Safe Haven is actively supported with security updates.
 All organisations using an earlier version in production should update to the latest version.
 
-| Version                                                                                 | Supported          |
-| --------------------------------------------------------------------------------------- | ------------------ |
-| [5.1.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v5.1.0)   | :white_check_mark: |
-| < 5.1.0                                                                                 | :x:                |
+| Version                                                                               | Supported          |
+| ------------------------------------------------------------------------------------- | ------------------ |
+| [5.2.1](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v5.2.1) | :white_check_mark: |
+| < 5.2.1                                                                               | :x:                |
 
 ## Reporting a Vulnerability
 

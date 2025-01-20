@@ -67,7 +67,7 @@ class TestSREApplicationGatewayProps:
         self, application_gateway_props: SREApplicationGatewayProps
     ):
         application_gateway_props.resource_group_id.apply(
-            partial(assert_equal, pulumi.UNKNOWN),
+            partial(assert_equal, "resource_group_id"),
             run_with_unknowns=True,
         )
 
@@ -112,7 +112,7 @@ class TestSREApplicationGatewayProps:
         self, application_gateway_props: SREApplicationGatewayProps
     ):
         application_gateway_props.user_assigned_identities.apply(
-            partial(assert_equal, pulumi.UNKNOWN),
+            partial(assert_equal, {"identity_key_vault_reader_id": {}}),
             run_with_unknowns=True,
         )
 
@@ -282,7 +282,7 @@ class TestSREApplicationGatewayComponent:
                         "name": "appGatewayFrontendIP",
                         "private_ip_allocation_method": "Dynamic",
                         "provisioning_state": None,
-                        "public_ip_address": {"id": None},
+                        "public_ip_address": {"id": "ag-name_public_ip_id"},
                         "type": None,
                     }
                 ],
@@ -356,8 +356,12 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
-                        "frontend_ip_configuration": {"id": None},
-                        "frontend_port": {"id": None},
+                        "frontend_ip_configuration": {
+                            "id": "resource_group_id/providers/Microsoft.Network/applicationGateways/stack-example-ag-entrypoint/frontendIPConfigurations/appGatewayFrontendIP"
+                        },
+                        "frontend_port": {
+                            "id": "resource_group_id/providers/Microsoft.Network/applicationGateways/stack-example-ag-entrypoint/frontendPorts/appGatewayFrontendHttp"
+                        },
                         "host_name": "sre.example.com",
                         "name": "GuacamoleHttpListener",
                         "protocol": "Http",
@@ -366,13 +370,19 @@ class TestSREApplicationGatewayComponent:
                     },
                     {
                         "etag": None,
-                        "frontend_ip_configuration": {"id": None},
-                        "frontend_port": {"id": None},
+                        "frontend_ip_configuration": {
+                            "id": "resource_group_id/providers/Microsoft.Network/applicationGateways/stack-example-ag-entrypoint/frontendIPConfigurations/appGatewayFrontendIP"
+                        },
+                        "frontend_port": {
+                            "id": "resource_group_id/providers/Microsoft.Network/applicationGateways/stack-example-ag-entrypoint/frontendPorts/appGatewayFrontendHttps"
+                        },
                         "host_name": "sre.example.com",
                         "name": "GuacamoleHttpsListener",
                         "protocol": "Https",
                         "provisioning_state": None,
-                        "ssl_certificate": {"id": None},
+                        "ssl_certificate": {
+                            "id": "resource_group_id/providers/Microsoft.Network/applicationGateways/stack-example-ag-entrypoint/sslCertificates/letsencryptcertificate"
+                        },
                         "type": None,
                     },
                 ],
@@ -387,7 +397,17 @@ class TestSREApplicationGatewayComponent:
         application_gateway_component.application_gateway.identity.apply(
             partial(
                 assert_equal_json,
-                {"principal_id": None, "tenant_id": None, "type": "UserAssigned"},
+                {
+                    "principal_id": None,
+                    "tenant_id": None,
+                    "type": "UserAssigned",
+                    "user_assigned_identities": {
+                        "identity_key_vault_reader_id": {
+                            "client_id": None,
+                            "principal_id": None,
+                        }
+                    },
+                },
             ),
             run_with_unknowns=True,
         )
@@ -489,8 +509,14 @@ class TestSREApplicationGatewayComponent:
                         "include_query_string": True,
                         "name": "GuacamoleHttpToHttpsRedirection",
                         "redirect_type": "Permanent",
-                        "request_routing_rules": [{"id": None}],
-                        "target_listener": {"id": None},
+                        "request_routing_rules": [
+                            {
+                                "id": "resource_group_id/providers/Microsoft.Network/applicationGateways/stack-example-ag-entrypoint/requestRoutingRules/HttpToHttpsRedirection"
+                            }
+                        ],
+                        "target_listener": {
+                            "id": "resource_group_id/providers/Microsoft.Network/applicationGateways/stack-example-ag-entrypoint/httpListeners/GuacamoleHttpsListener"
+                        },
                         "type": None,
                     }
                 ],
@@ -508,24 +534,38 @@ class TestSREApplicationGatewayComponent:
                 [
                     {
                         "etag": None,
-                        "http_listener": {"id": None},
+                        "http_listener": {
+                            "id": "resource_group_id/providers/Microsoft.Network/applicationGateways/stack-example-ag-entrypoint/httpListeners/GuacamoleHttpListener"
+                        },
                         "name": "GuacamoleHttpRouting",
                         "priority": 200,
                         "provisioning_state": None,
-                        "redirect_configuration": {"id": None},
-                        "rewrite_rule_set": {"id": None},
+                        "redirect_configuration": {
+                            "id": "resource_group_id/providers/Microsoft.Network/applicationGateways/stack-example-ag-entrypoint/redirectConfigurations/GuacamoleHttpToHttpsRedirection"
+                        },
+                        "rewrite_rule_set": {
+                            "id": "resource_group_id/providers/Microsoft.Network/applicationGateways/stack-example-ag-entrypoint/rewriteRuleSets/ResponseHeaders"
+                        },
                         "rule_type": "Basic",
                         "type": None,
                     },
                     {
-                        "backend_address_pool": {"id": None},
-                        "backend_http_settings": {"id": None},
+                        "backend_address_pool": {
+                            "id": "resource_group_id/providers/Microsoft.Network/applicationGateways/stack-example-ag-entrypoint/backendAddressPools/appGatewayBackendGuacamole"
+                        },
+                        "backend_http_settings": {
+                            "id": "resource_group_id/providers/Microsoft.Network/applicationGateways/stack-example-ag-entrypoint/backendHttpSettingsCollection/appGatewayBackendHttpSettings"
+                        },
                         "etag": None,
-                        "http_listener": {"id": None},
+                        "http_listener": {
+                            "id": "resource_group_id/providers/Microsoft.Network/applicationGateways/stack-example-ag-entrypoint/httpListeners/GuacamoleHttpsListener"
+                        },
                         "name": "GuacamoleHttpsRouting",
                         "priority": 100,
                         "provisioning_state": None,
-                        "rewrite_rule_set": {"id": None},
+                        "rewrite_rule_set": {
+                            "id": "resource_group_id/providers/Microsoft.Network/applicationGateways/stack-example-ag-entrypoint/rewriteRuleSets/ResponseHeaders"
+                        },
                         "rule_type": "Basic",
                         "type": None,
                     },

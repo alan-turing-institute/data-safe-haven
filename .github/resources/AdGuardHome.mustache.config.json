@@ -1,0 +1,9 @@
+{
+    "admin_username": "admin",
+    "admin_password_encrypted": "password",
+    "allow_workspace_internet": true,
+    "filter_allow": [
+        "clamav.net",
+        "current.cvd.clamav.net"
+    ]
+}

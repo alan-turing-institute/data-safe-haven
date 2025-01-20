@@ -23,6 +23,8 @@ class SREFirewallProps:
 
     def __init__(
         self,
+        *,
+        allow_workspace_internet: bool,
         location: Input[str],
         log_analytics_workspace: Input[WrappedLogAnalyticsWorkspace],
         resource_group_name: Input[str],
@@ -36,6 +38,7 @@ class SREFirewallProps:
         subnet_user_services_software_repositories: Input[network.GetSubnetResult],
         subnet_workspaces: Input[network.GetSubnetResult],
     ) -> None:
+        self.allow_workspace_internet = allow_workspace_internet
         self.location = location
         self.log_analytics_workspace = log_analytics_workspace
         self.resource_group_name = resource_group_name
@@ -111,140 +114,165 @@ class SREFirewallComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Deploy firewall
-        firewall = network.AzureFirewall(
-            f"{self._name}_firewall",
-            application_rule_collections=[
-                network.AzureFirewallApplicationRuleCollectionArgs(
+        application_rule_collections_common = [
+            network.AzureFirewallApplicationRuleCollectionArgs(
+                action=network.AzureFirewallRCActionArgs(
+                    type=network.AzureFirewallRCActionType.ALLOW
+                ),
+                name="apt-proxy-server-allow",
+                priority=FirewallPriorities.SRE_APT_PROXY_SERVER,
+                rules=[
+                    network.AzureFirewallApplicationRuleArgs(
+                        description="Allow external apt repository requests",
+                        name="AllowAptRepositories",
+                        protocols=[
+                            network.AzureFirewallApplicationRuleProtocolArgs(
+                                port=int(Ports.HTTP),
+                                protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
+                            ),
+                            network.AzureFirewallApplicationRuleProtocolArgs(
+                                port=int(Ports.HTTPS),
+                                protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                            ),
+                        ],
+                        source_addresses=props.subnet_apt_proxy_server_prefixes,
+                        target_fqdns=PermittedDomains.APT_REPOSITORIES,
+                    ),
+                ],
+            ),
+            network.AzureFirewallApplicationRuleCollectionArgs(
+                action=network.AzureFirewallRCActionArgs(
+                    type=network.AzureFirewallRCActionType.ALLOW
+                ),
+                name="clamav-mirror-allow",
+                priority=FirewallPriorities.SRE_CLAMAV_MIRROR,
+                rules=[
+                    network.AzureFirewallApplicationRuleArgs(
+                        description="Allow external ClamAV definition update requests",
+                        name="AllowClamAVDefinitionUpdates",
+                        protocols=[
+                            network.AzureFirewallApplicationRuleProtocolArgs(
+                                port=int(Ports.HTTP),
+                                protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
+                            ),
+                            network.AzureFirewallApplicationRuleProtocolArgs(
+                                port=int(Ports.HTTPS),
+                                protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                            ),
+                        ],
+                        source_addresses=props.subnet_clamav_mirror_prefixes,
+                        target_fqdns=PermittedDomains.CLAMAV_UPDATES,
+                    ),
+                ],
+            ),
+            network.AzureFirewallApplicationRuleCollectionArgs(
+                action=network.AzureFirewallRCActionArgs(
+                    type=network.AzureFirewallRCActionType.ALLOW
+                ),
+                name="identity-server-allow",
+                priority=FirewallPriorities.SRE_IDENTITY_CONTAINERS,
+                rules=[
+                    network.AzureFirewallApplicationRuleArgs(
+                        description="Allow Microsoft OAuth login requests",
+                        name="AllowMicrosoftOAuthLogin",
+                        protocols=[
+                            network.AzureFirewallApplicationRuleProtocolArgs(
+                                port=int(Ports.HTTPS),
+                                protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                            )
+                        ],
+                        source_addresses=props.subnet_identity_containers_prefixes,
+                        target_fqdns=PermittedDomains.MICROSOFT_IDENTITY,
+                    ),
+                ],
+            ),
+            network.AzureFirewallApplicationRuleCollectionArgs(
+                action=network.AzureFirewallRCActionArgs(
+                    type=network.AzureFirewallRCActionType.ALLOW
+                ),
+                name="remote-desktop-gateway-allow",
+                priority=FirewallPriorities.SRE_GUACAMOLE_CONTAINERS,
+                rules=[
+                    network.AzureFirewallApplicationRuleArgs(
+                        description="Allow Microsoft OAuth login requests",
+                        name="AllowMicrosoftOAuthLogin",
+                        protocols=[
+                            network.AzureFirewallApplicationRuleProtocolArgs(
+                                port=int(Ports.HTTPS),
+                                protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                            )
+                        ],
+                        source_addresses=props.subnet_guacamole_containers_prefixes,
+                        target_fqdns=PermittedDomains.MICROSOFT_LOGIN,
+                    ),
+                ],
+            ),
+            network.AzureFirewallApplicationRuleCollectionArgs(
+                action=network.AzureFirewallRCActionArgs(
+                    type=network.AzureFirewallRCActionType.ALLOW
+                ),
+                name="software-repositories-allow",
+                priority=FirewallPriorities.SRE_USER_SERVICES_SOFTWARE_REPOSITORIES,
+                rules=[
+                    network.AzureFirewallApplicationRuleArgs(
+                        description="Allow external CRAN package requests",
+                        name="AllowCRANPackageDownload",
+                        protocols=[
+                            network.AzureFirewallApplicationRuleProtocolArgs(
+                                port=int(Ports.HTTPS),
+                                protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                            )
+                        ],
+                        source_addresses=props.subnet_user_services_software_repositories_prefixes,
+                        target_fqdns=PermittedDomains.SOFTWARE_REPOSITORIES_R,
+                    ),
+                    network.AzureFirewallApplicationRuleArgs(
+                        description="Allow external PyPI package requests",
+                        name="AllowPyPIPackageDownload",
+                        protocols=[
+                            network.AzureFirewallApplicationRuleProtocolArgs(
+                                port=int(Ports.HTTPS),
+                                protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                            )
+                        ],
+                        source_addresses=props.subnet_user_services_software_repositories_prefixes,
+                        target_fqdns=PermittedDomains.SOFTWARE_REPOSITORIES_PYTHON,
+                    ),
+                ],
+            ),
+        ]
+
+        if props.allow_workspace_internet:
+            application_rule_collections = application_rule_collections_common
+            # A network rule is used as application rules are restricted to certain
+            # types of traffic, e.g. HTTP, HTTPS
+            network_rule_collections = [
+                network.AzureFirewallNetworkRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(
                         type=network.AzureFirewallRCActionType.ALLOW
                     ),
-                    name="apt-proxy-server",
-                    priority=FirewallPriorities.SRE_APT_PROXY_SERVER,
+                    name="workspaces-allow-all",
+                    priority=FirewallPriorities.SRE_WORKSPACES,
                     rules=[
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external apt repository requests",
-                            name="AllowAptRepositories",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=int(Ports.HTTP),
-                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
-                                ),
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=int(Ports.HTTPS),
-                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
-                                ),
-                            ],
-                            source_addresses=props.subnet_apt_proxy_server_prefixes,
-                            target_fqdns=PermittedDomains.APT_REPOSITORIES,
-                        ),
+                        network.AzureFirewallNetworkRuleArgs(
+                            description="Enables internet access to workspaces.",
+                            destination_addresses=["*"],
+                            destination_ports=["*"],
+                            name="allow-internet-access",
+                            protocols=[network.AzureFirewallNetworkRuleProtocol.ANY],
+                            source_addresses=props.subnet_workspaces_prefixes,
+                        )
                     ],
                 ),
+            ]
+        else:
+            application_rule_collections = [
+                *application_rule_collections_common,
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(
                         type=network.AzureFirewallRCActionType.ALLOW
                     ),
-                    name="clamav-mirror",
-                    priority=FirewallPriorities.SRE_CLAMAV_MIRROR,
-                    rules=[
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external ClamAV definition update requests",
-                            name="AllowClamAVDefinitionUpdates",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=int(Ports.HTTP),
-                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
-                                ),
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=int(Ports.HTTPS),
-                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
-                                ),
-                            ],
-                            source_addresses=props.subnet_clamav_mirror_prefixes,
-                            target_fqdns=PermittedDomains.CLAMAV_UPDATES,
-                        ),
-                    ],
-                ),
-                network.AzureFirewallApplicationRuleCollectionArgs(
-                    action=network.AzureFirewallRCActionArgs(
-                        type=network.AzureFirewallRCActionType.ALLOW
-                    ),
-                    name="identity-server",
-                    priority=FirewallPriorities.SRE_IDENTITY_CONTAINERS,
-                    rules=[
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow Microsoft OAuth login requests",
-                            name="AllowMicrosoftOAuthLogin",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=int(Ports.HTTPS),
-                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
-                                )
-                            ],
-                            source_addresses=props.subnet_identity_containers_prefixes,
-                            target_fqdns=PermittedDomains.MICROSOFT_IDENTITY,
-                        ),
-                    ],
-                ),
-                network.AzureFirewallApplicationRuleCollectionArgs(
-                    action=network.AzureFirewallRCActionArgs(
-                        type=network.AzureFirewallRCActionType.ALLOW
-                    ),
-                    name="remote-desktop-gateway",
-                    priority=FirewallPriorities.SRE_GUACAMOLE_CONTAINERS,
-                    rules=[
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow Microsoft OAuth login requests",
-                            name="AllowMicrosoftOAuthLogin",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=int(Ports.HTTPS),
-                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
-                                )
-                            ],
-                            source_addresses=props.subnet_guacamole_containers_prefixes,
-                            target_fqdns=PermittedDomains.MICROSOFT_LOGIN,
-                        ),
-                    ],
-                ),
-                network.AzureFirewallApplicationRuleCollectionArgs(
-                    action=network.AzureFirewallRCActionArgs(
-                        type=network.AzureFirewallRCActionType.ALLOW
-                    ),
-                    name="software-repositories",
-                    priority=FirewallPriorities.SRE_USER_SERVICES_SOFTWARE_REPOSITORIES,
-                    rules=[
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external CRAN package requests",
-                            name="AllowCRANPackageDownload",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=int(Ports.HTTPS),
-                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
-                                )
-                            ],
-                            source_addresses=props.subnet_user_services_software_repositories_prefixes,
-                            target_fqdns=PermittedDomains.SOFTWARE_REPOSITORIES_R,
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external PyPI package requests",
-                            name="AllowPyPIPackageDownload",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=int(Ports.HTTPS),
-                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
-                                )
-                            ],
-                            source_addresses=props.subnet_user_services_software_repositories_prefixes,
-                            target_fqdns=PermittedDomains.SOFTWARE_REPOSITORIES_PYTHON,
-                        ),
-                    ],
-                ),
-                network.AzureFirewallApplicationRuleCollectionArgs(
-                    action=network.AzureFirewallRCActionArgs(
-                        type=network.AzureFirewallRCActionType.ALLOW
-                    ),
-                    name="workspaces",
+                    name="workspaces-allow-restricted",
                     priority=FirewallPriorities.SRE_WORKSPACES,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
@@ -310,7 +338,13 @@ class SREFirewallComponent(ComponentResource):
                         ),
                     ],
                 ),
-            ],
+            ]
+            network_rule_collections = None
+
+        # Deploy firewall
+        self.firewall = network.AzureFirewall(
+            f"{self._name}_firewall",
+            application_rule_collections=application_rule_collections,
             azure_firewall_name=f"{stack_name}-firewall",
             ip_configurations=[
                 network.AzureFirewallIPConfigurationArgs(
@@ -325,6 +359,7 @@ class SREFirewallComponent(ComponentResource):
                 public_ip_address=network.SubResourceArgs(id=public_ip_management.id),
                 subnet=network.SubResourceArgs(id=props.subnet_firewall_management_id),
             ),
+            network_rule_collections=network_rule_collections,
             resource_group_name=props.resource_group_name,
             sku=network.AzureFirewallSkuArgs(
                 name=network.AzureFirewallSkuName.AZF_W_V_NET,
@@ -360,12 +395,12 @@ class SREFirewallComponent(ComponentResource):
                     },
                 }
             ],
-            resource_uri=firewall.id,
+            resource_uri=self.firewall.id,
             workspace_id=props.log_analytics_workspace.id,
         )
 
         # Retrieve the private IP address for the firewall
-        private_ip_address = firewall.ip_configurations.apply(
+        private_ip_address = self.firewall.ip_configurations.apply(
             lambda cfgs: "" if not cfgs else cfgs[0].private_ip_address
         )
 
@@ -376,7 +411,7 @@ class SREFirewallComponent(ComponentResource):
         # send via the firewall.
         #
         # See https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-udr-overview
-        network.Route(
+        self.route = network.Route(
             f"{self._name}_route_via_firewall",
             address_prefix="0.0.0.0/0",
             next_hop_ip_address=private_ip_address,
@@ -384,5 +419,7 @@ class SREFirewallComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             route_name="ViaFirewall",
             route_table_name=props.route_table_name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=firewall)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=self.firewall)
+            ),
         )

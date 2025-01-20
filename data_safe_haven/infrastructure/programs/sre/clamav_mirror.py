@@ -74,7 +74,7 @@ class SREClamAVMirrorComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-clamav",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="chmey/clamav-mirror",
+                    image="chmey/clamav-mirror:latest",  # only one image is published
                     name="clamav-mirror"[:63],
                     environment_variables=[],
                     ports=[

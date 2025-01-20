@@ -50,29 +50,39 @@ class SREConfig(AzureSerialisableModel):
         """Create SREConfig without validation to allow "replace me" prompts."""
         # Set tier-dependent defaults
         if tier == 0:
+            allow_workspace_internet = True
             remote_desktop_allow_copy = True
             remote_desktop_allow_paste = True
             software_packages = SoftwarePackageCategory.ANY
         elif tier == 1:
+            allow_workspace_internet = True
             remote_desktop_allow_copy = True
             remote_desktop_allow_paste = True
             software_packages = SoftwarePackageCategory.ANY
         elif tier == 2:  # noqa: PLR2004
+            allow_workspace_internet = False
             remote_desktop_allow_copy = False
             remote_desktop_allow_paste = False
             software_packages = SoftwarePackageCategory.ANY
         elif tier == 3:  # noqa: PLR2004
+            allow_workspace_internet = False
             remote_desktop_allow_copy = False
             remote_desktop_allow_paste = False
             software_packages = SoftwarePackageCategory.PRE_APPROVED
         elif tier == 4:  # noqa: PLR2004
+            allow_workspace_internet = False
             remote_desktop_allow_copy = False
             remote_desktop_allow_paste = False
             software_packages = SoftwarePackageCategory.NONE
         else:
+            allow_workspace_internet = (
+                "True/False: whether to allow outbound internet access from workspaces.  "  # type: ignore
+                "WARNING setting this to True will allow data to be moved out of the SRE "
+                "WITHOUT OVERSIGHT OR APPROVAL"
+            )
             remote_desktop_allow_copy = "True/False: whether to allow copying text out of the environment."  # type: ignore
             remote_desktop_allow_paste = "True/False: whether to allow pasting text into the environment."  # type: ignore
-            software_packages = "Which Python/R packages to allow users to install: [any/pre-approved/none]"  # type: ignore
+            software_packages = "[any/pre-approved/none]: which Python/R packages to allow users to install."  # type: ignore
 
         return SREConfig.model_construct(
             azure=ConfigSectionAzure.model_construct(
@@ -89,6 +99,7 @@ class SREConfig(AzureSerialisableModel):
             sre=ConfigSectionSRE.model_construct(
                 admin_email_address="Email address shared by all administrators",
                 admin_ip_addresses=["List of IP addresses belonging to administrators"],
+                allow_workspace_internet=allow_workspace_internet,
                 databases=["List of database systems to deploy"],  # type:ignore
                 data_provider_ip_addresses=[
                     "List of IP addresses belonging to data providers"

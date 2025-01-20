@@ -23,7 +23,10 @@ class GuacamoleUsers:
             pulumi_config=pulumi_config,
         )
         # Read the SRE database secret from key vault
-        azure_sdk = AzureSdk(context.subscription_name)
+        azure_sdk = AzureSdk(subscription_name=context.subscription_name)
+        sre_subscription_name = azure_sdk.get_subscription_name(
+            config.azure.subscription_id
+        )
         connection_db_server_password = azure_sdk.get_keyvault_secret(
             sre_stack.output("data")["key_vault_name"],
             sre_stack.output("data")["password_user_database_admin_secret"],
@@ -33,7 +36,7 @@ class GuacamoleUsers:
             connection_db_server_password,
             sre_stack.output("remote_desktop")["connection_db_server_name"],
             sre_stack.output("remote_desktop")["resource_group_name"],
-            context.subscription_name,
+            sre_subscription_name,
         )
         self.users_: Sequence[ResearchUser] | None = None
         self.postgres_script_path: pathlib.Path = (

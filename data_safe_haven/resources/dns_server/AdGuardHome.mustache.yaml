@@ -11,9 +11,11 @@ dns:
 querylog:
   enabled: true
 filters:
+# https://adblockplus.org/filter-cheatsheet#blocking
 user_rules:
-  # https://github.com/AdguardTeam/AdGuardHome/wiki/Hosts-Blocklists#adblock-style-syntax
-  - "*.*"
+  {{#filter_block}}
+  - "{{.}}"
+  {{/filter_block}}
   {{#filter_allow}}
   - "@@||{{.}}"
   {{/filter_allow}}

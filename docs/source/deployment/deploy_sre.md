@@ -58,6 +58,7 @@ name: # A name for your SRE deployment containing only letters, numbers, hyphens
 sre:
   admin_email_address: # Email address shared by all administrators
   admin_ip_addresses: # List of IP addresses belonging to administrators
+  allow_workspace_internet: # True/False: whether to allow outbound internet access from workspaces. WARNING setting this to True will allow data to be moved out of the SRE WITHOUT OVERSIGHT OR APPROVAL
   data_provider_ip_addresses: # List of IP addresses belonging to data providers
   databases: # List of database systems to deploy
   remote_desktop:

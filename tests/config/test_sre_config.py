@@ -89,6 +89,23 @@ class TestConfig:
         with pytest.raises(DataSafeHavenTypeError):
             SREConfig.from_yaml(config.to_yaml())
 
+    @pytest.mark.parametrize(
+        "tier,allow_internet,copy,paste,packages",
+        [
+            (0, True, True, True, SoftwarePackageCategory.ANY),
+            (1, True, True, True, SoftwarePackageCategory.ANY),
+            (2, False, False, False, SoftwarePackageCategory.ANY),
+            (3, False, False, False, SoftwarePackageCategory.PRE_APPROVED),
+            (4, False, False, False, SoftwarePackageCategory.NONE),
+        ],
+    )
+    def test_template_tiers(self, tier, allow_internet, copy, paste, packages):
+        config = SREConfig.template(tier=tier)
+        assert config.sre.allow_workspace_internet == allow_internet
+        assert config.sre.remote_desktop.allow_copy == copy
+        assert config.sre.remote_desktop.allow_paste == paste
+        assert config.sre.software_packages == packages
+
     def test_from_yaml(self, sre_config, sre_config_yaml) -> None:
         config = SREConfig.from_yaml(sre_config_yaml)
         assert config == sre_config

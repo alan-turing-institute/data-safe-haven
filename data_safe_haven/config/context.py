@@ -20,7 +20,9 @@ class Context(ContextBase, BaseModel, validate_assignment=True):
     """Context for a Data Safe Haven deployment."""
 
     entra_application_kvsecret_name: ClassVar[str] = "pulumi-deployment-secret"
-    entra_application_secret_name: ClassVar[str] = "Pulumi Deployment Secret"
+    entra_application_secret_name: ClassVar[str] = (
+        "Pulumi Deployment Secret"  # noqa: S105
+    )
     pulumi_encryption_key_name: ClassVar[str] = "pulumi-encryption-key"
     pulumi_storage_container_name: ClassVar[str] = "pulumi"
     storage_container_name: ClassVar[str] = "config"

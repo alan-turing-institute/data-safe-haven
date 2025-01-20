@@ -155,6 +155,7 @@ class TestConfigSectionSRE:
         )
         assert sre_config.admin_email_address == "admin@example.com"
         assert sre_config.admin_ip_addresses == []
+        assert not sre_config.allow_workspace_internet
         assert sre_config.databases == []
         assert sre_config.data_provider_ip_addresses == []
         assert sre_config.remote_desktop == config_subsection_remote_desktop

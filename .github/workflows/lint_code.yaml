@@ -98,15 +98,7 @@ jobs:
         run: |
           npm install -g mustache
       - name: Expand mustache templates
-        shell: bash
-        run: |
-          echo '{"array": ["dummy"], "variable": "dummy"}' > .mustache_config.json
-          for yamlfile in $(find . -name "*.yml" -o -name "*.yaml"); do
-            sed "s|{{\([/#]\)[^}]*}}|{{\1array}}|g" $yamlfile > expanded.tmp  # replace mustache arrays
-            sed -i "s|{{[^#/].\{1,\}}}|{{variable}}|g" expanded.tmp           # replace mustache variables
-            mustache .mustache_config.json expanded.tmp > $yamlfile           # perform mustache expansion overwriting original file
-          done
-          rm expanded.tmp
+        run: .github/scripts/expand_mustache.sh
       - name: Lint YAML
         uses: karancode/yamllint-github-action@v3.0.0
         with:

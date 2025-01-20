@@ -28,12 +28,15 @@ class SREDnsServerProps:
 
     def __init__(
         self,
+        *,
+        allow_workspace_internet: bool,
         dockerhub_credentials: DockerHubCredentials,
         location: Input[str],
         resource_group_name: Input[str],
         shm_fqdn: Input[str],
     ) -> None:
         self.admin_username = "dshadmin"
+        self.allow_workspace_internet = allow_workspace_internet
         self.dockerhub_credentials = dockerhub_credentials
         self.location = location
         self.resource_group_name = resource_group_name
@@ -68,25 +71,34 @@ class SREDnsServerComponent(ComponentResource):
             resources_path / "dns_server" / "AdGuardHome.mustache.yaml"
         )
 
+        # Construct permitted and blocked domains
+        if not props.allow_workspace_internet:
+            filter_allow = Output.from_input(props.shm_fqdn).apply(
+                lambda fqdn: [
+                    f"*.{fqdn}",
+                    *PermittedDomains.ALL,
+                ]
+            )
+            filter_block = ["*.*"]
+        else:
+            filter_allow = None
+            filter_block = ["example.local"]
+
         # Expand AdGuardHome YAML configuration
         adguard_adguardhome_yaml_contents = Output.all(
             admin_username=props.admin_username,
             # Only the first 72 bytes of the generated random string will be used but a
             # 20 character UTF-8 string (alphanumeric + special) will not exceed that.
             admin_password_encrypted=password_admin.bcrypt_hash,
+            filter_allow=filter_allow,
+            filter_block=filter_block,
             # Use Azure virtual DNS server as upstream
             # https://learn.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
             # This server is aware of private DNS zones
             upstream_dns="168.63.129.16",
-            filter_allow=Output.from_input(props.shm_fqdn).apply(
-                lambda fqdn: [
-                    f"*.{fqdn}",
-                    *PermittedDomains.ALL,
-                ]
-            ),
         ).apply(
-            lambda mustache_values: adguard_adguardhome_yaml_reader.file_contents(
-                mustache_values
+            lambda mustache_config: adguard_adguardhome_yaml_reader.file_contents(
+                mustache_config
             )
         )
 

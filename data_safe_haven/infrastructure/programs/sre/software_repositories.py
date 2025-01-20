@@ -1,4 +1,4 @@
-"""Pulumi component for SRE monitoring"""
+"""Pulumi component for SRE software repositories"""
 
 from collections.abc import Mapping
 

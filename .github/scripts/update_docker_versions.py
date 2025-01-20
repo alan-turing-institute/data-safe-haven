@@ -3,11 +3,13 @@
 import pathlib
 import re
 from contextlib import suppress
+from functools import cache
 
 import requests
 from packaging import version
 
 
+@cache
 def get_dockerhub_versions(image_details: str) -> tuple[str, str, list[str]]:
     """Get versions for DockerHub images (via API)"""
     image_name, version = image_details.split(":")
@@ -23,6 +25,7 @@ def get_dockerhub_versions(image_details: str) -> tuple[str, str, list[str]]:
     return (image_name, version, versions)
 
 
+@cache
 def get_github_versions(image_details: str) -> tuple[str, str, list[str]]:
     """Get versions for GitHub images (via manual scraping)"""
     _, organisation, image_name, version = re.split("[:/]", image_details)
@@ -38,6 +41,7 @@ def get_github_versions(image_details: str) -> tuple[str, str, list[str]]:
     return (image_name, version, versions)
 
 
+@cache
 def get_quayio_versions(image_details: str) -> tuple[str, str, list[str]]:
     """Get versions for Quay.IO images (via API)"""
     _, organisation, image_name, version = re.split("[:/]", image_details)
@@ -64,7 +68,7 @@ def annotate(
             ):
                 continue
             annotated.append((version_str, version_))
-    return annotated
+    return sorted(annotated, key=lambda v: v[1], reverse=True)
 
 
 for filename in (pathlib.Path("data_safe_haven") / "infrastructure").glob("**/*.py"):
@@ -81,14 +85,22 @@ for filename in (pathlib.Path("data_safe_haven") / "infrastructure").glob("**/*.
                     image, v_current, available = get_quayio_versions(image_details)
                 else:
                     image, v_current, available = get_dockerhub_versions(image_details)
-                stable_versions = [v for v in annotate(available, stable_only=True)]
-                v_latest = sorted(stable_versions, key=lambda v: v[1], reverse=True)[0][0]
+                # Consider only stable versions unless there are none available
+                if not (candidate_versions := annotate(available, stable_only=True)):
+                    print(f"No stable releases identified for {image}!")  # noqa: T201
+                    v_latest = v_current
+                else:
+                    v_latest = candidate_versions[0][0]
                 if v_current != v_latest:
-                    print(f"Updating {image} from {v_current} to {v_latest} in {filename}")  # noqa: T201
+                    print(  # noqa: T201
+                        f"Updating {image} from {v_current} to {v_latest} in {filename}"
+                    )
                     needs_replacement = True
                     output = line.replace(v_current, v_latest)
                 else:
-                    print(f"Leaving {image} at {v_current} (latest version) in {filename}")  # noqa: T201
+                    print(  # noqa: T201
+                        f"Leaving {image} at {v_current} (latest version) in {filename}"
+                    )
             lines += output
 
     if needs_replacement:

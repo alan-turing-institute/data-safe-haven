@@ -56,6 +56,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     # https://docs.pydantic.dev/latest/concepts/models/#fields-with-non-hashable-default-values
     admin_email_address: EmailAddress
     admin_ip_addresses: list[IpAddress] = []
+    allow_workspace_internet: bool = False
     databases: UniqueList[DatabaseSystem] = []
     data_provider_ip_addresses: list[IpAddress] = []
     remote_desktop: ConfigSubsectionRemoteDesktopOpts

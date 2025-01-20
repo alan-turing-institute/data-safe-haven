@@ -123,6 +123,7 @@ class DeclarativeSRE:
             "sre_dns_server",
             self.stack_name,
             SREDnsServerProps(
+                allow_workspace_internet=self.config.sre.allow_workspace_internet,
                 dockerhub_credentials=dockerhub_credentials,
                 location=self.config.azure.location,
                 resource_group_name=resource_group.name,
@@ -182,6 +183,7 @@ class DeclarativeSRE:
             "sre_firewall",
             self.stack_name,
             SREFirewallProps(
+                allow_workspace_internet=self.config.sre.allow_workspace_internet,
                 location=self.config.azure.location,
                 log_analytics_workspace=monitoring.log_analytics,
                 resource_group_name=resource_group.name,
