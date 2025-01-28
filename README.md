@@ -11,8 +11,11 @@
 | data\_safe\_haven/administration/users/guacamole\_users.py                        |       21 |       12 |     43% |20-48, 52-69 |
 | data\_safe\_haven/administration/users/research\_user.py                          |       31 |        9 |     71% |29, 35, 39-41, 44-51, 54 |
 | data\_safe\_haven/administration/users/user\_handler.py                           |      100 |       73 |     27% |32-69, 75-81, 85, 91-97, 105-124, 135-137, 145-159, 167-206, 214-219 |
+| data\_safe\_haven/allowlist/\_\_init\_\_.py                                       |        2 |        0 |    100% |           |
+| data\_safe\_haven/allowlist/allowlist.py                                          |       39 |        3 |     92% |     50-52 |
 | data\_safe\_haven/commands/\_\_init\_\_.py                                        |        2 |        0 |    100% |           |
-| data\_safe\_haven/commands/cli.py                                                 |       28 |        3 |     89% |56, 59, 99 |
+| data\_safe\_haven/commands/allowlist.py                                           |       77 |       23 |     70% |39-44, 52-54, 66-70, 73-74, 101-103, 135-136, 143-145, 174, 181-183 |
+| data\_safe\_haven/commands/cli.py                                                 |       30 |        3 |     90% |57, 60, 105 |
 | data\_safe\_haven/commands/config.py                                              |      122 |        3 |     98% |   232-234 |
 | data\_safe\_haven/commands/context.py                                             |       72 |        0 |    100% |           |
 | data\_safe\_haven/commands/pulumi.py                                              |       19 |        0 |    100% |           |
@@ -35,7 +38,7 @@
 | data\_safe\_haven/exceptions/\_\_init\_\_.py                                      |       33 |        0 |    100% |           |
 | data\_safe\_haven/external/\_\_init\_\_.py                                        |        7 |        0 |    100% |           |
 | data\_safe\_haven/external/api/\_\_init\_\_.py                                    |        0 |        0 |    100% |           |
-| data\_safe\_haven/external/api/azure\_sdk.py                                      |      480 |      324 |     32% |122-128, 130-131, 157-158, 177-190, 192-193, 228-232, 234-235, 255-283, 301-324, 340-363, 380-444, 459-480, 496-514, 527-556, 573-599, 616-636, 650-659, 692-705, 713-726, 763, 765-766, 783-794, 810-838, 841-866, 881-887, 915-919, 933, 941-942, 945-947, 959-984, 1001-1016, 1029-1060, 1072-1125, 1133-1169, 1186-1221, 1238-1257, 1271-1303, 1319-1335, 1369-1384 |
+| data\_safe\_haven/external/api/azure\_sdk.py                                      |      525 |      351 |     33% |123-129, 131-132, 158-159, 188-192, 197-205, 222-238, 254-255, 265-266, 285-298, 300-301, 336-340, 342-343, 363-391, 409-432, 448-471, 488-552, 567-588, 604-622, 635-664, 681-707, 724-744, 758-767, 800-813, 821-834, 871, 873-874, 891-902, 918-946, 949-974, 989-995, 1023-1027, 1041, 1049-1050, 1053-1055, 1067-1092, 1109-1124, 1137-1168, 1180-1233, 1241-1277, 1294-1329, 1346-1365, 1379-1411, 1427-1443, 1477-1492, 1510-1529 |
 | data\_safe\_haven/external/api/credentials.py                                     |       98 |        7 |     93% |219-222, 231-235 |
 | data\_safe\_haven/external/api/graph\_api.py                                      |      422 |      320 |     24% |112, 126-127, 129-131, 143-168, 182-265, 278-317, 327-353, 366-437, 448-462, 465-472, 477-484, 493-497, 500-509, 512-521, 544-552, 567-608, 623-672, 684, 697-711, 734, 767-771, 782-795, 806-822, 833-845, 858-868, 882-884, 898-905, 909-918, 931-968, 979-988, 1000-1023, 1033-1096 |
 | data\_safe\_haven/external/interface/\_\_init\_\_.py                              |        0 |        0 |    100% |           |
@@ -68,7 +71,7 @@
 | data\_safe\_haven/infrastructure/components/wrapped/\_\_init\_\_.py               |        2 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/components/wrapped/log\_analytics\_workspace.py  |       17 |        4 |     76% |39, 46, 53-59 |
 | data\_safe\_haven/infrastructure/programs/\_\_init\_\_.py                         |        3 |        0 |    100% |           |
-| data\_safe\_haven/infrastructure/programs/declarative\_sre.py                     |       65 |       37 |     43% |    51-434 |
+| data\_safe\_haven/infrastructure/programs/declarative\_sre.py                     |       68 |       40 |     41% |    51-443 |
 | data\_safe\_haven/infrastructure/programs/imperative\_shm.py                      |       78 |       55 |     29% |27-31, 39-172, 188-195 |
 | data\_safe\_haven/infrastructure/programs/sre/\_\_init\_\_.py                     |        0 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/programs/sre/application\_gateway.py             |       25 |        0 |    100% |           |
@@ -87,7 +90,7 @@
 | data\_safe\_haven/infrastructure/programs/sre/monitoring.py                       |       28 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/programs/sre/networking.py                       |      101 |       91 |     10% |37-53, 67-2065 |
 | data\_safe\_haven/infrastructure/programs/sre/remote\_desktop.py                  |       46 |       34 |     26% |52-92, 117-410 |
-| data\_safe\_haven/infrastructure/programs/sre/software\_repositories.py           |       41 |       29 |     29% |41-55, 69-346 |
+| data\_safe\_haven/infrastructure/programs/sre/software\_repositories.py           |       41 |       29 |     29% |41-55, 69-350 |
 | data\_safe\_haven/infrastructure/programs/sre/user\_services.py                   |       45 |       31 |     31% |51-79, 95-174 |
 | data\_safe\_haven/infrastructure/programs/sre/workspaces.py                       |       52 |       29 |     44% |41-67, 70-76, 90-141 |
 | data\_safe\_haven/infrastructure/project\_manager.py                              |      251 |      127 |     49% |69-83, 87, 140-142, 155-165, 169-182, 194-202, 224-231, 241-243, 247-256, 260-286, 309, 313-318, 328-330, 339-341, 345-358, 362-369, 383-388, 397-405, 409-419, 434-436 |
@@ -104,7 +107,7 @@
 | data\_safe\_haven/singleton.py                                                    |        8 |        0 |    100% |           |
 | data\_safe\_haven/types/\_\_init\_\_.py                                           |        4 |        0 |    100% |           |
 | data\_safe\_haven/types/annotated\_types.py                                       |       21 |        0 |    100% |           |
-| data\_safe\_haven/types/enums.py                                                  |      110 |        0 |    100% |           |
+| data\_safe\_haven/types/enums.py                                                  |      114 |        0 |    100% |           |
 | data\_safe\_haven/types/types.py                                                  |        2 |        0 |    100% |           |
 | data\_safe\_haven/utility/\_\_init\_\_.py                                         |        2 |        0 |    100% |           |
 | data\_safe\_haven/utility/file\_reader.py                                         |       20 |        9 |     55% |16-17, 21, 25-30, 33 |
@@ -112,7 +115,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       24 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       70 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4760** | **2118** | **56%** |           |
+|                                                                         **TOTAL** | **4932** | **2174** | **56%** |           |
 
 
 ## Setup coverage badge
