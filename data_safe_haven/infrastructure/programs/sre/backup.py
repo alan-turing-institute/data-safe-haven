@@ -4,8 +4,8 @@ from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 
-from data_safe_haven.infrastructure.components import LinuxVMComponentProps, VMComponent
 from data_safe_haven.functions import b64encode, replace_separators
+from data_safe_haven.infrastructure.components import LinuxVMComponentProps, VMComponent
 
 
 class SREBackupProps:
@@ -17,7 +17,7 @@ class SREBackupProps:
         resource_group_name: Input[str],
         storage_account_data_private_sensitive_id: Input[str],
         storage_account_data_private_sensitive_name: Input[str],
-        subnet_backup_name: Input[str]
+        subnet_backup_name: Input[str],
     ) -> None:
         self.location = location
         self.resource_group_name = resource_group_name
@@ -69,9 +69,9 @@ class SREBackupComponent(ComponentResource):
                 subnet_name=props.subnet_backup_name,
                 virtual_network_name=props.virtual_network_name,
                 virtual_network_resource_group_name=props.resource_group_name,
-                vm_name=Output.concat(
-                    stack_name, "-vm-backup"
-                ).apply(lambda s: replace_separators(s, "-")),
+                vm_name=Output.concat(stack_name, "-vm-backup").apply(
+                    lambda s: replace_separators(s, "-")
+                ),
                 vm_size="Standard_B2s_v2",
             ),
             opts=child_opts,
