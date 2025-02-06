@@ -3,8 +3,13 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
+from pulumi_azure_native import network
 
 from data_safe_haven.functions import b64encode, replace_separators
+from data_safe_haven.infrastructure.common import (
+    get_name_from_subnet,
+    get_name_from_vnet,
+)
 from data_safe_haven.infrastructure.components import LinuxVMComponentProps, VMComponent
 
 
@@ -13,21 +18,41 @@ class SREBackupProps:
 
     def __init__(
         self,
+        admin_password: Input[str],
+        admin_username: Input[str],
+        apt_proxy_server_hostname: Input[str],
+        data_collection_rule_id: Input[str],
+        data_collection_endpoint_id: Input[str],
         location: Input[str],
+        maintenance_configuration_id: Input[str],
         resource_group_name: Input[str],
-        storage_account_data_private_sensitive_id: Input[str],
         storage_account_data_private_sensitive_name: Input[str],
-        subnet_backup_name: Input[str],
+        storage_account_data_private_user_name: Input[str],
+        storage_account_desired_state_name: Input[str],
+        subnet_backup: Input[network.GetSubnetResult],
+        virtual_network: Input[network.VirtualNetwork],
     ) -> None:
+        self.admin_password = admin_password
+        self.admin_username = admin_username
+        self.apt_proxy_server_hostname = apt_proxy_server_hostname
+        self.data_collection_rule_id = data_collection_rule_id
+        self.data_collection_endpoint_id = data_collection_endpoint_id
         self.location = location
+        self.maintenance_configuration_id = maintenance_configuration_id
         self.resource_group_name = resource_group_name
-        self.storage_account_data_private_sensitive_id = (
-            storage_account_data_private_sensitive_id
-        )
         self.storage_account_data_private_sensitive_name = (
             storage_account_data_private_sensitive_name
         )
-        self.subnet_backup_name = subnet_backup_name
+        self.storage_account_data_private_user_name = (
+            storage_account_data_private_user_name
+        )
+        self.storage_account_desired_state_name = storage_account_desired_state_name
+        self.subnet_backup_name = Output.from_input(subnet_backup).apply(
+            get_name_from_subnet
+        )
+        self.virtual_network_name = Output.from_input(virtual_network).apply(
+            get_name_from_vnet
+        )
 
 
 class SREBackupComponent(ComponentResource):
