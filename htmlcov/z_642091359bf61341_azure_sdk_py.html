@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_642091359bf61341_credentials_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2025-02-03 12:57 +0000
+            created at 2025-02-06 14:02 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -1105,7 +1105,7 @@
     <p class="pln"><span class="n"><a id="t1023" href="#t1023">1023</a></span><span class="t">                    <span class="nam">location</span><span class="op">=</span><span class="nam">location</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1024" href="#t1024">1024</a></span><span class="t">                <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t1025" href="#t1025">1025</a></span><span class="t">            <span class="key">except</span> <span class="nam">HttpResponseError</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t1026" href="#t1026">1026</a></span><span class="t">                <span class="nam">self</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">info</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t1026" href="#t1026">1026</a></span><span class="t">                <span class="nam">self</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">debug</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1027" href="#t1027">1027</a></span><span class="t">                    <span class="fst">f"</span><span class="fst">Key Vault [green]</span><span class="op">{</span><span class="nam">key_vault_name</span><span class="op">}</span><span class="fst">[/] does not need to be purged.</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1028" href="#t1028">1028</a></span><span class="t">                <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t1029" href="#t1029">1029</a></span><span class="t">                <span class="key">return</span> <span class="key">False</span>&nbsp;</span><span class="r"></span></p>
@@ -1132,7 +1132,7 @@
     <p class="pln"><span class="n"><a id="t1050" href="#t1050">1050</a></span><span class="t">                <span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t1051" href="#t1051">1051</a></span><span class="t">                    <span class="nam">msg</span> <span class="op">=</span> <span class="fst">f"</span><span class="fst">Key Vault '</span><span class="op">{</span><span class="nam">key_vault_name</span><span class="op">}</span><span class="fst">' exists in deleted state.</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t1052" href="#t1052">1052</a></span><span class="t">                    <span class="key">raise</span> <span class="nam">AzureError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t1053" href="#t1053">1053</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">info</span><span class="op">(</span><span class="fst">f"</span><span class="fst">Purged Key Vault [green]</span><span class="op">{</span><span class="nam">key_vault_name</span><span class="op">}</span><span class="fst">[/].</span><span class="fst">"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t1053" href="#t1053">1053</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">debug</span><span class="op">(</span><span class="fst">f"</span><span class="fst">Purged Key Vault [green]</span><span class="op">{</span><span class="nam">key_vault_name</span><span class="op">}</span><span class="fst">[/].</span><span class="fst">"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t1054" href="#t1054">1054</a></span><span class="t">            <span class="key">return</span> <span class="key">True</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t1055" href="#t1055">1055</a></span><span class="t">        <span class="key">except</span> <span class="nam">AzureError</span> <span class="key">as</span> <span class="nam">exc</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t1056" href="#t1056">1056</a></span><span class="t">            <span class="nam">msg</span> <span class="op">=</span> <span class="fst">f"</span><span class="fst">Failed to remove Key Vault '</span><span class="op">{</span><span class="nam">key_vault_name</span><span class="op">}</span><span class="fst">'.</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
@@ -1200,7 +1200,7 @@
     <p class="pln"><span class="n"><a id="t1118" href="#t1118">1118</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1119" href="#t1119">1119</a></span><span class="t">            <span class="com"># Remove the requested blob</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t1120" href="#t1120">1120</a></span><span class="t">            <span class="nam">blob_client</span><span class="op">.</span><span class="nam">delete_blob</span><span class="op">(</span><span class="nam">delete_snapshots</span><span class="op">=</span><span class="str">"include"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t1121" href="#t1121">1121</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">info</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t1121" href="#t1121">1121</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">debug</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1122" href="#t1122">1122</a></span><span class="t">                <span class="fst">f"</span><span class="fst">Removed file [green]</span><span class="op">{</span><span class="nam">blob_name</span><span class="op">}</span><span class="fst">[/] from blob storage.</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1123" href="#t1123">1123</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t1124" href="#t1124">1124</a></span><span class="t">        <span class="key">except</span> <span class="op">(</span><span class="nam">AzureError</span><span class="op">,</span> <span class="nam">DataSafeHavenAzureStorageError</span><span class="op">)</span> <span class="key">as</span> <span class="nam">exc</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -1620,7 +1620,7 @@
             <a class="nav" href="z_642091359bf61341_credentials_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2025-02-03 12:57 +0000
+            created at 2025-02-06 14:02 +0000
         </p>
     </div>
 </footer>
