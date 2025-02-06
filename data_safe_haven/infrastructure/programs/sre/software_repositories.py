@@ -124,36 +124,38 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         )
 
         # Upload Nexus allowlists
-        cran_reader = FileReader(
-            resources_path / "software_repositories" / "allowlists" / "cran.allowlist"
-        )
-        FileShareFile(
+        cran_allowlist = FileShareFile(
             f"{self._name}_file_share_cran_allowlist",
             FileShareFileProps(
-                destination_path=cran_reader.name,
+                destination_path="cran.allowlist",
                 share_name=file_share_nexus_allowlists.name,
-                file_contents=cran_reader.file_contents(),
+                file_contents="",
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
             ),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=file_share_nexus)
+                child_opts,
+                ResourceOptions(
+                    parent=file_share_nexus_allowlists,
+                    ignore_changes=["file_contents"],
+                ),
             ),
         )
-        pypi_reader = FileReader(
-            resources_path / "software_repositories" / "allowlists" / "pypi.allowlist"
-        )
-        FileShareFile(
+        pypi_allowlist = FileShareFile(
             f"{self._name}_file_share_pypi_allowlist",
             FileShareFileProps(
-                destination_path=pypi_reader.name,
+                destination_path="pypi.allowlist",
                 share_name=file_share_nexus_allowlists.name,
-                file_contents=pypi_reader.file_contents(),
+                file_contents="",
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
             ),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=file_share_nexus)
+                child_opts,
+                ResourceOptions(
+                    parent=file_share_nexus_allowlists,
+                    ignore_changes=["file_contents"],
+                ),
             ),
         )
 
@@ -164,7 +166,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 container_group_name=f"{stack_name}-container-group-software-repositories",
                 containers=[
                     containerinstance.ContainerArgs(
-                        image="caddy:2.8.4",
+                        image="caddy:2.9.1",
                         name="caddy"[:63],
                         ports=[
                             containerinstance.ContainerPortArgs(
@@ -187,7 +189,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         ],
                     ),
                     containerinstance.ContainerArgs(
-                        image="sonatype/nexus3:3.71.0",
+                        image="sonatype/nexus3:3.76.1",
                         name="nexus"[:63],
                         environment_variables=[],
                         ports=[],
@@ -206,7 +208,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         ],
                     ),
                     containerinstance.ContainerArgs(
-                        image="ghcr.io/alan-turing-institute/nexus-allowlist:v0.10.0",
+                        image="ghcr.io/alan-turing-institute/nexus-allowlist:v0.11.0",
                         name="nexus-allowlist"[:63],
                         environment_variables=[
                             containerinstance.EnvironmentVariableArgs(
@@ -344,3 +346,8 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
 
         # Register outputs
         self.hostname = hostname
+        self.allowlist_file_share_name = file_share_nexus_allowlists.name
+        self.allowlist_file_names = {
+            "cran": cran_allowlist.destination_path,
+            "pypi": pypi_allowlist.destination_path,
+        }

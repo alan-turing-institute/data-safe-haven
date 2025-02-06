@@ -14,6 +14,7 @@ from .annotated_types import (
     UniqueList,
 )
 from .enums import (
+    AllowlistRepository,
     AzureDnsZoneNames,
     AzureSdkCredentialScope,
     AzureServiceTag,
@@ -31,6 +32,7 @@ from .enums import (
 from .types import PathType
 
 __all__ = [
+    "AllowlistRepository",
     "AzureDnsZoneNames",
     "AzureLocation",
     "AzurePremiumFileShareSize",

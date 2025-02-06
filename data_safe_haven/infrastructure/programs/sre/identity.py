@@ -89,7 +89,7 @@ class SREIdentityComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-identity",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/apricot:0.0.7",
+                    image="ghcr.io/alan-turing-institute/apricot:0.1.1",
                     name="apricot",
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
@@ -142,7 +142,7 @@ class SREIdentityComponent(ComponentResource):
                     volume_mounts=[],
                 ),
                 containerinstance.ContainerArgs(
-                    image="redis:7.4.0",
+                    image="redis:7.4.2",
                     name="redis",
                     environment_variables=[],
                     ports=[

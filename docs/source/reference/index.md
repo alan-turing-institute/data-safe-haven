@@ -3,6 +3,7 @@
 :::{toctree}
 :hidden:
 
+allowlist.md
 config.md
 context.md
 users.md
@@ -24,6 +25,9 @@ All commands begin with `dsh`.
 
 The subcommands can be used to manage various aspects of a Data Safe Haven deployment.
 For further detail on each subcommand, navigate to the relevant page.
+
+[Allowlist](allowlist.md)
+: Management of the package allowlists for Tier 3 SREs
 
 [Config](config.md)
 : Management of the configuration files used to define SHMs and SREs

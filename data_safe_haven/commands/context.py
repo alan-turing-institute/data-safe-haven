@@ -61,7 +61,7 @@ def available() -> None:
 
 @context_command_group.command()
 def switch(
-    name: Annotated[str, typer.Argument(help="Name of the context to switch to.")]
+    name: Annotated[str, typer.Argument(help="Name of the context to switch to.")],
 ) -> None:
     """Switch the currently selected context."""
     logger = get_logger()

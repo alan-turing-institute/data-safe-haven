@@ -1,0 +1,35 @@
+---
+name: Upload to PyPI
+
+# Run workflow on pushes to matching branches
+on:  # yamllint disable-line rule:truthy
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  build-and-publish-to-pypi:
+    name: Build distribution and publish to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/data-safe-haven/
+    permissions:
+      id-token: write  # needed for trusted publishing
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Install hatch
+        run: pip install hatch
+
+      - name: Build with hatch
+        run: hatch build
+
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

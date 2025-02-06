@@ -84,6 +84,9 @@ class DshResourceProvider(ResourceProvider, metaclass=ABCMeta):
 
         Returns:
             CreateResult: a unique ID for this object plus a set of output properties
+
+        Raises:
+            An appropriate DataSafeHavenError if the resource could not be created
         """
 
     @abstractmethod
@@ -94,6 +97,9 @@ class DshResourceProvider(ResourceProvider, metaclass=ABCMeta):
         Args:
             id_: the ID of the resource
             old_props: the outputs from the last create operation
+
+        Raises:
+            An appropriate DataSafeHavenError if the resource could not be deleted
         """
 
     @abstractmethod

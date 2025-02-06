@@ -34,7 +34,7 @@ def show_shm(
     file: Annotated[
         Optional[Path],  # noqa: UP007
         typer.Option(help="File path to write configuration template to."),
-    ] = None
+    ] = None,
 ) -> None:
     """Print the SHM configuration for the selected Data Safe Haven context"""
     logger = get_logger()

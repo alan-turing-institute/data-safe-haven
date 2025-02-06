@@ -436,8 +436,17 @@ class DeclarativeSRE:
         )
 
         # Export values for later use
+        pulumi.export(
+            "allowlist_share_name",
+            user_services.software_repositories.allowlist_file_share_name,
+        )
+        pulumi.export(
+            "allowlist_share_filenames",
+            user_services.software_repositories.allowlist_file_names,
+        )
         pulumi.export("data", data.exports)
         pulumi.export("ldap", ldap_group_names)
         pulumi.export("remote_desktop", remote_desktop.exports)
         pulumi.export("sre_fqdn", networking.sre_fqdn)
+        pulumi.export("sre_resource_group", resource_group.name)
         pulumi.export("workspaces", workspaces.exports)

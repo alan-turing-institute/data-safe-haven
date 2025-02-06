@@ -141,7 +141,7 @@ class SREHedgeDocServerComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-hedgedoc",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="caddy:2.8.4",
+                    image="caddy:2.9.1",
                     name="caddy"[:63],
                     ports=[
                         containerinstance.ContainerPortArgs(
@@ -164,7 +164,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                     ],
                 ),
                 containerinstance.ContainerArgs(
-                    image="quay.io/hedgedoc/hedgedoc:1.9.9",
+                    image="quay.io/hedgedoc/hedgedoc:1.10.1",
                     name="hedgedoc"[:63],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(

@@ -146,7 +146,7 @@ class SREDesiredStateComponent(ComponentResource):
                 file_path.name,
                 str(file_path.relative_to(desired_state_directory)),
             )
-            for file_path in sorted(desired_state_directory.rglob("*"))
+            for file_path in sorted(desired_state_directory.rglob("*[!.pyc]"))
             if file_path.is_file() and not file_path.name.startswith(".")
         ]
         # Upload file assets to desired state container

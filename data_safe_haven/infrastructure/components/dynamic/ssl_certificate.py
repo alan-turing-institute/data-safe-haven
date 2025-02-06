@@ -2,7 +2,8 @@
 
 import time
 from contextlib import suppress
-from typing import Any
+from datetime import UTC, datetime, timedelta
+from typing import Any, override
 
 from acme.errors import ValidationError
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
@@ -15,6 +16,7 @@ from cryptography.x509 import load_pem_x509_certificate
 from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource
 from simple_acme_dns import ACMEClient
+from simple_acme_dns.errors import InvalidKeyType
 
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenSSLError
 from data_safe_haven.external import AzureSdk
@@ -43,8 +45,8 @@ class SSLCertificateProps:
 
 
 class SSLCertificateProvider(DshResourceProvider):
+    @override
     def create(self, props: dict[str, Any]) -> CreateResult:
-        """Create new SSL certificate."""
         outs = dict(**props)
         try:
             client = ACMEClient(
@@ -60,8 +62,8 @@ class SSLCertificateProvider(DshResourceProvider):
             private_key_bytes = client.generate_private_key(key_type="rsa2048")
             client.generate_csr()
             # Request DNS verification tokens and add them to the DNS record
-            azure_sdk = AzureSdk(props["subscription_name"], disable_logging=True)
             verification_tokens = client.request_verification_tokens().items()
+            azure_sdk = AzureSdk(props["subscription_name"], disable_logging=True)
             for record_name, record_values in verification_tokens:
                 record_set = azure_sdk.ensure_dns_txt_record(
                     record_name=record_name.replace(f".{props['domain_name']}", ""),
@@ -96,7 +98,7 @@ class SSLCertificateProvider(DshResourceProvider):
             private_key = load_pem_private_key(private_key_bytes, None)
             if not isinstance(private_key, RSAPrivateKey):
                 msg = f"Private key is of type {type(private_key)} not RSAPrivateKey."
-                raise TypeError(msg)
+                raise DataSafeHavenSSLError(msg)
             all_certs = [
                 load_pem_x509_certificate(data)
                 for data in certificate_bytes.split(b"\n\n")
@@ -118,8 +120,16 @@ class SSLCertificateProvider(DshResourceProvider):
                 certificate_contents=pfx_bytes,
                 key_vault_name=props["key_vault_name"],
             )
-            outs["secret_id"] = kvcert.secret_id
-        except Exception as exc:
+            # Failures here will raise an exception that will be caught below
+            outs["expiry_date"] = kvcert.properties.expires_on.isoformat()
+            outs["secret_id"] = "/".join(kvcert.secret_id.split("/")[:-1])
+        except (
+            AttributeError,
+            DataSafeHavenAzureError,
+            IndexError,
+            InvalidKeyType,
+            StopIteration,
+        ) as exc:
             cert_name = f"[green]{props['certificate_secret_name']}[/]"
             domain_name = f"[green]{props['domain_name']}[/]"
             msg = f"Failed to create SSL certificate {cert_name} for {domain_name}."
@@ -129,8 +139,8 @@ class SSLCertificateProvider(DshResourceProvider):
             outs=outs,
         )
 
+    @override
     def delete(self, id_: str, props: dict[str, Any]) -> None:
-        """Delete an SSL certificate."""
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
         try:
@@ -146,43 +156,51 @@ class SSLCertificateProvider(DshResourceProvider):
                 certificate_name=props["certificate_secret_name"],
                 key_vault_name=props["key_vault_name"],
             )
-        except Exception as exc:
+        except DataSafeHavenAzureError as exc:
             cert_name = f"[green]{props['certificate_secret_name']}[/]"
             domain_name = f"[green]{props['domain_name']}[/]"
             msg = f"Failed to delete SSL certificate {cert_name} for {domain_name}."
             raise DataSafeHavenSSLError(msg) from exc
 
+    @override
     def diff(
         self,
         id_: str,
         old_props: dict[str, Any],
         new_props: dict[str, Any],
     ) -> DiffResult:
-        """Calculate diff between old and new state"""
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
-        return self.partial_diff(old_props, new_props, [])
+        partial = self.partial_diff(old_props, new_props, [])
+        expiry_date = datetime.fromisoformat(
+            old_props.get("expiry_date", "0001-01-01T00:00:00+00:00")
+        )
+        needs_renewal = datetime.now(UTC) + timedelta(days=30) > expiry_date
+        return DiffResult(
+            changes=partial.changes or needs_renewal,
+            replaces=partial.replaces,
+            stables=partial.stables,
+            delete_before_replace=True,
+        )
 
+    @override
     def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
-        try:
-            outs = dict(**props)
-            with suppress(DataSafeHavenAzureError, KeyError):
-                azure_sdk = AzureSdk(outs["subscription_name"], disable_logging=True)
-                certificate = azure_sdk.get_keyvault_certificate(
-                    outs["certificate_secret_name"], outs["key_vault_name"]
-                )
-                if certificate.secret_id:
-                    outs["secret_id"] = certificate.secret_id
-            return outs
-        except Exception as exc:
-            cert_name = f"[green]{props['certificate_secret_name']}[/]"
-            domain_name = f"[green]{props['domain_name']}[/]"
-            msg = f"Failed to refresh SSL certificate {cert_name} for {domain_name}."
-            raise DataSafeHavenSSLError(msg) from exc
+        outs = dict(**props)
+        with suppress(DataSafeHavenAzureError, KeyError):
+            azure_sdk = AzureSdk(outs["subscription_name"], disable_logging=True)
+            kvcert = azure_sdk.get_keyvault_certificate(
+                outs["certificate_secret_name"], outs["key_vault_name"]
+            )
+            if kvcert.secret_id:
+                outs["secret_id"] = kvcert.secret_id
+            if kvcert.properties and kvcert.properties.expires_on:
+                outs["expiry_date"] = kvcert.properties.expires_on.isoformat()
+        return outs
 
 
 class SSLCertificate(Resource):
     _resource_type_name = "dsh:common:SSLCertificate"  # set resource type
+    expiry_date: Output[str]
     secret_id: Output[str]
 
     def __init__(
@@ -194,6 +212,6 @@ class SSLCertificate(Resource):
         super().__init__(
             SSLCertificateProvider(),
             name,
-            {"secret_id": None, **vars(props)},
+            {"expiry_date": None, "secret_id": None, **vars(props)},
             opts,
         )

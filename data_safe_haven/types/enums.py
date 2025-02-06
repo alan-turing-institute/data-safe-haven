@@ -212,3 +212,11 @@ class SoftwarePackageCategory(str, Enum):
     ANY = "any"
     PRE_APPROVED = "pre-approved"
     NONE = "none"
+
+
+@verify(UNIQUE)
+class AllowlistRepository(str, Enum):
+    """Repositories for which allowlists are maintained."""
+
+    CRAN = "cran"
+    PYPI = "pypi"

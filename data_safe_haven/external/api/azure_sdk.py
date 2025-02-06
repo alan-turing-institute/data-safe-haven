@@ -46,8 +46,8 @@ from azure.mgmt.resource.resources.v2021_04_01 import ResourceManagementClient
 from azure.mgmt.resource.resources.v2021_04_01.models import ResourceGroup
 from azure.mgmt.resource.subscriptions import SubscriptionClient
 from azure.mgmt.resource.subscriptions.models import Location, Subscription
-from azure.mgmt.storage.v2021_08_01 import StorageManagementClient
-from azure.mgmt.storage.v2021_08_01.models import (
+from azure.mgmt.storage.v2023_05_01 import StorageManagementClient
+from azure.mgmt.storage.v2023_05_01.models import (
     BlobContainer,
     Kind as StorageAccountKind,
     MinimumTlsVersion,
@@ -60,6 +60,7 @@ from azure.mgmt.storage.v2021_08_01.models import (
 )
 from azure.storage.blob import BlobClient, BlobServiceClient
 from azure.storage.filedatalake import DataLakeServiceClient
+from azure.storage.fileshare import ShareClient, ShareServiceClient
 
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
@@ -159,6 +160,113 @@ class AzureSdk:
         response = "exists" if exists else "does not exist"
         self.logger.debug(
             f"File [green]{blob_name}[/] {response} in blob storage.",
+        )
+        return exists
+
+    def list_shares(
+        self,
+        resource_group_name: str,
+        storage_account_name: str,
+    ) -> list[str]:
+        """List all shares in a container
+
+        Returns:
+            List[str]: The list of share names
+        """
+
+        share_client = self.share_service_client(
+            resource_group_name=resource_group_name,
+            storage_account_name=storage_account_name,
+        )
+        share_list = share_client.list_shares()
+        return list(share_list)
+
+    def share_client(
+        self, resource_group_name: str, storage_account_name: str, file_share_name: str
+    ) -> ShareClient:
+
+        share_service_client = self.share_service_client(
+            resource_group_name, storage_account_name
+        )
+        share_client = share_service_client.get_share_client(share=file_share_name)
+        return share_client
+
+    def share_service_client(
+        self, resource_group_name: str, storage_account_name: str
+    ) -> ShareServiceClient:
+        storage_account_keys = self.get_storage_account_keys(
+            resource_group_name, storage_account_name
+        )
+
+        share_service_client = ShareServiceClient(
+            account_url=f"https://{storage_account_name}.file.core.windows.net",
+            credential=storage_account_keys[0].value,
+        )
+        return share_service_client
+
+    def download_share_file(
+        self,
+        file_name: str,
+        resource_group_name: str,
+        storage_account_name: str,
+        file_share_name: str,
+    ) -> str:
+        """Download a share file from Azure storage
+
+        Returns:
+            str: The contents of the share
+
+        Raises:
+            DataSafeHavenAzureError if the share could not be downloaded
+        """
+        try:
+            # Get the share client
+            share_client = self.share_client(
+                resource_group_name,
+                storage_account_name,
+                file_share_name,
+            )
+            share_file_client = share_client.get_file_client(file_name)
+            # Download the requested file
+            share_content = share_file_client.download_file(encoding="utf-8").readall()
+            self.logger.debug(
+                f"Downloaded file [green]{file_name}[/] from share storage.",
+            )
+            return str(share_content)
+        except (AzureError, DataSafeHavenAzureStorageError) as exc:
+            msg = f"Share file '{file_name}' could not be downloaded from '{storage_account_name}'."
+            raise DataSafeHavenAzureError(msg) from exc
+
+    def file_share_exists(
+        self,
+        file_name: str,
+        resource_group_name: str,
+        storage_account_name: str,
+        storage_share_name: str,
+    ) -> bool:
+        """Find out whether a file share exists in Azure storage
+
+        Returns:
+            bool: Whether or not the file share exists
+        """
+
+        if not self.storage_exists(storage_account_name):
+            msg = f"Storage account '{storage_account_name}' could not be found."
+            raise DataSafeHavenAzureStorageError(msg)
+
+        try:
+            share_client = self.share_client(
+                resource_group_name,
+                storage_account_name,
+                storage_share_name,
+            )
+            share_file_client = share_client.get_file_client(file_name)
+            exists = bool(share_file_client.exists())
+        except DataSafeHavenAzureStorageError:
+            exists = False
+        response = "exists" if exists else "does not exist"
+        self.logger.debug(
+            f"File [green]{file_name}[/] {response} in file share.",
         )
         return exists
 
@@ -641,10 +749,10 @@ class AzureSdk:
         """Read a certificate from the KeyVault
 
         Returns:
-            KeyVaultCertificate: The certificate
+            The KeyVaultCertificate
 
         Raises:
-            DataSafeHavenAzureError if the secret could not be read
+            DataSafeHavenAzureError if the certificate could not be read
         """
         # Connect to Azure clients
         certificate_client = CertificateClient(
@@ -827,7 +935,9 @@ class AzureSdk:
                     )
                     break
                 except ResourceExistsError:
-                    # Purge any existing deleted certificate with the same name
+                    # Delete any certificate with the same name
+                    self.remove_keyvault_certificate(certificate_name, key_vault_name)
+                    # Purge any existing deleted certificate
                     self.purge_keyvault_certificate(certificate_name, key_vault_name)
             self.logger.info(
                 f"Imported certificate [green]{certificate_name}[/].",
@@ -913,7 +1023,7 @@ class AzureSdk:
                     location=location,
                 )
             except HttpResponseError:
-                self.logger.info(
+                self.logger.debug(
                     f"Key Vault [green]{key_vault_name}[/] does not need to be purged."
                 )
                 return False
@@ -940,7 +1050,7 @@ class AzureSdk:
                 ):
                     msg = f"Key Vault '{key_vault_name}' exists in deleted state."
                     raise AzureError(msg)
-            self.logger.info(f"Purged Key Vault [green]{key_vault_name}[/].")
+            self.logger.debug(f"Purged Key Vault [green]{key_vault_name}[/].")
             return True
         except AzureError as exc:
             msg = f"Failed to remove Key Vault '{key_vault_name}'."
@@ -1008,7 +1118,7 @@ class AzureSdk:
             )
             # Remove the requested blob
             blob_client.delete_blob(delete_snapshots="include")
-            self.logger.info(
+            self.logger.debug(
                 f"Removed file [green]{blob_name}[/] from blob storage.",
             )
         except (AzureError, DataSafeHavenAzureStorageError) as exc:
@@ -1094,8 +1204,8 @@ class AzureSdk:
             self.logger.debug(
                 f"Waiting for deletion to complete for certificate [green]{certificate_name}[/]..."
             )
-            while True:
-                # Keep polling until deleted certificate is available
+            # Keep polling until deleted certificate is available or 2 minutes have elapsed
+            for _ in range(12):
                 with suppress(ResourceNotFoundError):
                     if certificate_client.get_deleted_certificate(certificate_name):
                         break
@@ -1381,4 +1491,41 @@ class AzureSdk:
             )
         except (AzureError, DataSafeHavenAzureStorageError) as exc:
             msg = f"Blob file '{blob_name}' could not be uploaded to '{storage_account_name}'."
+            raise DataSafeHavenAzureError(msg) from exc
+
+    def upload_file_share(
+        self,
+        file_data: str,
+        file_name: str,
+        resource_group_name: str,
+        storage_account_name: str,
+        file_share_name: str,
+    ) -> None:
+        """Upload a file to Azure file share
+
+        Returns:
+            None
+
+        Raises:
+            DataSafeHavenAzureError if the file could not be uploaded
+        """
+        try:
+            # Get the share client
+            share_client = self.share_client(
+                resource_group_name,
+                storage_account_name,
+                file_share_name,
+            )
+            share_file_client = share_client.get_file_client(file_name)
+            # Upload the created file
+            share_file_client.upload_file(
+                file_data,
+            )
+            self.logger.debug(
+                f"Uploaded file [green]{file_name}[/] to file share.",
+            )
+        except (AzureError, DataSafeHavenAzureStorageError) as exc:
+            msg = (
+                f"File '{file_name}' could not be uploaded to '{storage_account_name}'."
+            )
             raise DataSafeHavenAzureError(msg) from exc

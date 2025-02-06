@@ -191,7 +191,7 @@ class SREGiteaServerComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-gitea",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="caddy:2.8.4",
+                    image="caddy:2.9.1",
                     name="caddy"[:63],
                     ports=[
                         containerinstance.ContainerPortArgs(
@@ -214,7 +214,7 @@ class SREGiteaServerComponent(ComponentResource):
                     ],
                 ),
                 containerinstance.ContainerArgs(
-                    image="gitea/gitea:1.22.1",
+                    image="gitea/gitea:1.23.1",
                     name="gitea"[:63],
                     command=["/app/custom/entrypoint.sh"],
                     environment_variables=[

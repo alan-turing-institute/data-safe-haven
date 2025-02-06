@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.26.1"]
 build-backend = "hatchling.build"
 
 [project]
@@ -30,28 +30,28 @@ dependencies = [
   "azure-keyvault-certificates==4.9.0",
   "azure-keyvault-keys==4.10.0",
   "azure-keyvault-secrets==4.9.0",
-  "azure-mgmt-compute==33.1.0",
+  "azure-mgmt-compute==34.0.0",
   "azure-mgmt-containerinstance==10.1.0",
   "azure-mgmt-dns==8.2.0",
   "azure-mgmt-keyvault==10.3.1",
   "azure-mgmt-msi==7.0.0",
   "azure-mgmt-rdbms==10.1.0",
   "azure-mgmt-resource==23.2.0",
-  "azure-mgmt-storage==21.2.1",
-  "azure-storage-blob==12.24.0",
-  "azure-storage-file-datalake==12.18.0",
-  "azure-storage-file-share==12.20.0",
+  "azure-mgmt-storage==22.0.0",
+  "azure-storage-blob==12.24.1",
+  "azure-storage-file-datalake==12.18.1",
+  "azure-storage-file-share==12.20.1",
   "chevron==0.14.0",
   "cryptography==44.0.0",
   "fqdn==1.5.1",
   "psycopg[binary]==3.1.19", # needed for installation on older MacOS versions
-  "pulumi-azure-native==2.82.0",
-  "pulumi-azuread==6.1.0",
+  "pulumi-azure-native==2.85.0",
+  "pulumi-azuread==6.2.0",
   "pulumi-random==4.17.0",
-  "pulumi==3.146.0",
-  "pydantic==2.10.5",
+  "pulumi==3.148.0",
+  "pydantic==2.10.6",
   "pyjwt[crypto]==2.10.1",
-  "pytz==2024.2",
+  "pytz==2025.1",
   "pyyaml==6.0.2",
   "rich==13.9.4",
   "simple-acme-dns==3.2.0",
@@ -74,13 +74,13 @@ docs = [
   "sphinxcontrib-typer==0.5.1",
 ]
 lint = [
-  "ansible-dev-tools==24.12.0",
-  "ansible==11.1.0",
-  "black==24.10.0",
+  "ansible-dev-tools==25.1.0",
+  "ansible==11.2.0",
+  "black==25.1.0",
   "mypy==1.14.1",
   "pandas-stubs==2.2.3.241126",
-  "pydantic==2.10.5",
-  "ruff==0.9.2",
+  "pydantic==2.10.6",
+  "ruff==0.9.4",
   "types-appdirs==1.4.3.5",
   "types-chevron==0.14.2.20250103",
   "types-pytz==2024.2.0.20241221",
@@ -109,6 +109,16 @@ relative_files = true
 omit= [
   "tests/*",
   "data_safe_haven/resources/*",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "data_safe_haven",  # source code
+  "README.md",        # README
+  "CITATION.cff",     # citation
+  "DISCLAIMER.md",    # disclaimer
+  "LICENSE",          # licence
+  "SECURITY.md",      # security information
 ]
 
 [tool.hatch.env]

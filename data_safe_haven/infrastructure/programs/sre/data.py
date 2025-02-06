@@ -815,4 +815,5 @@ class SREDataComponent(ComponentResource):
         self.exports = {
             "key_vault_name": key_vault.name,
             "password_user_database_admin_secret": kvs_password_user_database_admin.name,
+            "storage_account_data_configuration_name": storage_account_data_configuration.name,
         }
