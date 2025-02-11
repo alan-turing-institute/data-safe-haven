@@ -19,7 +19,7 @@
 # - azure-storage-file-datalake==12.18.1
 # - azure-storage-file-share==12.20.1
 # - chevron==0.14.0
-# - cryptography==44.0.1
+# - cryptography==44.0.0
 # - fqdn==1.5.1
 # - psycopg[binary]==3.1.19
 # - pulumi-azure-native==2.86.0
@@ -140,7 +140,7 @@ click==8.1.8
     # via
     #   typer
     #   typer-slim
-cryptography==44.0.1
+cryptography==44.0.0
     # via
     #   hatch.envs.docs
     #   acme
@@ -193,7 +193,7 @@ jinja2==3.1.5
     # via
     #   myst-parser
     #   sphinx
-josepy==1.15.0
+josepy==2.0.0
     # via acme
 markdown-it-py==3.0.0
     # via
@@ -266,9 +266,7 @@ pyjwt==2.10.1
     #   hatch.envs.docs
     #   msal
 pyopenssl==25.0.0
-    # via
-    #   acme
-    #   josepy
+    # via acme
 pyrfc3339==2.0.1
     # via acme
 pytz==2025.1
