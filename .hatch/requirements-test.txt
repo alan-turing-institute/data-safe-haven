@@ -21,7 +21,7 @@
 # - azure-storage-file-datalake==12.18.1
 # - azure-storage-file-share==12.20.1
 # - chevron==0.14.0
-# - cryptography==44.0.0
+# - cryptography==44.0.1
 # - fqdn==1.5.1
 # - psycopg[binary]==3.1.19
 # - pulumi-azure-native==2.86.0
@@ -182,7 +182,7 @@ click==8.1.8
     #   typer
 coverage==7.6.11
     # via hatch.envs.test
-cryptography==44.0.0
+cryptography==44.0.1
     # via
     #   -c .hatch/requirements.txt
     #   hatch.envs.test
