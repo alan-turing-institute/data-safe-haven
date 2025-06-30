@@ -283,7 +283,7 @@ portalocker==2.10.1
     # via
     #   -c .hatch/requirements.txt
     #   msal-extensions
-protobuf==4.25.6
+protobuf==4.25.8
     # via
     #   -c .hatch/requirements.txt
     #   pulumi
