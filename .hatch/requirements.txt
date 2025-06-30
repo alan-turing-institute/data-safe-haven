@@ -230,7 +230,7 @@ pyyaml==6.0.2
     # via
     #   hatch.envs.default
     #   pulumi
-requests==2.32.3
+requests==2.32.4
     # via
     #   acme
     #   azure-core
