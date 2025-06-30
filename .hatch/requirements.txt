@@ -19,6 +19,7 @@
 # - azure-storage-file-datalake==12.18.1
 # - azure-storage-file-share==12.20.1
 # - chevron==0.14.0
+# - click==8.1.8
 # - cryptography==44.0.2
 # - fqdn==1.5.1
 # - psycopg[binary]==3.1.19
@@ -44,7 +45,7 @@ appdirs==1.4.4
     # via hatch.envs.default
 arpeggio==2.0.2
     # via parver
-attrs==25.1.0
+attrs==25.3.0
     # via parver
 azure-common==1.1.28
     # via
@@ -110,18 +111,20 @@ azure-storage-file-datalake==12.18.1
     # via hatch.envs.default
 azure-storage-file-share==12.20.1
     # via hatch.envs.default
-certifi==2025.1.31
+certifi==2025.6.15
     # via
     #   msrest
     #   requests
 cffi==1.17.1
     # via cryptography
-charset-normalizer==3.4.1
+charset-normalizer==3.4.2
     # via requests
 chevron==0.14.0
     # via hatch.envs.default
 click==8.1.8
-    # via typer
+    # via
+    #   hatch.envs.default
+    #   typer
 cryptography==44.0.2
     # via
     #   hatch.envs.default
@@ -134,9 +137,9 @@ cryptography==44.0.2
     #   msal
     #   pyjwt
     #   pyopenssl
-debugpy==1.8.13
+debugpy==1.8.14
     # via pulumi
-dill==0.3.9
+dill==0.4.0
     # via pulumi
 dnspython==2.7.0
     # via simple-acme-dns
@@ -167,26 +170,24 @@ markdown-it-py==3.0.0
     # via rich
 mdurl==0.1.2
     # via markdown-it-py
-msal==1.31.1
+msal==1.32.3
     # via
     #   azure-identity
     #   msal-extensions
-msal-extensions==1.2.0
+msal-extensions==1.3.1
     # via azure-identity
 msrest==0.7.1
     # via
     #   azure-mgmt-msi
     #   azure-mgmt-rdbms
-oauthlib==3.2.2
+oauthlib==3.3.1
     # via requests-oauthlib
 parver==0.5
     # via
     #   pulumi-azure-native
     #   pulumi-azuread
     #   pulumi-random
-portalocker==2.10.1
-    # via msal-extensions
-protobuf==4.25.6
+protobuf==4.25.8
     # via pulumi
 psycopg==3.1.19
     # via hatch.envs.default
@@ -210,13 +211,13 @@ pydantic==2.10.6
     # via hatch.envs.default
 pydantic-core==2.27.2
     # via pydantic
-pygments==2.19.1
+pygments==2.19.2
     # via rich
 pyjwt==2.10.1
     # via
     #   hatch.envs.default
     #   msal
-pyopenssl==25.0.0
+pyopenssl==25.1.0
     # via
     #   acme
     #   josepy
@@ -230,7 +231,7 @@ pyyaml==6.0.2
     # via
     #   hatch.envs.default
     #   pulumi
-requests==2.32.3
+requests==2.32.4
     # via
     #   acme
     #   azure-core
@@ -259,7 +260,7 @@ six==1.17.0
     #   pulumi
 typer==0.15.2
     # via hatch.envs.default
-typing-extensions==4.12.2
+typing-extensions==4.14.0
     # via
     #   azure-core
     #   azure-identity
