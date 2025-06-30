@@ -279,7 +279,7 @@ typing-extensions==4.12.2
     #   pydantic-core
     #   pyopenssl
     #   typer
-urllib3==2.3.0
+urllib3==2.5.0
     # via requests
 validators==0.34.0
     # via simple-acme-dns
