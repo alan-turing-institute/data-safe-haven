@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_f939e3e4befed1f4_apt_proxy_server_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-18 14:28 +0000
+            created at 2025-07-18 14:32 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -86,7 +86,7 @@
     <p class="run"><span class="n"><a id="t4" href="#t4">4</a></span><span class="t"><span class="key">from</span> <span class="nam">typing</span> <span class="key">import</span> <span class="nam">Any</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t5" href="#t5">5</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t6" href="#t6">6</a></span><span class="t"><span class="key">from</span> <span class="nam">pulumi</span> <span class="key">import</span> <span class="nam">ComponentResource</span><span class="op">,</span> <span class="nam">Input</span><span class="op">,</span> <span class="nam">Output</span><span class="op">,</span> <span class="nam">ResourceOptions</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t7" href="#t7">7</a></span><span class="t"><span class="key">from</span> <span class="nam">pulumi_azure_native</span> <span class="key">import</span> <span class="nam">dns</span><span class="op">,</span> <span class="nam">dnsresolver</span><span class="op">,</span> <span class="nam">managedidentity</span><span class="op">,</span> <span class="nam">network</span><span class="op">,</span> <span class="nam">resources</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t7" href="#t7">7</a></span><span class="t"><span class="key">from</span> <span class="nam">pulumi_azure_native</span> <span class="key">import</span> <span class="nam">managedidentity</span><span class="op">,</span> <span class="nam">network</span><span class="op">,</span> <span class="nam">resources</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t8" href="#t8">8</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t9" href="#t9">9</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">infrastructure</span><span class="op">.</span><span class="nam">common</span> <span class="key">import</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t10" href="#t10">10</a></span><span class="t">    <span class="nam">get_available_ips_from_subnet</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -150,7 +150,7 @@
     <p class="pln"><span class="n"><a id="t68" href="#t68">68</a></span><span class="t">            <span class="fst">f"</span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">_name</span><span class="op">}</span><span class="fst">_public_ip</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t69" href="#t69">69</a></span><span class="t">            <span class="nam">location</span><span class="op">=</span><span class="nam">props</span><span class="op">.</span><span class="nam">location</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t70" href="#t70">70</a></span><span class="t">            <span class="nam">public_ip_address_name</span><span class="op">=</span><span class="fst">f"</span><span class="op">{</span><span class="nam">stack_name</span><span class="op">}</span><span class="fst">-public-ip</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t71" href="#t71">71</a></span><span class="t">            <span class="nam">public_ip_allocation_method</span><span class="op">=</span><span class="nam">dnsresolver</span><span class="op">.</span><span class="nam">IpAllocationMethod</span><span class="op">.</span><span class="nam">STATIC</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t71" href="#t71">71</a></span><span class="t">            <span class="nam">public_ip_allocation_method</span><span class="op">=</span><span class="nam">network</span><span class="op">.</span><span class="nam">IpAllocationMethod</span><span class="op">.</span><span class="nam">STATIC</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t72" href="#t72">72</a></span><span class="t">            <span class="nam">resource_group_name</span><span class="op">=</span><span class="nam">props</span><span class="op">.</span><span class="nam">resource_group_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t73" href="#t73">73</a></span><span class="t">            <span class="nam">sku</span><span class="op">=</span><span class="nam">network</span><span class="op">.</span><span class="nam">PublicIPAddressSkuArgs</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t74" href="#t74">74</a></span><span class="t">                <span class="nam">name</span><span class="op">=</span><span class="nam">network</span><span class="op">.</span><span class="nam">PublicIPAddressSkuName</span><span class="op">.</span><span class="nam">STANDARD</span>&nbsp;</span><span class="r"></span></p>
@@ -160,7 +160,7 @@
     <p class="pln"><span class="n"><a id="t78" href="#t78">78</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t79" href="#t79">79</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t80" href="#t80">80</a></span><span class="t">        <span class="com"># Link the public IP address to the SRE domain</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t81" href="#t81">81</a></span><span class="t">        <span class="nam">dns</span><span class="op">.</span><span class="nam">RecordSet</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t81" href="#t81">81</a></span><span class="t">        <span class="nam">network</span><span class="op">.</span><span class="nam">RecordSet</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t82" href="#t82">82</a></span><span class="t">            <span class="fst">f"</span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">_name</span><span class="op">}</span><span class="fst">_a_record</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t83" href="#t83">83</a></span><span class="t">            <span class="nam">a_records</span><span class="op">=</span><span class="nam">public_ip</span><span class="op">.</span><span class="nam">ip_address</span><span class="op">.</span><span class="nam">apply</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t84" href="#t84">84</a></span><span class="t">                <span class="key">lambda</span> <span class="nam">ip</span><span class="op">:</span> <span class="op">[</span><span class="nam">network</span><span class="op">.</span><span class="nam">ARecordArgs</span><span class="op">(</span><span class="nam">ipv4_address</span><span class="op">=</span><span class="nam">ip</span><span class="op">)</span><span class="op">]</span> <span class="key">if</span> <span class="nam">ip</span> <span class="key">else</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
@@ -498,7 +498,7 @@
             <a class="nav" href="z_f939e3e4befed1f4_apt_proxy_server_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-18 14:28 +0000
+            created at 2025-07-18 14:32 +0000
         </p>
     </div>
 </footer>
