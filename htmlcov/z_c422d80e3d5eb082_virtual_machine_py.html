@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_d7e96473665b437b___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-14 13:20 +0000
+            created at 2025-07-18 14:28 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -86,7 +86,7 @@
     <p class="run"><span class="n"><a id="t4" href="#t4">4</a></span><span class="t"><span class="key">from</span> <span class="nam">typing</span> <span class="key">import</span> <span class="nam">Any</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t5" href="#t5">5</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t6" href="#t6">6</a></span><span class="t"><span class="key">from</span> <span class="nam">pulumi</span> <span class="key">import</span> <span class="nam">ComponentResource</span><span class="op">,</span> <span class="nam">Input</span><span class="op">,</span> <span class="nam">Output</span><span class="op">,</span> <span class="nam">ResourceOptions</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t7" href="#t7">7</a></span><span class="t"><span class="key">from</span> <span class="nam">pulumi_azure_native</span> <span class="key">import</span> <span class="nam">compute</span><span class="op">,</span> <span class="nam">insights</span><span class="op">,</span> <span class="nam">maintenance</span><span class="op">,</span> <span class="nam">network</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t7" href="#t7">7</a></span><span class="t"><span class="key">from</span> <span class="nam">pulumi_azure_native</span> <span class="key">import</span> <span class="nam">compute</span><span class="op">,</span> <span class="nam">maintenance</span><span class="op">,</span> <span class="nam">monitor</span><span class="op">,</span> <span class="nam">network</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t8" href="#t8">8</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t9" href="#t9">9</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">functions</span> <span class="key">import</span> <span class="nam">replace_separators</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t10" href="#t10">10</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -331,7 +331,7 @@
     <p class="pln"><span class="n"><a id="t249" href="#t249">249</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t250" href="#t250">250</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t251" href="#t251">251</a></span><span class="t">        <span class="com"># Register with data collection rule</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t252" href="#t252">252</a></span><span class="t">        <span class="nam">insights</span><span class="op">.</span><span class="nam">DataCollectionRuleAssociation</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t252" href="#t252">252</a></span><span class="t">        <span class="nam">monitor</span><span class="op">.</span><span class="nam">DataCollectionRuleAssociation</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t253" href="#t253">253</a></span><span class="t">            <span class="fst">f"</span><span class="op">{</span><span class="nam">name_underscored</span><span class="op">}</span><span class="fst">_dcra_to_dcr</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t254" href="#t254">254</a></span><span class="t">            <span class="nam">association_name</span><span class="op">=</span><span class="nam">Output</span><span class="op">.</span><span class="nam">concat</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t255" href="#t255">255</a></span><span class="t">                <span class="nam">props</span><span class="op">.</span><span class="nam">data_collection_rule_name</span><span class="op">,</span> <span class="str">"-association"</span>  <span class="com"># this name is required</span>&nbsp;</span><span class="r"></span></p>
@@ -345,7 +345,7 @@
     <p class="pln"><span class="n"><a id="t263" href="#t263">263</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t264" href="#t264">264</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t265" href="#t265">265</a></span><span class="t">        <span class="com"># Register with data collection endpoint</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t266" href="#t266">266</a></span><span class="t">        <span class="nam">insights</span><span class="op">.</span><span class="nam">DataCollectionRuleAssociation</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t266" href="#t266">266</a></span><span class="t">        <span class="nam">monitor</span><span class="op">.</span><span class="nam">DataCollectionRuleAssociation</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t267" href="#t267">267</a></span><span class="t">            <span class="fst">f"</span><span class="op">{</span><span class="nam">name_underscored</span><span class="op">}</span><span class="fst">_dcra_to_dce</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t268" href="#t268">268</a></span><span class="t">            <span class="nam">association_name</span><span class="op">=</span><span class="str">"configurationAccessEndpoint"</span><span class="op">,</span>  <span class="com"># this name is required</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t269" href="#t269">269</a></span><span class="t">            <span class="nam">data_collection_endpoint_id</span><span class="op">=</span><span class="nam">props</span><span class="op">.</span><span class="nam">data_collection_endpoint_id</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -374,7 +374,7 @@
             <a class="nav" href="z_d7e96473665b437b___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-14 13:20 +0000
+            created at 2025-07-18 14:28 +0000
         </p>
     </div>
 </footer>
