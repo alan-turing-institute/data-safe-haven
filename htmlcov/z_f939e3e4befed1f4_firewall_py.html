@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_f939e3e4befed1f4_gitea_server_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-18 14:33 +0000
+            created at 2025-07-18 14:38 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -85,7 +85,7 @@
     <p class="run"><span class="n"><a id="t3" href="#t3">3</a></span><span class="t"><span class="key">from</span> <span class="nam">collections</span><span class="op">.</span><span class="nam">abc</span> <span class="key">import</span> <span class="nam">Mapping</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t4" href="#t4">4</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t5" href="#t5">5</a></span><span class="t"><span class="key">from</span> <span class="nam">pulumi</span> <span class="key">import</span> <span class="nam">ComponentResource</span><span class="op">,</span> <span class="nam">Input</span><span class="op">,</span> <span class="nam">Output</span><span class="op">,</span> <span class="nam">ResourceOptions</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t6" href="#t6">6</a></span><span class="t"><span class="key">from</span> <span class="nam">pulumi_azure_native</span> <span class="key">import</span> <span class="nam">insights</span><span class="op">,</span> <span class="nam">network</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t6" href="#t6">6</a></span><span class="t"><span class="key">from</span> <span class="nam">pulumi_azure_native</span> <span class="key">import</span> <span class="nam">monitor</span><span class="op">,</span> <span class="nam">network</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t7" href="#t7">7</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t8" href="#t8">8</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">infrastructure</span><span class="op">.</span><span class="nam">common</span> <span class="key">import</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t9" href="#t9">9</a></span><span class="t">    <span class="nam">get_address_prefixes_from_subnet</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -525,7 +525,7 @@
     <p class="pln"><span class="n"><a id="t443" href="#t443">443</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t444" href="#t444">444</a></span><span class="t">        <span class="com"># Add diagnostic settings for firewall</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t445" href="#t445">445</a></span><span class="t">        <span class="com"># This links the firewall to the log analytics workspace</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t446" href="#t446">446</a></span><span class="t">        <span class="nam">insights</span><span class="op">.</span><span class="nam">DiagnosticSetting</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t446" href="#t446">446</a></span><span class="t">        <span class="nam">monitor</span><span class="op">.</span><span class="nam">DiagnosticSetting</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t447" href="#t447">447</a></span><span class="t">            <span class="fst">f"</span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">_name</span><span class="op">}</span><span class="fst">_firewall_diagnostic_settings</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t448" href="#t448">448</a></span><span class="t">            <span class="nam">name</span><span class="op">=</span><span class="str">"firewall_diagnostic_settings"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t449" href="#t449">449</a></span><span class="t">            <span class="nam">log_analytics_destination_type</span><span class="op">=</span><span class="str">"Dedicated"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -586,7 +586,7 @@
             <a class="nav" href="z_f939e3e4befed1f4_gitea_server_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-18 14:33 +0000
+            created at 2025-07-18 14:38 +0000
         </p>
     </div>
 </footer>

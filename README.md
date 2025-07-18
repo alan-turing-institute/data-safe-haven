@@ -78,11 +78,11 @@
 | data\_safe\_haven/infrastructure/programs/sre/apt\_proxy\_server.py               |       29 |       19 |     34% |34-43, 57-202 |
 | data\_safe\_haven/infrastructure/programs/sre/backup.py                           |       18 |       11 |     39% |19-24, 40-166 |
 | data\_safe\_haven/infrastructure/programs/sre/clamav\_mirror.py                   |       27 |       18 |     33% |33-41, 55-176 |
-| data\_safe\_haven/infrastructure/programs/sre/data.py                             |       87 |       72 |     17% |68-92, 110-815 |
+| data\_safe\_haven/infrastructure/programs/sre/data.py                             |       87 |       72 |     17% |70-94, 112-817 |
 | data\_safe\_haven/infrastructure/programs/sre/database\_servers.py                |       24 |       16 |     33% |28-34, 48-100 |
-| data\_safe\_haven/infrastructure/programs/sre/desired\_state.py                   |       49 |       34 |     31% |66-88, 102-230, 234 |
+| data\_safe\_haven/infrastructure/programs/sre/desired\_state.py                   |       49 |       34 |     31% |67-89, 103-231, 235 |
 | data\_safe\_haven/infrastructure/programs/sre/dns\_server.py                      |       42 |       29 |     31% |38-43, 57-335 |
-| data\_safe\_haven/infrastructure/programs/sre/dns\_sidecar.py                     |       46 |       28 |     39% |67-78, 90-237 |
+| data\_safe\_haven/infrastructure/programs/sre/dns\_sidecar.py                     |       46 |       28 |     39% |67-78, 90-236 |
 | data\_safe\_haven/infrastructure/programs/sre/entra.py                            |       26 |       16 |     38% |27-30, 42-121 |
 | data\_safe\_haven/infrastructure/programs/sre/firewall.py                         |       39 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/programs/sre/gitea\_server.py                    |       48 |       37 |     23% |46-65, 79-394 |
