@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_f084d133d315eacb___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-21 10:23 +0000
+            created at 2025-07-21 14:22 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -87,11 +87,11 @@
     <p class="run"><span class="n"><a id="t5" href="#t5">5</a></span><span class="t"><span class="nam">T</span> <span class="op">=</span> <span class="nam">TypeVar</span><span class="op">(</span><span class="str">"T"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t6" href="#t6">6</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t7" href="#t7">7</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t8" href="#t8">8</a></span><span class="t"><span class="key">class</span> <span class="nam">Singleton</span><span class="op">(</span><span class="nam">type</span><span class="op">,</span> <span class="nam">Generic</span><span class="op">[</span><span class="nam">T</span><span class="op">]</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t8" href="#t8">8</a></span><span class="t"><span class="key">class</span> <span class="nam">Singleton</span><span class="op">(</span><span class="nam">type</span><span class="op">,</span> <span class="nam">Generic</span><span class="op">[</span><span class="nam">T</span><span class="op">]</span><span class="op">)</span><span class="op">:</span>  <span class="com"># noqa: UP046</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t9" href="#t9">9</a></span><span class="t">    <span class="com"># It is not possible to wrap generics in ClassVar (https://github.com/python/mypy/issues/5144)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t10" href="#t10">10</a></span><span class="t">    <span class="nam">_instances</span><span class="op">:</span> <span class="nam">dict</span><span class="op">[</span><span class="str">"Singleton[T]"</span><span class="op">,</span> <span class="nam">T</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span><span class="op">}</span>  <span class="com"># noqa: RUF012</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t11" href="#t11">11</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t12" href="#t12">12</a></span><span class="t">    <span class="key">def</span> <span class="nam">__call__</span><span class="op">(</span><span class="nam">cls</span><span class="op">,</span> <span class="op">*</span><span class="nam">args</span><span class="op">:</span> <span class="nam">Any</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">:</span> <span class="nam">Any</span><span class="op">)</span> <span class="op">-></span> <span class="nam">T</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t12" href="#t12">12</a></span><span class="t">    <span class="key">def</span> <span class="nam">__call__</span><span class="op">(</span><span class="nam">cls</span><span class="op">:</span> <span class="str">"Singleton[T]"</span><span class="op">,</span> <span class="op">*</span><span class="nam">args</span><span class="op">:</span> <span class="nam">Any</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">:</span> <span class="nam">Any</span><span class="op">)</span> <span class="op">-></span> <span class="nam">T</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t13" href="#t13">13</a></span><span class="t">        <span class="key">if</span> <span class="nam">cls</span> <span class="key">not</span> <span class="key">in</span> <span class="nam">cls</span><span class="op">.</span><span class="nam">_instances</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t14" href="#t14">14</a></span><span class="t">            <span class="nam">cls</span><span class="op">.</span><span class="nam">_instances</span><span class="op">[</span><span class="nam">cls</span><span class="op">]</span> <span class="op">=</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">__call__</span><span class="op">(</span><span class="op">*</span><span class="nam">args</span><span class="op">,</span> <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t15" href="#t15">15</a></span><span class="t">        <span class="key">return</span> <span class="nam">cls</span><span class="op">.</span><span class="nam">_instances</span><span class="op">[</span><span class="nam">cls</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
@@ -104,7 +104,7 @@
             <a class="nav" href="z_f084d133d315eacb___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-21 10:23 +0000
+            created at 2025-07-21 14:22 +0000
         </p>
     </div>
 </footer>
