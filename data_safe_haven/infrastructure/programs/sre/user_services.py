@@ -26,6 +26,7 @@ class SREUserServicesProps:
 
     def __init__(
         self,
+        allow_workspace_internet: Input[bool],
         database_service_admin_password: Input[str],
         databases: list[DatabaseSystem],  # this must *not* be passed as an Input[T]
         dns_server_ip: Input[str],
@@ -51,6 +52,7 @@ class SREUserServicesProps:
         subnet_databases: Input[network.GetSubnetResult],
         subnet_software_repositories: Input[network.GetSubnetResult],
     ) -> None:
+        self.allow_workspace_internet = allow_workspace_internet
         self.database_service_admin_password = database_service_admin_password
         self.databases = databases
         self.dns_server_ip = dns_server_ip
@@ -80,9 +82,10 @@ class SREUserServicesProps:
         self.subnet_databases_id = Output.from_input(subnet_databases).apply(
             get_id_from_subnet
         )
-        self.subnet_software_repositories_id = Output.from_input(
-            subnet_software_repositories
-        ).apply(get_id_from_subnet)
+        if not allow_workspace_internet:
+            self.subnet_software_repositories_id = Output.from_input(
+                subnet_software_repositories
+            ).apply(get_id_from_subnet)
 
 
 class SREUserServicesComponent(ComponentResource):
@@ -153,26 +156,27 @@ class SREUserServicesComponent(ComponentResource):
         )
 
         # Deploy software repository servers
-        self.software_repositories = SRESoftwareRepositoriesComponent(
-            "sre_software_repositories",
-            stack_name,
-            SRESoftwareRepositoriesProps(
-                dns_server_ip=props.dns_server_ip,
-                dockerhub_credentials=props.dockerhub_credentials,
-                location=props.location,
-                log_analytics_workspace=props.log_analytics_workspace,
-                nexus_admin_password=props.nexus_admin_password,
-                resource_group_name=props.resource_group_name,
-                sre_fqdn=props.sre_fqdn,
-                software_packages=props.software_packages,
+        if not props.allow_workspace_internet:
+            self.software_repositories = SRESoftwareRepositoriesComponent(
+                "sre_software_repositories",
+                stack_name,
+                SRESoftwareRepositoriesProps(
+                    dns_server_ip=props.dns_server_ip,
+                    dockerhub_credentials=props.dockerhub_credentials,
+                    location=props.location,
+                    log_analytics_workspace=props.log_analytics_workspace,
+                    nexus_admin_password=props.nexus_admin_password,
+                    resource_group_name=props.resource_group_name,
+                    sre_fqdn=props.sre_fqdn,
+                    software_packages=props.software_packages,
                 nexus_persistent_quota_gb=props.nexus_persistent_quota_gb,
-                storage_account_key=props.storage_account_key,
-                storage_account_name=props.storage_account_name,
-                subnet_id=props.subnet_software_repositories_id,
-            ),
-            opts=child_opts,
-            tags=child_tags,
-        )
+                    storage_account_key=props.storage_account_key,
+                    storage_account_name=props.storage_account_name,
+                    subnet_id=props.subnet_software_repositories_id,
+                ),
+                opts=child_opts,
+                tags=child_tags,
+            )
 
         # Deploy whichever database systems are selected
         for database in props.databases:

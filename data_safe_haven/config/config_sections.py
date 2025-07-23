@@ -5,7 +5,7 @@ from __future__ import annotations
 from ipaddress import ip_network
 from itertools import combinations
 
-from pydantic import BaseModel, PositiveInt, field_validator
+from pydantic import BaseModel, PositiveInt, field_validator, model_validator
 
 from data_safe_haven.types import (
     AzureLocation,
@@ -100,3 +100,13 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
             return cls.ensure_non_overlapping(v)
         else:
             return v
+
+    @model_validator(mode="after")
+    def validate_internet_and_packages(self) -> ConfigSectionSRE:
+        if (
+            self.allow_workspace_internet
+            and self.software_packages != SoftwarePackageCategory.ANY
+        ):
+            msg = "When `allow_workspace_internet` is `true`, `software_packages` must be `any`"
+            raise ValueError(msg)
+        return self

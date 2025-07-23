@@ -20,6 +20,7 @@ class SRENetworkingProps:
 
     def __init__(
         self,
+        allow_workspace_internet: Input[bool],
         dns_private_zones: Input[dict[str, network.PrivateZone]],
         dns_server_ip: Input[str],
         dns_virtual_network: Input[network.VirtualNetwork],
@@ -34,6 +35,7 @@ class SRENetworkingProps:
         user_public_ip_ranges: Input[list[str]] | AzureServiceTag,
     ) -> None:
         # Other variables
+        self.allow_workspace_internet = allow_workspace_internet
         self.dns_private_zones = dns_private_zones
         self.dns_virtual_network_id = Output.from_input(dns_virtual_network).apply(
             get_id_from_vnet

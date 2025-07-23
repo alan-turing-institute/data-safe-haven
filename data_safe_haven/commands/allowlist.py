@@ -11,7 +11,7 @@ from data_safe_haven.config import ContextManager, DSHPulumiConfig, SREConfig
 from data_safe_haven.exceptions import DataSafeHavenConfigError, DataSafeHavenError
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.logging import get_logger
-from data_safe_haven.types import AllowlistRepository
+from data_safe_haven.types import AllowlistRepository, SoftwarePackageCategory
 
 allowlist_command_group = typer.Typer()
 
@@ -44,6 +44,18 @@ def show(
         raise typer.Exit(1) from exc
 
     sre_config = SREConfig.from_remote_by_name(context, name)
+
+    if sre_config.sre.software_packages == SoftwarePackageCategory.ANY:
+        logger.info(
+            "No package allowlist is required for this SRE. "
+            "All packages are allowed."
+        )
+        raise typer.Exit()
+    elif sre_config.sre.software_packages == SoftwarePackageCategory.NONE:
+        logger.info(
+            "No package allowlist is required for this SRE. No packages are allowed."
+        )
+        raise typer.Exit()
 
     # Load Pulumi config
     pulumi_config = DSHPulumiConfig.from_remote(context)
@@ -136,6 +148,17 @@ def upload(
         raise typer.Exit(1)
     sre_config = SREConfig.from_remote_by_name(context, name)
 
+    if sre_config.sre.software_packages == "ANY":
+        logger.info(
+            "No package allowlist is required for this SRE. "
+            "All packages are allowed."
+        )
+        raise typer.Exit()
+    elif sre_config.sre.software_packages == "NONE":
+        logger.info(
+            "No package allowlist is required for this SRE. No packages are allowed."
+        )
+        raise typer.Exit()
     # Load Pulumi config
     pulumi_config = DSHPulumiConfig.from_remote(context)
 

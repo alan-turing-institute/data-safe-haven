@@ -45,6 +45,7 @@
     - name: Configure package proxies
       ansible.builtin.import_tasks: tasks/package_proxy.yaml
       tags: package_proxies
+      when: not allow_workspace_internet | bool
 
     - name: Configure scratchpad
       ansible.builtin.import_tasks: tasks/scratchpad.yaml

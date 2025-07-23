@@ -2,6 +2,7 @@ from pytest import fixture, mark
 
 from data_safe_haven.allowlist import Allowlist
 from data_safe_haven.commands.allowlist import allowlist_command_group
+from data_safe_haven.config import SREConfig
 from data_safe_haven.external import AzureSdk
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.types import AllowlistRepository
@@ -63,6 +64,30 @@ class TestShowAllowlist:
         )
         assert result.exit_code == 0
         assert "tidyverse\ndplyr\nnumpy" in result.output
+
+    def test_show_no_repositories(
+        self,
+        mocker,
+        runner,
+        mock_azuresdk_get_credential,  # noqa: ARG002
+        mock_azuresdk_get_subscription,  # noqa: ARG002
+        # mock_sre_config_from_remote,
+        sre_config_any_packages,
+        mock_pulumi_config_no_key_from_remote,  # noqa: ARG002,
+        mock_allowlist,
+    ) -> None:
+        sre_name = "sandbox"
+        repository = "cran"
+        mocker.patch.object(
+            SREConfig, "from_remote_by_name", return_value=sre_config_any_packages
+        )
+        mocker.patch.object(Allowlist, "from_remote", return_value=mock_allowlist)
+        result = runner.invoke(
+            allowlist_command_group,
+            ["show", sre_name, repository],
+        )
+        assert result.exit_code == 0
+        assert "required" in result.output
 
 
 class TestTemplateAllowlist:
