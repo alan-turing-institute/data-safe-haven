@@ -89,7 +89,7 @@
 | data\_safe\_haven/infrastructure/programs/sre/identity.py                         |       32 |       23 |     28% |39-51, 67-251 |
 | data\_safe\_haven/infrastructure/programs/sre/monitoring.py                       |       28 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/programs/sre/networking.py                       |      104 |       94 |     10% |37-53, 67-2172 |
-| data\_safe\_haven/infrastructure/programs/sre/remote\_desktop.py                  |       46 |       34 |     26% |52-92, 117-410 |
+| data\_safe\_haven/infrastructure/programs/sre/remote\_desktop.py                  |       46 |       34 |     26% |52-92, 117-413 |
 | data\_safe\_haven/infrastructure/programs/sre/software\_repositories.py           |       44 |       32 |     27% |45-60, 74-360 |
 | data\_safe\_haven/infrastructure/programs/sre/user\_services.py                   |       46 |       32 |     30% |54-83, 99-179 |
 | data\_safe\_haven/infrastructure/programs/sre/workspaces.py                       |       52 |       29 |     44% |41-67, 70-76, 90-141 |
