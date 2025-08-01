@@ -7,7 +7,7 @@
 # - azure-keyvault-certificates==4.10.0
 # - azure-keyvault-keys==4.11.0
 # - azure-keyvault-secrets==4.10.0
-# - azure-mgmt-compute==34.1.0
+# - azure-mgmt-compute==35.0.0
 # - azure-mgmt-containerinstance==10.1.0
 # - azure-mgmt-dns==9.0.0
 # - azure-mgmt-keyvault==12.0.0
@@ -24,14 +24,14 @@
 # - fqdn==1.5.1
 # - psycopg[binary]==3.1.19
 # - pulumi-azure-native==3.5.1
-# - pulumi-azuread==6.5.1
-# - pulumi-random==4.18.2
-# - pulumi==3.184.0
+# - pulumi-azuread==6.5.2
+# - pulumi-random==4.18.3
+# - pulumi==3.187.0
 # - pydantic==2.11.7
 # - pyjwt[crypto]==2.10.1
 # - pytz==2025.2
 # - pyyaml==6.0.2
-# - rich==14.0.0
+# - rich==14.1.0
 # - simple-acme-dns==4.0.0
 # - typer==0.16.0
 # - websocket-client==1.8.0
@@ -77,7 +77,7 @@ azure-keyvault-keys==4.11.0
     # via hatch.envs.default
 azure-keyvault-secrets==4.10.0
     # via hatch.envs.default
-azure-mgmt-compute==34.1.0
+azure-mgmt-compute==35.0.0
     # via hatch.envs.default
 azure-mgmt-containerinstance==10.1.0
     # via hatch.envs.default
@@ -171,7 +171,7 @@ markdown-it-py==3.0.0
     # via rich
 mdurl==0.1.2
     # via markdown-it-py
-msal==1.32.3
+msal==1.33.0
     # via
     #   azure-identity
     #   msal-extensions
@@ -192,7 +192,7 @@ psycopg==3.1.19
     # via hatch.envs.default
 psycopg-binary==3.1.19
     # via psycopg
-pulumi==3.184.0
+pulumi==3.187.0
     # via
     #   hatch.envs.default
     #   pulumi-azure-native
@@ -200,9 +200,9 @@ pulumi==3.184.0
     #   pulumi-random
 pulumi-azure-native==3.5.1
     # via hatch.envs.default
-pulumi-azuread==6.5.1
+pulumi-azuread==6.5.2
     # via hatch.envs.default
-pulumi-random==4.18.2
+pulumi-random==4.18.3
     # via hatch.envs.default
 pycparser==2.22
     # via cffi
@@ -237,7 +237,7 @@ requests==2.32.4
     #   requests-oauthlib
 requests-oauthlib==2.0.0
     # via msrest
-rich==14.0.0
+rich==14.1.0
     # via
     #   hatch.envs.default
     #   typer
