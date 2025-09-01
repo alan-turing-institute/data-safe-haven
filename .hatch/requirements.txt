@@ -3,11 +3,11 @@
 #
 # - appdirs==1.4.4
 # - azure-core==1.35.0
-# - azure-identity==1.23.1
+# - azure-identity==1.24.0
 # - azure-keyvault-certificates==4.10.0
 # - azure-keyvault-keys==4.11.0
 # - azure-keyvault-secrets==4.10.0
-# - azure-mgmt-compute==34.1.0
+# - azure-mgmt-compute==36.0.0
 # - azure-mgmt-containerinstance==10.1.0
 # - azure-mgmt-dns==9.0.0
 # - azure-mgmt-keyvault==12.0.0
@@ -20,20 +20,20 @@
 # - azure-storage-file-share==12.22.0
 # - chevron==0.14.0
 # - click==8.2.1
-# - cryptography==45.0.5
+# - cryptography==45.0.6
 # - fqdn==1.5.1
 # - psycopg[binary]==3.1.19
-# - pulumi-azure-native==3.5.1
-# - pulumi-azuread==6.5.1
-# - pulumi-random==4.18.2
-# - pulumi==3.184.0
+# - pulumi-azure-native==3.7.1
+# - pulumi-azuread==6.5.2
+# - pulumi-random==4.18.3
+# - pulumi==3.192.0
 # - pydantic==2.11.7
 # - pyjwt[crypto]==2.10.1
 # - pytz==2025.2
 # - pyyaml==6.0.2
-# - rich==14.0.0
+# - rich==14.1.0
 # - simple-acme-dns==4.0.0
-# - typer==0.16.0
+# - typer==0.17.3
 # - websocket-client==1.8.0
 #
 
@@ -69,7 +69,7 @@ azure-core==1.35.0
     #   azure-storage-file-datalake
     #   azure-storage-file-share
     #   msrest
-azure-identity==1.23.1
+azure-identity==1.24.0
     # via hatch.envs.default
 azure-keyvault-certificates==4.10.0
     # via hatch.envs.default
@@ -77,7 +77,7 @@ azure-keyvault-keys==4.11.0
     # via hatch.envs.default
 azure-keyvault-secrets==4.10.0
     # via hatch.envs.default
-azure-mgmt-compute==34.1.0
+azure-mgmt-compute==36.0.0
     # via hatch.envs.default
 azure-mgmt-containerinstance==10.1.0
     # via hatch.envs.default
@@ -111,13 +111,13 @@ azure-storage-file-datalake==12.21.0
     # via hatch.envs.default
 azure-storage-file-share==12.22.0
     # via hatch.envs.default
-certifi==2025.7.14
+certifi==2025.8.3
     # via
     #   msrest
     #   requests
 cffi==1.17.1
     # via cryptography
-charset-normalizer==3.4.2
+charset-normalizer==3.4.3
     # via requests
 chevron==0.14.0
     # via hatch.envs.default
@@ -125,7 +125,7 @@ click==8.2.1
     # via
     #   hatch.envs.default
     #   typer
-cryptography==45.0.5
+cryptography==45.0.6
     # via
     #   hatch.envs.default
     #   acme
@@ -137,7 +137,7 @@ cryptography==45.0.5
     #   msal
     #   pyjwt
     #   pyopenssl
-debugpy==1.8.15
+debugpy==1.8.16
     # via pulumi
 dill==0.4.0
     # via pulumi
@@ -145,7 +145,7 @@ dnspython==2.7.0
     # via simple-acme-dns
 fqdn==1.5.1
     # via hatch.envs.default
-grpcio==1.66.2
+grpcio==1.74.0
     # via pulumi
 idna==3.10
     # via requests
@@ -167,11 +167,11 @@ isodate==0.7.2
     #   msrest
 josepy==2.1.0
     # via acme
-markdown-it-py==3.0.0
+markdown-it-py==4.0.0
     # via rich
 mdurl==0.1.2
     # via markdown-it-py
-msal==1.32.3
+msal==1.33.0
     # via
     #   azure-identity
     #   msal-extensions
@@ -186,23 +186,23 @@ parver==0.5
     #   pulumi-azure-native
     #   pulumi-azuread
     #   pulumi-random
-protobuf==4.25.8
+protobuf==5.29.5
     # via pulumi
 psycopg==3.1.19
     # via hatch.envs.default
 psycopg-binary==3.1.19
     # via psycopg
-pulumi==3.184.0
+pulumi==3.192.0
     # via
     #   hatch.envs.default
     #   pulumi-azure-native
     #   pulumi-azuread
     #   pulumi-random
-pulumi-azure-native==3.5.1
+pulumi-azure-native==3.7.1
     # via hatch.envs.default
-pulumi-azuread==6.5.1
+pulumi-azuread==6.5.2
     # via hatch.envs.default
-pulumi-random==4.18.2
+pulumi-random==4.18.3
     # via hatch.envs.default
 pycparser==2.22
     # via cffi
@@ -218,7 +218,7 @@ pyjwt==2.10.1
     #   msal
 pyopenssl==25.1.0
     # via acme
-pyrfc3339==2.0.1
+pyrfc3339==2.1.0
     # via acme
 pytz==2025.2
     # via
@@ -228,7 +228,7 @@ pyyaml==6.0.2
     # via
     #   hatch.envs.default
     #   pulumi
-requests==2.32.4
+requests==2.32.5
     # via
     #   acme
     #   azure-core
@@ -237,7 +237,7 @@ requests==2.32.4
     #   requests-oauthlib
 requests-oauthlib==2.0.0
     # via msrest
-rich==14.0.0
+rich==14.1.0
     # via
     #   hatch.envs.default
     #   typer
@@ -253,9 +253,9 @@ simple-acme-dns==4.0.0
     # via hatch.envs.default
 six==1.17.0
     # via azure-core
-typer==0.16.0
+typer==0.17.3
     # via hatch.envs.default
-typing-extensions==4.14.1
+typing-extensions==4.15.0
     # via
     #   azure-core
     #   azure-identity
