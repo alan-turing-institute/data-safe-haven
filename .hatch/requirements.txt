@@ -276,7 +276,7 @@ typing-extensions==4.15.0
     #   typing-inspection
 typing-inspection==0.4.2
     # via pydantic
-urllib3==2.5.0
+urllib3==2.6.0
     # via requests
 validators==0.35.0
     # via simple-acme-dns
