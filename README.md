@@ -118,7 +118,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       24 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       70 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **5176** | **2330** | **55%** |           |
+| **TOTAL**                                                                         | **5176** | **2330** | **55%** |           |
 
 
 ## Setup coverage badge

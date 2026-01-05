@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Coverage for data_safe_haven/infrastructure/programs/sre/hedgedoc_server.py: 29%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
-    <link rel="stylesheet" href="style_cb_8432e98f.css" type="text/css">
+    <link rel="stylesheet" href="style_cb_a5a05ca4.css" type="text/css">
     <script src="coverage_html_cb_bcae5fc4.js" defer></script>
 </head>
 <body class="pyfile">
@@ -64,8 +64,8 @@
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a id="nextFileLink" class="nav" href="z_f939e3e4befed1f4_identity_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.12.0">coverage.py v7.12.0</a>,
-            created at 2025-12-08 11:36 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.13.0">coverage.py v7.13.0</a>,
+            created at 2026-01-05 10:21 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -227,7 +227,7 @@
     <p class="mis mis2 show_mis"><span class="n"><a id="t145" href="#t145">145</a></span><span class="t">            <span class="nam">container_group_name</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">container_group_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t146" href="#t146">146</a></span><span class="t">            <span class="nam">containers</span><span class="op">=</span><span class="op">[</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t147" href="#t147">147</a></span><span class="t">                <span class="nam">containerinstance</span><span class="op">.</span><span class="nam">ContainerArgs</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis mis2 show_mis"><span class="n"><a id="t148" href="#t148">148</a></span><span class="t">                    <span class="nam">image</span><span class="op">=</span><span class="str">"caddy:2.10.2"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis mis2 show_mis"><span class="n"><a id="t148" href="#t148">148</a></span><span class="t">                    <span class="nam">image</span><span class="op">=</span><span class="str">"caddy:2.11"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t149" href="#t149">149</a></span><span class="t">                    <span class="nam">name</span><span class="op">=</span><span class="str">"caddy"</span><span class="op">[</span><span class="op">:</span><span class="num">63</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t150" href="#t150">150</a></span><span class="t">                    <span class="nam">ports</span><span class="op">=</span><span class="op">[</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t151" href="#t151">151</a></span><span class="t">                        <span class="nam">containerinstance</span><span class="op">.</span><span class="nam">ContainerPortArgs</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
@@ -250,7 +250,7 @@
     <p class="mis mis2 show_mis"><span class="n"><a id="t168" href="#t168">168</a></span><span class="t">                    <span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t169" href="#t169">169</a></span><span class="t">                <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t170" href="#t170">170</a></span><span class="t">                <span class="nam">containerinstance</span><span class="op">.</span><span class="nam">ContainerArgs</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis mis2 show_mis"><span class="n"><a id="t171" href="#t171">171</a></span><span class="t">                    <span class="nam">image</span><span class="op">=</span><span class="str">"quay.io/hedgedoc/hedgedoc:1.10.3"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis mis2 show_mis"><span class="n"><a id="t171" href="#t171">171</a></span><span class="t">                    <span class="nam">image</span><span class="op">=</span><span class="str">"quay.io/hedgedoc/hedgedoc:1.10.5"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t172" href="#t172">172</a></span><span class="t">                    <span class="nam">name</span><span class="op">=</span><span class="str">"hedgedoc"</span><span class="op">[</span><span class="op">:</span><span class="num">63</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t173" href="#t173">173</a></span><span class="t">                    <span class="nam">environment_variables</span><span class="op">=</span><span class="op">[</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t174" href="#t174">174</a></span><span class="t">                        <span class="nam">containerinstance</span><span class="op">.</span><span class="nam">EnvironmentVariableArgs</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
@@ -435,8 +435,8 @@
             <a class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a class="nav" href="z_f939e3e4befed1f4_identity_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.12.0">coverage.py v7.12.0</a>,
-            created at 2025-12-08 11:36 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.13.0">coverage.py v7.13.0</a>,
+            created at 2026-01-05 10:21 +0000
         </p>
     </div>
 </footer>
