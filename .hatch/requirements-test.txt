@@ -426,7 +426,7 @@ typing-inspection==0.4.2
     # via
     #   -c .hatch/requirements.txt
     #   pydantic
-urllib3==2.6.2
+urllib3==2.6.3
     # via
     #   -c .hatch/requirements.txt
     #   requests
