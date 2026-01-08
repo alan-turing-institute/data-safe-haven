@@ -334,7 +334,7 @@ sphinxcontrib-typer==0.7.2
     # via hatch.envs.docs
 typer==0.21.0
     # via hatch.envs.docs
-typer-slim==0.21.0
+typer-slim==0.21.1
     # via sphinxcontrib-typer
 typing-extensions==4.15.0
     # via
