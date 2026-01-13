@@ -294,7 +294,7 @@ tzdata==2025.3
     # via ansible-navigator
 urllib3==2.6.2
     # via types-requests
-virtualenv==20.35.4
+virtualenv==20.36.1
     # via tox
 wcmatch==10.1
     # via
