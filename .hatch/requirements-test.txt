@@ -4,7 +4,7 @@
 # [constraints] .hatch/requirements.txt (SHA256: ea9eb5d31cf9c82705db9d1dd63a87311777a5f0bd630563c38dba76d705e510)
 #
 # - appdirs==1.4.4
-# - azure-core==1.37.0
+# - azure-core==1.38.0
 # - azure-identity==1.25.1
 # - azure-keyvault-certificates==4.10.0
 # - azure-keyvault-keys==4.11.0
@@ -71,7 +71,7 @@ azure-common==1.1.28
     #   azure-mgmt-dns
     #   azure-mgmt-msi
     #   azure-mgmt-resource
-azure-core==1.37.0
+azure-core==1.38.0
     # via
     #   -c .hatch/requirements.txt
     #   hatch.envs.test
