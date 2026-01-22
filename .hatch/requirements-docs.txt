@@ -152,7 +152,7 @@ cryptography==46.0.3
     #   pyopenssl
 debugpy==1.8.19
     # via pulumi
-dill==0.4.0
+dill==0.4.1
     # via pulumi
 dnspython==2.7.0
     # via simple-acme-dns
@@ -218,8 +218,10 @@ myst-parser==4.0.1
     # via hatch.envs.docs
 oauthlib==3.3.1
     # via requests-oauthlib
-packaging==25.0
-    # via sphinx
+packaging==26.0
+    # via
+    #   sphinx
+    #   wheel
 parver==0.5
     # via
     #   pulumi-azure-native
@@ -243,7 +245,7 @@ pulumi-azuread==6.8.0
     # via hatch.envs.docs
 pulumi-random==4.18.5
     # via hatch.envs.docs
-pycparser==2.23
+pycparser==3.0
     # via cffi
 pydantic==2.12.5
     # via hatch.envs.docs
@@ -307,7 +309,7 @@ simple-acme-dns==4.0.0
     # via hatch.envs.docs
 snowballstemmer==3.0.1
     # via sphinx
-soupsieve==2.8.1
+soupsieve==2.8.3
     # via beautifulsoup4
 sphinx==8.2.3
     # via
@@ -371,7 +373,7 @@ validators==0.35.0
     # via simple-acme-dns
 websocket-client==1.9.0
     # via hatch.envs.docs
-wheel==0.46.2
+wheel==0.46.3
     # via sphinx-togglebutton
 
 # The following packages are considered to be unsafe in a requirements file:

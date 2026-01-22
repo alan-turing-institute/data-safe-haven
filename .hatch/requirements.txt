@@ -135,7 +135,7 @@ cryptography==46.0.3
     #   pyopenssl
 debugpy==1.8.19
     # via pulumi
-dill==0.4.0
+dill==0.4.1
     # via pulumi
 dnspython==2.7.0
     # via simple-acme-dns
@@ -201,7 +201,7 @@ pulumi-azuread==6.8.0
     # via hatch.envs.default
 pulumi-random==4.18.5
     # via hatch.envs.default
-pycparser==2.23
+pycparser==3.0
     # via cffi
 pydantic==2.12.5
     # via hatch.envs.default
