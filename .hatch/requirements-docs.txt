@@ -371,7 +371,7 @@ validators==0.35.0
     # via simple-acme-dns
 websocket-client==1.9.0
     # via hatch.envs.docs
-wheel==0.45.1
+wheel==0.46.2
     # via sphinx-togglebutton
 
 # The following packages are considered to be unsafe in a requirements file:
