@@ -61,7 +61,7 @@
 | data\_safe\_haven/infrastructure/components/composite/microsoft\_sql\_database.py |       24 |       16 |     33% |22-28, 41-110 |
 | data\_safe\_haven/infrastructure/components/composite/nfsv3\_blob\_container.py   |       21 |       14 |     33% |22-29, 39-76 |
 | data\_safe\_haven/infrastructure/components/composite/nfsv3\_storage\_account.py  |       23 |       13 |     43% |22-27, 50-136 |
-| data\_safe\_haven/infrastructure/components/composite/postgresql\_database.py     |       31 |       22 |     29% |26-34, 47-165 |
+| data\_safe\_haven/infrastructure/components/composite/postgresql\_database.py     |       31 |       22 |     29% |26-34, 47-167 |
 | data\_safe\_haven/infrastructure/components/composite/virtual\_machine.py         |       66 |       51 |     23% |38-60, 64, 68, 80-105, 118-307 |
 | data\_safe\_haven/infrastructure/components/dynamic/\_\_init\_\_.py               |        4 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/components/dynamic/blob\_container\_acl.py       |       43 |       27 |     37% |29-50, 56-68, 76-87, 97-98, 102, 114 |
@@ -91,7 +91,7 @@
 | data\_safe\_haven/infrastructure/programs/sre/identity.py                         |       32 |       23 |     28% |39-51, 67-251 |
 | data\_safe\_haven/infrastructure/programs/sre/monitoring.py                       |       25 |       15 |     40% |26-32, 46-132 |
 | data\_safe\_haven/infrastructure/programs/sre/monitoring\_elements.py             |       19 |        0 |    100% |           |
-| data\_safe\_haven/infrastructure/programs/sre/networking.py                       |      144 |      130 |     10% |39-57, 71-1976, 1985, 2113, 2231, 2296-2565 |
+| data\_safe\_haven/infrastructure/programs/sre/networking.py                       |      144 |      130 |     10% |39-57, 71-1976, 1985, 2113, 2231, 2298-2567 |
 | data\_safe\_haven/infrastructure/programs/sre/remote\_desktop.py                  |       46 |       34 |     26% |52-92, 117-413 |
 | data\_safe\_haven/infrastructure/programs/sre/software\_repositories.py           |       55 |       41 |     25% |54-77, 102-443 |
 | data\_safe\_haven/infrastructure/programs/sre/user\_services.py                   |       60 |       44 |     27% |64-112, 128-240 |
