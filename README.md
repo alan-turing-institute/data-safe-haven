@@ -82,7 +82,7 @@
 | data\_safe\_haven/infrastructure/programs/sre/desired\_state.py                   |       50 |       35 |     30% |68-91, 105-234, 238 |
 | data\_safe\_haven/infrastructure/programs/sre/dns\_server.py                      |       47 |       33 |     30% |46-55, 69-308 |
 | data\_safe\_haven/infrastructure/programs/sre/dns\_server\_vm.py                  |       42 |       27 |     36% |37-63, 77-115, 123-134 |
-| data\_safe\_haven/infrastructure/programs/sre/dns\_sidecar.py                     |       44 |       30 |     32% |69-82, 94-240 |
+| data\_safe\_haven/infrastructure/programs/sre/dns\_sidecar.py                     |       44 |       30 |     32% |74-87, 99-279 |
 | data\_safe\_haven/infrastructure/programs/sre/entra.py                            |       26 |       16 |     38% |27-30, 42-121 |
 | data\_safe\_haven/infrastructure/programs/sre/firewall.py                         |       49 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/programs/sre/gitea\_mirror\_manager.py           |       50 |       36 |     28% |48-66, 78-388 |

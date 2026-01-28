@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_c422d80e3d5eb082_microsoft_sql_database_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.13.1">coverage.py v7.13.1</a>,
-            created at 2026-01-28 16:15 +0000
+            created at 2026-01-28 16:42 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -129,7 +129,7 @@
     <p class="mis mis2 show_mis"><span class="n"><a id="t47" href="#t47">47</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t48" href="#t48">48</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t49" href="#t49">49</a></span><span class="t">        <span class="com"># Redirect the public DNS to private DNS</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t50" href="#t50">50</a></span><span class="t">        <span class="nam">public_dns_record_set</span> <span class="op">=</span> <span class="nam">dns</span><span class="op">.</span><span class="nam">RecordSet</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t50" href="#t50">50</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">public_dns_record_set</span> <span class="op">=</span> <span class="nam">dns</span><span class="op">.</span><span class="nam">RecordSet</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t51" href="#t51">51</a></span><span class="t">            <span class="fst">f"</span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">_name</span><span class="op">}</span><span class="fst">_public_record_set</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t52" href="#t52">52</a></span><span class="t">            <span class="nam">cname_record</span><span class="op">=</span><span class="nam">dns</span><span class="op">.</span><span class="nam">CnameRecordArgs</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t53" href="#t53">53</a></span><span class="t">                <span class="nam">cname</span><span class="op">=</span><span class="nam">Output</span><span class="op">.</span><span class="nam">concat</span><span class="op">(</span><span class="nam">props</span><span class="op">.</span><span class="nam">record_name</span><span class="op">,</span> <span class="str">".privatelink."</span><span class="op">,</span> <span class="nam">props</span><span class="op">.</span><span class="nam">base_fqdn</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -145,7 +145,7 @@
     <p class="mis mis2 show_mis"><span class="n"><a id="t63" href="#t63">63</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t64" href="#t64">64</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t65" href="#t65">65</a></span><span class="t">        <span class="com"># Register outputs</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t66" href="#t66">66</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">hostname</span> <span class="op">=</span> <span class="nam">public_dns_record_set</span><span class="op">.</span><span class="nam">fqdn</span><span class="op">.</span><span class="nam">apply</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t66" href="#t66">66</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">hostname</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">public_dns_record_set</span><span class="op">.</span><span class="nam">fqdn</span><span class="op">.</span><span class="nam">apply</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t67" href="#t67">67</a></span><span class="t">            <span class="key">lambda</span> <span class="nam">s</span><span class="op">:</span> <span class="nam">s</span><span class="op">.</span><span class="nam">strip</span><span class="op">(</span><span class="str">"."</span><span class="op">)</span>  <span class="com"># strip trailing "."</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t68" href="#t68">68</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t69" href="#t69">69</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -159,7 +159,7 @@
             <a class="nav" href="z_c422d80e3d5eb082_microsoft_sql_database_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.13.1">coverage.py v7.13.1</a>,
-            created at 2026-01-28 16:15 +0000
+            created at 2026-01-28 16:42 +0000
         </p>
     </div>
 </footer>
