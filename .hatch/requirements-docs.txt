@@ -117,7 +117,7 @@ azure-storage-file-datalake==12.23.0
     # via hatch.envs.docs
 azure-storage-file-share==12.24.0
     # via hatch.envs.docs
-babel==2.17.0
+babel==2.18.0
     # via
     #   pydata-sphinx-theme
     #   sphinx
@@ -227,7 +227,7 @@ parver==0.5
     #   pulumi-azure-native
     #   pulumi-azuread
     #   pulumi-random
-protobuf==6.33.5
+protobuf==5.29.5
     # via pulumi
 psycopg==3.1.19
     # via hatch.envs.docs

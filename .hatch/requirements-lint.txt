@@ -67,7 +67,7 @@ black==25.12.0
     #   ansible-lint
 bracex==2.6
     # via wcmatch
-cachetools==6.2.6
+cachetools==7.0.0
     # via tox
 cffi==2.0.0
     # via
@@ -243,7 +243,7 @@ referencing==0.37.0
     #   jsonschema-specifications
 resolvelib==1.2.1
     # via ansible-core
-rich==14.3.1
+rich==14.3.2
     # via
     #   enrich
     #   molecule

@@ -183,7 +183,7 @@ parver==0.5
     #   pulumi-azure-native
     #   pulumi-azuread
     #   pulumi-random
-protobuf==6.33.5
+protobuf==5.29.5
     # via pulumi
 psycopg==3.1.19
     # via hatch.envs.default
