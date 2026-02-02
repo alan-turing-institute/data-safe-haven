@@ -277,7 +277,7 @@ parver==0.5
     #   pulumi-random
 pluggy==1.6.0
     # via pytest
-protobuf==5.29.5
+protobuf==6.33.5
     # via
     #   -c .hatch/requirements.txt
     #   pulumi
