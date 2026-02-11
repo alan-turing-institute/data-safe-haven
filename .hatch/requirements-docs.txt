@@ -20,7 +20,7 @@
 # - azure-storage-file-share==12.24.0
 # - chevron==0.14.0
 # - click==8.3.1
-# - cryptography==46.0.5
+# - cryptography==46.0.4
 # - fqdn==1.5.1
 # - psycopg[binary]==3.1.19
 # - pulumi-azure-native==3.13.0
@@ -49,6 +49,8 @@ acme==4.1.1
     # via simple-acme-dns
 alabaster==1.0.0
     # via sphinx
+annotated-doc==0.0.4
+    # via typer-slim
 annotated-types==0.7.0
     # via pydantic
 appdirs==1.4.4
@@ -138,7 +140,7 @@ click==8.3.1
     #   hatch.envs.docs
     #   typer
     #   typer-slim
-cryptography==46.0.5
+cryptography==46.0.4
     # via
     #   hatch.envs.docs
     #   acme
@@ -334,7 +336,7 @@ sphinxcontrib-typer==0.7.2
     # via hatch.envs.docs
 typer==0.21.1
     # via hatch.envs.docs
-typer-slim==0.21.1
+typer-slim==0.21.2
     # via sphinxcontrib-typer
 typing-extensions==4.15.0
     # via
@@ -361,7 +363,6 @@ typing-extensions==4.15.0
     #   pydata-sphinx-theme
     #   pyopenssl
     #   typer
-    #   typer-slim
     #   typing-inspection
 typing-inspection==0.4.2
     # via pydantic
