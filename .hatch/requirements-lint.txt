@@ -86,7 +86,7 @@ click-help-colors==0.9.4
     # via molecule
 colorama==0.4.6
     # via tox
-cryptography==46.0.4
+cryptography==46.0.5
     # via
     #   ansible-core
     #   ansible-lint
