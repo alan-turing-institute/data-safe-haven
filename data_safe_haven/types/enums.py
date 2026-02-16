@@ -156,6 +156,7 @@ class PermittedDomains(tuple[str, ...], Enum):
         # "qgis.org",
         "security.ubuntu.com",
         # "ubuntu.qgis.org"
+        "pkgs.netbird.io"
     )
     AZURE_DNS_ZONES = AzureDnsZoneNames.ALL
     AZURE_RESOURCE_MANAGER = ("management.azure.com",)
