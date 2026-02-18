@@ -208,7 +208,7 @@ class DeclarativeSRE:
                 data_collection_endpoint_id=monitoring_elements.data_collection_endpoint.id,
                 dns_private_zones=dns.private_zones,
                 location=self.config.azure.location,
-                log_analytics=monitoring_elements.log_analytics,
+                log_analytics=monitoring_elements.log_analytics.workspace,
                 resource_group_name=resource_group.name,
                 subnet=networking.subnet_monitoring,
                 timezone=self.config.sre.timezone,

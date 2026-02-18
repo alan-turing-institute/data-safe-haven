@@ -39,7 +39,7 @@ class WrappedLogAnalyticsWorkspace(ComponentResource):
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
-        workspace = operationalinsights.Workspace(
+        self.workspace = operationalinsights.Workspace(
             resource_name=name,
             location=props.location,
             resource_group_name=props.resource_group_name,
@@ -50,16 +50,25 @@ class WrappedLogAnalyticsWorkspace(ComponentResource):
             tags=child_tags,
         )
 
-        self.resource_group_name: Output[str] = workspace.resource_group_name_
-        self.workspace_id: Output[str] = workspace.customer_id
-        self.workspace_key: Output[str] = Output.secret(
-            operationalinsights.get_shared_keys_output(
-                resource_group_name=workspace.resource_group_name,
-                workspace_name=workspace.name,
-            ).primary_shared_key
+        self.resource_group_name: Output[str] = Output.from_input(
+            props.resource_group_name
         )
-        self.id = workspace.id
-        self.name = workspace.name
+        self.workspace_id: Output[str] = self.workspace.customer_id
+
+        workspace_keys: Output[operationalinsights.GetSharedKeysResult] = Output.all(
+            resource_group_name=self.resource_group_name,
+            workspace_name=self.workspace.name,
+        ).apply(lambda kwargs: operationalinsights.get_shared_keys_output(**kwargs))
+
+        self.workspace_key: Output[str] = Output.secret(
+            workspace_keys.apply(
+                lambda keys: (
+                    keys.primary_shared_key if keys.primary_shared_key else "UNKNOWN"
+                )
+            )
+        )
+        self.id = self.workspace.id
+        self.name = self.workspace.name
 
         self.register_outputs(
             {
