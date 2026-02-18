@@ -117,7 +117,7 @@ class SREDesiredStateComponent(ComponentResource):
                 )[:24],
                 allowed_ip_addresses=props.admin_ip_addresses,
                 location=props.location,
-                log_analytics_workspace=props.log_analytics_workspace,
+                log_analytics_workspace=props.log_analytics_workspace.workspace,
                 resource_group_name=props.resource_group_name,
                 subnet_id=props.subnet_desired_state_id,
             ),

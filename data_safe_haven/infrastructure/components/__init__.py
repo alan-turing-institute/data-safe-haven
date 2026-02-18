@@ -23,9 +23,7 @@ from .dynamic import (
     SSLCertificate,
     SSLCertificateProps,
 )
-from .wrapped import (
-    WrappedLogAnalyticsWorkspace,
-)
+from .wrapped import WrappedLogAnalyticsWorkspaceProps, WrappedLogAnalyticsWorkspace
 
 __all__ = [
     "BlobContainerAcl",
@@ -50,4 +48,5 @@ __all__ = [
     "SSLCertificateProps",
     "VMComponent",
     "WrappedLogAnalyticsWorkspace",
+    "WrappedLogAnalyticsWorkspaceProps",
 ]

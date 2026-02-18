@@ -245,10 +245,7 @@ class DnsSidecarComponent(ComponentResource):
                 destination="log-analytics",
                 log_analytics_configuration=LogAnalyticsConfigurationArgs(
                     customer_id=props.log_analytics_workspace.workspace_id,
-                    shared_key=operationalinsights.get_shared_keys_output(
-                        resource_group_name=props.log_analytics_workspace.resource_group_name,
-                        workspace_name=props.log_analytics_workspace.name,
-                    ).apply(lambda keys: keys.primary_shared_key),
+                    shared_key=props.log_analytics_workspace.workspace_key,
                 ),
             ),
             resource_group_name=props.resource_group_name,

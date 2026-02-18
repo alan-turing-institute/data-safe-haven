@@ -563,7 +563,7 @@ class SREDataComponent(ComponentResource):
                 )[:24],
                 allowed_ip_addresses=data_private_sensitive_ip_addresses,
                 location=props.location,
-                log_analytics_workspace=props.log_analytics_workspace,
+                log_analytics_workspace=props.log_analytics_workspace.workspace,
                 subnet_id=props.subnet_data_private_id,
                 resource_group_name=props.resource_group_name,
             ),

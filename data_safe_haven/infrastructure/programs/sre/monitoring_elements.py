@@ -4,7 +4,10 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import maintenance, monitor, operationalinsights
 
 from data_safe_haven.functions import next_occurrence
-from data_safe_haven.infrastructure.components import WrappedLogAnalyticsWorkspace
+from data_safe_haven.infrastructure.components import (
+    WrappedLogAnalyticsWorkspace,
+    WrappedLogAnalyticsWorkspaceProps,
+)
 
 
 class SREMonitoringElementsProps:
@@ -77,14 +80,16 @@ class SREMonitoringElementsComponent(ComponentResource):
 
         # Deploy log analytics workspace and get workspace keys
         self.log_analytics = WrappedLogAnalyticsWorkspace(
-            f"{self._name}_log_analytics",
-            location=props.location,
-            resource_group_name=props.resource_group_name,
-            retention_in_days=30,
-            sku=operationalinsights.WorkspaceSkuArgs(
-                name=operationalinsights.WorkspaceSkuNameEnum.PER_GB2018,
+            name=f"{self._name}_log_analytics",
+            props=WrappedLogAnalyticsWorkspaceProps(
+                location=props.location,
+                resource_group_name=props.resource_group_name,
+                retention_in_days=30,
+                sku=operationalinsights.WorkspaceSkuArgs(
+                    name=operationalinsights.WorkspaceSkuNameEnum.PER_GB2018,
+                ),
+                workspace_name=f"{stack_name}-log",
             ),
-            workspace_name=f"{stack_name}-log",
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(

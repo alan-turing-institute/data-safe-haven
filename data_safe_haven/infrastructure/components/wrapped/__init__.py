@@ -1,5 +1,6 @@
-from .log_analytics_workspace import WrappedLogAnalyticsWorkspace
+from .log_analytics_workspace import (
+    WrappedLogAnalyticsWorkspace,
+    WrappedLogAnalyticsWorkspaceProps,
+)
 
-__all__ = [
-    "WrappedLogAnalyticsWorkspace",
-]
+__all__ = ["WrappedLogAnalyticsWorkspace", "WrappedLogAnalyticsWorkspaceProps"]

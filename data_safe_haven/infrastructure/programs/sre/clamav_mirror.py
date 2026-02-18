@@ -105,10 +105,7 @@ class SREClamAVMirrorComponent(ComponentResource):
             diagnostics=containerinstance.ContainerGroupDiagnosticsArgs(
                 log_analytics=containerinstance.LogAnalyticsArgs(
                     workspace_id=props.log_analytics_workspace.workspace_id,
-                    workspace_key=operationalinsights.get_shared_keys_output(
-                        resource_group_name=props.log_analytics_workspace.resource_group_name,
-                        workspace_name=props.log_analytics_workspace.name,
-                    ).apply(lambda keys: keys.primary_shared_key),
+                    workspace_key=props.log_analytics_workspace.workspace_key,
                 ),
             ),
             dns_config=containerinstance.DnsConfigurationArgs(
