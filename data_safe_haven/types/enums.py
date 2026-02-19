@@ -171,6 +171,7 @@ class PermittedDomains(tuple[str, ...], Enum):
     MICROSOFT_LOGIN = ("login.microsoftonline.com",)
     MICROSOFT_CONTAINER_REGISTRY = ("mcr.microsoft.com", "*.data.mcr.microsoft.com")
     MICROSOFT_IDENTITY = MICROSOFT_GRAPH_API + MICROSOFT_LOGIN
+    NETBIRD_MANAGEMENT = ("aviary.eidf.ac.uk")
     AZURE_MANAGED_IDENTITIES = (
         *MICROSOFT_LOGIN,
         "*.identity.azure.net",
