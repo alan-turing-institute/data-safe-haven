@@ -61,7 +61,7 @@ timeout = 20
 retry_wait_time = 2
 
 # Comma-separated list of accepted status codes for valid links.
-accept = ["200", "429"]
+accept = ["200", "202", "429"]
 
 # Proceed for server connections considered insecure (invalid TLS).
 insecure = false
@@ -90,22 +90,22 @@ include_verbatim = false
 
 # Exclude URLs and mail addresses from checking. The values are treated as regular expressions
 exclude = [
-  'code\.visualstudio\.com',  # 403
-  'doi\.org',  # 403
-  'entra.microsoft\.com',  # Requires authentication (403)
-  'example\.org',  # domain used for examples only
-  'github\.com',  # Requires authentication (403)
-  'hedgedoc\.org',  # 403
-  'ipaddressguide\.com',  # 403
-  'opensource\.org',  # 403
-  'portal\.azure\.com',  # 403
-  'turing\.ac\.uk',  # DDOS protection
+  'code\.visualstudio\.com', # 403
+  'doi\.org',                # 403
+  'entra.microsoft\.com',    # Requires authentication (403)
+  'example\.org',            # domain used for examples only
+  'github\.com',             # Requires authentication (403)
+  'hedgedoc\.org',           # 403
+  'ipaddressguide\.com',     # 403
+  'opensource\.org',         # 403
+  'portal\.azure\.com',      # 403
+  'turing\.ac\.uk',          # DDOS protection
 ]
 
 # Exclude paths from getting checked. The values are treated as regular expressions
 exclude_path = [
   'docs/build/html/_static/webpack-macros.html',
-  'docs/build/html/contributing/index.html'
+  'docs/build/html/contributing/index.html',
 ]
 
 # Check the specified file extensions
