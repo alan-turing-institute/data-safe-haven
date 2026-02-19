@@ -23,7 +23,7 @@ from .dynamic import (
     SSLCertificate,
     SSLCertificateProps,
 )
-from .wrapped import WrappedLogAnalyticsWorkspaceProps, WrappedLogAnalyticsWorkspace
+from .wrapped import WrappedLogAnalyticsWorkspace, WrappedLogAnalyticsWorkspaceProps
 
 __all__ = [
     "BlobContainerAcl",

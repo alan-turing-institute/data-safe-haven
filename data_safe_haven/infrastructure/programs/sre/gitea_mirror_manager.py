@@ -2,7 +2,7 @@ import json
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import containerinstance, operationalinsights, storage
+from pulumi_azure_native import containerinstance, storage
 from pulumi_random import RandomPassword
 
 from data_safe_haven.config.config_sections import ConfigSubsectionGiteaMirror

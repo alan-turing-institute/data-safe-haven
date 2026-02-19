@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import containerinstance, operationalinsights, storage
+from pulumi_azure_native import containerinstance, storage
 
 from data_safe_haven.functions import b64encode
 from data_safe_haven.infrastructure.common import (

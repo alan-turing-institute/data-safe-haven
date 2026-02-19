@@ -4,7 +4,6 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     authorization,
     containerinstance,
-    operationalinsights,
     storage,
 )
 from pulumi_azure_native.app import (
