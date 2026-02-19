@@ -405,7 +405,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 ResourceOptions(
                     delete_before_replace=True,
                     replace_on_changes=["containers"],
-                    depends_on=[props.log_analytics_workspace],
+                    depends_on=[props.log_analytics_workspace.workspace],
                 ),
             ),
             tags=child_tags,

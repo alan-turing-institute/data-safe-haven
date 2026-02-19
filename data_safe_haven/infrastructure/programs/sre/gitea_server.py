@@ -390,7 +390,7 @@ class SREGiteaServerComponent(ComponentResource):
                         file_share_gitea_caddy_caddyfile,
                         file_share_gitea_gitea_configure_sh,
                         file_share_gitea_gitea_entrypoint_sh,
-                        props.log_analytics_workspace,
+                        props.log_analytics_workspace.workspace,
                     ],
                     replace_on_changes=["containers"],
                 ),

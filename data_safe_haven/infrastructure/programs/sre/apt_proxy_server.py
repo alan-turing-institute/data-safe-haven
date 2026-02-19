@@ -175,7 +175,7 @@ class SREAptProxyServerComponent(ComponentResource):
                     depends_on=[
                         file_share_apt_proxy_server,
                         file_share_apt_proxy_server_repositories,
-                        props.log_analytics_workspace,
+                        props.log_analytics_workspace.workspace,
                     ],
                     replace_on_changes=["containers"],
                 ),

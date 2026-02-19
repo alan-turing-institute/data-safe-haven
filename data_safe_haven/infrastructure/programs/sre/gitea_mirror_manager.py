@@ -378,7 +378,7 @@ class SREGiteaMirrorManagerComponent(ComponentResource):
                     depends_on=[
                         file_share_gitea_gitea_entrypoint_sh,
                         file_share_gitea_gitea_configure_sh,
-                        props.log_analytics_workspace,
+                        props.log_analytics_workspace.workspace,
                     ],
                     replace_on_changes=["containers"],
                 ),

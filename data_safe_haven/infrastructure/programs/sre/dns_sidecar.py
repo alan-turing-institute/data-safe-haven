@@ -265,7 +265,7 @@ class DnsSidecarComponent(ComponentResource):
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
-                    depends_on=[props.log_analytics_workspace],
+                    depends_on=[props.log_analytics_workspace.workspace],
                 ),
             ),
         )

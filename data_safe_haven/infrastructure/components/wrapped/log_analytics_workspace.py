@@ -46,7 +46,12 @@ class WrappedLogAnalyticsWorkspace(ComponentResource):
             retention_in_days=props.retention_in_days,
             sku=props.sku,
             workspace_name=props.workspace_name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=self)),
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(
+                    parent=self,
+                ),
+            ),
             tags=child_tags,
         )
 

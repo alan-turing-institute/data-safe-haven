@@ -320,7 +320,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                     delete_before_replace=True,
                     depends_on=[
                         file_share_hedgedoc_caddy_caddyfile,
-                        props.log_analytics_workspace,
+                        props.log_analytics_workspace.workspace,
                     ],
                     replace_on_changes=["containers"],
                 ),
