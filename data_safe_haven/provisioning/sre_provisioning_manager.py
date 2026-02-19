@@ -107,9 +107,7 @@ class SREProvisioningManager:
     def initialise_software_repository_database(self) -> None:
         """Configures a PostgreSQL database for the Nexus container"""
         if self.software_repository_params:
-            self.logger.info(
-                "Setting up a PostgreSQL database for the Nexus repository..."
-            )
+            self.logger.info("Configuring software repository database.")
 
             postgres_provisioner = AzurePostgreSQLDatabase(
                 self.software_repository_params["connection_db_name"],
@@ -140,6 +138,7 @@ class SREProvisioningManager:
 
     def update_remote_desktop_connections(self) -> None:
         """Update connection information on the Guacamole PostgreSQL server"""
+        self.logger.info("Configuring remote desktop connections database.")
         postgres_provisioner = AzurePostgreSQLDatabase(
             self.remote_desktop_params["connection_db_name"],
             self.remote_desktop_params["connection_db_server_password"],

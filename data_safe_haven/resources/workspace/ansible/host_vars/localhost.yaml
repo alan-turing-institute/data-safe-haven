@@ -24,7 +24,7 @@ package_categories:
   - category: database
     common:
       - libpq-dev     # interact with PostgreSQL databases
-      - msodbcsql17   # interact with Microsoft SQL databases
+      - msodbcsql18   # interact with Microsoft SQL databases
       - postgresql-client  # CLI psql client
       - unixodbc-dev  # interact with Microsoft SQL databases
     jammy: []
@@ -37,8 +37,8 @@ package_categories:
       - clojure  # Clojure functional programming language for JVM
       - cmake  # CMake build system
       - default-jre  # Java runtime environment
-      - dotnet-runtime  # .Net runtime
-      - dotnet-sdk  # .Net SDK
+      - dotnet-runtime-9.0  # .Net runtime
+      - dotnet-sdk-9.0  # .Net SDK
       - fsharp  # F# functional-first programming language
       - g++  # GNU C++ compiler
       - gcc  # GNU C compiler

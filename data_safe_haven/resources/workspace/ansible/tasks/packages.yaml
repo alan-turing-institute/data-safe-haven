@@ -3,16 +3,32 @@
 - name: Microsoft packages repo
   tags: apt
   block:
+    # This should be the preferred method, but the Ubuntu image has old Curl/OpenSSL
+    # - name: Fetch Microsoft package signing key
+    #   ansible.builtin.get_url:
+    #     url: https://packages.microsoft.com/keys/microsoft.asc
+    #     dest: /etc/apt/keyrings/microsoft.asc
+    #     checksum: sha256:2fa9c05d591a1582a9aba276272478c262e95ad00acf60eaee1644d93941e3c6
+    - name: Import Microsoft package signing key
+      ansible.builtin.apt_key:
+        keyserver: keyserver.ubuntu.com
+        id: BC528686B50D79E339D3721CEB3E94ADBE1229CF
+
     - name: Add Microsoft packages source
       ansible.builtin.apt_repository:
         repo: "deb https://packages.microsoft.com/ubuntu/{{ ansible_facts.distribution_version }}/prod {{ ansible_facts.distribution_release }} main"
         state: present
         filename: microsoft-general
+        update_cache: true
 
-    - name: Import key
-      ansible.builtin.apt_key:
-        keyserver: keyserver.ubuntu.com
-        id: BC528686B50D79E339D3721CEB3E94ADBE1229CF
+- name: Set apt priorities
+  tags: apt
+  block:
+    - name: Set Microsoft repo priority
+      ansible.builtin.template:
+        src: etc/apt/preferences.d/microsoft-general.j2
+        dest: /etc/apt/preferences.d/microsoft-general
+        mode: "0644"
 
 - name: Apt packages
   tags: apt

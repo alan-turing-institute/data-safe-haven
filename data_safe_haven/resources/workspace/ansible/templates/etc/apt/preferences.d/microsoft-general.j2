@@ -1,0 +1,5 @@
+Explanation: Prefer Microsoft releases of Microsoft Software
+Explanation: Priority installed < 400 < uninstalled
+Package: msodbcsql* dotnet*
+Pin: release o=microsoft-{{ ansible_facts.distribution_version }}-{{ ansible_facts.distribution_release }}-prod
+Pin-Priority: 400
