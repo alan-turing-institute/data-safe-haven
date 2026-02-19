@@ -102,7 +102,7 @@
 | data\_safe\_haven/logging/non\_logging\_singleton.py                              |        7 |        1 |     86% |        14 |
 | data\_safe\_haven/logging/plain\_file\_handler.py                                 |       21 |        1 |     95% |        36 |
 | data\_safe\_haven/provisioning/\_\_init\_\_.py                                    |        2 |        0 |    100% |           |
-| data\_safe\_haven/provisioning/sre\_provisioning\_manager.py                      |       61 |       46 |     25% |27-71, 83-86, 90-95, 99-105, 109-134, 143-183, 195-200 |
+| data\_safe\_haven/provisioning/sre\_provisioning\_manager.py                      |       62 |       47 |     24% |27-71, 83-86, 90-95, 99-105, 109-132, 141-182, 194-199 |
 | data\_safe\_haven/serialisers/\_\_init\_\_.py                                     |        4 |        0 |    100% |           |
 | data\_safe\_haven/serialisers/azure\_serialisable\_model.py                       |       41 |        3 |     93% | 45-46, 81 |
 | data\_safe\_haven/serialisers/context\_base.py                                    |       12 |        2 |     83% |    15, 20 |
@@ -118,7 +118,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       24 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       70 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-| **TOTAL**                                                                         | **5247** | **2378** | **55%** |           |
+| **TOTAL**                                                                         | **5248** | **2379** | **55%** |           |
 
 
 ## Setup coverage badge
