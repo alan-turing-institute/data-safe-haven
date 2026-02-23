@@ -464,6 +464,34 @@ class SREFirewallComponent(ComponentResource):
                     ],
                 )
             )
+            # Netbird rule
+            application_rule_collections.append(
+                network.AzureFirewallApplicationRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(
+                        type=network.AzureFirewallRCActionType.ALLOW
+                    ),
+                    name="workspaces-netbird-allow",
+                    priority=FirewallPriorities.SRE_WORKSPACES_NETBIRD,
+                    rules=[
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow access to Netbird managment",
+                            name="AllowNetbird",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTP),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
+                                ),
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTPS),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                                ),
+                            ],
+                            source_addresses=props.subnet_workspaces_prefixes,
+                            target_fqdns=PermittedDomains.NETBIRD_MANAGEMENT,
+                        ),
+                    ],
+                )
+            )
 
         # Deploy firewall
         self.firewall = network.AzureFirewall(
