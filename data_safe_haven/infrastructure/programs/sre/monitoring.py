@@ -61,6 +61,10 @@ class SREMonitoringComponent(ComponentResource):
                 child_opts,
                 ResourceOptions(
                     parent=props.log_analytics,
+                    delete_before_replace=True,
+                    aliases=[
+                        f"urn:pulumi:{stack_name}::data-safe-haven::dsh:sre:MonitoringElementsComponent$azure-native:operationalinsights:Workspace$azure-native:monitor:PrivateLinkScope::sre_monitoring_log_analytics_private_link_scope"
+                    ],
                 ),
             ),
             tags=child_tags,
@@ -74,7 +78,10 @@ class SREMonitoringComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             scope_name=log_analytics_private_link_scope.name,
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=log_analytics_private_link_scope)
+                child_opts,
+                ResourceOptions(
+                    parent=log_analytics_private_link_scope, delete_before_replace=True
+                ),
             ),
         )
 

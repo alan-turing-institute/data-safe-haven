@@ -72,6 +72,8 @@ class ProjectManager:
             extra_args["debug"] = True
             extra_args["log_to_std_err"] = True
             extra_args["log_verbosity"] = 9
+            # TODO(cgavidia): Only for testing
+            extra_args["log_flow"] = True
         else:
             extra_args["debug"] = None
             extra_args["log_to_std_err"] = None

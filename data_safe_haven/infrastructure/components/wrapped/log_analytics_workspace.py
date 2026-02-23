@@ -40,7 +40,7 @@ class WrappedLogAnalyticsWorkspace(ComponentResource):
         child_tags = tags if tags else {}
 
         self.workspace = operationalinsights.Workspace(
-            resource_name=name,
+            resource_name=f"{self._name}_workspace",
             location=props.location,
             resource_group_name=props.resource_group_name,
             retention_in_days=props.retention_in_days,
@@ -50,6 +50,7 @@ class WrappedLogAnalyticsWorkspace(ComponentResource):
                 child_opts,
                 ResourceOptions(
                     parent=self,
+                    delete_before_replace=True,
                 ),
             ),
             tags=child_tags,
