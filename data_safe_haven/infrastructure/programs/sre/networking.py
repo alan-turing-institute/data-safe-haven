@@ -1417,11 +1417,11 @@ class SRENetworkingComponent(ComponentResource):
             network.SecurityRuleArgs(
                 access=network.SecurityRuleAccess.ALLOW,
                 description="Allow outbound connections to Netbird management over the internet.",
-                destination_address_prefix="129.215.62.163/24",  # nslookup aviary.eidf.ac.uk
+                destination_address_prefix="129.215.62.163",  # nslookup aviary.eidf.ac.uk
                 destination_port_ranges=[Ports.HTTPS],
                 direction=network.SecurityRuleDirection.OUTBOUND,
                 name="AllowNetbirdOutbound",
-                priority=NetworkingPriorities.INTERNAL_SRE_CLAMAV_MIRROR,
+                priority=NetworkingPriorities.AUTHORISED_EXTERNAL_NETBIRD,
                 protocol=network.SecurityRuleProtocol.TCP,
                 source_address_prefix=SREIpRanges.workspaces.prefix,
                 source_port_range="*",
