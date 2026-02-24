@@ -123,6 +123,12 @@ package_categories:
     noble:
       - eza
       - nvtop
+  - category: netbird
+    common:
+      - netbird
+      - netbird-ui
+    jammy: []
+    noble: []
 
 # Collect packages for releases
 # It is important that the dict names for releases match `ansible_facts['distribution_relesase']`
