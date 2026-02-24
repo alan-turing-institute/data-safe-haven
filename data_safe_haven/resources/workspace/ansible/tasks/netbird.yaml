@@ -1,0 +1,7 @@
+---
+
+- name: Enable netbird service
+  ansible.builtin.systemd:
+    name: netbird
+    enabled: true
+    state: started

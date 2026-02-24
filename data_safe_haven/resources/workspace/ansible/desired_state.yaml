@@ -59,6 +59,10 @@
       ansible.builtin.import_tasks: tasks/smoke_tests.yaml
       tags: smoke_tests
 
+    - name: Configure Netbird
+      ansible.builtin.import_tasks: tasks/netbird.yaml
+      tags: netbird
+
   handlers:
     - name: Restart auditd
       ansible.builtin.systemd:
