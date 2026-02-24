@@ -48,7 +48,7 @@
 
     - name: Add Netbird package source
       ansible.builtin.apt_repository:
-        repo: "deb https://pkgs.netbird.io/debian stable main"
+        repo: "deb [signed-by=/etc/apt/keyrings/netbird.asc] https://pkgs.netbird.io/debian stable main"
         state: present
         filename: netbird
         update_cache: false
