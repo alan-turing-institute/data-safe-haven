@@ -33,13 +33,18 @@
 - name: Add Netbird repo
   tags: apt
   block:
-    - name: Fetch Netbird package signing key
-      ansible.builtin.get_url:
-        # Netbird provides the key in the armor format rather than binary
-        url: https://pkgs.netbird.io/debian/public.key
-        # .asc is used for armored keys
+    # - name: Fetch Netbird package signing key
+    #   ansible.builtin.get_url:
+    #     # Netbird provides the key in the armor format rather than binary
+    #     url: https://pkgs.netbird.io/debian/public.key
+    #     # .asc is used for armored keys
+    #     dest: /etc/apt/keyrings/netbird.asc
+    #     checksum: sha256:6bd434c07e7c3a71211de79ca287e93b45deadedc4b74f1a2e83e11abe6e0bf5
+    - name: Install Netbird package signing key
+      ansible.builtin.copy:
+        src: etc/apt/keyrings/netbird.asc
         dest: /etc/apt/keyrings/netbird.asc
-        checksum: sha256:6bd434c07e7c3a71211de79ca287e93b45deadedc4b74f1a2e83e11abe6e0bf5
+        mode: "0644"
 
     - name: Add Netbird package source
       ansible.builtin.apt_repository:
