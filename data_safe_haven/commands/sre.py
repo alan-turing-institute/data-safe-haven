@@ -9,6 +9,7 @@ from data_safe_haven.config import ContextManager, DSHPulumiConfig, SHMConfig, S
 from data_safe_haven.exceptions import DataSafeHavenConfigError, DataSafeHavenError
 from data_safe_haven.external import AzureSdk, GraphApi
 from data_safe_haven.functions import current_ip_address, ip_address_in_list
+from data_safe_haven.healthcheck import SREHealthCheckRunner
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.logging import get_logger
 from data_safe_haven.provisioning import SREProvisioningManager
@@ -267,5 +268,47 @@ def teardown(
     except DataSafeHavenError as exc:
         logger.critical(
             f"Could not teardown Secure Research Environment '[green]{name}[/]'."
+        )
+        raise typer.Exit(1) from exc
+
+
+@sre_command_group.command()
+def healthcheck(
+    name: Annotated[str, typer.Argument(help="Name of SRE to check.")],
+) -> None:
+    """Checks the health of a Secure Research Environment"""
+    logger = get_logger()
+    try:
+
+        logger.info(f"Starting health check of SRE '[green]{name}[/]'")
+
+        # Load context
+        context = ContextManager.from_file().assert_context()
+
+        # Load Pulumi and SRE configs
+        pulumi_config = DSHPulumiConfig.from_remote(context)
+        sre_config = SREConfig.from_remote_by_name(context, name)
+
+        sre_project_manager = SREProjectManager(
+            context=context,
+            config=sre_config,
+            pulumi_config=pulumi_config,
+            create_project=True,
+        )
+
+        # Get SRE subscription name
+        azure_sdk = AzureSdk(subscription_name=context.subscription_name)
+        subscription_name = azure_sdk.get_subscription_name(
+            sre_config.azure.subscription_id
+        )
+
+        manager = SREHealthCheckRunner(
+            sre_project_manager=sre_project_manager,
+            subscription_name=subscription_name,
+        )
+        manager.run()
+    except DataSafeHavenError as exc:
+        logger.critical(
+            f"Could not check the health of Secure Research Environment '[green]{name}[/]'."
         )
         raise typer.Exit(1) from exc
