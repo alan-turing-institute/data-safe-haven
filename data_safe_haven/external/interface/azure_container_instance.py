@@ -1,5 +1,6 @@
 import contextlib
 import time
+import typing
 
 import websocket
 from azure.core.polling import LROPoller
@@ -103,7 +104,7 @@ class AzureContainerInstance:
             container_group_name=self.container_group_name,
         )
 
-        return container_group.containers
+        return typing.cast(list[Container], container_group.containers)
 
     def run_executable(self, container_name: str, executable_path: str) -> list[str]:
         """
