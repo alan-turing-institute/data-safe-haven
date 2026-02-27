@@ -18,19 +18,14 @@ class SREHealthCheckRunner:
     ) -> None:
         self.logger = get_logger()
 
-        self.remote_desktop_output: dict[str, str] = sre_project_manager.output(
-            "remote_desktop"
-        )
+        self.sre_project_manager = sre_project_manager
         self.subscription_name = subscription_name
 
     def run(self) -> None:
-        azure_container_instance = AzureContainerInstance(
-            container_group_name=self.remote_desktop_output["container_group_name"],
-            resource_group_name=self.remote_desktop_output["resource_group_name"],
-            subscription_name=self.subscription_name,
+        healthcheck_plugin = SREHeathCheckPlugin(
+            self.sre_project_manager, self.subscription_name
         )
-
         pytest.main(
             args=["--pyargs", "data_safe_haven.healthcheck", "--tb=line"],
-            plugins=[SREHeathCheckPlugin(azure_container_instance)],
+            plugins=[healthcheck_plugin],
         )

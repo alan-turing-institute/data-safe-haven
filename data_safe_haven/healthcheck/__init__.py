@@ -1,3 +1,3 @@
-from .sre_healthcheck_manager import SREHealthCheckRunner
+from .sre_healthcheck_runner import SREHealthCheckRunner
 
 __all__ = ["SREHealthCheckRunner"]
