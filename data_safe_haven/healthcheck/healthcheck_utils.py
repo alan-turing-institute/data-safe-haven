@@ -14,7 +14,7 @@ class BaseContainerInstanceTest:
         container_instance: AzureContainerInstance | None = (
             self._get_container_instance(output_key, project_manager, subscription_name)
         )
-        assert (
+        assert (  # noqa: S101
             container_instance is not None
         ), f"Cannot get outputs with key {output_key}. Do you need to redeploy?"
 
@@ -25,7 +25,7 @@ class BaseContainerInstanceTest:
                 and container.instance_view.current_state
             ):
                 container_state: str = container.instance_view.current_state.state
-                assert (
+                assert (  # noqa: S101
                     container_state == "Running"
                 ), f"Container {container.name} from group {container_instance.container_group_name} has state {container_state}"
 
