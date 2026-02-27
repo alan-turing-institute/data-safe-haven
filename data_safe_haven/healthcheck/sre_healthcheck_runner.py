@@ -1,6 +1,5 @@
 import pytest
 
-from data_safe_haven.external import AzureContainerInstance
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.logging import get_logger
 from data_safe_haven.types import AzureSubscriptionName

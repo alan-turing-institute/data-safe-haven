@@ -1,7 +1,6 @@
 from attrs import define
 from pytest import fixture
 
-from data_safe_haven.external import AzureContainerInstance
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.types import AzureSubscriptionName
 
