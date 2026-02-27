@@ -522,6 +522,7 @@ class DeclarativeSRE:
                 "software_repositories", user_services.software_repositories.exports
             )
 
+        pulumi.export("apt_proxy_server", apt_proxy_server.exports)
         pulumi.export("data", data.exports)
         pulumi.export("ldap", ldap_group_names)
         pulumi.export("remote_desktop", remote_desktop.exports)

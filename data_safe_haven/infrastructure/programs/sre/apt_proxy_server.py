@@ -204,3 +204,9 @@ class SREAptProxyServerComponent(ComponentResource):
 
         # Register outputs
         self.hostname = self.local_dns.hostname
+
+        # Register exports
+        self.exports: dict[str, Output[str]] = {
+            "container_group_name": self.container_group.name,
+            "resource_group_name": props.resource_group_name,
+        }
