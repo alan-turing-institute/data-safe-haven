@@ -10,5 +10,5 @@ class SREHeathCheckPlugin:
     _azure_container_instance: AzureContainerInstance
 
     @fixture
-    def azure_container_instance(self) -> AzureContainerInstance:
+    def remote_desktop_container_instance(self) -> AzureContainerInstance:
         return self._azure_container_instance

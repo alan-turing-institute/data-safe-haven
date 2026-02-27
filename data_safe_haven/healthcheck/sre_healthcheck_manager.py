@@ -31,6 +31,6 @@ class SREHealthCheckRunner:
         )
 
         pytest.main(
-            args=["--pyargs", "data_safe_haven.healthcheck"],
+            args=["--pyargs", "data_safe_haven.healthcheck", "--tb=line"],
             plugins=[SREHeathCheckPlugin(azure_container_instance)],
         )
