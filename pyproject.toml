@@ -72,16 +72,16 @@ docs = [
   "pydata-sphinx-theme==0.16.1",
   "sphinx-togglebutton==0.4.4",
   "sphinx>=7,<10",
-  "sphinxcontrib-typer==0.7.2",
+  "sphinxcontrib-typer==0.8.0",
 ]
 lint = [
-  "ansible-dev-tools==26.1.0",
-  "ansible==13.3.0",
+  "ansible-dev-tools==26.2.0",
+  "ansible==13.4.0",
   "black==26.1.0",
   "mypy==1.19.1",
-  "pandas-stubs==2.3.3.260113",
+  "pandas-stubs==3.0.0.260204",
   "pydantic==2.12.5",
-  "ruff==0.14.14",
+  "ruff==0.15.4",
   "types-appdirs==1.4.3.5",
   "types-chevron==0.14.2.20250103",
   "types-pytz==2025.2.0.20251108",
@@ -89,7 +89,7 @@ lint = [
   "types-requests==2.32.4.20260107",
 ]
 test = [
-  "coverage==7.13.2",
+  "coverage==7.13.4",
   "freezegun==1.5.5",
   "pytest-mock==3.15.1",
   "pytest==9.0.2",
