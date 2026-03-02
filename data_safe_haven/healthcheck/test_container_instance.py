@@ -9,7 +9,8 @@ from .healthcheck_utils import BaseContainerInstanceTest
 class TestContainerInstance(BaseContainerInstanceTest):
 
     @pytest.mark.parametrize(
-        "output_key", ["apt_proxy_server", "sre_clamav_mirror", "remote_desktop"]
+        "output_key",
+        ["apt_proxy_server", "sre_clamav_mirror", "sre_gitea_server", "remote_desktop"],
     )
     def test_container_state(
         self,
