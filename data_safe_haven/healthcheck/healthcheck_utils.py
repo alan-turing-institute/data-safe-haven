@@ -12,7 +12,7 @@ class BaseContainerInstanceTest:
         subscription_name: AzureSubscriptionName,
     ) -> None:
         container_instance: AzureContainerInstance | None = (
-            self._get_container_instance(output_key, project_manager, subscription_name)
+            self.get_container_instance(output_key, project_manager, subscription_name)
         )
         assert (  # noqa: S101
             container_instance is not None
@@ -29,7 +29,7 @@ class BaseContainerInstanceTest:
                     container_state == "Running"
                 ), f"Container {container.name} from group {container_instance.container_group_name} has state {container_state}"
 
-    def _get_container_instance(
+    def get_container_instance(
         self,
         output_key: str,
         project_manager: SREProjectManager,

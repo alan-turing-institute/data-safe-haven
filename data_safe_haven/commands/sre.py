@@ -313,6 +313,7 @@ def healthcheck(
         manager = SREHealthCheckRunner(
             sre_project_manager=sre_project_manager,
             subscription_name=subscription_name,
+            sre_config=sre_config,
             verbose=verbose,
         )
         manager.run()
