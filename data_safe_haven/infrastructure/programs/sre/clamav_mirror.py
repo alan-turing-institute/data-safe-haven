@@ -186,4 +186,3 @@ class SREClamAVMirrorComponent(ComponentResource):
         }
 
         self.register_outputs({})
-
