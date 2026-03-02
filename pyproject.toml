@@ -53,6 +53,7 @@ dependencies = [
   "pydantic==2.12.5",
   "pyjwt[crypto]==2.11.0",
   "pytz==2025.2",
+  "pytest==9.0.2",
   "pyyaml==6.0.3",
   "rich==14.3.1",
   "simple-acme-dns==4.0.0",
