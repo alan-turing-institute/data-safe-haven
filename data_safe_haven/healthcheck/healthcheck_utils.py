@@ -11,8 +11,8 @@ class BaseContainerInstanceTest:
         project_manager: SREProjectManager,
         subscription_name: AzureSubscriptionName,
     ) -> None:
-        container_instance: AzureContainerInstance | None = (
-            self.get_container_instance(output_key, project_manager, subscription_name)
+        container_instance: AzureContainerInstance | None = self.get_container_instance(
+            output_key, project_manager, subscription_name
         )
         assert (  # noqa: S101
             container_instance is not None
