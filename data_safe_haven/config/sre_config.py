@@ -39,7 +39,7 @@ class SREConfig(AzureSerialisableModel):
     sre: ConfigSectionSRE
     user_services: ConfigSectionUserServices = ConfigSectionUserServices()
 
-    def __key(self) -> tuple:
+    def __key(self) -> tuple[str, str, str, str]:
         return (
             self.azure.location,
             self.azure.subscription_id,
@@ -47,7 +47,7 @@ class SREConfig(AzureSerialisableModel):
             self.name,
         )
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.__key())
 
     @property
