@@ -41,7 +41,7 @@
 # - pydata-sphinx-theme==0.16.1
 # - sphinx-togglebutton==0.4.4
 # - sphinx<10,>=7
-# - sphinxcontrib-typer==0.7.2
+# - sphinxcontrib-typer==0.8.1
 #
 
 accessible-pygments==0.0.5
@@ -334,14 +334,12 @@ sphinxcontrib-qthelp==2.0.0
     # via sphinx
 sphinxcontrib-serializinghtml==2.0.0
     # via sphinx
-sphinxcontrib-typer==0.7.2
+sphinxcontrib-typer==0.8.1
     # via hatch.envs.docs
 typer==0.24.1
     # via
     #   hatch.envs.docs
-    #   typer-slim
-typer-slim==0.24.0
-    # via sphinxcontrib-typer
+    #   sphinxcontrib-typer
 typing-extensions==4.15.0
     # via
     #   azure-core
