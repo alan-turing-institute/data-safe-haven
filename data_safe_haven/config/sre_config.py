@@ -39,14 +39,6 @@ class SREConfig(AzureSerialisableModel):
     sre: ConfigSectionSRE
     user_services: ConfigSectionUserServices = ConfigSectionUserServices()
 
-    def __key(self) -> tuple[str, str, str, str]:
-        return (
-            self.azure.location,
-            self.azure.subscription_id,
-            self.azure.tenant_id,
-            self.name,
-        )
-
     def __hash__(self) -> int:
         return hash(self.__key())
 
