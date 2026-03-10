@@ -39,9 +39,6 @@ class SREConfig(AzureSerialisableModel):
     sre: ConfigSectionSRE
     user_services: ConfigSectionUserServices = ConfigSectionUserServices()
 
-    def __hash__(self) -> int:
-        return hash(self.__key())
-
     @property
     def filename(self) -> str:
         """Construct a canonical filename for this SREConfig."""

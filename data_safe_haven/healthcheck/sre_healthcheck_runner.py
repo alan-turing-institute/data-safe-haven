@@ -50,4 +50,4 @@ class SREHealthCheckRunner:
                 success_message = health_check.test(health_check_plugin)
                 self._logger.info(f"\u2705 {success_message}")
             except HealthCheckError as error:
-                self._logger.info(f"\u274C {error.args[0]}")
+                self._logger.info(f"\u274c {error.args[0]}")

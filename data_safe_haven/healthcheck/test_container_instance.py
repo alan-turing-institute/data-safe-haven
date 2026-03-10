@@ -37,8 +37,8 @@ class TestSoftwareRepositoriesContainer(BaseContainerInstanceTest):
         else:
             terminated_containers: list[str] = self.check_container_state(
                 output_key,
-                self.healthcheck_plugin.project_manager,
-                self.healthcheck_plugin.subscription_name,
+                healthcheck_plugin.project_manager,
+                healthcheck_plugin.subscription_name,
             )
 
             if terminated_containers:
