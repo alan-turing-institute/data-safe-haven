@@ -272,7 +272,3 @@ known-first-party = ["data_safe_haven"]
   "S101",     # assertions
   "TID252",   # relative imports
 ]
-
-"healthcheck/**/*" = [
-    "S101",     # assertions
-]

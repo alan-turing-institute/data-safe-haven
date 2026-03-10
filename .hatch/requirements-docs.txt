@@ -29,7 +29,6 @@
 # - pulumi==3.218.0
 # - pydantic==2.12.5
 # - pyjwt[crypto]==2.11.0
-# - pytest==9.0.2
 # - pytz==2025.2
 # - pyyaml==6.0.3
 # - rich==14.3.1
@@ -175,8 +174,6 @@ idna==3.11
     # via requests
 imagesize==1.4.1
     # via sphinx
-iniconfig==2.3.0
-    # via pytest
 isodate==0.7.2
     # via
     #   azure-keyvault-certificates
@@ -225,7 +222,6 @@ oauthlib==3.3.1
     # via requests-oauthlib
 packaging==26.0
     # via
-    #   pytest
     #   sphinx
     #   wheel
 parver==0.5
@@ -233,8 +229,6 @@ parver==0.5
     #   pulumi-azure-native
     #   pulumi-azuread
     #   pulumi-random
-pluggy==1.6.0
-    # via pytest
 protobuf==5.29.6
     # via pulumi
 psycopg==3.1.19
@@ -265,7 +259,6 @@ pygments==2.19.2
     # via
     #   accessible-pygments
     #   pydata-sphinx-theme
-    #   pytest
     #   rich
     #   sphinx
 pyjwt==2.11.0
@@ -276,8 +269,6 @@ pyopenssl==25.3.0
     # via acme
 pyrfc3339==2.1.0
     # via acme
-pytest==9.0.2
-    # via hatch.envs.docs
 pytz==2025.2
     # via
     #   hatch.envs.docs
