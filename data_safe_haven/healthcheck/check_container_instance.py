@@ -30,10 +30,13 @@ class CheckSoftwareRepositoriesContainer(BaseContainerInstanceTest):
                 )
             )
 
-            assert (  # noqa: S101
-                container_instance is None
-            ), f"A TRE with {healthcheck_plugin.sre_config.sre.allow_workspace_internet=} and {healthcheck_plugin.sre_config.sre.software_packages=} should not have a Nexus container."
-            return f"There's no {output_key} container in an SRE with {allow_workspace_internet=} and {software_packages=}"
+            if container_instance:
+                error_message: str = (
+                    f"A TRE with {allow_workspace_internet=} and {software_packages=} should not have a Nexus container."
+                )
+                raise HealthCheckError(error_message)
+            else:
+                return f"There's no {output_key} container in an SRE with {allow_workspace_internet=} and {software_packages=}"
         else:
             terminated_containers: list[str] = self.get_terminated_containers(
                 output_key,

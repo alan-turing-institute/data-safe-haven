@@ -6,12 +6,12 @@ from data_safe_haven.config import SREConfig
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.types import AzureSubscriptionName
 
-from .healthcheck_plugin import SREHeathCheckPlugin
-from .healthcheck_utils import HealthCheckError, HealthCheckTest
-from .test_container_instance import (
+from .check_container_instance import (
     CheckContainerInstance,
     CheckSoftwareRepositoriesContainer,
 )
+from .healthcheck_plugin import SREHeathCheckPlugin
+from .healthcheck_utils import HealthCheckError, HealthCheckTest
 
 
 @define
