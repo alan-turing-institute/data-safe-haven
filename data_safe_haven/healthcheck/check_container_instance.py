@@ -45,9 +45,7 @@ class CheckSoftwareRepositoriesContainer(BaseContainerInstanceTest):
             )
 
             if terminated_containers:
-                error_message: str = (
-                    f"The following containers from {output_key} are not running: {terminated_containers=}"
-                )
+                error_message = f"The following containers from {output_key} are not running: {terminated_containers=}"
                 raise HealthCheckError(error_message)
             return f"All containers from {output_key} are in 'Running' state"
 
