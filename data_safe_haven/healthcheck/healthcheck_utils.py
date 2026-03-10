@@ -1,6 +1,19 @@
+from typing import Protocol
+
 from data_safe_haven.external import AzureContainerInstance
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.types import AzureSubscriptionName
+
+from .healthcheck_plugin import SREHeathCheckPlugin
+
+
+class HealthCheckError(Exception):
+    pass
+
+
+class HealthCheckTest(Protocol):
+
+    def test(self, plugin: SREHeathCheckPlugin) -> str: ...
 
 
 class BaseContainerInstanceTest:
@@ -10,7 +23,7 @@ class BaseContainerInstanceTest:
         output_key: str,
         project_manager: SREProjectManager,
         subscription_name: AzureSubscriptionName,
-    ) -> None:
+    ) -> list[str]:
         container_instance: AzureContainerInstance | None = self.get_container_instance(
             output_key, project_manager, subscription_name
         )
@@ -18,6 +31,7 @@ class BaseContainerInstanceTest:
             container_instance is not None
         ), f"Cannot get outputs with key {output_key}. Do you need to redeploy?"
 
+        terminated_containers: list[str] = []
         for container in container_instance.containers:
             if (
                 container
@@ -25,9 +39,10 @@ class BaseContainerInstanceTest:
                 and container.instance_view.current_state
             ):
                 container_state: str = container.instance_view.current_state.state
-                assert (  # noqa: S101
-                    container_state == "Running"
-                ), f"Container {container.name} from group {container_instance.container_group_name} has state {container_state}"
+                if container_state != "Running":
+                    terminated_containers.append(f"{container.name}")
+
+        return terminated_containers
 
     def get_container_instance(
         self,

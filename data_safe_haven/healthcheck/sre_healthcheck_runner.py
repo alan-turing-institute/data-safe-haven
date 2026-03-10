@@ -1,3 +1,5 @@
+import logging
+
 from attrs import define
 
 from data_safe_haven.config import SREConfig
@@ -5,13 +7,18 @@ from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.types import AzureSubscriptionName
 
 from .healthcheck_plugin import SREHeathCheckPlugin
-from .test_container_instance import TestContainerInstance
+from .healthcheck_utils import HealthCheckError, HealthCheckTest
+from .test_container_instance import (
+    TestContainerInstance,
+    TestSoftwareRepositoriesContainer,
+)
 
 
 @define
 class SREHealthCheckRunner:
     """Healthcheck manager for a deployed SRE"""
 
+    _logger: logging.Logger
     _sre_project_manager: SREProjectManager
     _subscription_name: AzureSubscriptionName
     _sre_config: SREConfig
@@ -19,14 +26,16 @@ class SREHealthCheckRunner:
 
     def run(self) -> None:
 
-        test_container_instances = TestContainerInstance(
-            SREHeathCheckPlugin(
-                self._sre_project_manager, self._subscription_name, self._sre_config
-            )
+        health_check_plugin = SREHeathCheckPlugin(
+            self._sre_project_manager, self._subscription_name, self._sre_config
         )
 
-        test_container_instances.test_container_state(
-            output_keys=[
+        test_classes: list[HealthCheckTest] = [
+            TestSoftwareRepositoriesContainer(),
+        ]
+        test_classes += [
+            TestContainerInstance(output_key=output_key)
+            for output_key in [
                 "apt_proxy_server",
                 "sre_clamav_mirror",
                 "sre_gitea_server",
@@ -34,5 +43,11 @@ class SREHealthCheckRunner:
                 "sre_hedgedoc_server",
                 "sre_identity",
             ]
-        )
-        test_container_instances.test_software_repositories_container()
+        ]
+
+        for health_check in test_classes:
+            try:
+                success_message = health_check.test(health_check_plugin)
+                self._logger.info(f"\u2705 {success_message}")
+            except HealthCheckError as error:
+                self._logger.info(f"\u274C {error.args[0]}")
