@@ -9,8 +9,8 @@ from data_safe_haven.types import AzureSubscriptionName
 from .healthcheck_plugin import SREHeathCheckPlugin
 from .healthcheck_utils import HealthCheckError, HealthCheckTest
 from .test_container_instance import (
-    TestContainerInstance,
-    TestSoftwareRepositoriesContainer,
+    CheckContainerInstance,
+    CheckSoftwareRepositoriesContainer,
 )
 
 
@@ -31,10 +31,10 @@ class SREHealthCheckRunner:
         )
 
         test_classes: list[HealthCheckTest] = [
-            TestSoftwareRepositoriesContainer(),
+            CheckSoftwareRepositoriesContainer(),
         ]
         test_classes += [
-            TestContainerInstance(output_key=output_key)
+            CheckContainerInstance(output_key=output_key)
             for output_key in [
                 "apt_proxy_server",
                 "sre_clamav_mirror",
@@ -47,7 +47,7 @@ class SREHealthCheckRunner:
 
         for health_check in test_classes:
             try:
-                success_message = health_check.test(health_check_plugin)
+                success_message = health_check.check(health_check_plugin)
                 self._logger.info(f"\u2705 {success_message}")
             except HealthCheckError as error:
                 self._logger.info(f"\u274c {error.args[0]}")

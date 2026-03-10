@@ -7,9 +7,9 @@ from .healthcheck_plugin import SREHeathCheckPlugin
 from .healthcheck_utils import BaseContainerInstanceTest, HealthCheckError
 
 
-class TestSoftwareRepositoriesContainer(BaseContainerInstanceTest):
+class CheckSoftwareRepositoriesContainer(BaseContainerInstanceTest):
 
-    def test(self, healthcheck_plugin: SREHeathCheckPlugin) -> str:
+    def check(self, healthcheck_plugin: SREHeathCheckPlugin) -> str:
 
         output_key: str = "software_repositories"
         allow_workspace_internet: bool = (
@@ -50,10 +50,10 @@ class TestSoftwareRepositoriesContainer(BaseContainerInstanceTest):
 
 
 @define
-class TestContainerInstance(BaseContainerInstanceTest):
+class CheckContainerInstance(BaseContainerInstanceTest):
     output_key: str
 
-    def test(self, healthcheck_plugin: SREHeathCheckPlugin) -> str:
+    def check(self, healthcheck_plugin: SREHeathCheckPlugin) -> str:
         terminated_containers: list[str] = self.get_terminated_containers(
             self.output_key,
             healthcheck_plugin.project_manager,

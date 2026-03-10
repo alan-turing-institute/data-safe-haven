@@ -13,7 +13,7 @@ class HealthCheckError(Exception):
 
 class HealthCheckTest(Protocol):
 
-    def test(self, plugin: SREHeathCheckPlugin) -> str: ...
+    def check(self, plugin: SREHeathCheckPlugin) -> str: ...
 
 
 class BaseContainerInstanceTest:
