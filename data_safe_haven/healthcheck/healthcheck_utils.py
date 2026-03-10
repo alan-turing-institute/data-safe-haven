@@ -18,7 +18,7 @@ class HealthCheckTest(Protocol):
 
 class BaseContainerInstanceTest:
 
-    def check_container_state(
+    def get_terminated_containers(
         self,
         output_key: str,
         project_manager: SREProjectManager,
@@ -27,9 +27,12 @@ class BaseContainerInstanceTest:
         container_instance: AzureContainerInstance | None = self.get_container_instance(
             output_key, project_manager, subscription_name
         )
-        assert (  # noqa: S101
-            container_instance is not None
-        ), f"Cannot get outputs with key {output_key}. Do you need to redeploy?"
+
+        if not container_instance:
+            error_message: str = (
+                f"Cannot get outputs with key {output_key}. Do you need to redeploy?"
+            )
+            raise HealthCheckError(error_message)
 
         terminated_containers: list[str] = []
         for container in container_instance.containers:

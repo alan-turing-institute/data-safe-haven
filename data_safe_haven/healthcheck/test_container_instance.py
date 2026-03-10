@@ -35,7 +35,7 @@ class TestSoftwareRepositoriesContainer(BaseContainerInstanceTest):
             ), f"A TRE with {healthcheck_plugin.sre_config.sre.allow_workspace_internet=} and {healthcheck_plugin.sre_config.sre.software_packages=} should not have a Nexus container."
             return f"There's no {output_key} container in an SRE with {allow_workspace_internet=} and {software_packages=}"
         else:
-            terminated_containers: list[str] = self.check_container_state(
+            terminated_containers: list[str] = self.get_terminated_containers(
                 output_key,
                 healthcheck_plugin.project_manager,
                 healthcheck_plugin.subscription_name,
@@ -54,7 +54,7 @@ class TestContainerInstance(BaseContainerInstanceTest):
     output_key: str
 
     def test(self, healthcheck_plugin: SREHeathCheckPlugin) -> str:
-        terminated_containers: list[str] = self.check_container_state(
+        terminated_containers: list[str] = self.get_terminated_containers(
             self.output_key,
             healthcheck_plugin.project_manager,
             healthcheck_plugin.subscription_name,
