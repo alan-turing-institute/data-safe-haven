@@ -275,14 +275,6 @@ def teardown(
 @sre_command_group.command()
 def healthcheck(
     name: Annotated[str, typer.Argument(help="Name of SRE to check.")],
-    verbose: Annotated[  # noqa: FBT002
-        bool,
-        typer.Option(
-            "--verbose",
-            "-v",
-            help="Run the healthcheck in verbose mode.",
-        ),
-    ] = False,
 ) -> None:
     """Checks the health of a Secure Research Environment"""
     logger = get_logger()
@@ -315,7 +307,6 @@ def healthcheck(
             sre_project_manager=sre_project_manager,
             subscription_name=subscription_name,
             sre_config=sre_config,
-            verbose=verbose,
         )
         manager.run()
     except DataSafeHavenError as exc:

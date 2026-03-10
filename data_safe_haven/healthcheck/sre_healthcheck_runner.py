@@ -22,7 +22,6 @@ class SREHealthCheckRunner:
     _sre_project_manager: SREProjectManager
     _subscription_name: AzureSubscriptionName
     _sre_config: SREConfig
-    _verbose: bool
 
     def run(self) -> None:
 
