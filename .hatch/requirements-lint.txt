@@ -37,7 +37,7 @@ ansible-core==2.20.3
     #   ansible-lint
     #   molecule
     #   pytest-ansible
-ansible-creator==26.3.0
+ansible-creator==26.3.1
     # via ansible-dev-tools
 ansible-dev-environment==26.2.0
     # via ansible-dev-tools
@@ -67,7 +67,7 @@ black==26.1.0
     #   ansible-lint
 bracex==2.6
     # via wcmatch
-cachetools==7.0.4
+cachetools==7.0.5
     # via tox
 cffi==2.0.0
     # via
@@ -97,7 +97,7 @@ enrich==1.2.7
     # via molecule
 execnet==2.1.2
     # via pytest-xdist
-filelock==3.25.0
+filelock==3.25.2
     # via
     #   ansible-lint
     #   python-discovery
@@ -210,7 +210,7 @@ pytest-xdist==3.8.0
     #   tox-ansible
 python-daemon==3.1.2
     # via ansible-runner
-python-discovery==1.1.1
+python-discovery==1.1.3
     # via virtualenv
 python-gnupg==0.5.6
     # via ansible-sign
@@ -257,7 +257,7 @@ subprocess-tee==0.4.2
     #   ansible-lint
 tomli-w==1.2.0
     # via tox
-tox==4.49.0
+tox==4.49.1
     # via tox-ansible
 tox-ansible==26.3.0
     # via ansible-dev-tools
@@ -287,7 +287,7 @@ tzdata==2025.3
     # via ansible-navigator
 urllib3==2.6.3
     # via types-requests
-virtualenv==21.1.0
+virtualenv==21.2.0
     # via tox
 wcmatch==10.1
     # via
