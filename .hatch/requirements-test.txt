@@ -344,7 +344,7 @@ pyjwt==2.11.0
     #   -c .hatch/requirements.txt
     #   hatch.envs.test
     #   msal
-pyopenssl==25.3.0
+pyopenssl==26.0.0
     # via
     #   -c .hatch/requirements.txt
     #   acme
