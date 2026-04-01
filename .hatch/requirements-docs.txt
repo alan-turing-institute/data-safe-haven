@@ -39,9 +39,9 @@
 # - emoji==2.15.0
 # - myst-parser==5.0.0
 # - pydata-sphinx-theme==0.16.1
-# - sphinx-togglebutton==0.4.4
+# - sphinx-togglebutton==0.4.5
 # - sphinx<10,>=7
-# - sphinxcontrib-typer==0.7.2
+# - sphinxcontrib-typer==0.8.1
 #
 
 accessible-pygments==0.0.5
@@ -171,7 +171,7 @@ emoji==2.15.0
     # via hatch.envs.docs
 fqdn==1.5.1
     # via hatch.envs.docs
-grpcio==1.78.0
+grpcio==1.80.0
     # via pulumi
 idna==3.11
     # via requests
@@ -260,7 +260,7 @@ pydantic-core==2.41.5
     # via pydantic
 pydata-sphinx-theme==0.16.1
     # via hatch.envs.docs
-pygments==2.19.2
+pygments==2.20.0
     # via
     #   accessible-pygments
     #   pydata-sphinx-theme
@@ -283,7 +283,7 @@ pyyaml==6.0.3
     #   hatch.envs.docs
     #   myst-parser
     #   pulumi
-requests==2.33.0
+requests==2.33.1
     # via
     #   acme
     #   azure-core
@@ -320,7 +320,7 @@ sphinx==9.1.0
     #   pydata-sphinx-theme
     #   sphinx-togglebutton
     #   sphinxcontrib-typer
-sphinx-togglebutton==0.4.4
+sphinx-togglebutton==0.4.5
     # via hatch.envs.docs
 sphinxcontrib-applehelp==2.0.0
     # via sphinx
@@ -334,14 +334,12 @@ sphinxcontrib-qthelp==2.0.0
     # via sphinx
 sphinxcontrib-serializinghtml==2.0.0
     # via sphinx
-sphinxcontrib-typer==0.7.2
+sphinxcontrib-typer==0.8.1
     # via hatch.envs.docs
 typer==0.24.1
     # via
     #   hatch.envs.docs
-    #   typer-slim
-typer-slim==0.24.0
-    # via sphinxcontrib-typer
+    #   sphinxcontrib-typer
 typing-extensions==4.15.0
     # via
     #   azure-core
