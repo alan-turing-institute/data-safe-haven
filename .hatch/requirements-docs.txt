@@ -21,7 +21,7 @@
 # - azure-storage-file-share==12.24.0
 # - chevron==0.14.0
 # - click==8.3.1
-# - cryptography==46.0.5
+# - cryptography==46.0.7
 # - fqdn==1.5.1
 # - psycopg[binary]==3.1.19
 # - pulumi-azure-native==3.14.0
@@ -135,7 +135,7 @@ certifi==2026.2.25
     #   requests
 cffi==2.0.0
     # via cryptography
-charset-normalizer==3.4.6
+charset-normalizer==3.4.7
     # via requests
 chevron==0.14.0
     # via hatch.envs.docs
@@ -143,7 +143,7 @@ click==8.3.1
     # via
     #   hatch.envs.docs
     #   typer
-cryptography==46.0.5
+cryptography==46.0.7
     # via
     #   hatch.envs.docs
     #   acme
@@ -171,7 +171,7 @@ emoji==2.15.0
     # via hatch.envs.docs
 fqdn==1.5.1
     # via hatch.envs.docs
-grpcio==1.78.0
+grpcio==1.80.0
     # via pulumi
 idna==3.11
     # via requests
@@ -260,7 +260,7 @@ pydantic-core==2.41.5
     # via pydantic
 pydata-sphinx-theme==0.16.1
     # via hatch.envs.docs
-pygments==2.19.2
+pygments==2.20.0
     # via
     #   accessible-pygments
     #   pydata-sphinx-theme
@@ -283,7 +283,7 @@ pyyaml==6.0.3
     #   hatch.envs.docs
     #   myst-parser
     #   pulumi
-requests==2.33.0
+requests==2.33.1
     # via
     #   acme
     #   azure-core
