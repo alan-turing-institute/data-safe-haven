@@ -14,7 +14,7 @@
 | data\_safe\_haven/allowlist/\_\_init\_\_.py                                               |        2 |        0 |    100% |           |
 | data\_safe\_haven/allowlist/allowlist.py                                                  |       39 |        3 |     92% |     50-52 |
 | data\_safe\_haven/commands/\_\_init\_\_.py                                                |        2 |        0 |    100% |           |
-| data\_safe\_haven/commands/allowlist.py                                                   |      100 |       27 |     73% |33-34, 61-66, 78-80, 97-101, 104-105, 132-134, 166-167, 172-173, 179-181, 215, 222-224 |
+| data\_safe\_haven/commands/allowlist.py                                                   |      101 |       27 |     73% |35-36, 63-68, 80-82, 99-103, 106-107, 133-135, 167-168, 173-174, 180-182, 216, 223-225 |
 | data\_safe\_haven/commands/cli.py                                                         |       30 |        3 |     90% |57, 60, 105 |
 | data\_safe\_haven/commands/config.py                                                      |      122 |        3 |     98% |   232-234 |
 | data\_safe\_haven/commands/context.py                                                     |       72 |        0 |    100% |           |
@@ -112,12 +112,12 @@
 | data\_safe\_haven/types/enums.py                                                          |      134 |        2 |     99% |   197-217 |
 | data\_safe\_haven/types/types.py                                                          |        2 |        0 |    100% |           |
 | data\_safe\_haven/utility/\_\_init\_\_.py                                                 |        2 |        0 |    100% |           |
-| data\_safe\_haven/utility/file\_reader.py                                                 |       20 |        9 |     55% |16-17, 21, 25-30, 33 |
+| data\_safe\_haven/utility/file\_reader.py                                                 |       20 |        3 |     85% |21, 27, 33 |
 | data\_safe\_haven/validators/\_\_init\_\_.py                                              |        3 |        0 |    100% |           |
 | data\_safe\_haven/validators/typer.py                                                     |       24 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                                |       70 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                              |        2 |        0 |    100% |           |
-| **TOTAL**                                                                                 | **5250** | **2376** | **55%** |           |
+| **TOTAL**                                                                                 | **5251** | **2370** | **55%** |           |
 
 
 ## Setup coverage badge
