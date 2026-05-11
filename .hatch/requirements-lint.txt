@@ -285,7 +285,7 @@ typing-inspection==0.4.2
     # via pydantic
 tzdata==2025.3
     # via ansible-navigator
-urllib3==2.6.3
+urllib3==2.7.0
     # via types-requests
 virtualenv==21.2.0
     # via tox
