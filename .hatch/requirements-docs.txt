@@ -129,13 +129,13 @@ babel==2.18.0
     #   sphinx
 beautifulsoup4==4.14.3
     # via pydata-sphinx-theme
-certifi==2026.2.25
+certifi==2026.4.22
     # via
     #   msrest
     #   requests
 cffi==2.0.0
     # via cryptography
-charset-normalizer==3.4.6
+charset-normalizer==3.4.7
     # via requests
 chevron==0.14.0
     # via hatch.envs.docs
@@ -171,7 +171,7 @@ emoji==2.15.0
     # via hatch.envs.docs
 fqdn==1.5.1
     # via hatch.envs.docs
-grpcio==1.78.0
+grpcio==1.80.0
     # via pulumi
 idna==3.15
     # via requests
@@ -198,18 +198,18 @@ jinja2==3.1.6
     #   sphinx
 josepy==2.2.0
     # via acme
-markdown-it-py==4.0.0
+markdown-it-py==4.2.0
     # via
     #   mdit-py-plugins
     #   myst-parser
     #   rich
 markupsafe==3.0.3
     # via jinja2
-mdit-py-plugins==0.5.0
+mdit-py-plugins==0.6.1
     # via myst-parser
 mdurl==0.1.2
     # via markdown-it-py
-msal==1.35.1
+msal==1.36.0
     # via
     #   azure-identity
     #   msal-extensions
@@ -224,7 +224,7 @@ myst-parser==5.0.0
     # via hatch.envs.docs
 oauthlib==3.3.1
     # via requests-oauthlib
-packaging==26.0
+packaging==26.2
     # via
     #   pulumi
     #   sphinx
@@ -260,7 +260,7 @@ pydantic-core==2.41.5
     # via pydantic
 pydata-sphinx-theme==0.16.1
     # via hatch.envs.docs
-pygments==2.19.2
+pygments==2.20.0
     # via
     #   accessible-pygments
     #   pydata-sphinx-theme
@@ -270,7 +270,7 @@ pyjwt==2.11.0
     # via
     #   hatch.envs.docs
     #   msal
-pyopenssl==26.0.0
+pyopenssl==26.2.0
     # via acme
 pyrfc3339==2.1.0
     # via acme
@@ -283,7 +283,7 @@ pyyaml==6.0.3
     #   hatch.envs.docs
     #   myst-parser
     #   pulumi
-requests==2.33.0
+requests==2.34.2
     # via
     #   acme
     #   azure-core
@@ -369,13 +369,13 @@ typing-extensions==4.15.0
     #   typing-inspection
 typing-inspection==0.4.2
     # via pydantic
-urllib3==2.6.3
+urllib3==2.7.0
     # via requests
 validators==0.35.0
     # via simple-acme-dns
 websocket-client==1.9.0
     # via hatch.envs.docs
-wheel==0.46.3
+wheel==0.47.0
     # via sphinx-togglebutton
 
 # The following packages are considered to be unsafe in a requirements file:
