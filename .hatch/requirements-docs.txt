@@ -173,7 +173,7 @@ fqdn==1.5.1
     # via hatch.envs.docs
 grpcio==1.78.0
     # via pulumi
-idna==3.11
+idna==3.15
     # via requests
 imagesize==2.0.0
     # via sphinx

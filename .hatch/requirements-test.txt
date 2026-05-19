@@ -225,7 +225,7 @@ grpcio==1.78.0
     # via
     #   -c .hatch/requirements.txt
     #   pulumi
-idna==3.11
+idna==3.15
     # via
     #   -c .hatch/requirements.txt
     #   requests

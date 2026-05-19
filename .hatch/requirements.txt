@@ -149,7 +149,7 @@ fqdn==1.5.1
     # via hatch.envs.default
 grpcio==1.78.0
     # via pulumi
-idna==3.11
+idna==3.15
     # via requests
 isodate==0.7.2
     # via
