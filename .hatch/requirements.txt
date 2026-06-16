@@ -29,7 +29,7 @@
 # - pulumi-random==4.19.1
 # - pulumi==3.224.0
 # - pydantic==2.12.5
-# - pyjwt[crypto]==2.11.0
+# - pyjwt[crypto]==2.13.0
 # - pytz==2025.2
 # - pyyaml==6.0.3
 # - rich==14.3.3
@@ -218,7 +218,7 @@ pydantic-core==2.41.5
     # via pydantic
 pygments==2.19.2
     # via rich
-pyjwt==2.11.0
+pyjwt==2.13.0
     # via
     #   hatch.envs.default
     #   msal
