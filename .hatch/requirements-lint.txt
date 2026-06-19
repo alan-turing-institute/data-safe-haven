@@ -81,7 +81,7 @@ click==8.3.1
     #   molecule
 colorama==0.4.6
     # via tox
-cryptography==46.0.6
+cryptography==48.0.1
     # via
     #   ansible-core
     #   ansible-lint
