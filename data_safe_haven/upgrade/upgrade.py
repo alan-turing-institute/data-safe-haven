@@ -76,13 +76,16 @@ class Upgrade:
                 self.logger.info(
                     f"You're using DSH version {self.dsh_version} but your SRE was deployed with version {self.sre_version}. Deployment will therefore trigger an upgrade."
                 )
-                if self.dsh_version >= Version("5.7.2"):
+                if (self.sre_version < Version("5.8.0")) and (
+                    self.dsh_version >= Version("5.8.0")
+                ):
                     self.logger.info(
-                        f"Upgrading to version {self.dsh_version} requires reprovisioning of several databases. All of the data on the following databases will therefore be lost during the upgrade:"
+                        f"Upgrading to version {self.dsh_version} requires reprovisioning of several components. All of the data on the following will be lost during the upgrade:"
                     )
-                    self.logger.info("1. Gitea")
-                    self.logger.info("2. Gitea mirror")
-                    self.logger.info("3. Hedgedoc")
+                    self.logger.info("1. Gitea database")
+                    self.logger.info("2. Gitea mirror database")
+                    self.logger.info("3. Hedgedoc database")
+                    self.logger.info("4. Workspace datadrives")
                     self.logger.info(
                         "If you have non-duplicate data stored on any of these you should back them up before proceeding."
                     )
@@ -105,14 +108,16 @@ class Upgrade:
         if self.fresh_deployment:
             changes = False
         elif self.dsh_version > self.sre_version:
-            if self.dsh_version >= Version("5.7.2"):
-                changes = self.upgrade_to_5_7_2()
+            if (self.sre_version < Version("5.8.0")) and (
+                self.dsh_version >= Version("5.8.0")
+            ):
+                changes = self.upgrade_to_5_8_0()
 
         return changes
 
-    def upgrade_to_5_7_2(self) -> bool:
-        """Upgrade from a version below 5.7.2 to a version at or above 5.7.2."""
-        self.logger.info("Preparing SRE for upgrade to version 5.7.2")
+    def upgrade_to_5_8_0(self) -> bool:
+        """Upgrade from a version below 5.8.0 to a version at or above 5.8.0."""
+        self.logger.info("Preparing SRE for upgrade to version 5.8.0")
 
         resource_group = self.project_manager.output("sre_resource_group")
         azure_sdk = AzureSdk(self.project_manager.context.subscription_name)
