@@ -41,7 +41,7 @@
 # - coverage==7.13.2
 # - freezegun==1.5.5
 # - pytest-mock==3.15.1
-# - pytest==9.0.3
+# - pytest==9.0.2
 # - requests-mock==1.12.1
 #
 
@@ -393,7 +393,7 @@ pyrfc3339==2.1.0
     # via
     #   -c .hatch/requirements.txt
     #   acme
-pytest==9.0.3
+pytest==9.0.2
     # via
     #   hatch.envs.test
     #   pytest-mock
