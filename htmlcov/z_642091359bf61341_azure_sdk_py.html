@@ -55,8 +55,8 @@
         </aside>
         <h2>
             <span class="text">530 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">198<span class="text"> run</span></button>
-            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">332<span class="text"> missing</span></button>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">197<span class="text"> run</span></button>
+            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">333<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
         </h2>
         <p class="text">
@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_642091359bf61341_credentials_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.15.2">coverage.py v7.15.2</a>,
-            created at 2026-07-27 15:30 +0000
+            created at 2026-07-29 13:05 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -982,12 +982,12 @@
     <p class="run run2"><span class="n"><a id="t900" href="#t900">900</a></span><span class="t">                        <span class="nam">storage_account_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t901" href="#t901">901</a></span><span class="t">                    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t902" href="#t902">902</a></span><span class="t">                <span class="key">if</span> <span class="nam">storage_keys</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t903" href="#t903">903</a></span><span class="t">                    <span class="key">break</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t903" href="#t903">903</a></span><span class="t">                    <span class="key">break</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t904" href="#t904">904</a></span><span class="t">                <span class="nam">time</span><span class="op">.</span><span class="nam">sleep</span><span class="op">(</span><span class="num">5</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t905" href="#t905">905</a></span><span class="t">            <span class="key">if</span> <span class="key">not</span> <span class="nam">isinstance</span><span class="op">(</span><span class="nam">storage_keys</span><span class="op">,</span> <span class="nam">StorageAccountListKeysResult</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t906" href="#t906">906</a></span><span class="t">                <span class="nam">msg</span> <span class="op">=</span> <span class="fst">f"</span><span class="fst">No keys were retrieved for </span><span class="op">{</span><span class="nam">msg_sa</span><span class="op">}</span><span class="fst"> in </span><span class="op">{</span><span class="nam">msg_rg</span><span class="op">}</span><span class="fst">.</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t907" href="#t907">907</a></span><span class="t">                <span class="key">raise</span> <span class="nam">DataSafeHavenAzureStorageError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t908" href="#t908">908</a></span><span class="t">            <span class="nam">keys</span> <span class="op">=</span> <span class="nam">cast</span><span class="op">(</span><span class="nam">list</span><span class="op">[</span><span class="nam">StorageAccountKey</span><span class="op">]</span><span class="op">,</span> <span class="nam">storage_keys</span><span class="op">.</span><span class="nam">keys</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t908" href="#t908">908</a></span><span class="t">            <span class="nam">keys</span> <span class="op">=</span> <span class="nam">cast</span><span class="op">(</span><span class="nam">list</span><span class="op">[</span><span class="nam">StorageAccountKey</span><span class="op">]</span><span class="op">,</span> <span class="nam">storage_keys</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">"keys"</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t909" href="#t909">909</a></span><span class="t">            <span class="key">if</span> <span class="key">not</span> <span class="nam">keys</span> <span class="key">or</span> <span class="key">not</span> <span class="nam">isinstance</span><span class="op">(</span><span class="nam">keys</span><span class="op">,</span> <span class="nam">list</span><span class="op">)</span> <span class="key">or</span> <span class="nam">len</span><span class="op">(</span><span class="nam">keys</span><span class="op">)</span> <span class="op">==</span> <span class="num">0</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t910" href="#t910">910</a></span><span class="t">                <span class="nam">msg</span> <span class="op">=</span> <span class="fst">f"</span><span class="fst">List of keys was empty for </span><span class="op">{</span><span class="nam">msg_sa</span><span class="op">}</span><span class="fst"> in </span><span class="op">{</span><span class="nam">msg_rg</span><span class="op">}</span><span class="fst">.</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t911" href="#t911">911</a></span><span class="t">                <span class="key">raise</span> <span class="nam">DataSafeHavenAzureStorageError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -1595,7 +1595,7 @@
             <a class="nav" href="z_642091359bf61341_credentials_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.15.2">coverage.py v7.15.2</a>,
-            created at 2026-07-27 15:30 +0000
+            created at 2026-07-29 13:05 +0000
         </p>
     </div>
 </footer>
