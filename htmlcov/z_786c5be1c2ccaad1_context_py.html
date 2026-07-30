@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_786c5be1c2ccaad1_context_manager_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.15.2">coverage.py v7.15.2</a>,
-            created at 2026-07-29 14:10 +0000
+            created at 2026-07-30 08:43 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -171,7 +171,7 @@
     <p class="run"><span class="n"><a id="t89" href="#t89">89</a></span><span class="t">    <span class="key">def</span> <span class="nam">pulumi_encryption_key_version</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span> <span class="op">-></span> <span class="nam">str</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t90" href="#t90">90</a></span><span class="t">        <span class="str">"""ID for the Pulumi encryption key"""</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t91" href="#t91">91</a></span><span class="t">        <span class="nam">key_id</span><span class="op">:</span> <span class="nam">str</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">pulumi_encryption_key</span><span class="op">.</span><span class="nam">id</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t92" href="#t92">92</a></span><span class="t">        <span class="key">return</span> <span class="nam">key_id</span><span class="op">.</span><span class="nam">split</span><span class="op">(</span><span class="str">"/"</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="num">1</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t92" href="#t92">92</a></span><span class="t">        <span class="key">return</span> <span class="nam">key_id</span><span class="op">.</span><span class="nam">rsplit</span><span class="op">(</span><span class="str">"/"</span><span class="op">,</span> <span class="nam">maxsplit</span><span class="op">=</span><span class="num">1</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="num">1</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t93" href="#t93">93</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t94" href="#t94">94</a></span><span class="t">    <span class="op">@</span><span class="nam">property</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t95" href="#t95">95</a></span><span class="t">    <span class="key">def</span> <span class="nam">pulumi_secrets_provider_url</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span> <span class="op">-></span> <span class="nam">str</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -212,7 +212,7 @@
             <a class="nav" href="z_786c5be1c2ccaad1_context_manager_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.15.2">coverage.py v7.15.2</a>,
-            created at 2026-07-29 14:10 +0000
+            created at 2026-07-30 08:43 +0000
         </p>
     </div>
 </footer>
