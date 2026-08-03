@@ -84,7 +84,7 @@ class SREDnsServerVMComponent(ComponentResource):
             adguardhome_yaml_content_encoded=props.adguardhome_yaml_content_encoded,
             dockerhub_username=props.dockerhub_username,
             dockerhub_access_token=props.dockerhub_access_token,
-            container_image="adguard/adguardhome:v0.107.77",
+            container_image="adguard/adguardhome:v0.107.78",
         ).apply(lambda kwargs: self.template_cloudinit(**kwargs))
 
         container_host_vm = VMComponent(

@@ -303,7 +303,7 @@ class DnsSidecarComponent(ComponentResource):
             template=JobTemplateArgs(
                 containers=[
                     ContainerArgs(
-                        image="mcr.microsoft.com/azure-cli:2.87.0",
+                        image="mcr.microsoft.com/azure-cli:2.88.0",
                         name="dnssidecar",
                         command=("/bin/sh", "/mnt/init/init.sh"),
                         resources=ContainerResourcesArgs(

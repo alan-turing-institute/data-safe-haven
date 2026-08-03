@@ -218,7 +218,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         ],
                     ),
                     containerinstance.ContainerArgs(
-                        image="sonatype/nexus3:3.93.2",  # Version 3.38.0 currently fails deployment. Keeping previous version.
+                        image="sonatype/nexus3:3.94.1",  # Version 3.38.0 currently fails deployment. Keeping previous version.
                         name="nexus"[:63],
                         environment_variables=[
                             containerinstance.EnvironmentVariableArgs(
