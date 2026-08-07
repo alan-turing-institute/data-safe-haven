@@ -46,12 +46,12 @@ class DeferredCredential(TokenCredential):
         self.skip_confirmation = skip_confirmation
         self.logger = get_logger()
         self.scopes = scopes
-        self.tenant_id = tenant_id
+        self.tenant_id_ = tenant_id
 
     @property
     def token(self) -> str:
         """Get a token from the credential provider."""
-        return str(self.get_token(*self.scopes, tenant_id=self.tenant_id).token)
+        return str(self.get_token(*self.scopes, tenant_id=self.tenant_id_).token)
 
     @classmethod
     def decode_token(cls, auth_token: str) -> dict[str, Any]:
@@ -125,6 +125,11 @@ class DeferredCredential(TokenCredential):
             )
         return DeferredCredential.tokens_[combined_scopes]
 
+    @property
+    def tenant_id(self) -> str | None:
+        """Return the tenant ID associated with the credential."""
+        return self.tenant_id_
+
 
 class AzureSdkCredential(DeferredCredential):
     """
@@ -165,7 +170,20 @@ class AzureSdkCredential(DeferredCredential):
             msg = "Selected credentials are incorrect."
             raise DataSafeHavenCachedCredentialError(msg)
 
+        self.tenant_id_ = decoded["tid"]
+
         return credential
+
+    @property
+    def tenant_id(self) -> str | None:
+        """
+        Return the tenant ID associated with the credential.
+
+        Overrides the DeferredCredential property of the same name.
+        """
+        if not self.tenant_id_:
+            self.get_credential()
+        return self.tenant_id_
 
 
 class GraphApiCredential(DeferredCredential):

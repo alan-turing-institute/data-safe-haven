@@ -255,7 +255,7 @@ class TestAzureSdk:
     def test_tenant_id(
         self,
         request,
-        mock_azuresdk_get_subscription,  # noqa: ARG002
+        mock_azuresdk_get_credential,  # noqa: ARG002
     ):
         sdk = AzureSdk("subscription name")
         assert sdk.tenant_id == request.config.guid_tenant
