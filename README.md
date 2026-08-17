@@ -77,7 +77,7 @@
 | data\_safe\_haven/infrastructure/programs/sre/\_\_init\_\_.py                             |        0 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/programs/sre/application\_gateway.py                     |       24 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/programs/sre/apt\_proxy\_server.py                       |       29 |       19 |     34% |34-43, 57-203 |
-| data\_safe\_haven/infrastructure/programs/sre/clamav\_mirror.py                           |       27 |       18 |     33% |33-41, 55-177 |
+| data\_safe\_haven/infrastructure/programs/sre/clamav\_mirror.py                           |       27 |       18 |     33% |33-41, 55-170 |
 | data\_safe\_haven/infrastructure/programs/sre/data.py                                     |       87 |       72 |     17% |70-94, 112-821 |
 | data\_safe\_haven/infrastructure/programs/sre/database\_servers.py                        |       24 |        2 |     92% |     54-69 |
 | data\_safe\_haven/infrastructure/programs/sre/desired\_state.py                           |       50 |       35 |     30% |68-91, 105-234, 238 |
