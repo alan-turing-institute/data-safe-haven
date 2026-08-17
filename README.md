@@ -114,14 +114,14 @@
 | data\_safe\_haven/types/enums.py                                                          |      134 |        0 |    100% |           |
 | data\_safe\_haven/types/types.py                                                          |        2 |        0 |    100% |           |
 | data\_safe\_haven/upgrade/\_\_init\_\_.py                                                 |        2 |        0 |    100% |           |
-| data\_safe\_haven/upgrade/upgrade.py                                                      |       90 |        8 |     91% |136-139, 148-151 |
+| data\_safe\_haven/upgrade/upgrade.py                                                      |       91 |        8 |     91% |141-144, 153-156 |
 | data\_safe\_haven/utility/\_\_init\_\_.py                                                 |        2 |        0 |    100% |           |
 | data\_safe\_haven/utility/file\_reader.py                                                 |       20 |        1 |     95% |        33 |
 | data\_safe\_haven/validators/\_\_init\_\_.py                                              |        3 |        0 |    100% |           |
 | data\_safe\_haven/validators/typer.py                                                     |       24 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                                |       70 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                              |        2 |        0 |    100% |           |
-| **TOTAL**                                                                                 | **5487** | **1895** | **65%** |           |
+| **TOTAL**                                                                                 | **5488** | **1895** | **65%** |           |
 
 
 ## Setup coverage badge
