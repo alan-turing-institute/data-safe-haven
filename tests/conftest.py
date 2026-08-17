@@ -246,7 +246,6 @@ def mock_azuresdk_get_subscription(
     subscription = Subscription()
     subscription.display_name = "Data Safe Haven Acme"
     subscription.subscription_id = request.config.guid_subscription
-    subscription.tenant_id = request.config.guid_tenant
     mocker.patch.object(
         AzureSdk,
         "get_subscription",
@@ -277,15 +276,25 @@ def mock_graphapi_get_credential(mocker: MockerFixture) -> None:
 
 
 @fixture
-def mock_azuresdk_get_credential(mocker: MockerFixture) -> None:
+def mock_azuresdk_get_credential(
+    mocker: MockerFixture, request: FixtureRequest
+) -> None:
     class MockCredential(TokenCredential):
         def get_token(*args, **kwargs) -> AccessToken:  # noqa: ARG002
             return AccessToken("dummy-token", 0)
+
+        @property
+        def tenant_id(self) -> str | None:
+            return request.config.guid_tenant
 
     mocker.patch.object(
         AzureSdkCredential,
         "get_credential",
         return_value=MockCredential(),
+    )
+
+    AzureSdkCredential.tenant_id = mocker.PropertyMock(
+        return_value=request.config.guid_tenant
     )
 
 

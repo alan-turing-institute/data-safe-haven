@@ -880,6 +880,7 @@ class GraphApi:
             json_response = self.http_get(f"{self.base_endpoint}/domains").json()
             return [dict(obj) for obj in json_response["value"]]
         except Exception as exc:
+            self.logger.error(f"Error: {exc}")
             msg = "Could not load list of domains."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 

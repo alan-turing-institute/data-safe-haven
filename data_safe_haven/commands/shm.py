@@ -121,7 +121,9 @@ def deploy(
         logger.critical(msg)
         raise typer.Exit(1) from exc
     # Upload config file to blob storage
+    logger.info("Uploading config files")
     config.upload(context)
+    logger.info(f"Successfully deployed SHM {fqdn}")
 
 
 @shm_command_group.command()
