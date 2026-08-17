@@ -88,15 +88,14 @@ class TestUpgrade:
         capsys: CaptureFixture[str],
     ) -> None:
         """Check that patch version increments trigger an upgrade."""
-        with mock.patch.object(AzureSdk, "get_version", return_value="5.7.1"):
-            with mock.patch.object(version, "__version__", new="5.7.2"):
+        with mock.patch.object(AzureSdk, "get_version", return_value="5.8.0"):
+            with mock.patch.object(version, "__version__", new="5.8.1"):
                 upgrade = Upgrade(sre_project_manager)
                 proceed = upgrade.can_proceed()
                 assert not proceed
                 captured = capsys.readouterr()
-                assert "Gitea" in captured.out
-                assert "Gitea mirror" in captured.out
-                assert "Hedgedoc" in captured.out
+                assert "Deployment will therefore trigger an upgrade." in captured.out
+                assert "Gitea" not in captured.out
 
     def test_user_checks_minor_upgrade(
         self,
@@ -209,7 +208,7 @@ class TestUpgrade:
                 changes = upgrade.prepare()
                 assert not changes
 
-    def test_prepare_upgrade_5_7_2(
+    def test_prepare_upgrade_below_5_8_0(
         self,
         sre_project_manager: SREProjectManager,
         mock_sre_project_manager_output: None,  # noqa: ARG002
@@ -220,8 +219,29 @@ class TestUpgrade:
         """Check that an upgrade that requires no preparation also indicates that
         there are no changes to the stack.
         """
-        with mock.patch.object(AzureSdk, "get_version", return_value="5.7.1"):
-            with mock.patch.object(version, "__version__", new="5.7.2"):
+        with mock.patch.object(AzureSdk, "get_version", return_value="5.7.8"):
+            with mock.patch.object(version, "__version__", new="5.7.9"):
+                upgrade = Upgrade(sre_project_manager)
+                proceed = upgrade.can_proceed()
+                assert proceed
+                captured = capsys.readouterr()
+                assert "Deployment will therefore trigger an upgrade." in captured.out
+                changes = upgrade.prepare()
+                assert not changes
+
+    def test_prepare_upgrade_5_8_0(
+        self,
+        sre_project_manager: SREProjectManager,
+        mock_sre_project_manager_output: None,  # noqa: ARG002
+        mock_confirm_yes: None,  # noqa: ARG002
+        capsys: CaptureFixture[str],
+        mock_azuresdk_resource_manager_client: None,  # noqa: ARG002
+    ) -> None:
+        """Check that an upgrade that requires no preparation also indicates that
+        there are no changes to the stack.
+        """
+        with mock.patch.object(AzureSdk, "get_version", return_value="5.7.9"):
+            with mock.patch.object(version, "__version__", new="5.8.0"):
                 upgrade = Upgrade(sre_project_manager)
                 proceed = upgrade.can_proceed()
                 assert proceed
@@ -229,3 +249,24 @@ class TestUpgrade:
                 assert "Deployment will therefore trigger an upgrade." in captured.out
                 changes = upgrade.prepare()
                 assert changes
+
+    def test_prepare_upgrade_above_5_8_0(
+        self,
+        sre_project_manager: SREProjectManager,
+        mock_sre_project_manager_output: None,  # noqa: ARG002
+        mock_confirm_yes: None,  # noqa: ARG002
+        capsys: CaptureFixture[str],
+        mock_azuresdk_resource_manager_client: None,  # noqa: ARG002
+    ) -> None:
+        """Check that an upgrade that requires no preparation also indicates that
+        there are no changes to the stack.
+        """
+        with mock.patch.object(AzureSdk, "get_version", return_value="5.8.0"):
+            with mock.patch.object(version, "__version__", new="5.8.1"):
+                upgrade = Upgrade(sre_project_manager)
+                proceed = upgrade.can_proceed()
+                assert proceed
+                captured = capsys.readouterr()
+                assert "Deployment will therefore trigger an upgrade." in captured.out
+                changes = upgrade.prepare()
+                assert not changes
