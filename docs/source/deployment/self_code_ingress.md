@@ -2,10 +2,10 @@
 
 # Ingress pre-approved code repositories
 
-For Tier 2 and Tier 3 SREs, administrators can make selected GitHub repositories available inside the environment without enabling general workspace internet access.
+For SREs where workspace internet access is disabled, administrators can make selected GitHub repositories available inside the environment without enabling general internet access.
 Data Safe Haven mirrors the configured repositories into the internal Gitea service, where researchers can access them through the `workspaceuser` account.
 
-The mirror service is not deployed for Tier 0 and Tier 1 SREs, which already have direct internet access.
+The mirror service is deployed only when workspace internet access is disabled and at least one repository is configured.
 
 ## Configure repositories
 
