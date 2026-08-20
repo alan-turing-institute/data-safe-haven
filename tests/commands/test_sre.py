@@ -152,4 +152,5 @@ class TestTeardownSRE:
     ) -> None:
         result = runner.invoke(sre_command_group, ["teardown", "sandbox"], input="n")
         assert result.exit_code == 0
+        assert "Do you wish to continue tearing down SRE 'sandbox'?" in result.stdout
         assert "cancelled by user" in result.stdout
