@@ -273,7 +273,7 @@ There are network rules permitting access to the portal from allowed IP addresse
 - Medium security research spaces control the possibility of unauthorised viewing.
 - Card access or other means of restricting entry to only known researchers (such as the signing in of guests on a known list) is required.
 - Screen adaptations or desk partitions can be adopted in open-plan spaces if there is a high risk of "visual eavesdropping".
-- Firewall rules can permit access only from IP ranges corresponding to these research spaces.
+- Network security group rules can permit access only from IP ranges corresponding to these research spaces.
 
 ### Implication:
 
@@ -282,8 +282,6 @@ There are network rules permitting access to the portal from allowed IP addresse
 ### Verify by:
 
 #### Physical security ({ref}`policy_tier_3`)
-
-Connection from outside the secure physical space is not possible.
 
 - Attempt to connect to the {ref}`policy_tier_3` SRE web client from home using a managed device and the correct VPN connection and credentials.
 
@@ -300,7 +298,7 @@ Connection from within the secure physical space is possible.
 :::
 
 :::{attention}
-{{white_check_mark}} Verify that: check the network IP ranges corresponding to the research spaces and compare against the IPs accepted by the firewall.
+{{white_check_mark}} Verify that: the network IP ranges corresponding to the research spaces match the source IP ranges allowed by the Guacamole application gateway NSG.
 :::
 
 :::{attention}
