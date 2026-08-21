@@ -715,7 +715,9 @@ def mock_sre_project_manager_output(mocker: MockerFixture) -> None:
 
 @fixture
 def mock_azuresdk_resource_manager_client(mocker: MockerFixture) -> None:
-    def side_effect_get_by_id(azure_id: str, _sdk_version: str) -> GenericResource:
+    def side_effect_get_by_id(
+        azure_id: str, *, api_version: str  # noqa: ARG001
+    ) -> GenericResource:
         resource = GenericResource()
         resource.id = azure_id
         return resource
@@ -730,8 +732,8 @@ def mock_azuresdk_resource_manager_client(mocker: MockerFixture) -> None:
         def done(self) -> bool:
             return self.duration <= 0
 
-    def side_effect_begin_delete_by_id(azure_id: str, sdk_version: str) -> Poller:
-        return Poller(azure_id + sdk_version)
+    def side_effect_begin_delete_by_id(azure_id: str, *, api_version: str) -> Poller:
+        return Poller(azure_id + api_version)
 
     mocker.patch.object(
         ResourcesOperations, "get_by_id", side_effect=side_effect_get_by_id
