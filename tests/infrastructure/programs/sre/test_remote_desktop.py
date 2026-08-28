@@ -10,16 +10,16 @@ from tests.infrastructure.programs.resource_assertions import assert_equal
 
 def guacamole_user_sync_container(containers: list[Any]) -> dict[str, Any]:
     return next(
-        container for container in containers if container["name"] == "guacamole-user-sync"
+        container
+        for container in containers
+        if container["name"] == "guacamole-user-sync"
     )
 
 
 def group_permissions(value: str) -> dict[str, set[str]]:
     return {
         group_name: set(permissions.split(","))
-        for group_name, permissions in (
-            entry.split("=") for entry in value.split(";")
-        )
+        for group_name, permissions in (entry.split("=") for entry in value.split(";"))
     }
 
 
@@ -31,9 +31,25 @@ class TestSRERemoteDesktopProps:
         def check(containers: list[Any]) -> None:
             container = guacamole_user_sync_container(containers)
             assert_equal(
-                "ghcr.io/alan-turing-institute/guacamole-user-sync:v0.8.0",
+                "ghcr.io/alan-turing-institute/guacamole-user-sync:v0.8.1",
                 container["image"],
             )
+
+        return remote_desktop_component.container_group.containers.apply(check)  # type: ignore[attr-defined]
+
+    @pulumi.runtime.test  # type: ignore
+    def test_guacamole_group_permissions_env_var_present(
+        self, remote_desktop_component: SRERemoteDesktopComponent
+    ) -> Any:
+        def check(containers: list[Any]) -> None:
+            container = guacamole_user_sync_container(containers)
+            env_var = next(
+                env
+                for env in container["environment_variables"]
+                if env["name"] == "GUACAMOLE_GROUP_PERMISSIONS"
+            )
+            assert env_var["value"]
+            assert env_var.get("secure_value") is None
 
         return remote_desktop_component.container_group.containers.apply(check)  # type: ignore[attr-defined]
 

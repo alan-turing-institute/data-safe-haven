@@ -1,4 +1,4 @@
-# Test plan: guacamole-user-sync v0.7.0 → v0.8.0 upgrade
+# Test plan: guacamole-user-sync v0.7.0 → v0.8.1 upgrade
 
 Issue: 258 — Guacamole connections disappear
 
@@ -10,7 +10,7 @@ Azure Container Instance group that includes a `guacamole-user-sync`
 container. This container periodically syncs LDAP users/groups into the
 Guacamole PostgreSQL database. The underlying bug (connection permissions
 getting wiped by an `ON DELETE CASCADE` when LDAP returns 0 users/groups) is
-fixed upstream in `guacamole-user-sync` v0.8.0
+fixed upstream in `guacamole-user-sync` v0.8.1
 (alan-turing-institute/guacamole-user-sync#32), which restores
 `guacamole_connection_permission` rows on each sync run — but only if it is
 told which groups should hold which permissions.
@@ -18,10 +18,10 @@ told which groups should hold which permissions.
 The change under test:
 
 1. Bump the container image tag from
-   `ghcr.io/alan-turing-institute/guacamole-user-sync:v0.7.0` to `:v0.8.0`
+   `ghcr.io/alan-turing-institute/guacamole-user-sync:v0.7.0` to `:v0.8.1`
    (`remote_desktop.py:291`).
 2. Add a new `GUACAMOLE_GROUP_PERMISSIONS` environment variable to that
-   container, per the v0.8.0 README:
+   container, per the v0.8.1 README:
    - Format: semicolon-separated `group_name=PERM1,PERM2,...` entries, e.g.
      `admins=READ,UPDATE,DELETE,ADMINISTER;users=READ`.
    - Valid permissions: `READ`, `UPDATE`, `DELETE`, `ADMINISTER`.
@@ -143,7 +143,7 @@ left to the broader test suite rather than duplicated here.
 1. **`test_guacamole_user_sync_image_version`**
    Locate the `guacamole-user-sync` container in
    `container_group.containers` and assert `image ==
-   "ghcr.io/alan-turing-institute/guacamole-user-sync:v0.8.0"`.
+   "ghcr.io/alan-turing-institute/guacamole-user-sync:v0.8.1"`.
 
 2. **`test_guacamole_group_permissions_env_var_present`**
    Assert an environment variable named `GUACAMOLE_GROUP_PERMISSIONS`
