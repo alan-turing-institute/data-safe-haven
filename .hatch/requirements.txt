@@ -4,10 +4,10 @@
 # - appdirs==1.4.4
 # - azure-core==1.41.0
 # - azure-identity==1.25.3
-# - azure-keyvault-certificates==4.11.1
-# - azure-keyvault-keys==4.11.1
-# - azure-keyvault-secrets==4.11.0
-# - azure-mgmt-compute==38.2.0
+# - azure-keyvault-certificates==4.11.2
+# - azure-keyvault-keys==4.11.2
+# - azure-keyvault-secrets==4.11.2
+# - azure-mgmt-compute==38.3.0
 # - azure-mgmt-containerinstance==10.1.0
 # - azure-mgmt-dns==9.0.0
 # - azure-mgmt-keyvault==14.0.1
@@ -16,25 +16,25 @@
 # - azure-mgmt-resource==26.0.0
 # - azure-mgmt-storage==25.1.0
 # - azure-mgmt-subscription==3.1.1
-# - azure-storage-blob==12.30.0
+# - azure-storage-blob==12.30.1
 # - azure-storage-file-datalake==12.25.0
 # - azure-storage-file-share==12.26.0
 # - chevron==0.14.0
-# - click==8.4.2
-# - cryptography==49.0.0
+# - click==8.5.0
+# - cryptography==50.0.1
 # - fqdn==1.5.1
 # - psycopg[binary]==3.1.19
-# - pulumi-azure-native==3.23.0
+# - pulumi-azure-native==3.26.0
 # - pulumi-azuread==6.10.0
 # - pulumi-random==4.21.1
-# - pulumi==3.254.0
-# - pydantic==2.13.4
+# - pulumi==3.260.0
+# - pydantic==2.13.5
 # - pyjwt[crypto]==2.13.0
 # - pytz==2026.3.post1
 # - pyyaml==6.0.3
 # - rich==15.0.0
 # - simple-acme-dns==4.0.1
-# - typer==0.27.0
+# - typer==0.27.2
 # - websocket-client==1.9.0
 #
 
@@ -66,13 +66,13 @@ azure-core==1.41.0
     #   msrest
 azure-identity==1.25.3
     # via hatch.envs.default
-azure-keyvault-certificates==4.11.1
+azure-keyvault-certificates==4.11.2
     # via hatch.envs.default
-azure-keyvault-keys==4.11.1
+azure-keyvault-keys==4.11.2
     # via hatch.envs.default
-azure-keyvault-secrets==4.11.0
+azure-keyvault-secrets==4.11.2
     # via hatch.envs.default
-azure-mgmt-compute==38.2.0
+azure-mgmt-compute==38.3.0
     # via hatch.envs.default
 azure-mgmt-containerinstance==10.1.0
     # via hatch.envs.default
@@ -101,7 +101,7 @@ azure-mgmt-storage==25.1.0
     # via hatch.envs.default
 azure-mgmt-subscription==3.1.1
     # via hatch.envs.default
-azure-storage-blob==12.30.0
+azure-storage-blob==12.30.1
     # via
     #   hatch.envs.default
     #   azure-storage-file-datalake
@@ -113,15 +113,15 @@ certifi==2026.7.22
     # via
     #   msrest
     #   requests
-cffi==2.1.0
+cffi==2.1.1
     # via cryptography
-charset-normalizer==3.4.9
+charset-normalizer==3.5.1
     # via requests
 chevron==0.14.0
     # via hatch.envs.default
-click==8.4.2
+click==8.5.0
     # via hatch.envs.default
-cryptography==49.0.0
+cryptography==50.0.1
     # via
     #   hatch.envs.default
     #   acme
@@ -141,13 +141,13 @@ dnspython==2.7.0
     # via simple-acme-dns
 fqdn==1.5.1
     # via hatch.envs.default
-googleapis-common-protos==1.75.0
+googleapis-common-protos==1.75.2
     # via opentelemetry-exporter-otlp-proto-grpc
-grpcio==1.83.0
+grpcio==1.83.1
     # via
     #   opentelemetry-exporter-otlp-proto-grpc
     #   pulumi
-idna==3.18
+idna==3.19
     # via requests
 isodate==0.7.2
     # via
@@ -171,7 +171,7 @@ markdown-it-py==4.2.0
     # via rich
 mdurl==0.1.2
     # via markdown-it-py
-msal==1.37.0
+msal==1.38.0
     # via
     #   azure-identity
     #   msal-extensions
@@ -212,11 +212,11 @@ opentelemetry-semantic-conventions==0.65b0
     #   opentelemetry-instrumentation
     #   opentelemetry-instrumentation-grpc
     #   opentelemetry-sdk
-packaging==26.2
+packaging==26.3
     # via
     #   opentelemetry-instrumentation
     #   pulumi
-parver==1.0
+parver==1.0.1.post0
     # via
     #   pulumi-azure-native
     #   pulumi-azuread
@@ -230,13 +230,13 @@ psycopg==3.1.19
     # via hatch.envs.default
 psycopg-binary==3.1.19
     # via psycopg
-pulumi==3.254.0
+pulumi==3.260.0
     # via
     #   hatch.envs.default
     #   pulumi-azure-native
     #   pulumi-azuread
     #   pulumi-random
-pulumi-azure-native==3.23.0
+pulumi-azure-native==3.26.0
     # via hatch.envs.default
 pulumi-azuread==6.10.0
     # via hatch.envs.default
@@ -244,17 +244,17 @@ pulumi-random==4.21.1
     # via hatch.envs.default
 pycparser==3.0
     # via cffi
-pydantic==2.13.4
+pydantic==2.13.5
     # via hatch.envs.default
-pydantic-core==2.46.4
+pydantic-core==2.46.5
     # via pydantic
-pygments==2.20.0
+pygments==2.21.0
     # via rich
 pyjwt==2.13.0
     # via
     #   hatch.envs.default
     #   msal
-pyopenssl==26.3.0
+pyopenssl==26.4.0
     # via acme
 pyrfc3339==2.1.0
     # via acme
@@ -287,7 +287,7 @@ shellingham==1.5.4
     # via typer
 simple-acme-dns==4.0.1
     # via hatch.envs.default
-typer==0.27.0
+typer==0.27.2
     # via hatch.envs.default
 typing-extensions==4.16.0
     # via
@@ -312,11 +312,12 @@ typing-extensions==4.16.0
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
     #   psycopg
+    #   pulumi
     #   pydantic
     #   pydantic-core
     #   pyopenssl
     #   typing-inspection
-typing-inspection==0.4.2
+typing-inspection==0.4.4
     # via pydantic
 urllib3==2.7.0
     # via requests
@@ -324,7 +325,7 @@ validators==0.35.0
     # via simple-acme-dns
 websocket-client==1.9.0
     # via hatch.envs.default
-wrapt==2.3.0
+wrapt==2.4.0
     # via
     #   opentelemetry-instrumentation
     #   opentelemetry-instrumentation-grpc
