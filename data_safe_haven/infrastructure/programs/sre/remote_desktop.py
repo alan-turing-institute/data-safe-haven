@@ -420,3 +420,5 @@ class SRERemoteDesktopComponent(ComponentResource):
             "disable_paste": props.disable_paste,
             "resource_group_name": props.resource_group_name,
         }
+
+        self.register_outputs({})

@@ -520,6 +520,11 @@ class DeclarativeSRE:
                 "software_repositories", user_services.software_repositories.exports
             )
 
+        pulumi.export("apt_proxy_server", apt_proxy_server.exports)
+        pulumi.export("sre_clamav_mirror", clamav_mirror.exports)
+        pulumi.export("sre_gitea_server", user_services.gitea_server.exports)
+        pulumi.export("sre_hedgedoc_server", user_services.hedgedoc_server.exports)
+        pulumi.export("sre_identity", identity.exports)
         pulumi.export("data", data.exports)
         pulumi.export("ldap", ldap_group_names)
         pulumi.export("remote_desktop", remote_desktop.exports)
