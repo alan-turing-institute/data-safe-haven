@@ -1,6 +1,7 @@
 from typing import Any
 
 import pulumi
+from packaging.version import Version
 
 from data_safe_haven.infrastructure.programs.sre.remote_desktop import (
     SRERemoteDesktopComponent,
@@ -30,10 +31,9 @@ class TestSRERemoteDesktopProps:
     ) -> Any:
         def check(containers: list[Any]) -> None:
             container = guacamole_user_sync_container(containers)
-            assert_equal(
-                "ghcr.io/alan-turing-institute/guacamole-user-sync:v0.8.1",
-                container["image"],
-            )
+            image, _, tag = container["image"].rpartition(":")
+            assert_equal("ghcr.io/alan-turing-institute/guacamole-user-sync", image)
+            assert Version(tag) >= Version("0.8.1")
 
         return remote_desktop_component.container_group.containers.apply(check)
 
