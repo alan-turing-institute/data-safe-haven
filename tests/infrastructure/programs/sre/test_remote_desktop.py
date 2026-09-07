@@ -24,7 +24,7 @@ def group_permissions(value: str) -> dict[str, set[str]]:
 
 
 class TestSRERemoteDesktopProps:
-    @pulumi.runtime.test  # type: ignore
+    @pulumi.runtime.test
     def test_guacamole_user_sync_image_version(
         self, remote_desktop_component: SRERemoteDesktopComponent
     ) -> Any:
@@ -35,9 +35,9 @@ class TestSRERemoteDesktopProps:
                 container["image"],
             )
 
-        return remote_desktop_component.container_group.containers.apply(check)  # type: ignore[attr-defined]
+        return remote_desktop_component.container_group.containers.apply(check)
 
-    @pulumi.runtime.test  # type: ignore
+    @pulumi.runtime.test
     def test_guacamole_group_permissions_env_var_present(
         self, remote_desktop_component: SRERemoteDesktopComponent
     ) -> Any:
@@ -51,9 +51,9 @@ class TestSRERemoteDesktopProps:
             assert env_var["value"]
             assert env_var.get("secure_value") is None
 
-        return remote_desktop_component.container_group.containers.apply(check)  # type: ignore[attr-defined]
+        return remote_desktop_component.container_group.containers.apply(check)
 
-    @pulumi.runtime.test  # type: ignore
+    @pulumi.runtime.test
     def test_guacamole_group_permissions_admin_group(
         self,
         admin_group_name: str,
@@ -71,9 +71,9 @@ class TestSRERemoteDesktopProps:
                 group_permissions(value)[admin_group_name],
             )
 
-        return remote_desktop_component.container_group.containers.apply(check)  # type: ignore[attr-defined]
+        return remote_desktop_component.container_group.containers.apply(check)
 
-    @pulumi.runtime.test  # type: ignore
+    @pulumi.runtime.test
     def test_guacamole_group_permissions_user_group(
         self,
         remote_desktop_component: SRERemoteDesktopComponent,
@@ -88,9 +88,9 @@ class TestSRERemoteDesktopProps:
             )
             assert_equal({"READ"}, group_permissions(value)[user_group_name])
 
-        return remote_desktop_component.container_group.containers.apply(check)  # type: ignore[attr-defined]
+        return remote_desktop_component.container_group.containers.apply(check)
 
-    @pulumi.runtime.test  # type: ignore
+    @pulumi.runtime.test
     def test_guacamole_group_permissions_no_extra_groups(
         self,
         admin_group_name: str,
@@ -109,4 +109,4 @@ class TestSRERemoteDesktopProps:
                 set(group_permissions(value).keys()),
             )
 
-        return remote_desktop_component.container_group.containers.apply(check)  # type: ignore[attr-defined]
+        return remote_desktop_component.container_group.containers.apply(check)
