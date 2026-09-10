@@ -7,6 +7,7 @@ setup_context.md
 configure_entra_id.md
 deploy_shm.md
 deploy_sre.md
+smoke_tests.md
 security_checklist.md
 :::
 
@@ -16,6 +17,7 @@ Deploying an instance of the Data Safe Haven involves the following steps:
 - Configuring the Microsoft Entra directory where you will manage users
 - Deploying the Safe Haven management component
 - Deploying a Secure Research Environment for each project
+- Optionally [validating a deployed workspace with the smoke tests](smoke_tests.md)
 
 ## Requirements
 
