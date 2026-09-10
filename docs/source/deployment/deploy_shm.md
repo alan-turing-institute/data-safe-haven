@@ -70,6 +70,16 @@ You will be prompted to log in to the Azure CLI and to the Graph API.
 
 :::
 
+:::{hint}
+To inspect the configuration of an SHM that has already been deployed for the selected context, run:
+
+:::{code} shell
+$ dsh config show-shm
+:::
+
+This is useful when validating an existing SHM or preparing to update or redeploy it. Pass `--file PATH` to write the configuration to a file instead of printing it to the console.
+:::
+
 :::{important}
 You may be asked to delegate your domain name to Azure. To do this, you'll need to know details about the parent domain. For example, if you are deploying to `dsh.example.com` then the parent name is `example.com`.
 
