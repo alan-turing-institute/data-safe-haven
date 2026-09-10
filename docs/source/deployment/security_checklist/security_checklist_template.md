@@ -74,7 +74,7 @@ Running on SHM/SREs deployed using commit xxxxxx
     - :white_check_mark:/:partly_sunny:/:fast_forward:/:x: <b>Verify that</b>: connection fails.
 - Attempt to connect from research office using a managed device and the correct VPN connection and credentials.
     - :white_check_mark:/:partly_sunny:/:fast_forward:/:x: <b>Verify that</b>: connection succeeds
-    - :white_check_mark:/:partly_sunny:/:fast_forward:/:x: <b>Verify that</b>: the network IP ranges corresponding to the research spaces correspond to those allowed by storage account firewall
+    - :white_check_mark:/:partly_sunny:/:fast_forward:/:x: <b>Verify that</b>: the network IP ranges corresponding to the research spaces match the source IP ranges allowed by the Guacamole application gateway NSG
     - :white_check_mark:/:partly_sunny:/:fast_forward:/:x: <b>Verify that</b>: physical measures such as screen adaptions or desk partitions are present if risk of visual eavesdropping is high
 
 ### Remote connections
