@@ -16,11 +16,15 @@ from data_safe_haven.infrastructure.components import (
     PostgresqlDatabaseComponent,
 )
 from data_safe_haven.resources import resources_path
-from data_safe_haven.utility import FileReader
+from data_safe_haven.utility import FileReader, LogLevelParser
 
 
 class SREGiteaServerProps:
     """Properties for SREGiteaServerComponent"""
+
+    @staticmethod
+    def log_level_convert(log_level: str) -> str:
+        return log_level.capitalize()
 
     def __init__(
         self,
@@ -43,6 +47,7 @@ class SREGiteaServerProps:
         storage_account_name: Input[str],
         update_schedule_minutes: int,
         workspace_password: Input[str],
+        log_level: Input[str],
     ) -> None:
         self.admin_password = admin_password
         self.containers_subnet_id = containers_subnet_id
@@ -63,6 +68,7 @@ class SREGiteaServerProps:
         self.storage_account_name = storage_account_name
         self.update_schedule_minutes = update_schedule_minutes
         self.workspace_password = workspace_password
+        self.log_level = log_level
 
 
 class SREGiteaServerComponent(ComponentResource):
@@ -265,8 +271,12 @@ class SREGiteaServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__log__LEVEL",
-                            # Options are: "Trace", "Debug", "Info" [default], "Warn", "Error", "Critical" or "None".
-                            value="Debug",
+                            # Options are: "Trace", "Debug", "Info", "Warn", "Error", "Critical" or "None".
+                            value=LogLevelParser.service_logging_level(
+                                props.log_level,
+                                "gitea",
+                                SREGiteaServerProps.log_level_convert,
+                            ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__security__INSTALL_LOCK", value="true"

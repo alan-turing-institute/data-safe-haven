@@ -381,6 +381,9 @@ def monitoring_elements(
             location=location,
             resource_group_name=resource_group.name,
             timezone=timezone,
+            log_level="info",
+            retention_period_days=30,
+            sampling_interval_seconds=60,
         ),
         tags=tags,
     )
@@ -525,6 +528,7 @@ def gitea_server_props(
         storage_account_name="storage_account",
         update_schedule_minutes=10,
         workspace_password=gitea_user_password,
+        log_level="info",
     )
 
 
@@ -577,6 +581,7 @@ def gitea_mirror_manager_props(
         storage_account_name="storage_account",
         workspace_username=gitea_server_component.workspace_username,
         workspace_password=gitea_server_component.workspace_password,
+        log_level="info",
     )
 
 
@@ -634,6 +639,7 @@ def remote_desktop_props(
         subnet_guacamole_containers=networking.subnet_guacamole_containers,
         subnet_guacamole_containers_support=networking.subnet_guacamole_containers_support,
         user_group_name=user_group_name,
+        log_level="info",
     )
 
 
