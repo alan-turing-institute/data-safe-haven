@@ -368,6 +368,9 @@ def monitoring_elements(
             location=location,
             resource_group_name=resource_group.name,
             timezone=timezone,
+            log_level="info",
+            retention_period_days=30,
+            sampling_interval_seconds=60,
         ),
         tags=tags,
     )
@@ -481,6 +484,7 @@ def remote_desktop_props(
         subnet_guacamole_containers=networking.subnet_guacamole_containers,
         subnet_guacamole_containers_support=networking.subnet_guacamole_containers_support,
         user_group_name=user_group_name,
+        log_level="info",
     )
 
 

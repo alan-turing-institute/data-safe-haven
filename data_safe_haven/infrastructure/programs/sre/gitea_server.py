@@ -41,6 +41,7 @@ class SREGiteaServerProps:
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
+        log_level: Input[str],
     ) -> None:
         self.containers_subnet_id = containers_subnet_id
         self.db_server_shared = db_server_shared
@@ -58,6 +59,7 @@ class SREGiteaServerProps:
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
+        self.log_level = log_level
 
 
 class SREGiteaServerComponent(ComponentResource):
@@ -266,8 +268,8 @@ class SREGiteaServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__log__LEVEL",
-                            # Options are: "Trace", "Debug", "Info" [default], "Warn", "Error", "Critical" or "None".
-                            value="Debug",
+                            # Options are: "Trace", "Debug", "Info", "Warn", "Error", "Critical" or "None".
+                            value=props.log_level.capitalize(),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__security__INSTALL_LOCK", value="true"

@@ -10,6 +10,7 @@ from data_safe_haven.types import SafeSreName, SoftwarePackageCategory
 from .config_sections import (
     ConfigSectionAzure,
     ConfigSectionDockerHub,
+    ConfigSectionMonitoring,
     ConfigSectionSRE,
     ConfigSectionUserServices,
     ConfigSubsectionDnsSidecar,
@@ -110,6 +111,11 @@ class SREConfig(AzureSerialisableModel):
                 data_provider_ip_addresses=[
                     "List of IP addresses belonging to data providers"
                 ],
+                monitoring=ConfigSectionMonitoring.model_construct(
+                    retention_period="Length of time to store logs and monitoring data in days [default: 30]",  # type: ignore
+                    log_level="Maximum granularity of logs to capture [none, error, warn, info (default), debug, trace]",
+                    sampling_interval="Interval between collecting performance metrics in seconds [default: 60]",  # type: ignore
+                ),
                 remote_desktop=ConfigSubsectionRemoteDesktopOpts.model_construct(
                     allow_copy=remote_desktop_allow_copy,
                     allow_paste=remote_desktop_allow_paste,

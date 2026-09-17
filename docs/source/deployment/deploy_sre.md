@@ -73,6 +73,10 @@ sre:
   allow_workspace_internet: # True/False: whether to allow outbound internet access from workspaces. WARNING setting this to True will allow data to be moved out of the SRE WITHOUT OVERSIGHT OR APPROVAL
   data_provider_ip_addresses: # List of IP addresses belonging to data providers
   databases: # List of database systems to deploy
+  monitoring:
+    log_level: # Length of time to store logs and monitoring data in days [default: 30]
+    retention_period: # Maximum granularity of logs to capture [none, error, warn, info (default), debug, trace]
+    sampling_interval: # Interval between collecting performance metrics in seconds [default: 60]
   remote_desktop:
     allow_copy: # True/False: whether to allow copying text out of the environment
     allow_paste: # True/False: whether to allow pasting text into the environment

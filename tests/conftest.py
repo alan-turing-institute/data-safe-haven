@@ -626,6 +626,10 @@ def sre_config_yaml(request: FixtureRequest) -> str:
     dockerhub:
         access_token: dummytoken
         username: exampleuser
+    monitoring:
+        log_level: info
+        retention_period: 30
+        sampling_interval: 60
     name: sandbox
     sre:
         admin_email_address: admin@example.com
