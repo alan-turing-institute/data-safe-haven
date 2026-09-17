@@ -60,6 +60,7 @@ class SREUserServicesProps:
         subnet_containers_support: Input[network.GetSubnetResult],
         subnet_gitea_mirrors: Input[network.GetSubnetResult],
         subnet_databases: Input[network.GetSubnetResult],
+        log_level: Input[str],
         subnet_software_repositories: Input[network.GetSubnetResult] | None,
         subnet_software_repositories_support: Input[network.GetSubnetResult] | None,
         db_server_shared_username: Input[str] | None = None,
@@ -107,6 +108,8 @@ class SREUserServicesProps:
             self.subnet_gitea_mirrors_id = Output.from_input(
                 subnet_gitea_mirrors
             ).apply(get_id_from_subnet)
+
+        self.log_level = log_level
 
         self.subnet_software_repositories_id: Output[str] | None = None
 
@@ -176,6 +179,7 @@ class SREUserServicesComponent(ComponentResource):
                 storage_account_name=props.storage_account_name,
                 update_schedule_minutes=props.repository_data.update_schedule_minutes,
                 workspace_password=props.gitea_user_password,
+                log_level=props.log_level,
             ),
             opts=child_opts,
             tags=child_tags,
@@ -204,6 +208,7 @@ class SREUserServicesComponent(ComponentResource):
                     storage_account_name=props.storage_account_name,
                     workspace_username=self.gitea_server.workspace_username,
                     workspace_password=self.gitea_server.workspace_password,
+                    log_level=props.log_level,
                 ),
                 opts=child_opts,
                 tags=child_tags,
@@ -230,6 +235,7 @@ class SREUserServicesComponent(ComponentResource):
                 sre_fqdn=props.sre_fqdn,
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
+                log_level=props.log_level,
             ),
             opts=child_opts,
             tags=child_tags,
@@ -258,6 +264,7 @@ class SREUserServicesComponent(ComponentResource):
                     storage_account_name=props.storage_account_name,
                     subnet_software_repositories_id=props.subnet_software_repositories_id,
                     subnet_software_repositories_support=props.subnet_software_repositories_support,
+                    log_level=props.log_level,
                 ),
                 opts=child_opts,
                 tags=child_tags,
