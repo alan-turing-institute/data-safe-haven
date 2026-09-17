@@ -7,6 +7,7 @@ from itertools import combinations
 
 from pydantic import BaseModel, HttpUrl, PositiveInt, field_validator, model_validator
 
+from data_safe_haven.config import LOGGING_LEVELS
 from data_safe_haven.types import (
     AzureDataDiskSize,
     AzureLocation,
@@ -23,6 +24,8 @@ from data_safe_haven.types import (
     TimeZone,
     UniqueList,
 )
+
+MAX_MONITORING_RETENTION_PERIOD = 730
 
 
 class ConfigSectionAzure(BaseModel, validate_assignment=True):
@@ -141,3 +144,30 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
             msg = "When `allow_workspace_internet` is `true`, `software_packages` must be `any`"
             raise ValueError(msg)
         return self
+
+
+class ConfigSectionMonitoring(BaseModel, validate_assignment=True):
+    log_level: SafeString = "info"
+    retention_period: PositiveInt = 30
+    sampling_interval: PositiveInt = 60
+
+    @field_validator(
+        "log_level",
+    )
+    @classmethod
+    def ensure_log_level(cls, v: SafeString) -> SafeString:
+        if v in LOGGING_LEVELS.keys():
+            return v
+        else:
+            msg = "Logging level must be one of error, warn, info, debug or trace."
+            raise ValueError(msg)
+
+    @classmethod
+    def ensure_retention_period(cls, v: PositiveInt) -> PositiveInt:
+        # Azure supports retention periods up to 730 days at no extra cost. See:
+        # https://learn.microsoft.com/en-us/azure/azure-monitor/logs/data-retention-configure?tabs=portal%2Cportal-1#configure-table-level-retention
+        if v > 0 and v <= MAX_MONITORING_RETENTION_PERIOD:
+            return v
+        else:
+            msg = "Retention period must be between one and 730 days (inclusive)."
+            raise ValueError(msg)

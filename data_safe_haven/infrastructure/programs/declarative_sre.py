@@ -143,6 +143,9 @@ class DeclarativeSRE:
                 location=self.config.azure.location,
                 resource_group_name=resource_group.name,
                 timezone=self.config.sre.timezone,
+                log_level=self.config.monitoring.log_level,
+                retention_period_days=self.config.monitoring.retention_period,
+                sampling_interval_seconds=self.config.monitoring.sampling_interval,
             ),
             tags=self.tags,
         )
@@ -320,6 +323,7 @@ class DeclarativeSRE:
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
                 subnet_containers=networking.subnet_identity_containers,
+                log_level=self.config.monitoring.log_level,
             ),
             tags=self.tags,
         )
@@ -368,6 +372,7 @@ class DeclarativeSRE:
                 subnet_guacamole_containers_support=networking.subnet_guacamole_containers_support,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
                 user_group_name=ldap_group_names["user_group_name"],
+                log_level=self.config.monitoring.log_level,
             ),
             tags=self.tags,
         )
@@ -404,6 +409,7 @@ class DeclarativeSRE:
                 subnet_databases=networking.subnet_user_services_databases,
                 subnet_software_repositories=networking.subnet_user_services_software_repositories,
                 subnet_software_repositories_support=networking.subnet_user_services_software_repositories_support,
+                log_level=self.config.monitoring.log_level,
             ),
             tags=self.tags,
         )

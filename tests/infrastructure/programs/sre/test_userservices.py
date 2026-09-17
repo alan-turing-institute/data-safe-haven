@@ -74,6 +74,7 @@ def user_services_props(
         subnet_software_repositories=networking.subnet_user_services_software_repositories,
         subnet_software_repositories_support=networking.subnet_user_services_software_repositories_support,
         db_server_shared_username="shared_db-username",
+        log_level="info",
     )
 
 

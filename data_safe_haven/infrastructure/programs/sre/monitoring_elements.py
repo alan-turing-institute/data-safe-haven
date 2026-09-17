@@ -1,8 +1,12 @@
 from collections.abc import Mapping
+from functools import reduce
+from itertools import islice
+from operator import iconcat
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import maintenance, monitor, operationalinsights
 
+from data_safe_haven.config import LOGGING_LEVELS
 from data_safe_haven.functions import next_occurrence, replace_separators
 from data_safe_haven.infrastructure.components import (
     OperationalInsightsWorkspace,
@@ -13,15 +17,41 @@ from data_safe_haven.infrastructure.components import (
 class SREMonitoringElementsProps:
     """Properties for SREBasicMonitoringComponent"""
 
+    @staticmethod
+    def convert_log_levels(
+        log_level_max: str,
+    ) -> monitor.KnownSyslogDataSourceLogLevels:
+        if log_level_max in LOGGING_LEVELS.keys():
+            # Return concatenation of values up to and including the given key
+            return reduce(
+                iconcat,
+                list(
+                    islice(
+                        LOGGING_LEVELS.values(),
+                        list(LOGGING_LEVELS).index(log_level_max.lower()) + 1,
+                    )
+                ),
+            )
+        else:
+            # The key doesn't exist
+            msg = "Logging level must be one of error, warn, info, debug or trace."
+            raise ValueError(msg)
+
     def __init__(
         self,
         location: Input[str],
         resource_group_name: Input[str],
         timezone: Input[str],
+        log_level: Input[str],
+        retention_period_days: Input[int],
+        sampling_interval_seconds: Input[int],
     ) -> None:
         self.location = location
         self.resource_group_name = resource_group_name
         self.timezone = timezone
+        self.log_level = log_level
+        self.retention_period_days = retention_period_days
+        self.sampling_interval_seconds = sampling_interval_seconds
 
 
 class SREMonitoringElementsComponent(ComponentResource):
@@ -84,7 +114,7 @@ class SREMonitoringElementsComponent(ComponentResource):
             props=OperationalInsightsWorkspaceProps(
                 location=props.location,
                 resource_group_name=props.resource_group_name,
-                retention_in_days=30,
+                retention_in_days=props.retention_period_days,
                 sku=operationalinsights.WorkspaceSkuArgs(
                     name=operationalinsights.WorkspaceSkuNameEnum.PER_GB2018,
                 ),
@@ -159,7 +189,7 @@ class SREMonitoringElementsComponent(ComponentResource):
                             "System(*)\\Unique Users",
                         ],
                         name="LinuxPerfCounters",
-                        sampling_frequency_in_seconds=60,
+                        sampling_frequency_in_seconds=props.sampling_interval_seconds,
                         streams=[
                             monitor.KnownPerfCounterDataSourceStreams.MICROSOFT_PERF,
                         ],
@@ -188,17 +218,9 @@ class SREMonitoringElementsComponent(ComponentResource):
                             monitor.KnownSyslogDataSourceFacilityNames.USER,
                             monitor.KnownSyslogDataSourceFacilityNames.UUCP,
                         ],
-                        log_levels=[
-                            # Note that ASTERISK is not currently working
-                            monitor.KnownSyslogDataSourceLogLevels.DEBUG,
-                            monitor.KnownSyslogDataSourceLogLevels.INFO,
-                            monitor.KnownSyslogDataSourceLogLevels.NOTICE,
-                            monitor.KnownSyslogDataSourceLogLevels.WARNING,
-                            monitor.KnownSyslogDataSourceLogLevels.ERROR,
-                            monitor.KnownSyslogDataSourceLogLevels.CRITICAL,
-                            monitor.KnownSyslogDataSourceLogLevels.ALERT,
-                            monitor.KnownSyslogDataSourceLogLevels.EMERGENCY,
-                        ],
+                        log_levels=SREMonitoringElementsProps.convert_log_levels(
+                            props.log_level
+                        ),
                         name="LinuxSyslog",
                         streams=[monitor.KnownSyslogDataSourceStreams.MICROSOFT_SYSLOG],
                     ),
