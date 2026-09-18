@@ -27,6 +27,9 @@ def sre_monitoring_elements_component(
             location=location,
             resource_group_name=resource_group_name,
             timezone="Europe/London",
+            log_level="info",
+            retention_period_days=30,
+            sampling_interval_seconds=60,
         ),
         tags=tags,
     )

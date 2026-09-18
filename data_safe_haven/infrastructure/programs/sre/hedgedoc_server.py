@@ -24,6 +24,11 @@ from data_safe_haven.utility import FileReader
 class SREHedgeDocServerProps:
     """Properties for SREHedgeDocServerComponent"""
 
+    @staticmethod
+    def log_level_convert(log_level: str) -> str:
+        # Cap the level to at most "debug"
+        return "debug" if log_level == "trace" else log_level
+
     def __init__(
         self,
         containers_subnet_id: Input[str],
@@ -42,6 +47,7 @@ class SREHedgeDocServerProps:
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
+        log_level: Input[str],
     ) -> None:
         self.containers_subnet_id = containers_subnet_id
         self.db_server_shared = db_server_shared
@@ -60,6 +66,7 @@ class SREHedgeDocServerProps:
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
+        self.log_level = log_level
 
 
 class SREHedgeDocServerComponent(ComponentResource):
@@ -231,7 +238,9 @@ class SREHedgeDocServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_LOGLEVEL",
-                            value="info",
+                            value=SREHedgeDocServerProps.log_level_convert(
+                                props.log_level
+                            ),
                         ),
                     ],
                     ports=[],

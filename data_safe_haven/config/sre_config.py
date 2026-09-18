@@ -10,6 +10,7 @@ from data_safe_haven.types import SafeSreName, SoftwarePackageCategory
 from .config_sections import (
     ConfigSectionAzure,
     ConfigSectionDockerHub,
+    ConfigSectionMonitoring,
     ConfigSectionSRE,
     ConfigSectionUserServices,
     ConfigSubsectionDnsSidecar,
@@ -38,6 +39,7 @@ class SREConfig(AzureSerialisableModel):
     name: SafeSreName
     sre: ConfigSectionSRE
     user_services: ConfigSectionUserServices = ConfigSectionUserServices()
+    monitoring: ConfigSectionMonitoring = ConfigSectionMonitoring()
 
     @property
     def filename(self) -> str:
@@ -150,5 +152,10 @@ class SREConfig(AzureSerialisableModel):
                         )
                     ]
                 ),
+            ),
+            monitoring=ConfigSectionMonitoring.model_construct(
+                retention_period="Length of time to store logs and monitoring data in days [default: 30]",  # type: ignore
+                log_level="Maximum granularity of logs to capture [none, error, warn, info (default), debug, trace]",
+                sampling_interval="Interval between collecting performance metrics in seconds [default: 60]",  # type: ignore
             ),
         )
