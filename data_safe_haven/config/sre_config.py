@@ -148,7 +148,8 @@ class SREConfig(AzureSerialisableModel):
                             repository_url="The URL of the GitHub repository to mirror.",  # type: ignore
                             repository_auth_token="A read-only GitHub personal access token, with access to the repository to mirror.",
                         )
-                    ]
+                    ],
+                    mirror_interval_minutes="How often, in minutes, to sync mirrors [default: 10, minimum: 1].",  # type: ignore
                 ),
             ),
         )

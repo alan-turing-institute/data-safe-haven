@@ -276,6 +276,13 @@ class SREGiteaServerComponent(ComponentResource):
                             name="GITEA__migrations__ALLOW_LOCALNETWORKS", value="true"
                         ),
                         containerinstance.EnvironmentVariableArgs(
+                            # Allow any interval down to Gitea's practical floor.
+                            # `gitea-mirror-manager` sets the actual sync interval
+                            # explicitly per mirror via the API.
+                            name="GITEA__mirror__MIN_INTERVAL",
+                            value="1m",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
                             name="WORKSPACE_SERVER_PASSWORD",
                             secure_value=self.workspace_password,
                         ),

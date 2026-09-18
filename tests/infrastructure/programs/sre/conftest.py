@@ -13,10 +13,23 @@ from data_safe_haven.config.config_sections import (
 from data_safe_haven.infrastructure.common import (
     DockerHubCredentials,
     SREIpRanges,
+    get_id_from_subnet,
+)
+from data_safe_haven.infrastructure.components import (
+    PostgresqlDatabaseComponent,
+    PostgresqlDatabaseProps,
 )
 from data_safe_haven.infrastructure.programs.sre.dns_server import (
     SREDnsServerComponent,
     SREDnsServerProps,
+)
+from data_safe_haven.infrastructure.programs.sre.gitea_mirror_manager import (
+    SREGiteaMirrorManagerComponent,
+    SREGiteaMirrorManagerProps,
+)
+from data_safe_haven.infrastructure.programs.sre.gitea_server import (
+    SREGiteaServerComponent,
+    SREGiteaServerProps,
 )
 from data_safe_haven.infrastructure.programs.sre.monitoring_elements import (
     SREMonitoringElementsComponent,
@@ -438,6 +451,127 @@ def networking(
 def repository_data() -> ConfigSubsectionGiteaMirror:
     return ConfigSubsectionGiteaMirror(
         repositories=[],
+    )
+
+
+@fixture
+def db_server_shared(
+    location: str,
+    resource_group: resources.ResourceGroup,
+    stack_name: str,
+    tags: dict[str, str],
+) -> PostgresqlDatabaseComponent:
+    return PostgresqlDatabaseComponent(
+        "db_server_shared",
+        PostgresqlDatabaseProps(
+            database_names=[],
+            database_password="db-password",
+            database_resource_group_name=resource_group.name,
+            database_server_name=f"{stack_name}-db-server-shared",
+            database_subnet_id="subnet_id",
+            database_username="db-username",
+            disable_secure_transport=False,
+            location=location,
+        ),
+        tags=tags,
+    )
+
+
+@fixture
+def gitea_server_props(
+    dns: SREDnsServerComponent,
+    db_server_shared: PostgresqlDatabaseComponent,
+    dockerhub_credentials: DockerHubCredentials,
+    ldap_username_attribute: str,
+    ldap_user_filter: str,
+    ldap_user_search_base: str,
+    location: str,
+    monitoring_elements: SREMonitoringElementsComponent,
+    networking: SRENetworkingComponent,
+    resource_group: resources.ResourceGroup,
+    sre_fqdn: str,
+) -> SREGiteaServerProps:
+    return SREGiteaServerProps(
+        containers_subnet_id=pulumi.Output.from_input(
+            networking.subnet_user_services_containers
+        ).apply(get_id_from_subnet),
+        db_server_shared=db_server_shared,
+        db_server_shared_password="shared-db-password",
+        dns_server_ip=dns.ip_address,
+        dockerhub_credentials=dockerhub_credentials,
+        ldap_server_hostname="identity.none",
+        ldap_server_port=9999,
+        ldap_username_attribute=ldap_username_attribute,
+        ldap_user_filter=ldap_user_filter,
+        ldap_user_search_base=ldap_user_search_base,
+        location=location,
+        log_analytics_workspace=monitoring_elements.workspace_analytics,
+        resource_group_name=resource_group.name,
+        sre_fqdn=sre_fqdn,
+        storage_account_key="storage_key",
+        storage_account_name="storage_account",
+    )
+
+
+@fixture
+def gitea_server_component(
+    gitea_server_props: SREGiteaServerProps,
+    stack_name: str,
+    tags: dict[str, str],
+) -> SREGiteaServerComponent:
+    return SREGiteaServerComponent(
+        name="gitea-server-name",
+        stack_name=stack_name,
+        props=gitea_server_props,
+        tags=tags,
+    )
+
+
+@fixture
+def gitea_mirror_manager_props(
+    db_server_shared: PostgresqlDatabaseComponent,
+    dns: SREDnsServerComponent,
+    dockerhub_credentials: DockerHubCredentials,
+    gitea_server_component: SREGiteaServerComponent,
+    location: str,
+    monitoring_elements: SREMonitoringElementsComponent,
+    networking: SRENetworkingComponent,
+    repository_data: ConfigSubsectionGiteaMirror,
+    resource_group: resources.ResourceGroup,
+    sre_fqdn: str,
+) -> SREGiteaMirrorManagerProps:
+    return SREGiteaMirrorManagerProps(
+        db_server_shared=db_server_shared,
+        db_server_shared_password="shared-db-password",
+        dns_server_ip=dns.ip_address,
+        dockerhub_credentials=dockerhub_credentials,
+        gitea_workspace_dns_record=gitea_server_component.dns_record_name,
+        location=location,
+        log_analytics_workspace=monitoring_elements.workspace_analytics,
+        mirror_manager_subnet_id=pulumi.Output.from_input(
+            networking.subnet_user_services_gitea_mirror
+        ).apply(get_id_from_subnet),
+        repository_data=repository_data,
+        resource_group_name=resource_group.name,
+        sre_fqdn=sre_fqdn,
+        storage_account_key="storage_key",
+        storage_account_name="storage_account",
+        workspace_username=gitea_server_component.workspace_username,
+        workspace_password=gitea_server_component.workspace_password,
+    )
+
+
+@fixture
+def gitea_mirror_manager_component(
+    gitea_mirror_manager_props: SREGiteaMirrorManagerProps,
+    stack_name: str,
+    tags: dict[str, str],
+) -> SREGiteaMirrorManagerComponent:
+    return SREGiteaMirrorManagerComponent(
+        name="gitea-mirror-manager-name",
+        stack_name=stack_name,
+        props=gitea_mirror_manager_props,
+        tags=tags,
     )
 
 

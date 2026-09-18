@@ -74,6 +74,7 @@ class GitRepository(BaseModel, validate_assignment=True):
 
 class ConfigSubsectionGiteaMirror(BaseModel, validate_assignment=True):
     repositories: list[GitRepository]
+    mirror_interval_minutes: PositiveInt = 10
 
 
 class ConfigSectionUserServices(BaseModel, validate_assignment=True):
