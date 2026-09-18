@@ -173,9 +173,13 @@ class SREGiteaMirrorManagerComponent(ComponentResource):
             container_group_name=self.container_group_name,
             containers=[
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/gitea-mirror-manager:v0.0.1",
+                    image="ghcr.io/alan-turing-institute/gitea-mirror-manager:v0.0.2",
                     name="mirrormanager",
                     environment_variables=[
+                        containerinstance.EnvironmentVariableArgs(
+                            name="MIRROR_INTERVAL_MINUTES",
+                            value=str(props.repository_data.mirror_interval_minutes),
+                        ),
                         containerinstance.EnvironmentVariableArgs(
                             name="MIRROR_SERVER_URL",
                             value=Output.concat(
@@ -275,6 +279,10 @@ class SREGiteaMirrorManagerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__migrations__ALLOW_LOCALNETWORKS", value="true"
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="GITEA__mirror__MIN_INTERVAL",
+                            value=f"{props.repository_data.mirror_interval_minutes}m",
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="MIRROR_SERVER_PASSWORD",

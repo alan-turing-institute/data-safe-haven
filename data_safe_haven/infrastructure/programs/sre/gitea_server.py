@@ -37,6 +37,7 @@ class SREGiteaServerProps:
         ldap_user_search_base: Input[str],
         location: Input[str],
         log_analytics_workspace: Input[OperationalInsightsWorkspace],
+        mirror_interval_minutes: Input[int],
         resource_group_name: Input[str],
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
@@ -54,6 +55,7 @@ class SREGiteaServerProps:
         self.ldap_user_search_base = ldap_user_search_base
         self.location = location
         self.log_analytics_workspace = log_analytics_workspace
+        self.mirror_interval_minutes = mirror_interval_minutes
         self.resource_group_name = resource_group_name
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
@@ -274,6 +276,10 @@ class SREGiteaServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__migrations__ALLOW_LOCALNETWORKS", value="true"
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="GITEA__mirror__MIN_INTERVAL",
+                            value=Output.format("{}m", props.mirror_interval_minutes),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="WORKSPACE_SERVER_PASSWORD",

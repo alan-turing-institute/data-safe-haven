@@ -657,6 +657,7 @@ def sre_config_yaml(request: FixtureRequest) -> str:
             workload_minimum_count: 1
         gitea_mirror:
             repositories: []
+            mirror_interval_minutes: 10
     """.replace("guid_subscription", request.config.guid_subscription).replace(
         "guid_tenant", request.config.guid_tenant
     )
