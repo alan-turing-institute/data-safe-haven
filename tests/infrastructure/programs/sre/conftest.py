@@ -488,7 +488,6 @@ def gitea_server_props(
     location: str,
     monitoring_elements: SREMonitoringElementsComponent,
     networking: SRENetworkingComponent,
-    repository_data: ConfigSubsectionGiteaMirror,
     resource_group: resources.ResourceGroup,
     sre_fqdn: str,
 ) -> SREGiteaServerProps:
@@ -507,7 +506,6 @@ def gitea_server_props(
         ldap_user_search_base=ldap_user_search_base,
         location=location,
         log_analytics_workspace=monitoring_elements.workspace_analytics,
-        mirror_interval_minutes=repository_data.mirror_interval_minutes,
         resource_group_name=resource_group.name,
         sre_fqdn=sre_fqdn,
         storage_account_key="storage_key",

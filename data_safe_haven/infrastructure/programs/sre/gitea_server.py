@@ -37,7 +37,6 @@ class SREGiteaServerProps:
         ldap_user_search_base: Input[str],
         location: Input[str],
         log_analytics_workspace: Input[OperationalInsightsWorkspace],
-        mirror_interval_minutes: Input[int],
         resource_group_name: Input[str],
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
@@ -55,7 +54,6 @@ class SREGiteaServerProps:
         self.ldap_user_search_base = ldap_user_search_base
         self.location = location
         self.log_analytics_workspace = log_analytics_workspace
-        self.mirror_interval_minutes = mirror_interval_minutes
         self.resource_group_name = resource_group_name
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
@@ -278,8 +276,11 @@ class SREGiteaServerComponent(ComponentResource):
                             name="GITEA__migrations__ALLOW_LOCALNETWORKS", value="true"
                         ),
                         containerinstance.EnvironmentVariableArgs(
+                            # Allow any interval down to Gitea's practical floor.
+                            # `gitea-mirror-manager` sets the actual sync interval
+                            # explicitly per mirror via the API.
                             name="GITEA__mirror__MIN_INTERVAL",
-                            value=Output.format("{}m", props.mirror_interval_minutes),
+                            value="1m",
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="WORKSPACE_SERVER_PASSWORD",
