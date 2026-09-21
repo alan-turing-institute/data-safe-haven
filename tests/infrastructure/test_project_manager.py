@@ -15,6 +15,8 @@ from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.infrastructure.project_manager import ProjectManager
 from data_safe_haven.upgrade import UpgradeAbortedError
 
+ACME_SRE_SUBSCRIPTION = "Data Safe Haven Acme"
+
 
 class TestSREProjectManager:
     def test_constructor(
@@ -172,7 +174,7 @@ class TestSREProjectManager:
         """Test that the deployment upgrade path is giving the expected
         outputs when the user accepts the request to perform an upgrade.
         """
-        sre_project_manager.upgrade()
+        sre_project_manager.upgrade(ACME_SRE_SUBSCRIPTION)
         captured = capsys.readouterr()
         assert "Performing refresh following changes." in captured.out
 
@@ -188,4 +190,4 @@ class TestSREProjectManager:
             UpgradeAbortedError,
             match=r"Deployment aborted.",
         ):
-            sre_project_manager.upgrade()
+            sre_project_manager.upgrade(ACME_SRE_SUBSCRIPTION)

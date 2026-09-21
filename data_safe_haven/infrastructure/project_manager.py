@@ -257,11 +257,12 @@ class ProjectManager:
     ) -> None:
         """Deploy the infrastructure with Pulumi."""
         try:
+            subscription_name = self._options["sre-subscription-name"][0]
             self.apply_config_options()
             if force:
                 self.cancel()
             self.refresh(run_program)
-            self.upgrade(run_program=run_program)
+            self.upgrade(subscription_name, run_program=run_program)
             self.preview(disable_diff)
             self.update()
         except Exception as exc:
@@ -422,12 +423,12 @@ class ProjectManager:
             msg = "Tearing down Pulumi infrastructure failed.."
             raise DataSafeHavenPulumiError(msg) from exc
 
-    def upgrade(self, *, run_program: bool = False) -> None:
+    def upgrade(self, subscription_name: str, *, run_program: bool = False) -> None:
         """Check whether any upgrade steps are needed and check with the
         user whether to apply them or not.
         """
         try:
-            upgrade = Upgrade(self)
+            upgrade = Upgrade(self, subscription_name)
             proceed = upgrade.can_proceed()
         except InvalidVersion as exc:
             proceed = False

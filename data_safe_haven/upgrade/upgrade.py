@@ -35,11 +35,16 @@ class Upgrade:
     proceed: bool | None = None
 
     def __init__(
-        self, project_manager: ProjectManager, *args: Any, **kwargs: Any
+        self,
+        project_manager: ProjectManager,
+        subscription_name: str,
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.logger = get_logger()
         self.project_manager = project_manager
+        self.subscription_name = subscription_name
 
     def can_proceed(self) -> bool:
         """Check whether or not a deployment can proceed based on its
@@ -62,7 +67,7 @@ class Upgrade:
             self.proceed = True
 
         if not self.fresh_deployment:
-            azure_sdk = AzureSdk(self.project_manager.context.subscription_name)
+            azure_sdk = AzureSdk(self.subscription_name)
             self.sre_version = Version(azure_sdk.get_version(resource_group))
 
             if self.dsh_version == self.sre_version:
@@ -120,7 +125,7 @@ class Upgrade:
         self.logger.info("Preparing SRE for upgrade to version 5.8.0")
 
         resource_group = self.project_manager.output("sre_resource_group")
-        azure_sdk = AzureSdk(self.project_manager.context.subscription_name)
+        azure_sdk = AzureSdk(self.subscription_name)
 
         database_server_names = [
             "db-server-gitea",
