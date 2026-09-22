@@ -382,6 +382,8 @@ class DeclarativeSRE:
                 db_server_shared_password=data.password_shared_database_admin,
                 dns_server_ip=dns.ip_address,
                 dockerhub_credentials=dockerhub_credentials,
+                gitea_admin_password=data.password_gitea_admin,
+                gitea_user_password=data.password_gitea_user,
                 ldap_server_hostname=identity.hostname,
                 ldap_server_port=identity.server_port,
                 ldap_user_filter=ldap_user_filter,

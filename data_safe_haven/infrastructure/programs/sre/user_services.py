@@ -38,6 +38,8 @@ class SREUserServicesProps:
         db_server_shared_password: Input[str],
         dns_server_ip: Input[str],
         dockerhub_credentials: DockerHubCredentials,
+        gitea_admin_password: Input[str],
+        gitea_user_password: Input[str],
         ldap_server_hostname: Input[str],
         ldap_server_port: Input[int],
         ldap_username_attribute: Input[str],
@@ -67,6 +69,8 @@ class SREUserServicesProps:
         self.db_server_shared_password = db_server_shared_password
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
+        self.gitea_admin_password = Output.secret(gitea_admin_password)
+        self.gitea_user_password = Output.secret(gitea_user_password)
         self.ldap_server_hostname = ldap_server_hostname
         self.ldap_server_port = ldap_server_port
         self.ldap_username_attribute = ldap_username_attribute
@@ -153,6 +157,7 @@ class SREUserServicesComponent(ComponentResource):
             "sre_gitea_server",
             stack_name,
             SREGiteaServerProps(
+                admin_password=props.gitea_admin_password,
                 containers_subnet_id=props.subnet_containers_id,
                 db_server_shared=self.db_server_shared,
                 db_server_shared_password=props.db_server_shared_password,
@@ -169,6 +174,7 @@ class SREUserServicesComponent(ComponentResource):
                 sre_fqdn=props.sre_fqdn,
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
+                workspace_password=props.gitea_user_password,
             ),
             opts=child_opts,
             tags=child_tags,
@@ -180,6 +186,7 @@ class SREUserServicesComponent(ComponentResource):
                 "gitea_mirror_monitor",
                 stack_name,
                 SREGiteaMirrorManagerProps(
+                    admin_password=props.gitea_admin_password,
                     db_server_shared=self.db_server_shared,
                     db_server_shared_password=props.db_server_shared_password,
                     dns_server_ip=props.dns_server_ip,
@@ -188,6 +195,7 @@ class SREUserServicesComponent(ComponentResource):
                     location=props.location,
                     log_analytics_workspace=props.log_analytics_workspace,
                     mirror_manager_subnet_id=props.subnet_gitea_mirrors_id,
+                    mirror_password=props.gitea_user_password,
                     repository_data=props.repository_data,
                     resource_group_name=props.resource_group_name,
                     sre_fqdn=props.sre_fqdn,

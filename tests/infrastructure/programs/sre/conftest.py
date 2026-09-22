@@ -478,10 +478,22 @@ def db_server_shared(
 
 
 @fixture
+def gitea_admin_password() -> str:
+    return "gitea-admin-password"
+
+
+@fixture
+def gitea_user_password() -> str:
+    return "gitea-user-password"
+
+
+@fixture
 def gitea_server_props(
     dns: SREDnsServerComponent,
     db_server_shared: PostgresqlDatabaseComponent,
     dockerhub_credentials: DockerHubCredentials,
+    gitea_admin_password: str,
+    gitea_user_password: str,
     ldap_username_attribute: str,
     ldap_user_filter: str,
     ldap_user_search_base: str,
@@ -492,6 +504,7 @@ def gitea_server_props(
     sre_fqdn: str,
 ) -> SREGiteaServerProps:
     return SREGiteaServerProps(
+        admin_password=gitea_admin_password,
         containers_subnet_id=pulumi.Output.from_input(
             networking.subnet_user_services_containers
         ).apply(get_id_from_subnet),
@@ -510,6 +523,7 @@ def gitea_server_props(
         sre_fqdn=sre_fqdn,
         storage_account_key="storage_key",
         storage_account_name="storage_account",
+        workspace_password=gitea_user_password,
     )
 
 
@@ -532,7 +546,9 @@ def gitea_mirror_manager_props(
     db_server_shared: PostgresqlDatabaseComponent,
     dns: SREDnsServerComponent,
     dockerhub_credentials: DockerHubCredentials,
+    gitea_admin_password: str,
     gitea_server_component: SREGiteaServerComponent,
+    gitea_user_password: str,
     location: str,
     monitoring_elements: SREMonitoringElementsComponent,
     networking: SRENetworkingComponent,
@@ -541,6 +557,7 @@ def gitea_mirror_manager_props(
     sre_fqdn: str,
 ) -> SREGiteaMirrorManagerProps:
     return SREGiteaMirrorManagerProps(
+        admin_password=gitea_admin_password,
         db_server_shared=db_server_shared,
         db_server_shared_password="shared-db-password",
         dns_server_ip=dns.ip_address,
@@ -551,6 +568,7 @@ def gitea_mirror_manager_props(
         mirror_manager_subnet_id=pulumi.Output.from_input(
             networking.subnet_user_services_gitea_mirror
         ).apply(get_id_from_subnet),
+        mirror_password=gitea_user_password,
         repository_data=repository_data,
         resource_group_name=resource_group.name,
         sre_fqdn=sre_fqdn,

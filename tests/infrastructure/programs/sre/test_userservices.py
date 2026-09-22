@@ -51,6 +51,8 @@ def user_services_props(
         db_server_shared_password="shared-db-password",
         dns_server_ip=dns.ip_address,
         dockerhub_credentials=dockerhub_credentials,
+        gitea_admin_password="gitea-admin-password",
+        gitea_user_password="gitea-user-password",
         ldap_server_hostname="identity.none",
         ldap_server_port=9999,
         ldap_username_attribute=ldap_username_attribute,
@@ -155,6 +157,68 @@ class TestSREUserServicesProps:
                 user_services_component.gitea_server.container_group.containers,  # type: ignore[attr-defined]
                 user_services_component.mirror_monitor.container_group.containers,  # type: ignore[attr-defined]
             ]
+        ).apply(check)
+
+    @pulumi.runtime.test  # type: ignore
+    def test_gitea_admin_password_shared(
+        self,
+        user_services_component: SREUserServicesComponent,
+        user_services_props: SREUserServicesProps,
+    ) -> None:
+        """Check that the Gitea admin password is shared between both instances"""
+
+        def check(inputs: list[Any]) -> None:
+            passwords = {inputs[0]}
+            for component in inputs[1:]:
+                passwords.add(
+                    next(
+                        env["secure_value"]
+                        for env in component[1]["environment_variables"]
+                        if env["name"] == "ADMIN_SERVER_PASSWORD"
+                    )
+                )
+
+            assert len(set(passwords)) == 1
+
+        pulumi.Output.from_input(
+            [
+                user_services_props.gitea_admin_password,
+                user_services_component.gitea_server.container_group.containers,  # type: ignore[attr-defined]
+                user_services_component.mirror_monitor.container_group.containers,  # type: ignore[attr-defined]
+            ]
+        ).apply(check)
+
+    @pulumi.runtime.test  # type: ignore
+    def test_gitea_user_password_shared(
+        self,
+        user_services_component: SREUserServicesComponent,
+        user_services_props: SREUserServicesProps,
+    ) -> None:
+        """Check that the Gitea workspace/mirror user password is shared between instances"""
+
+        def check(inputs: dict[str, Any]) -> None:
+            def env_value(containers: Any, name: str) -> Any:
+                return next(
+                    env["secure_value"]
+                    for env in containers[1]["environment_variables"]
+                    if env["name"] == name
+                )
+
+            passwords = {
+                inputs["expected"],
+                env_value(
+                    inputs["gitea_server_containers"], "WORKSPACE_SERVER_PASSWORD"
+                ),
+                env_value(inputs["mirror_containers"], "MIRROR_SERVER_PASSWORD"),
+            }
+            assert len(passwords) == 1
+
+        pulumi.Output.from_input(
+            {
+                "expected": user_services_props.gitea_user_password,
+                "gitea_server_containers": user_services_component.gitea_server.container_group.containers,  # type: ignore[attr-defined]
+                "mirror_containers": user_services_component.mirror_monitor.container_group.containers,  # type: ignore[attr-defined]
+            }
         ).apply(check)
 
     @pulumi.runtime.test  # type: ignore

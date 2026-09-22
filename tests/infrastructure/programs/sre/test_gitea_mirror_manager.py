@@ -64,6 +64,45 @@ class TestSREGiteaMirrorManagerComponent:
             gitea_mirror_manager_component.container_group.containers
         ).apply(check)
 
+    @pulumi.runtime.test  # type: ignore
+    def test_admin_password_stored(
+        self,
+        gitea_mirror_manager_component: SREGiteaMirrorManagerComponent,
+        gitea_admin_password: str,
+    ) -> Any:
+        def check(containers: list[Any]) -> None:
+            gitea = next(c for c in containers if c["name"] == "gitea")
+            admin_password = next(
+                env["secure_value"]
+                for env in gitea["environment_variables"]
+                if env["name"] == "ADMIN_SERVER_PASSWORD"
+            )
+            assert admin_password == gitea_admin_password
+
+        return pulumi.Output.from_input(
+            gitea_mirror_manager_component.container_group.containers
+        ).apply(check)
+
+    @pulumi.runtime.test  # type: ignore
+    def test_mirror_password_stored(
+        self,
+        gitea_mirror_manager_component: SREGiteaMirrorManagerComponent,
+        gitea_user_password: str,
+    ) -> Any:
+        def check(containers: list[Any]) -> None:
+            for container_name in ("mirrormanager", "gitea"):
+                container = next(c for c in containers if c["name"] == container_name)
+                mirror_password = next(
+                    env["secure_value"]
+                    for env in container["environment_variables"]
+                    if env["name"] == "MIRROR_SERVER_PASSWORD"
+                )
+                assert mirror_password == gitea_user_password
+
+        return pulumi.Output.from_input(
+            gitea_mirror_manager_component.container_group.containers
+        ).apply(check)
+
 
 class TestSREGiteaMirrorManagerComponentCustomInterval:
     @fixture
