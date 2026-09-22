@@ -287,6 +287,15 @@ class SREGiteaMirrorManagerComponent(ComponentResource):
                             value="1m",
                         ),
                         containerinstance.EnvironmentVariableArgs(
+                            # Gitea's own cron task that scans for and triggers due
+                            # mirror syncs defaults to running every 10 minutes;
+                            # without this, the cron scan itself is the bottleneck
+                            # regardless of how short a mirror's configured
+                            # interval or MIN_INTERVAL floor is.
+                            name="GITEA__cron_0x2E_update_mirrors__SCHEDULE",
+                            value="@every 1m",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
                             name="ADMIN_SERVER_PASSWORD",
                             secure_value=props.admin_password,
                         ),

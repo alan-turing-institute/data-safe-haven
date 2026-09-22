@@ -34,6 +34,25 @@ class TestSREGiteaServerComponent:
         ).apply(check)
 
     @pulumi.runtime.test  # type: ignore
+    def test_update_mirrors_schedule_is_every_minute(
+        self, gitea_server_component: SREGiteaServerComponent
+    ) -> Any:
+        """Check that Gitea's own update_mirrors cron task runs every minute"""
+
+        def check(containers: list[Any]) -> None:
+            gitea = next(c for c in containers if c["name"] == "gitea")
+            schedule = next(
+                env["value"]
+                for env in gitea["environment_variables"]
+                if env["name"] == "GITEA__cron_0x2E_update_mirrors__SCHEDULE"
+            )
+            assert schedule == "@every 1m"
+
+        return pulumi.Output.from_input(
+            gitea_server_component.container_group.containers
+        ).apply(check)
+
+    @pulumi.runtime.test  # type: ignore
     def test_admin_password_stored(
         self,
         gitea_server_component: SREGiteaServerComponent,
