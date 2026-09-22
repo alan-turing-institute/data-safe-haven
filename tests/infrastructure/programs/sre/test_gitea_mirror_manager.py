@@ -12,15 +12,6 @@ from data_safe_haven.infrastructure.programs.sre.gitea_mirror_manager import (
 
 class TestSREGiteaMirrorManagerComponent:
     @pulumi.runtime.test  # type: ignore
-    def test_creation(
-        self, gitea_mirror_manager_component: SREGiteaMirrorManagerComponent
-    ) -> None:
-        """Basic test to ensure the component is being created correctly"""
-        assert isinstance(
-            gitea_mirror_manager_component, SREGiteaMirrorManagerComponent
-        )
-
-    @pulumi.runtime.test  # type: ignore
     def test_mirrormanager_image_tag(
         self, gitea_mirror_manager_component: SREGiteaMirrorManagerComponent
     ) -> Any:
