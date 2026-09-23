@@ -3,7 +3,7 @@
 # Ensure that default admin user exists
 until su-exec "$USER" /usr/local/bin/gitea admin user list --admin | grep "{{admin_username}}" > /dev/null 2>&1; do
     echo "$(date -Iseconds) [mirror-manager] Attempting to create default admin user '{{admin_username}}'..." | tee -a /var/log/configuration
-        su-exec "$USER" /usr/local/bin/gitea admin user create --admin --username "{{admin_username}}" --password "$ADMIN_SERVER_PASSWORD" --must-change-password=false --email "{{admin_email}}" 2> /dev/null
+    su-exec "$USER" /usr/local/bin/gitea admin user create --admin --username "{{admin_username}}" --password "$ADMIN_SERVER_PASSWORD" --must-change-password=false --email "{{admin_email}}" 2> /dev/null
     sleep 1
 done
 
