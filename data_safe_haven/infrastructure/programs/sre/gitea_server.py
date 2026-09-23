@@ -135,7 +135,7 @@ class SREGiteaServerComponent(ComponentResource):
             resources_path / "gitea" / "gitea" / "configure.mustache.sh"
         )
 
-        self.workspace_username: str = "mirrors"
+        self.workspace_username: str = "workspaceuser"
         self.workspace_password: Output[str] = Output.secret(
             Output.from_input(props.workspace_password)
         )

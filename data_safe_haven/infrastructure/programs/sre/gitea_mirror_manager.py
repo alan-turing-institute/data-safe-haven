@@ -105,7 +105,7 @@ class SREGiteaMirrorManagerComponent(ComponentResource):
             resources_path / "gitea" / "gitea-mirror" / "configure.mustache.sh"
         )
 
-        mirror_username: str = "externalmirrors"
+        mirror_username: str = "mirroruser"
         mirror_password: Output[str] = Output.secret(
             Output.from_input(props.mirror_password)
         )
