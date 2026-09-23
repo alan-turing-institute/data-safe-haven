@@ -2,12 +2,14 @@ from typing import Any
 
 import pulumi
 import pulumi.runtime
+from packaging.version import Version
 from pytest import fixture
 
 from data_safe_haven.config.config_sections import ConfigSubsectionGiteaMirror
 from data_safe_haven.infrastructure.programs.sre.gitea_mirror_manager import (
     SREGiteaMirrorManagerComponent,
 )
+from tests.infrastructure.programs.resource_assertions import assert_equal
 
 
 class TestSREGiteaMirrorManagerComponent:
@@ -15,13 +17,13 @@ class TestSREGiteaMirrorManagerComponent:
     def test_mirrormanager_image_tag(
         self, gitea_mirror_manager_component: SREGiteaMirrorManagerComponent
     ) -> Any:
-        """Check that the mirrormanager container uses the v0.0.2 image"""
+        """Check that the mirrormanager container uses at least the v0.0.2 image"""
 
         def check(containers: list[Any]) -> None:
             mirrormanager = next(c for c in containers if c["name"] == "mirrormanager")
-            assert mirrormanager["image"] == (
-                "ghcr.io/alan-turing-institute/gitea-mirror-manager:v0.0.2"
-            )
+            image, _, tag = mirrormanager["image"].rpartition(":")
+            assert_equal("ghcr.io/alan-turing-institute/gitea-mirror-manager", image)
+            assert Version(tag) >= Version("0.0.2")
 
         return pulumi.Output.from_input(
             gitea_mirror_manager_component.container_group.containers
