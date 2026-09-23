@@ -7,6 +7,7 @@ from data_safe_haven.config.config_sections import (
     ConfigSectionSHM,
     ConfigSectionSRE,
     ConfigSectionUserServices,
+    ConfigSubsectionGiteaMirror,
     ConfigSubsectionNexus,
     ConfigSubsectionRemoteDesktopOpts,
     ConfigSubsectionStorageQuotaGB,
@@ -137,6 +138,26 @@ class TestConfigSectionUserServices:
             ConfigSectionUserServices(
                 nexus=ConfigSubsectionNexus(persistent_quota_gb=0)
             )
+
+
+class TestConfigSubsectionGiteaMirror:
+    def test_constructor_defaults(self) -> None:
+        gitea_mirror = ConfigSubsectionGiteaMirror(repositories=[])
+        assert gitea_mirror.mirror_interval_minutes == 10
+
+    def test_constructor_override(self) -> None:
+        gitea_mirror = ConfigSubsectionGiteaMirror(
+            repositories=[], mirror_interval_minutes=1
+        )
+        assert gitea_mirror.mirror_interval_minutes == 1
+
+    def test_invalid_mirror_interval_minutes_zero(self) -> None:
+        with pytest.raises(ValueError, match=r"Input should be greater than 0"):
+            ConfigSubsectionGiteaMirror(repositories=[], mirror_interval_minutes=0)
+
+    def test_invalid_mirror_interval_minutes_negative(self) -> None:
+        with pytest.raises(ValueError, match=r"Input should be greater than 0"):
+            ConfigSubsectionGiteaMirror(repositories=[], mirror_interval_minutes=-1)
 
 
 class TestConfigSectionSRE:

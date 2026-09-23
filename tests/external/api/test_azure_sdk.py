@@ -336,7 +336,9 @@ class TestAzureSdk:
         storage_account_name,
         mock_storage_management_client,  # noqa: ARG002
         mock_azuresdk_get_subscription,  # noqa: ARG002
+        mocker,
     ):
+        mocker.patch("data_safe_haven.external.api.azure_sdk.time.sleep")
         sdk = AzureSdk("subscription name")
         if storage_account_name == "shmstorageaccount":
             error_text = "List of keys was empty for storage account 'shmstorageaccount' in resource group 'resource group'."

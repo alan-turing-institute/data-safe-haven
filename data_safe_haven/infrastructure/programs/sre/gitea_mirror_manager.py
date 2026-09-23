@@ -3,7 +3,6 @@ from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, storage
-from pulumi_random import RandomPassword
 
 from data_safe_haven.config.config_sections import ConfigSubsectionGiteaMirror
 from data_safe_haven.infrastructure.common import (
@@ -27,6 +26,7 @@ class SREGiteaMirrorManagerProps:
 
     def __init__(
         self,
+        admin_password: Input[str],
         db_server_shared: Input[PostgresqlDatabaseComponent],
         db_server_shared_password: Input[str],
         dns_server_ip: Input[str],
@@ -35,6 +35,7 @@ class SREGiteaMirrorManagerProps:
         location: Input[str],
         log_analytics_workspace: Input[OperationalInsightsWorkspace],
         mirror_manager_subnet_id: Input[str],
+        mirror_password: Input[str],
         repository_data: ConfigSubsectionGiteaMirror,
         resource_group_name: Input[str],
         sre_fqdn: Input[str],
@@ -43,6 +44,7 @@ class SREGiteaMirrorManagerProps:
         workspace_username: str,
         workspace_password: Input[str],
     ) -> None:
+        self.admin_password = admin_password
         self.db_server_shared = db_server_shared
         self.db_server_shared_password = db_server_shared_password
         self.dns_server_ip = dns_server_ip
@@ -51,6 +53,7 @@ class SREGiteaMirrorManagerProps:
         self.location = location
         self.log_analytics_workspace = log_analytics_workspace
         self.mirror_manager_subnet_id = mirror_manager_subnet_id
+        self.mirror_password = mirror_password
         self.resource_group_name = resource_group_name
         self.repository_data = repository_data
         self.sre_fqdn = sre_fqdn
@@ -102,14 +105,10 @@ class SREGiteaMirrorManagerComponent(ComponentResource):
             resources_path / "gitea" / "gitea-mirror" / "configure.mustache.sh"
         )
 
-        gitea_mirror_user_password: RandomPassword = RandomPassword(
-            f"{self._name}_password_gitea_mirror_user",
-            length=20,
-            special=False,
-        )
-
         mirror_username: str = "mirroruser"
-        mirror_password: Output[str] = gitea_mirror_user_password.result
+        mirror_password: Output[str] = Output.secret(
+            Output.from_input(props.mirror_password)
+        )
 
         gitea_configure_sh = Output.all(
             admin_email="dshadmin@example.com",
@@ -173,9 +172,13 @@ class SREGiteaMirrorManagerComponent(ComponentResource):
             container_group_name=self.container_group_name,
             containers=[
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/gitea-mirror-manager:v0.0.1",
+                    image="ghcr.io/alan-turing-institute/gitea-mirror-manager:v0.0.2",
                     name="mirrormanager",
                     environment_variables=[
+                        containerinstance.EnvironmentVariableArgs(
+                            name="MIRROR_INTERVAL_MINUTES",
+                            value=str(props.repository_data.mirror_interval_minutes),
+                        ),
                         containerinstance.EnvironmentVariableArgs(
                             name="MIRROR_SERVER_URL",
                             value=Output.concat(
@@ -275,6 +278,24 @@ class SREGiteaMirrorManagerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__migrations__ALLOW_LOCALNETWORKS", value="true"
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            # Allow any interval down to Gitea's practical floor.
+                            # `gitea-mirror-manager` sets the actual sync interval
+                            # explicitly per mirror via the API.
+                            name="GITEA__mirror__MIN_INTERVAL",
+                            value="1m",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            # Cron task schedule that scans for and triggers
+                            # mirror syncs. More info at:
+                            # https://docs.gitea.com/administration/config-cheat-sheet/#cron---update-mirrors-cronupdate_mirrors
+                            name="GITEA__cron_0x2E_update_mirrors__SCHEDULE",
+                            value="@every 1m",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="ADMIN_SERVER_PASSWORD",
+                            secure_value=props.admin_password,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="MIRROR_SERVER_PASSWORD",
