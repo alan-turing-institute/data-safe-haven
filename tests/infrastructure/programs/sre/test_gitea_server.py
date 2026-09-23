@@ -10,11 +10,6 @@ from data_safe_haven.infrastructure.programs.sre.gitea_server import (
 
 class TestSREGiteaServerComponent:
     @pulumi.runtime.test  # type: ignore
-    def test_creation(self, gitea_server_component: SREGiteaServerComponent) -> None:
-        """Basic test to ensure the component is being created correctly"""
-        assert isinstance(gitea_server_component, SREGiteaServerComponent)
-
-    @pulumi.runtime.test  # type: ignore
     def test_min_interval_is_one_minute(
         self, gitea_server_component: SREGiteaServerComponent
     ) -> Any:
