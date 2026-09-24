@@ -1,12 +1,15 @@
 import contextlib
 import time
+import typing
 
 import websocket
 from azure.core.polling import LROPoller
 from azure.mgmt.containerinstance import ContainerInstanceManagementClient
 from azure.mgmt.containerinstance.models import (
+    Container,
     ContainerExecRequest,
     ContainerExecRequestTerminalSize,
+    ContainerGroup,
 )
 
 from data_safe_haven.exceptions import DataSafeHavenAzureError
@@ -88,6 +91,20 @@ class AzureContainerInstance:
         except Exception as exc:
             msg = f"Could not restart container group {self.container_group_name}."
             raise DataSafeHavenAzureError(msg) from exc
+
+    @property
+    def containers(self) -> list[Container]:
+        # Connect to Azure clients
+        aci_client = ContainerInstanceManagementClient(
+            self.azure_sdk.credential(), self.azure_sdk.subscription_id
+        )
+
+        container_group: ContainerGroup = aci_client.container_groups.get(
+            resource_group_name=self.resource_group_name,
+            container_group_name=self.container_group_name,
+        )
+
+        return typing.cast(list[Container], container_group.containers)
 
     def run_executable(self, container_name: str, executable_path: str) -> list[str]:
         """
