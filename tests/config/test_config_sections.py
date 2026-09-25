@@ -4,6 +4,7 @@ from pydantic import ValidationError
 from data_safe_haven.config.config_sections import (
     ConfigSectionAzure,
     ConfigSectionDockerHub,
+    ConfigSectionMonitoring,
     ConfigSectionSHM,
     ConfigSectionSRE,
     ConfigSectionUserServices,
@@ -248,6 +249,43 @@ class TestConfigSectionSRE:
                 research_user_ip_addresses=addresses,
             )
 
+    def test_internet_and_packages_validation(
+        self,
+        config_subsection_remote_desktop: ConfigSubsectionRemoteDesktopOpts,
+        config_subsection_storage_quota_gb: ConfigSubsectionStorageQuotaGB,
+    ):
+        sre_config = ConfigSectionSRE(
+            admin_email_address="admin@example.com",
+            remote_desktop=config_subsection_remote_desktop,
+            storage_quota_gb=config_subsection_storage_quota_gb,
+            allow_workspace_internet=True,
+            software_packages=SoftwarePackageCategory.ANY,
+        )
+        assert sre_config.allow_workspace_internet
+        assert sre_config.software_packages == SoftwarePackageCategory.ANY
+
+        sre_config = ConfigSectionSRE(
+            admin_email_address="admin@example.com",
+            remote_desktop=config_subsection_remote_desktop,
+            storage_quota_gb=config_subsection_storage_quota_gb,
+            allow_workspace_internet=False,
+            software_packages=SoftwarePackageCategory.NONE,
+        )
+        assert not sre_config.allow_workspace_internet
+        assert sre_config.software_packages == SoftwarePackageCategory.NONE
+
+        with pytest.raises(
+            ValueError,
+            match=r"When `allow_workspace_internet` is `true`, `software_packages` must be `any`",
+        ):
+            ConfigSectionSRE(
+                admin_email_address="admin@example.com",
+                remote_desktop=config_subsection_remote_desktop,
+                storage_quota_gb=config_subsection_storage_quota_gb,
+                allow_workspace_internet=True,
+                software_packages=SoftwarePackageCategory.NONE,
+            )
+
 
 class TestConfigSubsectionRemoteDesktopOpts:
     def test_constructor(self) -> None:
@@ -301,3 +339,104 @@ class TestConfigSubsectionStorageQuotaGB:
                 home=50,
                 shared=100,
             )
+
+
+class TestConfigSectionMonitoring:
+    def test_constructor(self) -> None:
+        ConfigSectionMonitoring(
+            log_level="debug", retention_period=10, sampling_interval=30
+        )
+
+    def test_constructor_defaults(self) -> None:
+        section = ConfigSectionMonitoring()
+        assert section.log_level == "info"
+        assert section.retention_period == 30
+        assert section.sampling_interval == 60
+
+    def test_constructor_undefaults(self) -> None:
+        section = ConfigSectionMonitoring(
+            log_level="debug", retention_period=7, sampling_interval=21
+        )
+        assert section.log_level == "debug"
+        assert section.retention_period == 7
+        assert section.sampling_interval == 21
+
+    def test_constructor_valid_log_level(self) -> None:
+        ConfigSectionMonitoring(log_level="error")
+        ConfigSectionMonitoring(log_level="warn")
+        ConfigSectionMonitoring(log_level="info")
+        ConfigSectionMonitoring(log_level="debug")
+        ConfigSectionMonitoring(log_level="trace")
+
+    def test_constructor_invalid_log_level(self) -> None:
+        with pytest.raises(
+            ValueError,
+            match=r"1 validation error for ConfigSectionMonitoring\nlog_level\n  Value error, Logging level must be one of error, warn, info, debug or trace",
+        ):
+            ConfigSectionMonitoring(log_level="critical")
+        with pytest.raises(
+            ValueError,
+            match=r"1 validation error for ConfigSectionMonitoring\nlog_level\n  Input should be a valid string",
+        ):
+            ConfigSectionMonitoring(log_level=3)
+
+    def test_constructor_valid_retention_period(self) -> None:
+        ConfigSectionMonitoring(retention_period=30)
+        ConfigSectionMonitoring(retention_period=31)
+        ConfigSectionMonitoring(retention_period=99)
+        ConfigSectionMonitoring(retention_period=729)
+        ConfigSectionMonitoring(retention_period=730)
+        section = ConfigSectionMonitoring(retention_period="27")
+        assert section.retention_period == 27
+
+    def test_constructor_invalid_retention_period(self) -> None:
+        with pytest.raises(
+            ValueError,
+            match=r"1 validation error for ConfigSectionMonitoring\nretention_period\n  Input should be greater than 0",
+        ):
+            ConfigSectionMonitoring(retention_period=0)
+        with pytest.raises(
+            ValueError,
+            match=r"1 validation error for ConfigSectionMonitoring\nretention_period\n  Input should be greater than 0",
+        ):
+            ConfigSectionMonitoring(retention_period=29)
+        with pytest.raises(
+            ValueError,
+            match=r"1 validation error for ConfigSectionMonitoring\nretention_period\n  Value error, Retention period must be between 30 and 730 days \(inclusive\)",
+        ):
+            ConfigSectionMonitoring(retention_period=731)
+        with pytest.raises(
+            ValueError,
+            match=r"1 validation error for ConfigSectionMonitoring\nretention_period\n  Value error, Retention period must be between 30 and 730 days \(inclusive\)",
+        ):
+            ConfigSectionMonitoring(retention_period=731)
+        with pytest.raises(
+            ValueError,
+            match=r"1 validation error for ConfigSectionMonitoring\nretention_period\n  Input should be greater than 0",
+        ):
+            ConfigSectionMonitoring(retention_period="0")
+
+    def test_constructor_valid_sampling_interval(self) -> None:
+        ConfigSectionMonitoring(sampling_interval=1)
+        ConfigSectionMonitoring(sampling_interval=2)
+        ConfigSectionMonitoring(sampling_interval=60)
+        ConfigSectionMonitoring(sampling_interval=9999)
+        section = ConfigSectionMonitoring(sampling_interval="87")
+        assert section.sampling_interval == 87
+
+    def test_constructor_invalid_sampling_interval(self) -> None:
+        with pytest.raises(
+            ValueError,
+            match=r"1 validation error for ConfigSectionMonitoring\nsampling_interval\n  Input should be greater than 0",
+        ):
+            ConfigSectionMonitoring(sampling_interval=0)
+        with pytest.raises(
+            ValueError,
+            match=r"1 validation error for ConfigSectionMonitoring\nsampling_interval\n  Input should be greater than 0",
+        ):
+            ConfigSectionMonitoring(sampling_interval=-1)
+        with pytest.raises(
+            ValueError,
+            match=r"1 validation error for ConfigSectionMonitoring\nsampling_interval\n  Input should be greater than 0",
+        ):
+            ConfigSectionMonitoring(sampling_interval="0")

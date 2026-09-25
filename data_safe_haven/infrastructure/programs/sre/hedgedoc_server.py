@@ -3,6 +3,7 @@ from collections.abc import Mapping
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, storage
 
+from data_safe_haven.config import LOGGING_LEVELS
 from data_safe_haven.functions import b64encode
 from data_safe_haven.infrastructure.common import (
     DockerHubCredentials,
@@ -24,6 +25,16 @@ from data_safe_haven.utility import FileReader
 class SREHedgeDocServerProps:
     """Properties for SREHedgeDocServerComponent"""
 
+    @staticmethod
+    def log_level_convert(log_level: str) -> str:
+        if log_level in LOGGING_LEVELS.keys():
+            # Cap the level to at most "debug"
+            return "debug" if log_level == "trace" else log_level
+        else:
+            # The key doesn't exist
+            msg = "Logging level must be one of error, warn, info, debug or trace."
+            raise ValueError(msg)
+
     def __init__(
         self,
         containers_subnet_id: Input[str],
@@ -42,6 +53,7 @@ class SREHedgeDocServerProps:
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
+        log_level: Input[str],
     ) -> None:
         self.containers_subnet_id = containers_subnet_id
         self.db_server_shared = db_server_shared
@@ -60,6 +72,7 @@ class SREHedgeDocServerProps:
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
+        self.log_level = log_level
 
 
 class SREHedgeDocServerComponent(ComponentResource):
@@ -231,7 +244,9 @@ class SREHedgeDocServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_LOGLEVEL",
-                            value="info",
+                            value=SREHedgeDocServerProps.log_level_convert(
+                                props.log_level
+                            ),
                         ),
                     ],
                     ports=[],

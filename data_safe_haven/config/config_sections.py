@@ -7,6 +7,7 @@ from itertools import combinations
 
 from pydantic import BaseModel, HttpUrl, PositiveInt, field_validator, model_validator
 
+from data_safe_haven.config import LOGGING_LEVELS
 from data_safe_haven.types import (
     AzureDataDiskSize,
     AzureLocation,
@@ -24,6 +25,9 @@ from data_safe_haven.types import (
     UniqueList,
 )
 
+MONITORING_RETENTION_PERIOD_MAX = 730
+MONITORING_RETENTION_PERIOD_MIN = 30
+
 
 class ConfigSectionAzure(BaseModel, validate_assignment=True):
     location: AzureLocation
@@ -40,6 +44,36 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
     admin_group_id: Guid
     entra_tenant_id: Guid
     fqdn: Fqdn
+
+
+class ConfigSectionMonitoring(BaseModel, validate_assignment=True):
+    log_level: SafeString = "info"
+    retention_period: PositiveInt = 30
+    sampling_interval: PositiveInt = 60
+
+    @field_validator(
+        "log_level",
+    )
+    @classmethod
+    def ensure_log_level(cls, v: SafeString) -> SafeString:
+        if v in LOGGING_LEVELS.keys():
+            return v
+        else:
+            msg = "Logging level must be one of error, warn, info, debug or trace"
+            raise ValueError(msg)
+
+    @field_validator(
+        "retention_period",
+    )
+    @classmethod
+    def ensure_retention_period(cls, v: PositiveInt) -> PositiveInt:
+        # Azure supports retention periods between 30 and 730 days inclusive. See:
+        # https://learn.microsoft.com/en-us/azure/azure-monitor/fundamentals/service-limits#log-analytics-workspaces
+        if v >= MONITORING_RETENTION_PERIOD_MIN and v <= MONITORING_RETENTION_PERIOD_MAX:
+            return v
+        else:
+            msg = "Retention period must be between 30 and 730 days (inclusive)"
+            raise ValueError(msg)
 
 
 class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
@@ -98,6 +132,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     allow_workspace_internet: bool = False
     databases: UniqueList[DatabaseSystem] = []
     data_provider_ip_addresses: list[IpAddress] = []
+    monitoring: ConfigSectionMonitoring = ConfigSectionMonitoring()
     remote_desktop: ConfigSubsectionRemoteDesktopOpts
     research_user_ip_addresses: list[IpAddress] | AzureServiceTag = []
     storage_quota_gb: ConfigSubsectionStorageQuotaGB

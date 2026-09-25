@@ -634,6 +634,10 @@ def sre_config_yaml(request: FixtureRequest) -> str:
         allow_workspace_internet: false
         data_provider_ip_addresses: []
         databases: []
+        monitoring:
+            log_level: info
+            retention_period: 30
+            sampling_interval: 60
         remote_desktop:
             allow_copy: false
             allow_paste: false

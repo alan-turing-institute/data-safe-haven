@@ -5,6 +5,7 @@ from collections.abc import Mapping
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, storage
 
+from data_safe_haven.config import LOGGING_LEVELS
 from data_safe_haven.infrastructure.common import (
     DockerHubCredentials,
     get_id_from_subnet,
@@ -19,6 +20,23 @@ from data_safe_haven.infrastructure.components import (
 
 class SREIdentityProps:
     """Properties for SREIdentityComponent"""
+
+    @staticmethod
+    def log_level_convert(log_level: str) -> str:
+        if log_level in LOGGING_LEVELS.keys():
+            # Convert level to a binary value
+            # Apricot tests the environment variable with `if [ -n "${DEBUG}" ]`
+            # So an unset or empty value is considered as false
+            if list(LOGGING_LEVELS.keys()).index(log_level) >= list(
+                LOGGING_LEVELS.keys()
+            ).index("debug"):
+                return "true"
+            else:
+                return ""
+        else:
+            # The key doesn't exist
+            msg = "Logging level must be one of error, warn, info, debug or trace."
+            raise ValueError(msg)
 
     def __init__(
         self,
@@ -35,6 +53,7 @@ class SREIdentityProps:
         storage_account_key: Input[str],
         storage_account_name: Input[str],
         subnet_containers: Input[network.GetSubnetResult],
+        log_level: Input[str],
     ) -> None:
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
@@ -51,6 +70,7 @@ class SREIdentityProps:
         self.subnet_containers_id = Output.from_input(subnet_containers).apply(
             get_id_from_subnet
         )
+        self.log_level = log_level
 
 
 class SREIdentityComponent(ComponentResource):
@@ -111,7 +131,7 @@ class SREIdentityComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="DEBUG",
-                            value="true",
+                            value=SREIdentityProps.log_level_convert(props.log_level),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="DOMAIN",
