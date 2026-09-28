@@ -7,6 +7,8 @@ from data_safe_haven.external import AzureSdk
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.upgrade import Upgrade, UpgradeFailedError
 
+ACME_SRE_SUBSCRIPTION = "Data Safe Haven Acme"
+
 
 class TestUpgrade:
     def test_user_checks_sre_same_version(
@@ -18,7 +20,7 @@ class TestUpgrade:
         """Check that same-version deployments proceed automatically."""
         with mock.patch.object(AzureSdk, "get_version", return_value="5.7.1"):
             with mock.patch.object(version, "__version__", new="5.7.1"):
-                upgrade = Upgrade(sre_project_manager)
+                upgrade = Upgrade(sre_project_manager, ACME_SRE_SUBSCRIPTION)
                 proceed = upgrade.can_proceed()
                 assert proceed
                 captured = capsys.readouterr()
@@ -36,7 +38,7 @@ class TestUpgrade:
         """Check that if the SRE is newer than DSH the deployment is aborted."""
         with mock.patch.object(AzureSdk, "get_version", return_value="5.7.1"):
             with mock.patch.object(version, "__version__", new="5.7.0"):
-                upgrade = Upgrade(sre_project_manager)
+                upgrade = Upgrade(sre_project_manager, ACME_SRE_SUBSCRIPTION)
                 proceed = upgrade.can_proceed()
                 assert not proceed
                 captured = capsys.readouterr()
@@ -54,7 +56,7 @@ class TestUpgrade:
         """Check that upgrade to a newer SRE requires confirmation."""
         with mock.patch.object(AzureSdk, "get_version", return_value="5.7.0"):
             with mock.patch.object(version, "__version__", new="5.7.1"):
-                upgrade = Upgrade(sre_project_manager)
+                upgrade = Upgrade(sre_project_manager, ACME_SRE_SUBSCRIPTION)
                 proceed = upgrade.can_proceed()
                 assert proceed
                 captured = capsys.readouterr()
@@ -72,7 +74,7 @@ class TestUpgrade:
         """Check that downgrading is not allowed."""
         with mock.patch.object(AzureSdk, "get_version", return_value="5.7.0"):
             with mock.patch.object(version, "__version__", new="5.7.1"):
-                upgrade = Upgrade(sre_project_manager)
+                upgrade = Upgrade(sre_project_manager, ACME_SRE_SUBSCRIPTION)
                 proceed = upgrade.can_proceed()
                 assert not proceed
                 captured = capsys.readouterr()
@@ -90,7 +92,7 @@ class TestUpgrade:
         """Check that patch version increments trigger an upgrade."""
         with mock.patch.object(AzureSdk, "get_version", return_value="5.8.0"):
             with mock.patch.object(version, "__version__", new="5.8.1"):
-                upgrade = Upgrade(sre_project_manager)
+                upgrade = Upgrade(sre_project_manager, ACME_SRE_SUBSCRIPTION)
                 proceed = upgrade.can_proceed()
                 assert not proceed
                 captured = capsys.readouterr()
@@ -107,7 +109,7 @@ class TestUpgrade:
         """Check that minor version increments trigger an upgrade."""
         with mock.patch.object(AzureSdk, "get_version", return_value="5.6.1"):
             with mock.patch.object(version, "__version__", new="5.8.1"):
-                upgrade = Upgrade(sre_project_manager)
+                upgrade = Upgrade(sre_project_manager, ACME_SRE_SUBSCRIPTION)
                 proceed = upgrade.can_proceed()
                 assert not proceed
                 captured = capsys.readouterr()
@@ -125,7 +127,7 @@ class TestUpgrade:
         """Check that major version increments trigger an upgrade."""
         with mock.patch.object(AzureSdk, "get_version", return_value="3.9.9"):
             with mock.patch.object(version, "__version__", new="6.7.3"):
-                upgrade = Upgrade(sre_project_manager)
+                upgrade = Upgrade(sre_project_manager, ACME_SRE_SUBSCRIPTION)
                 proceed = upgrade.can_proceed()
                 assert not proceed
                 captured = capsys.readouterr()
@@ -140,7 +142,7 @@ class TestUpgrade:
         """Checks that fresh deployments are correctly recognised."""
         with mock.patch.object(AzureSdk, "get_version", return_value="5.7.1"):
             with mock.patch.object(version, "__version__", new="5.7.1"):
-                upgrade = Upgrade(sre_project_manager)
+                upgrade = Upgrade(sre_project_manager, ACME_SRE_SUBSCRIPTION)
                 proceed = upgrade.can_proceed()
                 assert proceed
                 assert upgrade.fresh_deployment
@@ -157,7 +159,7 @@ class TestUpgrade:
         """
         with mock.patch.object(AzureSdk, "get_version", return_value="3.9.9"):
             with mock.patch.object(version, "__version__", new="4.0.0"):
-                upgrade = Upgrade(sre_project_manager)
+                upgrade = Upgrade(sre_project_manager, ACME_SRE_SUBSCRIPTION)
                 proceed = upgrade.can_proceed()
                 assert proceed
                 captured = capsys.readouterr()
@@ -177,7 +179,7 @@ class TestUpgrade:
         """
         with mock.patch.object(AzureSdk, "get_version", return_value="3.9.9"):
             with mock.patch.object(version, "__version__", new="4.0.0"):
-                upgrade = Upgrade(sre_project_manager)
+                upgrade = Upgrade(sre_project_manager, ACME_SRE_SUBSCRIPTION)
                 proceed = upgrade.can_proceed()
                 assert not proceed
                 captured = capsys.readouterr()
@@ -197,7 +199,7 @@ class TestUpgrade:
         """
         with mock.patch.object(AzureSdk, "get_version", return_value="3.9.9"):
             with mock.patch.object(version, "__version__", new="4.0.0"):
-                upgrade = Upgrade(sre_project_manager)
+                upgrade = Upgrade(sre_project_manager, ACME_SRE_SUBSCRIPTION)
                 proceed = upgrade.can_proceed()
                 assert proceed
                 assert upgrade.fresh_deployment
@@ -221,7 +223,7 @@ class TestUpgrade:
         """
         with mock.patch.object(AzureSdk, "get_version", return_value="5.7.8"):
             with mock.patch.object(version, "__version__", new="5.7.9"):
-                upgrade = Upgrade(sre_project_manager)
+                upgrade = Upgrade(sre_project_manager, ACME_SRE_SUBSCRIPTION)
                 proceed = upgrade.can_proceed()
                 assert proceed
                 captured = capsys.readouterr()
@@ -242,7 +244,7 @@ class TestUpgrade:
         """
         with mock.patch.object(AzureSdk, "get_version", return_value="5.7.9"):
             with mock.patch.object(version, "__version__", new="5.8.0"):
-                upgrade = Upgrade(sre_project_manager)
+                upgrade = Upgrade(sre_project_manager, ACME_SRE_SUBSCRIPTION)
                 proceed = upgrade.can_proceed()
                 assert proceed
                 captured = capsys.readouterr()
@@ -263,7 +265,7 @@ class TestUpgrade:
         """
         with mock.patch.object(AzureSdk, "get_version", return_value="5.8.0"):
             with mock.patch.object(version, "__version__", new="5.8.1"):
-                upgrade = Upgrade(sre_project_manager)
+                upgrade = Upgrade(sre_project_manager, ACME_SRE_SUBSCRIPTION)
                 proceed = upgrade.can_proceed()
                 assert proceed
                 captured = capsys.readouterr()
