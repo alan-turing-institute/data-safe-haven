@@ -583,7 +583,9 @@ class AzureSdk:
             self.credential(), self.subscription_id
         ) as resource_client:
             azure_id = f"/subscriptions/{self.subscription_id}/resourceGroups/{resource_group_name}/providers/{provider_namespace}/{resource_type}/{resource_name}"
-            resource = resource_client.resources.get_by_id(azure_id, "2026-01-01")
+            resource = resource_client.resources.get_by_id(
+                azure_id, api_version="2026-01-01"
+            )
 
         return resource
 
@@ -631,7 +633,7 @@ class AzureSdk:
             # ServerIsBusy exceptions, so we must delete the resources sequentially
             for completed, resource_id in enumerate(resource_ids):
                 poller = resource_client.resources.begin_delete_by_id(
-                    resource_id, "2026-01-01"
+                    resource_id, api_version="2026-01-01"
                 )
                 spinners = ["    ", ".   ", "..  ", "... ", "...."]
                 done = False
