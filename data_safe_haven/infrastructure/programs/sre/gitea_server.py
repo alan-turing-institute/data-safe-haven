@@ -41,6 +41,7 @@ class SREGiteaServerProps:
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
+        update_schedule_minutes: int,
         workspace_password: Input[str],
     ) -> None:
         self.admin_password = admin_password
@@ -60,6 +61,7 @@ class SREGiteaServerProps:
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
+        self.update_schedule_minutes = update_schedule_minutes
         self.workspace_password = workspace_password
 
 
@@ -280,11 +282,11 @@ class SREGiteaServerComponent(ComponentResource):
                             value="1m",
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            # Cron task schedule that scans for and triggers
-                            # mirror syncs. More info at:
+                            # Configurable cron task schedule that scans for and
+                            # triggers mirror syncs. More info at:
                             # https://docs.gitea.com/administration/config-cheat-sheet/#cron---update-mirrors-cronupdate_mirrors
                             name="GITEA__cron_0x2E_update_mirrors__SCHEDULE",
-                            value="@every 1m",
+                            value=f"@every {props.update_schedule_minutes}m",
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="ADMIN_SERVER_PASSWORD",

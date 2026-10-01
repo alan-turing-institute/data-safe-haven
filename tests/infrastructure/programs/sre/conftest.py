@@ -523,6 +523,7 @@ def gitea_server_props(
         sre_fqdn=sre_fqdn,
         storage_account_key="storage_key",
         storage_account_name="storage_account",
+        update_schedule_minutes=1,
         workspace_password=gitea_user_password,
     )
 

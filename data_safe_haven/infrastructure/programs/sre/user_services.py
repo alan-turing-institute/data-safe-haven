@@ -174,6 +174,7 @@ class SREUserServicesComponent(ComponentResource):
                 sre_fqdn=props.sre_fqdn,
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
+                update_schedule_minutes=props.repository_data.update_schedule_minutes,
                 workspace_password=props.gitea_user_password,
             ),
             opts=child_opts,

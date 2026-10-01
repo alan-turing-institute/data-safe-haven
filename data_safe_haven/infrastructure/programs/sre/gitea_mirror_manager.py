@@ -287,11 +287,11 @@ class SREGiteaMirrorManagerComponent(ComponentResource):
                             value="1m",
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            # Cron task schedule that scans for and triggers
-                            # mirror syncs. More info at:
+                            # Configurable cron task schedule that scans for and
+                            # triggers mirror syncs. More info at:
                             # https://docs.gitea.com/administration/config-cheat-sheet/#cron---update-mirrors-cronupdate_mirrors
                             name="GITEA__cron_0x2E_update_mirrors__SCHEDULE",
-                            value="@every 1m",
+                            value=f"@every {props.repository_data.update_schedule_minutes}m",
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="ADMIN_SERVER_PASSWORD",

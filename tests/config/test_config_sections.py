@@ -159,6 +159,25 @@ class TestConfigSubsectionGiteaMirror:
         with pytest.raises(ValueError, match=r"Input should be greater than 0"):
             ConfigSubsectionGiteaMirror(repositories=[], mirror_interval_minutes=-1)
 
+    def test_update_schedule_minutes_default(self) -> None:
+        gitea_mirror = ConfigSubsectionGiteaMirror(repositories=[])
+        assert gitea_mirror.update_schedule_minutes == 1
+
+    def test_update_schedule_minutes_override(self) -> None:
+        gitea_mirror = ConfigSubsectionGiteaMirror(
+            repositories=[], mirror_interval_minutes=10, update_schedule_minutes=5
+        )
+        assert gitea_mirror.update_schedule_minutes == 5
+
+    def test_invalid_update_schedule_minutes_above_mirror_interval(self) -> None:
+        with pytest.raises(
+            ValueError,
+            match=r"`update_schedule_minutes` must be less than or equal to `mirror_interval_minutes`",
+        ):
+            ConfigSubsectionGiteaMirror(
+                repositories=[], mirror_interval_minutes=10, update_schedule_minutes=11
+            )
+
 
 class TestConfigSectionSRE:
     def test_constructor(

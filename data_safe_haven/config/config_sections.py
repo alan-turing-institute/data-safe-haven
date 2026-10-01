@@ -75,6 +75,14 @@ class GitRepository(BaseModel, validate_assignment=True):
 class ConfigSubsectionGiteaMirror(BaseModel, validate_assignment=True):
     repositories: list[GitRepository]
     mirror_interval_minutes: PositiveInt = 10
+    update_schedule_minutes: PositiveInt = 1
+
+    @model_validator(mode="after")
+    def validate_update_schedule(self) -> ConfigSubsectionGiteaMirror:
+        if self.update_schedule_minutes > self.mirror_interval_minutes:
+            msg = "`update_schedule_minutes` must be less than or equal to `mirror_interval_minutes`"
+            raise ValueError(msg)
+        return self
 
 
 class ConfigSectionUserServices(BaseModel, validate_assignment=True):

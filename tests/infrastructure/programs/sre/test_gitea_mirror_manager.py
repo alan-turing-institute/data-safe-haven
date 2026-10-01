@@ -33,8 +33,9 @@ class TestSREGiteaMirrorManagerComponent:
     def test_mirror_interval_default(
         self, gitea_mirror_manager_component: SREGiteaMirrorManagerComponent
     ) -> Any:
-        """Check that the mirror interval defaults to 10 minutes, and that Gitea's
-        own cron floor (MIN_INTERVAL) and scan cadence (SCHEDULE) stay fixed"""
+        """Check that the mirror interval defaults to 10 minutes, Gitea's scan
+        cadence (SCHEDULE) defaults to 1 minute, and Gitea's own cron floor
+        (MIN_INTERVAL) stays fixed"""
 
         def check(containers: list[Any]) -> None:
             mirrormanager = next(c for c in containers if c["name"] == "mirrormanager")
@@ -107,15 +108,17 @@ class TestSREGiteaMirrorManagerComponent:
 class TestSREGiteaMirrorManagerComponentCustomInterval:
     @fixture
     def repository_data(self) -> ConfigSubsectionGiteaMirror:
-        return ConfigSubsectionGiteaMirror(repositories=[], mirror_interval_minutes=5)
+        return ConfigSubsectionGiteaMirror(
+            repositories=[], mirror_interval_minutes=5, update_schedule_minutes=2
+        )
 
     @pulumi.runtime.test  # type: ignore
     def test_mirror_interval_override(
         self, gitea_mirror_manager_component: SREGiteaMirrorManagerComponent
     ) -> Any:
-        """Check that a configured mirror interval reaches mirrormanager, while
-        Gitea's own cron floor (MIN_INTERVAL) and scan cadence (SCHEDULE) stay
-        fixed at 1 minute regardless"""
+        """Check that a configured mirror interval reaches mirrormanager and a
+        configured scan cadence (SCHEDULE) reaches Gitea, while Gitea's own cron
+        floor (MIN_INTERVAL) stays fixed at 1 minute regardless"""
 
         def check(containers: list[Any]) -> None:
             mirrormanager = next(c for c in containers if c["name"] == "mirrormanager")
@@ -139,7 +142,7 @@ class TestSREGiteaMirrorManagerComponentCustomInterval:
                 for env in gitea["environment_variables"]
                 if env["name"] == "GITEA__cron_0x2E_update_mirrors__SCHEDULE"
             )
-            assert schedule == "@every 1m"
+            assert schedule == "@every 2m"
 
         return pulumi.Output.from_input(
             gitea_mirror_manager_component.container_group.containers
