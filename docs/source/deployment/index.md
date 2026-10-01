@@ -17,7 +17,7 @@ Deploying an instance of the Data Safe Haven involves the following steps:
 - Configuring the Microsoft Entra directory where you will manage users
 - Deploying the Safe Haven management component
 - Deploying a Secure Research Environment for each project
-- Optionally [configuring pre-approved GitHub repositories for code ingress](self_code_ingress.md)
+- Optionally configuring pre-approved GitHub repositories for code ingress
 
 ## Requirements
 
