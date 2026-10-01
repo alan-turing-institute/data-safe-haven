@@ -27,6 +27,48 @@ class TestDeploySRE:
         assert "mock deploy" in result.stdout
         assert "mock deploy error" in result.stdout
 
+    def test_deploy_cli_full(
+        self,
+        runner: CliRunner,
+        mock_azuresdk_get_subscription_name,  # noqa: ARG002
+        mock_contextmanager_assert_context,  # noqa: ARG002
+        mock_ip_1_2_3_4,  # noqa: ARG002
+        mock_pulumi_config_from_remote_or_create,  # noqa: ARG002
+        mock_pulumi_config_upload,  # noqa: ARG002
+        mock_shm_config_from_remote,  # noqa: ARG002
+        mock_sre_config_from_remote,  # noqa: ARG002
+        mock_graph_api_get_application_by_name,  # noqa: ARG002
+        mock_upgrade_accept,  # noqa: ARG002
+        mock_sre_deploy_actions,  # noqa: ARG002
+        mock_azuresdk_get_credential,  # noqa: ARG002
+    ) -> None:
+        result = runner.invoke(sre_command_group, ["deploy", "sandbox"])
+        assert result.exit_code == 1
+        assert "SRE will be registered in SHM 'shm.acme.com'" in result.stdout
+        assert (
+            "SHM is deployed to subscription 'Data Safe Haven Acme' (35ebced1-4e7a-4c1f-b634-c0886937085d)"
+            in result.stdout
+        )
+        assert (
+            "Ensure config: azure-native:subscriptionId=35ebced1-4e7a-4c1f-b634-c0886937085d"
+            in result.stdout
+        )
+        assert (
+            "Ensure config: azure-native:tenantId=d5c5c439-1115-4cb6-ab50-b8e547b6c8dd"
+            in result.stdout
+        )
+        assert (
+            "Set config: shm-subscription-id=35ebced1-4e7a-4c1f-b634-c0886937085d"
+            in result.stdout
+        )
+        assert "Deploy refresh: run_program=False" in result.stdout
+        assert "Deploy preview: disable_diff=False" in result.stdout
+        assert "Deploy update" in result.stdout
+        assert (
+            "Could not deploy Secure Research Environment 'sandbox'"
+            not in result.stdout
+        )
+
     def test_no_application(
         self,
         caplog: LogCaptureFixture,
