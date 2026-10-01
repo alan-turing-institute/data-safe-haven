@@ -246,7 +246,6 @@ def mock_azuresdk_get_subscription(
     subscription = Subscription()
     subscription.display_name = "Data Safe Haven Acme"
     subscription.subscription_id = request.config.guid_subscription
-    subscription.tenant_id = request.config.guid_tenant
     mocker.patch.object(
         AzureSdk,
         "get_subscription",
@@ -277,15 +276,25 @@ def mock_graphapi_get_credential(mocker: MockerFixture) -> None:
 
 
 @fixture
-def mock_azuresdk_get_credential(mocker: MockerFixture) -> None:
+def mock_azuresdk_get_credential(
+    mocker: MockerFixture, request: FixtureRequest
+) -> None:
     class MockCredential(TokenCredential):
         def get_token(*args, **kwargs) -> AccessToken:  # noqa: ARG002
             return AccessToken("dummy-token", 0)
+
+        @property
+        def tenant_id(self) -> str | None:
+            return request.config.guid_tenant
 
     mocker.patch.object(
         AzureSdkCredential,
         "get_credential",
         return_value=MockCredential(),
+    )
+
+    AzureSdkCredential.tenant_id = mocker.PropertyMock(
+        return_value=request.config.guid_tenant
     )
 
 
@@ -706,7 +715,9 @@ def mock_sre_project_manager_output(mocker: MockerFixture) -> None:
 
 @fixture
 def mock_azuresdk_resource_manager_client(mocker: MockerFixture) -> None:
-    def side_effect_get_by_id(azure_id: str, _sdk_version: str) -> GenericResource:
+    def side_effect_get_by_id(
+        azure_id: str, *, api_version: str  # noqa: ARG001
+    ) -> GenericResource:
         resource = GenericResource()
         resource.id = azure_id
         return resource
@@ -721,8 +732,8 @@ def mock_azuresdk_resource_manager_client(mocker: MockerFixture) -> None:
         def done(self) -> bool:
             return self.duration <= 0
 
-    def side_effect_begin_delete_by_id(azure_id: str, sdk_version: str) -> Poller:
-        return Poller(azure_id + sdk_version)
+    def side_effect_begin_delete_by_id(azure_id: str, *, api_version: str) -> Poller:
+        return Poller(azure_id + api_version)
 
     mocker.patch.object(
         ResourcesOperations, "get_by_id", side_effect=side_effect_get_by_id
@@ -762,4 +773,57 @@ def mock_upgrade_deny(mocker: MockerFixture):
         Upgrade,
         "prepare",
         return_value=5,
+    )
+
+
+@fixture
+def mock_sre_deploy_actions(mocker: MockerFixture):
+    def side_effect_set_config(name: str, value: str, *, secret: bool) -> None:
+        print(f"Set config: {name}={value}, secret:{secret}")  # noqa: T201
+
+    def side_effect_ensure_config(name: str, value: str, *, secret: bool) -> None:
+        print(f"Ensure config: {name}={value}, secret:{secret}")  # noqa: T201
+
+    def side_effect_refresh(run_program: bool = False) -> None:  # noqa: FBT001,FBT002
+        print(f"Deploy refresh: run_program={run_program}")  # noqa: T201
+
+    def side_effect_preview(disable_diff: bool = False) -> None:  # noqa: FBT001,FBT002
+        print(f"Deploy preview: disable_diff={disable_diff}")  # noqa: T201
+
+    def side_effect_update() -> None:
+        print("Deploy update")  # noqa: T201
+
+    mocker.patch.object(
+        SREProjectManager,
+        "set_config",
+        return_value=None,
+        side_effect=side_effect_set_config,
+    )
+
+    mocker.patch.object(
+        SREProjectManager,
+        "ensure_config",
+        return_value=None,
+        side_effect=side_effect_ensure_config,
+    )
+
+    mocker.patch.object(
+        SREProjectManager,
+        "refresh",
+        return_value=None,
+        side_effect=side_effect_refresh,
+    )
+
+    mocker.patch.object(
+        SREProjectManager,
+        "preview",
+        return_value=None,
+        side_effect=side_effect_preview,
+    )
+
+    mocker.patch.object(
+        SREProjectManager,
+        "update",
+        return_value=None,
+        side_effect=side_effect_update,
     )

@@ -345,6 +345,7 @@ class DeclarativeSRE:
             "sre_remote_desktop",
             self.stack_name,
             SRERemoteDesktopProps(
+                admin_group_name=ldap_group_names["admin_group_name"],
                 allow_copy=self.config.sre.remote_desktop.allow_copy,
                 allow_paste=self.config.sre.remote_desktop.allow_paste,
                 database_password=data.password_user_database_admin,
@@ -366,6 +367,7 @@ class DeclarativeSRE:
                 storage_account_name=data.storage_account_data_configuration_name,
                 subnet_guacamole_containers_support=networking.subnet_guacamole_containers_support,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
+                user_group_name=ldap_group_names["user_group_name"],
             ),
             tags=self.tags,
         )

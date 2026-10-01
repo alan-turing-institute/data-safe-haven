@@ -78,7 +78,7 @@ class SREClamAVMirrorComponent(ComponentResource):
             container_group_name=self.container_group_name,
             containers=[
                 containerinstance.ContainerArgs(
-                    image="chmey/clamav-mirror:latest",  # only one image is published
+                    image="ghcr.io/alan-turing-institute/clamav-mirror:5.8.0",
                     name="clamav-mirror"[:63],
                     environment_variables=[],
                     ports=[
@@ -111,14 +111,7 @@ class SREClamAVMirrorComponent(ComponentResource):
             dns_config=containerinstance.DnsConfigurationArgs(
                 name_servers=[props.dns_server_ip],
             ),
-            # Required due to DockerHub rate-limit: https://docs.docker.com/docker-hub/download-rate-limit/
-            image_registry_credentials=[
-                {
-                    "password": Output.secret(props.dockerhub_credentials.access_token),
-                    "server": props.dockerhub_credentials.server,
-                    "username": props.dockerhub_credentials.username,
-                }
-            ],
+            image_registry_credentials=[],
             ip_address=containerinstance.IpAddressArgs(
                 ports=[
                     containerinstance.PortArgs(

@@ -68,6 +68,10 @@ We usually deploy the latest available version of the Data Safe Haven for each o
 | September 2023   | DDRC DSG Exeter 2023          | [v4.1.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.1.0)           |
 | December 2023    | DSG 2023-12                   | [v4.1.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.1.0)           |
 | May 2024         | DSG 2024-05                   | [v4.2.1](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.2.1)           |
+| Sep 2024         | DSG 2024-09                   | [v5.0.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v5.0.0)           |
+| Jan 2025         | DSG 2025-01                   | [v5.2.1](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v5.2.1)           |
+| Sep 2025         | DSG 2025-09                   | [v5.5.1](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v5.5.1)           |
+| Jan 2026         | DSG 2026-01                   | [v5.7.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v5.7.0)           |
 
 Additionally, a production instance of DSH is maintained for use by research projects at the Turing.
 
@@ -88,6 +92,7 @@ Additionally, a production instance of DSH is maintained for use by research pro
 | 2025      | [v5.6.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v5.6.0)           |
 | 2026      | [v5.7.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v5.7.0)           |
 | 2026      | [v5.7.1](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v5.7.1)           |
+| 2026      | [v5.8.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v5.8.0)           |
 
 ## Versions that have undergone formal security evaluation
 

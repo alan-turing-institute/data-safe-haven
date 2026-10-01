@@ -101,9 +101,7 @@ class AzureSdk:
     @property
     def tenant_id(self) -> str:
         if not self.tenant_id_:
-            self.tenant_id_ = str(
-                self.get_subscription(self.subscription_name).tenant_id
-            )
+            self.tenant_id_ = str(self.credential().tenant_id)
         return self.tenant_id_
 
     def blob_client_(
@@ -434,7 +432,7 @@ class AzureSdk:
                                 tenant_id=tenant_id,
                                 object_id=admin_group_id,
                                 permissions=Permissions(
-                                    keys=[
+                                    keys_property=[
                                         "GET",
                                         "LIST",
                                         "CREATE",
@@ -508,6 +506,7 @@ class AzureSdk:
             )
             return key
         except AzureError as exc:
+            self.logger.error(f"Error: {exc}")
             msg = f"Failed to create key '{key_name}' in KeyVault '{key_vault_name}'."
             raise DataSafeHavenAzureError(msg) from exc
 
@@ -584,7 +583,9 @@ class AzureSdk:
             self.credential(), self.subscription_id
         ) as resource_client:
             azure_id = f"/subscriptions/{self.subscription_id}/resourceGroups/{resource_group_name}/providers/{provider_namespace}/{resource_type}/{resource_name}"
-            resource = resource_client.resources.get_by_id(azure_id, "2026-01-01")
+            resource = resource_client.resources.get_by_id(
+                azure_id, api_version="2026-01-01"
+            )
 
         return resource
 
@@ -632,7 +633,7 @@ class AzureSdk:
             # ServerIsBusy exceptions, so we must delete the resources sequentially
             for completed, resource_id in enumerate(resource_ids):
                 poller = resource_client.resources.begin_delete_by_id(
-                    resource_id, "2026-01-01"
+                    resource_id, api_version="2026-01-01"
                 )
                 spinners = ["    ", ".   ", "..  ", "... ", "...."]
                 done = False
