@@ -774,3 +774,56 @@ def mock_upgrade_deny(mocker: MockerFixture):
         "prepare",
         return_value=5,
     )
+
+
+@fixture
+def mock_sre_deploy_actions(mocker: MockerFixture):
+    def side_effect_set_config(name: str, value: str, *, secret: bool) -> None:
+        print(f"Set config: {name}={value}, secret:{secret}")  # noqa: T201
+
+    def side_effect_ensure_config(name: str, value: str, *, secret: bool) -> None:
+        print(f"Ensure config: {name}={value}, secret:{secret}")  # noqa: T201
+
+    def side_effect_refresh(run_program: bool = False) -> None:  # noqa: FBT001,FBT002
+        print(f"Deploy refresh: run_program={run_program}")  # noqa: T201
+
+    def side_effect_preview(disable_diff: bool = False) -> None:  # noqa: FBT001,FBT002
+        print(f"Deploy preview: disable_diff={disable_diff}")  # noqa: T201
+
+    def side_effect_update() -> None:
+        print("Deploy update")  # noqa: T201
+
+    mocker.patch.object(
+        SREProjectManager,
+        "set_config",
+        return_value=None,
+        side_effect=side_effect_set_config,
+    )
+
+    mocker.patch.object(
+        SREProjectManager,
+        "ensure_config",
+        return_value=None,
+        side_effect=side_effect_ensure_config,
+    )
+
+    mocker.patch.object(
+        SREProjectManager,
+        "refresh",
+        return_value=None,
+        side_effect=side_effect_refresh,
+    )
+
+    mocker.patch.object(
+        SREProjectManager,
+        "preview",
+        return_value=None,
+        side_effect=side_effect_preview,
+    )
+
+    mocker.patch.object(
+        SREProjectManager,
+        "update",
+        return_value=None,
+        side_effect=side_effect_update,
+    )
