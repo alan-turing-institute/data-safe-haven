@@ -26,6 +26,7 @@ class SRERemoteDesktopProps:
 
     def __init__(
         self,
+        admin_group_name: Input[str],
         allow_copy: Input[bool],
         allow_paste: Input[bool],
         database_password: Input[str],
@@ -47,8 +48,10 @@ class SRERemoteDesktopProps:
         storage_account_name: Input[str],
         subnet_guacamole_containers: Input[network.GetSubnetResult],
         subnet_guacamole_containers_support: Input[network.GetSubnetResult],
+        user_group_name: Input[str],
         database_username: Input[str] | None = "postgresadmin",
     ) -> None:
+        self.admin_group_name = admin_group_name
         self.database_password = database_password
         self.database_username = (
             database_username if database_username else "postgresadmin"
@@ -101,6 +104,7 @@ class SRERemoteDesktopProps:
                 else []
             )
         )
+        self.user_group_name = user_group_name
 
 
 class SRERemoteDesktopComponent(ComponentResource):
@@ -163,7 +167,7 @@ class SRERemoteDesktopComponent(ComponentResource):
         )
 
         # Define the container group with guacd, guacamole and caddy
-        container_group = containerinstance.ContainerGroup(
+        self.container_group = containerinstance.ContainerGroup(
             f"{self._name}_container_group",
             container_group_name=f"{stack_name}-container-group-remote-desktop",
             containers=[
@@ -288,9 +292,18 @@ class SRERemoteDesktopComponent(ComponentResource):
                     ),
                 ),
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/guacamole-user-sync:v0.7.0",
+                    image="ghcr.io/alan-turing-institute/guacamole-user-sync:v0.8.1",
                     name="guacamole-user-sync"[:63],
                     environment_variables=[
+                        containerinstance.EnvironmentVariableArgs(
+                            name="GUACAMOLE_GROUP_PERMISSIONS",
+                            value=Output.concat(
+                                props.admin_group_name,
+                                "=READ,UPDATE,DELETE,ADMINISTER;",
+                                props.user_group_name,
+                                "=READ",
+                            ),
+                        ),
                         containerinstance.EnvironmentVariableArgs(
                             name="LDAP_GROUP_BASE_DN",
                             value=props.ldap_group_search_base,
@@ -415,7 +428,7 @@ class SRERemoteDesktopComponent(ComponentResource):
         self.exports = {
             "connection_db_name": db_guacamole_connections,
             "connection_db_server_name": db_server_guacamole.db_server.name,
-            "container_group_name": container_group.name,
+            "container_group_name": self.container_group.name,
             "disable_copy": props.disable_copy,
             "disable_paste": props.disable_paste,
             "resource_group_name": props.resource_group_name,
