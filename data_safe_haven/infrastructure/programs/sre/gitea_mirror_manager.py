@@ -173,7 +173,7 @@ class SREGiteaMirrorManagerComponent(ComponentResource):
             container_group_name=self.container_group_name,
             containers=[
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/gitea-mirror-manager:v0.0.1",
+                    image="ghcr.io/alan-turing-institute/gitea-mirror-manager:v0.0.2",
                     name="mirrormanager",
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
@@ -227,7 +227,7 @@ class SREGiteaMirrorManagerComponent(ComponentResource):
                     ),
                 ),
                 containerinstance.ContainerArgs(
-                    image="gitea/gitea:1.27.1",
+                    image="gitea/gitea:28.0",
                     name="gitea"[:63],
                     command=["/app/custom/entrypoint.sh"],
                     environment_variables=[
