@@ -105,6 +105,7 @@ class TestShowSRE:
         mocker,
         runner,
         mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
+        mock_pulumi_config_remote_exists,  # noqa: ARG002
         mock_sre_config_from_remote,  # noqa: ARG002
         sre_project_manager,  # noqa: ARG002
     ):
@@ -114,6 +115,26 @@ class TestShowSRE:
         assert result.exit_code == 0
         assert "Available SRE configurations" in result.stdout
         assert "sandbox" in result.stdout
+
+    def test_available_before_first_sre_deployment(
+        self,
+        context_manager,
+        mocker,
+        runner,
+        mock_pulumi_config_no_remote_exists,  # noqa: ARG002
+    ):
+        mocker.patch.object(ContextManager, "from_file", return_value=context_manager)
+        mocker.patch.object(
+            AzureSdk, "list_blobs", return_value=["sre-sandbox.yaml"]
+        )
+        mock_download = mocker.patch.object(AzureSdk, "download_blob")
+
+        result = runner.invoke(config_command_group, ["available"])
+
+        assert result.exit_code == 0
+        assert "Available SRE configurations" in result.stdout
+        assert "sandbox" in result.stdout
+        mock_download.assert_not_called()
 
     def test_available_no_sres(self, mocker, runner):
         mocker.patch.object(AzureSdk, "list_blobs", return_value=[])
