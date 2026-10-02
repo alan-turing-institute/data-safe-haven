@@ -6,6 +6,7 @@ from typing import Any
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, storage
 
+from data_safe_haven.config import LOGGING_LEVELS
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.infrastructure.common import (
     DockerHubCredentials,
@@ -32,6 +33,16 @@ from data_safe_haven.utility import FileReader
 class SRESoftwareRepositoriesProps:
     """Properties for SRESoftwareRepositoriesComponent"""
 
+    @staticmethod
+    def log_level_convert(log_level: str) -> str:
+        if log_level in LOGGING_LEVELS.keys():
+            # Cap the level to at most "debug"
+            return "DEBUG" if log_level == "trace" else log_level.upper()
+        else:
+            # The key doesn't exist
+            msg = "Logging level must be one of error, warn, info, debug or trace."
+            raise ValueError(msg)
+
     def __init__(
         self,
         database_password: Input[str],
@@ -48,6 +59,7 @@ class SRESoftwareRepositoriesProps:
         storage_account_name: Input[str],
         subnet_software_repositories_id: Input[str],
         subnet_software_repositories_support: Input[network.Subnet] | None,
+        log_level: Input[str],
         database_username: Input[str] | None = "postgresadmin",
     ) -> None:
         self.database_password = database_password
@@ -71,6 +83,7 @@ class SRESoftwareRepositoriesProps:
         self.storage_account_name = storage_account_name
         self.subnet_software_repositories_id = subnet_software_repositories_id
         self.subnet_software_repositories_support = subnet_software_repositories_support
+        self.log_level = log_level
 
 
 class SRESoftwareRepositoriesComponent(ComponentResource):
@@ -174,6 +187,23 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                     parent=file_share_nexus_allowlists,
                     ignore_changes=["file_contents"],
                 ),
+            ),
+        )
+
+        # Upload Logback logging configuration
+        log_level = SRESoftwareRepositoriesProps.log_level_convert(props.log_level)
+        logback_config = f'<configuration><root level="{log_level}"/></configuration>'
+        FileShareFile(
+            f"{self._name}_file_share_logback_config",
+            FileShareFileProps(
+                destination_path="etc/logback/logback-overrides.xml",
+                share_name=file_share_nexus.name,
+                file_contents=logback_config,
+                storage_account_key=props.storage_account_key,
+                storage_account_name=props.storage_account_name,
+            ),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=file_share_nexus)
             ),
         )
 

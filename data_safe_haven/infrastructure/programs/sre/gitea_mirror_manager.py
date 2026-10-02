@@ -43,6 +43,7 @@ class SREGiteaMirrorManagerProps:
         storage_account_name: Input[str],
         workspace_username: str,
         workspace_password: Input[str],
+        log_level: Input[str],
     ) -> None:
         self.admin_password = admin_password
         self.db_server_shared = db_server_shared
@@ -61,6 +62,7 @@ class SREGiteaMirrorManagerProps:
         self.storage_account_name = storage_account_name
         self.workspace_username = workspace_username
         self.workspace_password = workspace_password
+        self.log_level = log_level
 
 
 class SREGiteaMirrorManagerComponent(ComponentResource):
@@ -264,7 +266,7 @@ class SREGiteaMirrorManagerComponent(ComponentResource):
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__log__LEVEL",
                             # Options are: "Trace", "Debug", "Info" [default], "Warn", "Error", "Critical" or "None".
-                            value="Debug",
+                            value=props.log_level.capitalize(),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__security__INSTALL_LOCK", value="true"
