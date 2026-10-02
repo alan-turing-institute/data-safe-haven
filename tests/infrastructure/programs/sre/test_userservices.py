@@ -214,3 +214,30 @@ class TestSREUserServicesProps:
                 "component_subnets": user_services_component.mirror_monitor.container_group.subnet_ids,
             }
         ).apply(check)
+
+    def test_dns_sidecar_targets(
+        self, user_services_component: SREUserServicesComponent
+    ) -> None:
+        """Check that the Gitea Mirror is maintained by the DNS sidecar, and Nexus is skipped when not deployed"""
+        assert {
+            target.dns_record_name
+            for target in user_services_component.dns_sidecar_targets
+        } == {"gitea", "hedgedoc", "giteamirror"}
+
+    def test_dns_sidecar_targets_without_gitea_mirror(
+        self,
+        user_services_props: SREUserServicesProps,
+        stack_name: str,
+    ) -> None:
+        """Check that the Gitea Mirror is not a DNS sidecar target when not deployed"""
+        user_services_props.subnet_gitea_mirrors_id = None
+        component = SREUserServicesComponent(
+            name="userservices-no-mirror",
+            stack_name=stack_name,
+            props=user_services_props,
+        )
+        assert component.mirror_monitor is None
+        assert {target.dns_record_name for target in component.dns_sidecar_targets} == {
+            "gitea",
+            "hedgedoc",
+        }
