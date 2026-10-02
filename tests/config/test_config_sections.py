@@ -147,7 +147,7 @@ class TestConfigSubsectionGiteaMirror:
 
     def test_constructor_override(self) -> None:
         gitea_mirror = ConfigSubsectionGiteaMirror(
-            repositories=[], mirror_interval_minutes=1
+            repositories=[], mirror_interval_minutes=1, update_schedule_minutes=1
         )
         assert gitea_mirror.mirror_interval_minutes == 1
 
@@ -161,7 +161,7 @@ class TestConfigSubsectionGiteaMirror:
 
     def test_update_schedule_minutes_default(self) -> None:
         gitea_mirror = ConfigSubsectionGiteaMirror(repositories=[])
-        assert gitea_mirror.update_schedule_minutes == 1
+        assert gitea_mirror.update_schedule_minutes == 10
 
     def test_update_schedule_minutes_override(self) -> None:
         gitea_mirror = ConfigSubsectionGiteaMirror(

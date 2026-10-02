@@ -34,7 +34,7 @@ class TestSREGiteaMirrorManagerComponent:
         self, gitea_mirror_manager_component: SREGiteaMirrorManagerComponent
     ) -> Any:
         """Check that the mirror interval defaults to 10 minutes, Gitea's scan
-        cadence (SCHEDULE) defaults to 1 minute, and Gitea's own cron floor
+        cadence (SCHEDULE) defaults to 10 minutes, and Gitea's own cron floor
         (MIN_INTERVAL) stays fixed"""
 
         def check(containers: list[Any]) -> None:
@@ -59,7 +59,7 @@ class TestSREGiteaMirrorManagerComponent:
                 for env in gitea["environment_variables"]
                 if env["name"] == "GITEA__cron_0x2E_update_mirrors__SCHEDULE"
             )
-            assert schedule == "@every 1m"
+            assert schedule == "@every 10m"
 
         return pulumi.Output.from_input(
             gitea_mirror_manager_component.container_group.containers

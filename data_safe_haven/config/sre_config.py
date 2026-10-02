@@ -150,7 +150,7 @@ class SREConfig(AzureSerialisableModel):
                         )
                     ],
                     mirror_interval_minutes="How often, in minutes, to sync mirrors [default: 10, minimum: 1].",  # type: ignore
-                    update_schedule_minutes="How often, in minutes, Gitea checks for mirrors due to sync [default: 1, minimum: 1, maximum: mirror_interval_minutes].",  # type: ignore
+                    update_schedule_minutes="How often, in minutes, Gitea checks for mirrors due to sync [default: 10, minimum: 1, maximum: mirror_interval_minutes].",  # type: ignore
                 ),
             ),
         )

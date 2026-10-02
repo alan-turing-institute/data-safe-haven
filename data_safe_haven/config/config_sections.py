@@ -75,7 +75,7 @@ class GitRepository(BaseModel, validate_assignment=True):
 class ConfigSubsectionGiteaMirror(BaseModel, validate_assignment=True):
     repositories: list[GitRepository]
     mirror_interval_minutes: PositiveInt = 10
-    update_schedule_minutes: PositiveInt = 1
+    update_schedule_minutes: PositiveInt = 10
 
     @model_validator(mode="after")
     def validate_update_schedule(self) -> ConfigSubsectionGiteaMirror:

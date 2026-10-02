@@ -34,7 +34,7 @@ class TestSREGiteaServerComponent:
     def test_update_mirrors_schedule_default(
         self, gitea_server_component: SREGiteaServerComponent
     ) -> Any:
-        """Check that Gitea's own update_mirrors cron task defaults to every minute"""
+        """Check that Gitea's own update_mirrors cron task defaults to every 10 minutes"""
 
         def check(containers: list[Any]) -> None:
             gitea = next(c for c in containers if c["name"] == "gitea")
@@ -43,7 +43,7 @@ class TestSREGiteaServerComponent:
                 for env in gitea["environment_variables"]
                 if env["name"] == "GITEA__cron_0x2E_update_mirrors__SCHEDULE"
             )
-            assert schedule == "@every 1m"
+            assert schedule == "@every 10m"
 
         return pulumi.Output.from_input(
             gitea_server_component.container_group.containers

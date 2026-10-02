@@ -100,7 +100,7 @@ user_services:
     - repository_auth_token: # A read-only GitHub personal access token, with access to the repository to mirror
       repository_name: # An identifier for the GitHub repository to mirror
       repository_url: # The URL of the GitHub repository to mirror
-    update_schedule_minutes: # How often, in minutes, Gitea checks for mirrors due to sync [default: 1, minimum: 1, maximum: mirror_interval_minutes]
+    update_schedule_minutes: # How often, in minutes, Gitea checks for mirrors due to sync [default: 10, minimum: 1, maximum: mirror_interval_minutes]
   nexus:
     persistent_quota_gb: # Total size in GiB for Nexus persistent directory
 :::
