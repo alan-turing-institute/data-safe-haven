@@ -362,6 +362,44 @@ class SREDataComponent(ComponentResource):
             tags=child_tags,
         )
 
+        # Secret: Gitea admin password
+        password_gitea_admin = pulumi_random.RandomPassword(
+            f"{self._name}_password_gitea_admin",
+            length=20,
+            special=False,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+        )
+        keyvault.Secret(
+            f"{self._name}_kvs_password_gitea_admin",
+            properties=keyvault.SecretPropertiesArgs(value=password_gitea_admin.result),
+            resource_group_name=props.resource_group_name,
+            secret_name="password-gitea-server-admin",
+            vault_name=key_vault.name,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_gitea_admin)
+            ),
+            tags=child_tags,
+        )
+
+        # Secret: Gitea user password
+        password_gitea_user = pulumi_random.RandomPassword(
+            f"{self._name}_password_gitea_user",
+            length=20,
+            special=False,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+        )
+        keyvault.Secret(
+            f"{self._name}_kvs_password_gitea_user",
+            properties=keyvault.SecretPropertiesArgs(value=password_gitea_user.result),
+            resource_group_name=props.resource_group_name,
+            secret_name="password-gitea-mirror-user",
+            vault_name=key_vault.name,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_gitea_user)
+            ),
+            tags=child_tags,
+        )
+
         # Secret: Workspace admin password
         password_workspace_admin = pulumi_random.RandomPassword(
             f"{self._name}_password_workspace_admin",
@@ -816,6 +854,8 @@ class SREDataComponent(ComponentResource):
             password_user_database_admin.result
         )
         self.password_workspace_admin = Output.secret(password_workspace_admin.result)
+        self.password_gitea_admin = Output.secret(password_gitea_admin.result)
+        self.password_gitea_user = Output.secret(password_gitea_user.result)
 
         # Register exports
         self.exports = {

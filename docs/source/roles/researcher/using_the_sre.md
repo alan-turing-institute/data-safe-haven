@@ -12,7 +12,7 @@ If you have never used a Linux computer before, you may find some of the followi
 :class: dropdown note
 
 - The official guide to [Xubuntu (Ubuntu + Xfce)](https://xubuntu.github.io/xubuntu-docs/user/C/index.html).
-- Ubuntu guide for [Windows users](https://help.ubuntu.com/community/SwitchingToUbuntu/FromWindows).
+- Ubuntu guide for [beginners](https://itsfoss.com/getting-started-with-ubuntu/).
 - The official guide to the [Xfce desktop environment](https://docs.xfce.org/xfce/).
 
 ::::
