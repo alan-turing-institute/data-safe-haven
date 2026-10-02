@@ -124,9 +124,7 @@ class TestShowSRE:
         mock_pulumi_config_no_remote_exists,  # noqa: ARG002
     ):
         mocker.patch.object(ContextManager, "from_file", return_value=context_manager)
-        mocker.patch.object(
-            AzureSdk, "list_blobs", return_value=["sre-sandbox.yaml"]
-        )
+        mocker.patch.object(AzureSdk, "list_blobs", return_value=["sre-sandbox.yaml"])
         mock_download = mocker.patch.object(AzureSdk, "download_blob")
 
         result = runner.invoke(config_command_group, ["available"])
