@@ -433,7 +433,7 @@ class DeclarativeSRE:
                 resource_group=resource_group,
                 software_repository_hostname=(
                     user_services.software_repositories.hostname
-                    if hasattr(user_services, "software_repositories")
+                    if user_services.software_repositories is not None
                     else ""
                 ),
                 subnet_desired_state=networking.subnet_desired_state,
@@ -476,16 +476,11 @@ class DeclarativeSRE:
 
         # Deploy the DNS Sidecar
         container_instance_information: list[SupportsDnsSidecar] = [
-            user_services.gitea_server,
-            user_services.hedgedoc_server,
+            *user_services.dns_sidecar_targets,
             apt_proxy_server,
             clamav_mirror,
             identity,
         ]
-        if hasattr(user_services, "software_repositories"):
-            container_instance_information.append(
-                user_services.software_repositories,
-            )
 
         DnsSidecarComponent(
             "dns_sidecar",
@@ -511,7 +506,7 @@ class DeclarativeSRE:
         )
 
         # Export values for later use
-        if hasattr(user_services, "software_repositories"):
+        if user_services.software_repositories is not None:
             pulumi.export(
                 "allowlist_share_name",
                 user_services.software_repositories.allowlist_file_share_name,
