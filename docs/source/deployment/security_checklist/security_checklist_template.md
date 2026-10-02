@@ -74,7 +74,7 @@ Running on SHM/SREs deployed using commit xxxxxx
     - :white_check_mark:/:partly_sunny:/:fast_forward:/:x: <b>Verify that</b>: connection fails.
 - Attempt to connect from research office using a managed device and the correct VPN connection and credentials.
     - :white_check_mark:/:partly_sunny:/:fast_forward:/:x: <b>Verify that</b>: connection succeeds
-    - :white_check_mark:/:partly_sunny:/:fast_forward:/:x: <b>Verify that</b>: the network IP ranges corresponding to the research spaces correspond to those allowed by storage account firewall
+    - :white_check_mark:/:partly_sunny:/:fast_forward:/:x: <b>Verify that</b>: in the Azure portal, open the `shm-<SHM NAME>-sre-<SRE NAME>-nsg-application-gateway` network security group and its Inbound security rules; locate `AllowUsersInternetInbound`, confirm its Source IP address/CIDR ranges match the network IP ranges for the research spaces, and confirm no higher-priority Deny rule blocks those ranges
     - :white_check_mark:/:partly_sunny:/:fast_forward:/:x: <b>Verify that</b>: physical measures such as screen adaptions or desk partitions are present if risk of visual eavesdropping is high
 
 ### Remote connections
