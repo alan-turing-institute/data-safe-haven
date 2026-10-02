@@ -298,7 +298,7 @@ Connection from within the secure physical space is possible.
 :::
 
 :::{attention}
-{{white_check_mark}} Verify that: the network IP ranges corresponding to the research spaces match the source IP ranges allowed by the Guacamole application gateway NSG.
+{{white_check_mark}} Verify that: in the Azure portal, open the `shm-<SHM NAME>-sre-<SRE NAME>-nsg-application-gateway` network security group and its Inbound security rules; locate `AllowUsersInternetInbound`, confirm its Source IP address/CIDR ranges match the network IP ranges for the research spaces, and confirm no higher-priority Deny rule blocks those ranges.
 :::
 
 :::{attention}
