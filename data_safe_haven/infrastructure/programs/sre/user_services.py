@@ -16,6 +16,7 @@ from data_safe_haven.infrastructure.components import (
 from data_safe_haven.types import DatabaseSystem, SoftwarePackageCategory
 
 from .database_servers import SREDatabaseServerComponent, SREDatabaseServerProps
+from .dns_sidecar import SupportsDnsSidecar
 from .gitea_mirror_manager import (
     SREGiteaMirrorManagerComponent,
     SREGiteaMirrorManagerProps,
@@ -182,6 +183,7 @@ class SREUserServicesComponent(ComponentResource):
         )
 
         # Deploy the Gitea Mirror
+        self.mirror_monitor: SREGiteaMirrorManagerComponent | None = None
         if props.subnet_gitea_mirrors_id is not None:
             self.mirror_monitor = SREGiteaMirrorManagerComponent(
                 "gitea_mirror_monitor",
@@ -236,6 +238,7 @@ class SREUserServicesComponent(ComponentResource):
         )
 
         # Deploy software repository servers
+        self.software_repositories: SRESoftwareRepositoriesComponent | None = None
         if (
             props.subnet_software_repositories_id
             and props.subnet_software_repositories_support
@@ -279,3 +282,18 @@ class SREUserServicesComponent(ComponentResource):
                 opts=child_opts,
                 tags=child_tags,
             )
+
+        self.dns_sidecar_targets = self.get_dns_sidecar_targets()
+
+    def get_dns_sidecar_targets(self) -> list[SupportsDnsSidecar]:
+        """Container instances whose DNS records the DNS sidecar should maintain"""
+        targets: list[SupportsDnsSidecar] = [self.gitea_server, self.hedgedoc_server]
+        if self.mirror_monitor is not None:
+            targets.append(self.mirror_monitor)
+        # Nexus is only deployed for some package categories
+        if (
+            self.software_repositories is not None
+            and self.software_repositories.container_group is not None
+        ):
+            targets.append(self.software_repositories)
+        return targets
