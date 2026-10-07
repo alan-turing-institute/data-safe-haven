@@ -1,0 +1,127 @@
+"""Validate user CSVs before creating accounts in Microsoft Entra ID."""
+
+from unittest.mock import Mock
+
+import pytest
+
+from data_safe_haven.administration.users.user_handler import UserHandler
+from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
+
+
+@pytest.fixture
+def handler(mocker):
+    user_handler = UserHandler(mocker.Mock(), mocker.Mock())
+    user_handler.entra_users.add = Mock()
+    return user_handler
+
+
+def test_reports_missing_column_without_calling_entra(handler, tmp_path):
+    csv_file = tmp_path / "users.csv"
+    csv_file.write_text(
+        "GivenName,Surname,Phone,Email\nAda,Lovelace,+441234567890,ada@example.org\n"
+    )
+
+    with pytest.raises(
+        DataSafeHavenUserHandlingError,
+        match="missing required columns: CountryCode",
+    ):
+        handler.add(csv_file, "example.org")
+
+    handler.entra_users.add.assert_not_called()
+
+
+@pytest.mark.parametrize("missing_value", ("", "   "))
+def test_reports_blank_country_code_and_csv_line(handler, tmp_path, missing_value):
+    csv_file = tmp_path / "users.csv"
+    csv_file.write_text(
+        "GivenName,Surname,Phone,Email,CountryCode\n"
+        f"Ada,Lovelace,+441234567890,ada@example.org,{missing_value}\n"
+    )
+
+    with pytest.raises(
+        DataSafeHavenUserHandlingError,
+        match="line 2 is missing values for: CountryCode",
+    ):
+        handler.add(csv_file, "example.org")
+
+    handler.entra_users.add.assert_not_called()
+
+
+def test_reports_missing_field_in_later_row_before_creating_any_user(handler, tmp_path):
+    csv_file = tmp_path / "users.csv"
+    csv_file.write_text(
+        "GivenName,Surname,Phone,Email,CountryCode\n"
+        "Ada,Lovelace,+441234567890,ada@example.org,GB\n"
+        "Grace,Hopper,+441234567891,grace@example.org\n"
+    )
+
+    with pytest.raises(
+        DataSafeHavenUserHandlingError,
+        match="line 3 is missing values for: CountryCode",
+    ):
+        handler.add(csv_file, "example.org")
+
+    handler.entra_users.add.assert_not_called()
+
+
+def test_reports_extra_values(handler, tmp_path):
+    csv_file = tmp_path / "users.csv"
+    csv_file.write_text(
+        "GivenName,Surname,Phone,Email,CountryCode\n"
+        "Ada,Lovelace,+441234567890,ada@example.org,GB,unexpected\n"
+    )
+
+    with pytest.raises(
+        DataSafeHavenUserHandlingError,
+        match="line 2 contains extra values",
+    ):
+        handler.add(csv_file, "example.org")
+
+    handler.entra_users.add.assert_not_called()
+
+
+def test_accepts_semicolon_delimited_valid_rows(handler, tmp_path):
+    csv_file = tmp_path / "users.csv"
+    csv_file.write_text(
+        "GivenName;Surname;Phone;Email;CountryCode\n"
+        "Ada;Lovelace;+441234567890;ada@example.org;GB\n"
+    )
+
+    handler.add(csv_file, "example.org")
+
+    handler.entra_users.add.assert_called_once()
+    (user,) = handler.entra_users.add.call_args.args[0]
+    assert (user.given_name, user.surname, user.country) == (
+        "Ada",
+        "Lovelace",
+        "GB",
+    )
+    assert (user.email_address, user.domain) == (
+        "ada@example.org",
+        "example.org",
+    )
+
+
+def test_missing_file_is_an_actionable_error(handler, tmp_path):
+    with pytest.raises(
+        DataSafeHavenUserHandlingError,
+        match="Could not read users CSV",
+    ):
+        handler.add(tmp_path / "missing.csv", "example.org")
+
+    handler.entra_users.add.assert_not_called()
+
+
+def test_invalid_utf8_reports_format_without_disclosing_contents(handler, tmp_path):
+    csv_file = tmp_path / "users.csv"
+    csv_file.write_bytes(
+        b"GivenName,Surname,Phone,Email,CountryCode\nAda,\xff,123,a@b,GB\n"
+    )
+
+    with pytest.raises(
+        DataSafeHavenUserHandlingError,
+        match="expected UTF-8 text",
+    ):
+        handler.add(csv_file, "example.org")
+
+    handler.entra_users.add.assert_not_called()

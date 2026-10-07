@@ -1,4 +1,7 @@
+from data_safe_haven.administration.users.entra_users import EntraUsers
 from data_safe_haven.commands.users import users_command_group
+from data_safe_haven.config import SHMConfig
+from data_safe_haven.external import GraphApi
 
 
 class TestAdd:
@@ -12,6 +15,24 @@ class TestAdd:
 
         assert result.exit_code == 1
         assert "Have you deployed the SHM?" in result.stdout
+
+    def test_missing_csv_country_code_is_reported_to_cli(
+        self, mocker, runner, tmp_path, shm_config
+    ):
+        csv_file = tmp_path / "users.csv"
+        csv_file.write_text(
+            "GivenName,Surname,Phone,Email,CountryCode\n"
+            "Ada,Lovelace,+441234567890,ada@example.org,\n"
+        )
+        mocker.patch.object(SHMConfig, "from_remote", return_value=shm_config)
+        mocker.patch.object(GraphApi, "from_scopes", return_value=mocker.Mock())
+        add_to_entra = mocker.patch.object(EntraUsers, "add")
+
+        result = runner.invoke(users_command_group, ["add", str(csv_file)])
+
+        assert result.exit_code == 1
+        assert "line 2 is missing values for: CountryCode" in result.stdout
+        add_to_entra.assert_not_called()
 
 
 class TestListUsers:

@@ -8,7 +8,10 @@ import typer
 from data_safe_haven import console
 from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import ContextManager, DSHPulumiConfig, SHMConfig, SREConfig
-from data_safe_haven.exceptions import DataSafeHavenError
+from data_safe_haven.exceptions import (
+    DataSafeHavenError,
+    DataSafeHavenUserHandlingError,
+)
 from data_safe_haven.external import GraphApi
 from data_safe_haven.logging import get_logger
 
@@ -49,6 +52,9 @@ def add(
         # Add users to SHM
         users = UserHandler(context, graph_api)
         users.add(csv, shm_config.shm.fqdn)
+    except DataSafeHavenUserHandlingError as exc:
+        logger.critical(str(exc))
+        raise typer.Exit(1) from exc
     except DataSafeHavenError as exc:
         logger.critical("Could not add users to Data Safe Haven.")
         raise typer.Exit(1) from exc
