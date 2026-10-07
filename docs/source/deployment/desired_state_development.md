@@ -4,36 +4,36 @@
 
 This guide is for developers and operators who need to inspect, test or update
 the Ansible configuration applied to Data Safe Haven (DSH) workspace VMs.
-For first-time provisioning, see {ref}\`deploy_sre\`.
+For first-time provisioning, see {ref}`deploy_sre`.
 
 ## How desired state reaches a workspace
 
 The source of the workspace playbook is
-\`data_safe_haven/resources/workspace/ansible/desired_state.yaml\`.
-Its supporting files live beside it in \`tasks/\`, \`templates/\`,
-\`files/\` and \`host_vars/\`.
+`data_safe_haven/resources/workspace/ansible/desired_state.yaml`.
+Its supporting files live beside it in `tasks/`, `templates/`,
+`files/` and `host_vars/`.
 
-The \`SREDesiredStateComponent\` Pulumi component in
-\`data_safe_haven/infrastructure/programs/sre/desired_state.py\` uploads those
-files to an Azure Blob container named \`desiredstate\`, preserving paths
-relative to the \`ansible/\` directory. Pulumi also generates
-\`vars/pulumi_vars.yaml\` in that container from deployment configuration.
+The `SREDesiredStateComponent` Pulumi component in
+`data_safe_haven/infrastructure/programs/sre/desired_state.py` uploads those
+files to an Azure Blob container named `desiredstate`, preserving paths
+relative to the `ansible/` directory. Pulumi also generates
+`vars/pulumi_vars.yaml` in that container from deployment configuration.
 **The generated variables can contain secrets.** Do not copy them into Git,
 send them in a bug report or print their contents in logs.
 
 On each workspace, cloud-init mounts this container **read-only** over NFSv3 at
-\`/var/local/ansible\`, as defined in
-\`data_safe_haven/resources/workspace/workspace.cloud_init.mustache.yaml\`.
+`/var/local/ansible`, as defined in
+`data_safe_haven/resources/workspace/workspace.cloud_init.mustache.yaml`.
 Editing that mount locally on a workspace is therefore not the supported way
 to update desired state.
 
 The same cloud-init template installs:
 
-- \`desired-state.service\`: a one-shot systemd service that runs
-  \`/root/desired_state.sh\`, which changes directory to
-  \`/var/local/ansible\` and executes \`ansible-playbook desired_state.yaml\`.
+- `desired-state.service`: a one-shot systemd service that runs
+  `/root/desired_state.sh`, which changes directory to
+  `/var/local/ansible` and executes `ansible-playbook desired_state.yaml`.
   The service includes a one-minute delay before starting.
-- \`desired-state.timer\`: a persistent, daily systemd timer.
+- `desired-state.timer`: a persistent, daily systemd timer.
 - An initial run after the desired-state mount and Pulumi variables become
   available.
 
@@ -45,7 +45,7 @@ shared container does not itself run Ansible on any existing workspace.
 Start from the source code for the DSH version deployed in the SRE, then:
 
 1. Modify the corresponding task, template or playbook in
-   \`data_safe_haven/resources/workspace/ansible/\`.
+   `data_safe_haven/resources/workspace/ansible/`.
 1. Review the change, including its security impact, dependencies and
    idempotence. In particular, verify how a task behaves both when a feature
    is enabled and when it is later disabled.
@@ -54,7 +54,7 @@ Start from the source code for the DSH version deployed in the SRE, then:
    for the standard developer environment.
 1. Test in an appropriately isolated non-production SRE before deploying to a
    production environment.
-1. Prefer the normal \`dsh sre deploy\` workflow for managed source changes.
+1. Prefer the normal `dsh sre deploy` workflow for managed source changes.
    An ad-hoc upload, described below, is useful for controlled development
    but may be replaced by a later Pulumi deployment.
 
@@ -74,7 +74,7 @@ modules or command tasks cannot accurately predict their changes.
 ## Upload a reviewed file without a full deployment
 
 A suitably authorised developer can update an individual asset in the
-\`desiredstate\` container using either the Azure portal or the Azure CLI.
+`desiredstate` container using either the Azure portal or the Azure CLI.
 This is a change to the **shared configuration for an SRE**, not a per-VM
 operation. Coordinate the change with the SRE administrator first.
 
@@ -84,7 +84,7 @@ subscription, SRE and desired-state storage account** before uploading.
 The storage account uses private networking, so your machine must have
 appropriate network access as well as Azure permissions.
 
-Never upload or overwrite \`vars/pulumi_vars.yaml\` manually: Pulumi generates
+Never upload or overwrite `vars/pulumi_vars.yaml` manually: Pulumi generates
 it from deployment settings, including sensitive values. Do not enable public
 storage access to work around a private-endpoint connectivity problem.
 :::
@@ -93,7 +93,7 @@ storage access to work around a private-endpoint connectivity problem.
 
 First, sign in and select the correct subscription. Identify the SRE's
 desired-state storage account from its resources in the Azure portal or from
-your authorised deployment outputs. Set \`ACCOUNT\` to **that actual account
+your authorised deployment outputs. Set `ACCOUNT` to **that actual account
 name**; the example below is not an account-discovery command.
 
 :::{code} shell
@@ -103,7 +103,7 @@ ACCOUNT="ACTUAL_DESIRED_STATE_STORAGE_ACCOUNT"
 :::
 
 From the repository root, the following example backs up and uploads just
-\`tasks/package_proxy.yaml\`. Substitute the relative path you actually
+`tasks/package_proxy.yaml`. Substitute the relative path you actually
 changed. The backup is local to the machine executing these commands.
 
 :::{code} shell
@@ -126,16 +126,16 @@ az storage blob upload \
   --auth-mode login
 :::
 
-The Blob name must use the path **relative to \`ansible/\`**. Keep downloaded
+The Blob name must use the path **relative to `ansible/`**. Keep downloaded
 backups, especially configuration files, in a restricted location outside the
 repository; do not commit them. The CLI requires an Azure role that permits
 Blob data operations and access to the private storage endpoint.
 
 For an intentionally reviewed update to **the full directory**, the Azure CLI
 also supports
-[\`az storage blob upload-batch\`](https://learn.microsoft.com/en-us/cli/azure/storage/blob#az-storage-blob-upload-batch).
-Use \`-s data_safe_haven/resources/workspace/ansible -d desiredstate\` with
-the correct \`--account-name\`, \`--auth-mode login\` and \`--overwrite true\`.
+[`az storage blob upload-batch`](https://learn.microsoft.com/en-us/cli/azure/storage/blob#az-storage-blob-upload-batch).
+Use `-s data_safe_haven/resources/workspace/ansible -d desiredstate` with
+the correct `--account-name`, `--auth-mode login` and `--overwrite true`.
 Unlike the single-file command, a batch can replace many live playbooks and
 templates, so review its complete scope and backup the existing assets first.
 
@@ -152,7 +152,7 @@ The same private-network and access-control restrictions apply.
 
 Connect to a **non-production workspace VM** through the approved
 administrative route. Wait for cloud-init and the NFS mount to be ready, and
-verify that the updated asset is visible under \`/var/local/ansible\`.
+verify that the updated asset is visible under `/var/local/ansible`.
 Then use the installed systemd service:
 
 :::{code} shell
@@ -163,7 +163,7 @@ systemctl list-timers desired-state.timer
 :::
 
 For a more targeted *preview*, run Ansible from the mounted playbook directory
-with \`--check --diff\` and an appropriate task tag, for example:
+with `--check --diff` and an appropriate task tag, for example:
 
 :::{code} shell
 cd /var/local/ansible
@@ -171,16 +171,16 @@ sudo ansible-playbook desired_state.yaml --syntax-check
 sudo ansible-playbook desired_state.yaml --check --diff --tags package_proxies
 :::
 
-Review that the tag exists in \`desired_state.yaml\`. Check mode may not fully
+Review that the tag exists in `desired_state.yaml`. Check mode may not fully
 exercise a task. To apply a reviewed change using the normal systemd entry
-point, start \`desired-state.service\` as shown above. Do not mistake the
+point, start `desired-state.service` as shown above. Do not mistake the
 daily timer for an immediate reload; it runs on its configured schedule.
 
 ## Troubleshooting and rollback
 
 If the mount is missing, the variables are not yet present, or a task fails:
 
-- Check \`findmnt /var/local/ansible\`, the systemd service status, and its
+- Check `findmnt /var/local/ansible`, the systemd service status, and its
   journal. The cloud-init template waits for the mount and variables during
   initial deployment.
 - Confirm the SRE subscription, private storage endpoint, Blob path, and
