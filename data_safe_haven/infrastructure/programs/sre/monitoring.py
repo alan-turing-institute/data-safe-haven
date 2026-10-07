@@ -146,3 +146,5 @@ class SREMonitoringComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=log_analytics_private_link_scope)
             ),
         )
+
+        self.register_outputs({})

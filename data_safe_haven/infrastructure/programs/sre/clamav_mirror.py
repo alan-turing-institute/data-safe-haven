@@ -168,3 +168,5 @@ class SREClamAVMirrorComponent(ComponentResource):
 
         # Register outputs
         self.hostname = self.local_dns.hostname
+
+        self.register_outputs({})

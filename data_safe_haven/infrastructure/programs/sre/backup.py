@@ -219,6 +219,8 @@ class SREBackupComponent(ComponentResource):
             ),
         )
 
+        self.register_outputs({})
+
         # Backup instance for disks
         # We currently have no disks except OS disks so no backup is needed
         # This may change in future, so we leave the policy above

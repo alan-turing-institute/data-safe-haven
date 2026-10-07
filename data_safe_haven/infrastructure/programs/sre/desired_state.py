@@ -233,6 +233,8 @@ class SREDesiredStateComponent(ComponentResource):
 
         self.storage_account_name = storage_account.name
 
+        self.register_outputs({})
+
     @staticmethod
     def ansible_vars_file(**kwargs: str) -> str:
         return yaml.safe_dump(kwargs, explicit_start=True, indent=2)
