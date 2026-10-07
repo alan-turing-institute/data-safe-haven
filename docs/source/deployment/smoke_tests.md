@@ -11,9 +11,9 @@ Run the smoke tests separately on every deployed workspace virtual machine. In t
 The tests are installed in `/usr/local/smoke_tests` and should be run as root from that directory. Running them from the smoke-test directory is required because the suite invokes several companion scripts using relative paths.
 
 :::{code} shell
-$ sudo -i
-# cd /usr/local/smoke_tests
-# ./run_all_tests.bats
+sudo -i
+cd /usr/local/smoke_tests
+./run_all_tests.bats
 :::
 
 The suite checks workspace mounts, Python and R package repositories and functionality, and database connectivity. A full run typically takes six minutes or more and requires no user interaction after it starts.
