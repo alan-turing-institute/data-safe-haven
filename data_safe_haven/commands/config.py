@@ -22,7 +22,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenTypeError,
 )
 from data_safe_haven.external.api.azure_sdk import AzureSdk
-from data_safe_haven.logging import get_logger
+from data_safe_haven.logging import get_logger, log_unhandled_dsh_exception
 from data_safe_haven.serialisers import ContextBase
 
 config_command_group = typer.Typer()
@@ -41,6 +41,7 @@ def show_shm(
     try:
         context = ContextManager.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical(
             "No context is selected. Use `dsh context add` to create a context "
             "or `dsh context switch` to select one."
@@ -50,6 +51,7 @@ def show_shm(
     try:
         config = SHMConfig.from_remote(context)
     except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical(
             "SHM must be deployed before its configuration can be displayed."
         )
@@ -72,6 +74,7 @@ def available() -> None:
     try:
         context = ContextManager.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical(
             "No context is selected. Use `dsh context add` to create a context "
             "or `dsh context switch` to select one."
@@ -88,6 +91,7 @@ def available() -> None:
             storage_account_name=context.storage_account_name,
         )
     except DataSafeHavenAzureStorageError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical("Ensure SHM is deployed before attempting to use SRE configs.")
         raise typer.Exit(1) from exc
 
@@ -122,6 +126,7 @@ def show(
     try:
         context = ContextManager.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical(
             "No context is selected. Use `dsh context add` to create a context "
             "or `dsh context switch` to select one."
@@ -131,14 +136,17 @@ def show(
     try:
         sre_config = SREConfig.from_remote_by_name(context, name)
     except DataSafeHavenAzureStorageError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical("Ensure SHM is deployed before attempting to use SRE configs.")
         raise typer.Exit(1) from exc
     except DataSafeHavenAzureError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical(
             f"No configuration exists for an SRE named '{name}' for the selected context."
         )
         raise typer.Exit(1) from exc
     except DataSafeHavenTypeError as exc:
+        log_unhandled_dsh_exception(exc)
         dump_remote_config(context, name, logger)
         raise typer.Exit(1) from exc
 
@@ -200,6 +208,7 @@ def upload(
     try:
         config = SREConfig.from_yaml(config_yaml)
     except DataSafeHavenTypeError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.error("Check for missing or incorrect fields in the configuration.")
         raise typer.Exit(1) from exc
 
@@ -221,6 +230,7 @@ def upload(
                 console.print("No changes, won't upload configuration.")
                 raise typer.Exit()
         except DataSafeHavenTypeError as exc:
+            log_unhandled_dsh_exception(exc)
             dump_remote_config(context, config.name, logger)
             console.print(
                 "To overwrite the remote config, use `dsh config upload --force`"
@@ -230,6 +240,7 @@ def upload(
     try:
         config.upload(context, filename=config.filename)
     except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical("No infrastructure found for the selected context.")
         raise typer.Exit(1) from exc
 

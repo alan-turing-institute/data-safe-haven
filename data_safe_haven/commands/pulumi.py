@@ -7,7 +7,9 @@ import typer
 
 from data_safe_haven import console
 from data_safe_haven.config import ContextManager, DSHPulumiConfig, SREConfig
+from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.infrastructure import SREProjectManager
+from data_safe_haven.logging import log_unhandled_dsh_exception
 
 pulumi_command_group = typer.Typer()
 
@@ -30,15 +32,19 @@ def run(
     ],
 ) -> None:
     """Run arbitrary Pulumi commands in a DSH project"""
-    context = ContextManager.from_file().assert_context()
-    pulumi_config = DSHPulumiConfig.from_remote(context)
-    sre_config = SREConfig.from_remote_by_name(context, sre_name)
+    try:
+        context = ContextManager.from_file().assert_context()
+        pulumi_config = DSHPulumiConfig.from_remote(context)
+        sre_config = SREConfig.from_remote_by_name(context, sre_name)
 
-    project = SREProjectManager(
-        context=context,
-        config=sre_config,
-        pulumi_config=pulumi_config,
-    )
+        project = SREProjectManager(
+            context=context,
+            config=sre_config,
+            pulumi_config=pulumi_config,
+        )
 
-    stdout = project.run_pulumi_command(command)
-    console.print(stdout)
+        stdout = project.run_pulumi_command(command)
+        console.print(stdout)
+    except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
+        raise typer.Exit(1) from exc
