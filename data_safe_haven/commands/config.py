@@ -232,6 +232,7 @@ def upload(
     except DataSafeHavenError as exc:
         logger.critical("No infrastructure found for the selected context.")
         raise typer.Exit(1) from exc
+    logger.info(f"Uploaded SRE configuration '{config.name}'.")
 
 
 def dump_remote_config(context: ContextBase, name: str, logger: Logger) -> None:
