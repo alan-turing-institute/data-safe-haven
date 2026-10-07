@@ -10,6 +10,7 @@ from data_safe_haven.logging import set_console_level, show_console_level
 from .allowlist import allowlist_command_group
 from .config import config_command_group
 from .context import context_command_group
+from .ingress import ingress_command_group
 from .pulumi import pulumi_command_group
 from .shm import shm_command_group
 from .sre import sre_command_group
@@ -82,6 +83,11 @@ application.add_typer(
 )
 application.add_typer(
     context_command_group, name="context", help="Manage Data Safe Haven contexts."
+)
+application.add_typer(
+    ingress_command_group,
+    name="ingress",
+    help="Manage data ingress into a Data Safe Haven SRE.",
 )
 application.add_typer(
     pulumi_command_group,

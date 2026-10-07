@@ -27,3 +27,10 @@ class TestPrettyPrint:
 
         if not_expected is not None:
             assert not_expected not in captured.out
+
+    def test_pretty_print_soft_wrap(self, capsys):
+        long_url = "https://example.com/" + "a" * 500
+        pretty_print(long_url, soft_wrap=True)
+
+        captured = capsys.readouterr()
+        assert long_url in captured.out
