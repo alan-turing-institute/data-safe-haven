@@ -863,4 +863,5 @@ class SREDataComponent(ComponentResource):
             "password_nexus_database_admin_secret": kvs_password_nexus_database_admin.name,
             "password_user_database_admin_secret": kvs_password_user_database_admin.name,
             "storage_account_data_configuration_name": storage_account_data_configuration.name,
+            "storage_account_data_private_sensitive_name": storage_account_data_private_sensitive.name,
         }
