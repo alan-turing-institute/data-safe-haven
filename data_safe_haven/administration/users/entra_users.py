@@ -2,6 +2,8 @@
 
 from collections.abc import Sequence
 
+import phonenumbers
+
 from data_safe_haven.exceptions import (
     DataSafeHavenEntraIDError,
     DataSafeHavenError,
@@ -32,6 +34,32 @@ class EntraUsers:
             DataSafeHavenEntraIDError if any user could not be created
         """
         try:
+            # Validate the entire batch before any account can be created.
+            # A later invalid row must not leave earlier users half-imported.
+            for user in new_users:
+                if not user.phone_number or not user.phone_number.strip():
+                    msg = f"User '[green]{user.username}[/]' is missing a phone number."
+                    raise DataSafeHavenTypeError(msg)
+
+                try:
+                    number = phonenumbers.parse(user.phone_number, user.country)
+                except phonenumbers.NumberParseException as exc:
+                    msg = (
+                        f"User '[green]{user.username}[/]' has an invalid phone "
+                        "number. Use an international number or a number matching "
+                        "the CSV CountryCode."
+                    )
+                    raise DataSafeHavenTypeError(msg) from exc
+
+                # Deliberately check possibility (length/structure), not whether
+                # the number is currently assigned to a person.
+                if not phonenumbers.is_possible_number(number):
+                    msg = (
+                        f"User '[green]{user.username}[/]' has an invalid phone "
+                        "number (check the number of digits and CountryCode)."
+                    )
+                    raise DataSafeHavenTypeError(msg)
+
             available_domains = {
                 domain["id"]
                 for domain in self.graph_api.read_domains()
@@ -55,11 +83,13 @@ class EntraUsers:
                         f"User '[green]{user.username}[/]' is missing an email address."
                     )
                     raise DataSafeHavenTypeError(msg)
-                if not user.phone_number:
+                phone_number = user.phone_number
+                if phone_number is None:
+                    # Defensive guard for callers mutating users after preflight.
                     msg = f"User '[green]{user.username}[/]' is missing a phone number."
                     raise DataSafeHavenTypeError(msg)
                 self.graph_api.create_user(
-                    request_json, user.email_address, user.phone_number
+                    request_json, user.email_address, phone_number
                 )
                 self.logger.info(
                     f"Ensured user '[green]{user.preferred_username}[/]' exists in Entra ID"
