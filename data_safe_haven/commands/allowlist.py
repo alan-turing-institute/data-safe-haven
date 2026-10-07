@@ -206,7 +206,7 @@ def upload(
             repository=repository,
             sre_stack=sre_stack,
         )
-        if allow_diff := remote_allowlist.diff(local_allowlist):
+        if allow_diff := local_allowlist.diff(remote_allowlist):
             for line in list(filter(None, "\n".join(allow_diff).splitlines())):
                 logger.info(line)
             if not console.confirm(
