@@ -46,15 +46,15 @@ Start from the source code for the DSH version deployed in the SRE, then:
 
 1. Modify the corresponding task, template or playbook in
    \`data_safe_haven/resources/workspace/ansible/\`.
-2. Review the change, including its security impact, dependencies and
+1. Review the change, including its security impact, dependencies and
    idempotence. In particular, verify how a task behaves both when a feature
    is enabled and when it is later disabled.
-3. Run the available static checks and tests locally. Use the repository's
+1. Run the available static checks and tests locally. Use the repository's
    [contribution guidelines](https://github.com/alan-turing-institute/data-safe-haven/blob/develop/CONTRIBUTING.md)
    for the standard developer environment.
-4. Test in an appropriately isolated non-production SRE before deploying to a
+1. Test in an appropriately isolated non-production SRE before deploying to a
    production environment.
-5. Prefer the normal \`dsh sre deploy\` workflow for managed source changes.
+1. Prefer the normal \`dsh sre deploy\` workflow for managed source changes.
    An ad-hoc upload, described below, is useful for controlled development
    but may be replaced by a later Pulumi deployment.
 
