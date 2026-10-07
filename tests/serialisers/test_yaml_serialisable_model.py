@@ -105,6 +105,25 @@ class TestYAMLSerialisableModel:
         assert "integer: 5" in yaml
         assert "config_type" not in yaml
 
+    def test_diff_returns_empty_for_equal_models(self, example_config_class):
+        other = example_config_class.model_copy(deep=True)
+
+        assert example_config_class.diff(other) == []
+
+    def test_diff_compares_remote_to_local(self, example_config_class):
+        other = example_config_class.model_copy(deep=True)
+        other.integer = 3
+        other.string = "abc"
+
+        result = example_config_class.diff(other)
+
+        assert result == example_config_class.yaml_diff(
+            other, from_name="remote", to_name="local"
+        )
+        assert result[0:2] == ["--- remote\n", "+++ local\n"]
+        assert "-integer: 3\n" in result
+        assert "+integer: 5\n" in result
+
     def test_yaml_diff(self, example_config_class):
         other = example_config_class.model_copy(deep=True)
         diff = example_config_class.yaml_diff(other)

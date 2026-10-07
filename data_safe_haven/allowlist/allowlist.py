@@ -89,12 +89,12 @@ class Allowlist:
         )
 
     def diff(self, other: Allowlist) -> list[str]:
-        diff = list(
+        """Return unified changes from other to this local allowlist."""
+        return list(
             unified_diff(
-                self.allowlist.splitlines(),
                 other.allowlist.splitlines(),
+                self.allowlist.splitlines(),
                 fromfile="remote",
                 tofile="local",
             )
         )
-        return diff
