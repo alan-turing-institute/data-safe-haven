@@ -199,6 +199,8 @@ module = [
     "dns.*",
     "jwt.*",
     "numpy.*",
+    "phonenumbers",
+    "phonenumbers.*",
     "psycopg.*",
     "pulumi_azure_native.*",
     "pulumi_azuread.*",
