@@ -6,8 +6,8 @@ import typer
 
 from data_safe_haven import console, validators
 from data_safe_haven.config import ContextManager
-from data_safe_haven.exceptions import DataSafeHavenConfigError
-from data_safe_haven.logging import get_logger
+from data_safe_haven.exceptions import DataSafeHavenConfigError, DataSafeHavenError
+from data_safe_haven.logging import get_logger, log_unhandled_dsh_exception
 
 context_command_group = typer.Typer()
 
@@ -19,6 +19,7 @@ def show() -> None:
     try:
         manager = ContextManager.from_file()
     except DataSafeHavenConfigError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical(
             "No context configuration file. Use `dsh context add` to create one."
         )
@@ -44,6 +45,7 @@ def available() -> None:
     try:
         manager = ContextManager.from_file()
     except DataSafeHavenConfigError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical(
             "No context configuration file. Use `dsh context add` to create one."
         )
@@ -68,12 +70,17 @@ def switch(
     try:
         manager = ContextManager.from_file()
     except DataSafeHavenConfigError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical(
             "No context configuration file. Use `dsh context add` to create one."
         )
         raise typer.Exit(code=1) from exc
-    manager.selected = name
-    manager.write()
+    try:
+        manager.selected = name
+        manager.write()
+    except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
+        raise typer.Exit(1) from exc
 
 
 @context_command_group.command()
@@ -107,19 +114,23 @@ def add(
 ) -> None:
     """Add a new context to the context manager."""
     # Create a new context settings file if none exists
-    if ContextManager.default_config_file_path().exists():
-        manager = ContextManager.from_file()
-    else:
-        manager = ContextManager(contexts={}, selected=None)
-    # Add the context to the file and write it
-    manager.add(
-        admin_group_name=admin_group_name,
-        description=description,
-        name=name,
-        subscription_name=subscription_name,
-    )
-    manager.selected = name
-    manager.write()
+    try:
+        if ContextManager.default_config_file_path().exists():
+            manager = ContextManager.from_file()
+        else:
+            manager = ContextManager(contexts={}, selected=None)
+        # Add the context to the file and write it
+        manager.add(
+            admin_group_name=admin_group_name,
+            description=description,
+            name=name,
+            subscription_name=subscription_name,
+        )
+        manager.selected = name
+        manager.write()
+    except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
+        raise typer.Exit(1) from exc
 
 
 @context_command_group.command()
@@ -157,18 +168,23 @@ def update(
     try:
         manager = ContextManager.from_file()
     except DataSafeHavenConfigError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical(
             "No context configuration file. Use `dsh context add` to create one."
         )
         raise typer.Exit(1) from exc
 
-    manager.update(
-        admin_group_name=admin_group_name,
-        description=description,
-        name=name,
-        subscription_name=subscription,
-    )
-    manager.write()
+    try:
+        manager.update(
+            admin_group_name=admin_group_name,
+            description=description,
+            name=name,
+            subscription_name=subscription,
+        )
+        manager.write()
+    except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
+        raise typer.Exit(1) from exc
 
 
 @context_command_group.command()
@@ -180,7 +196,12 @@ def remove(
     try:
         manager = ContextManager.from_file()
     except DataSafeHavenConfigError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical("No context configuration file.")
         raise typer.Exit(1) from exc
-    manager.remove(name)
-    manager.write()
+    try:
+        manager.remove(name)
+        manager.write()
+    except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
+        raise typer.Exit(1) from exc

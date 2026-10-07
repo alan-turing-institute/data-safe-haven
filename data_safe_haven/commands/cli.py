@@ -5,7 +5,12 @@ from typing import Annotated, Optional
 import typer
 
 from data_safe_haven import __version__, console
-from data_safe_haven.logging import set_console_level, show_console_level
+from data_safe_haven.exceptions import DataSafeHavenError
+from data_safe_haven.logging import (
+    log_unhandled_dsh_exception,
+    set_console_level,
+    show_console_level,
+)
 
 from .allowlist import allowlist_command_group
 from .config import config_command_group
@@ -101,5 +106,9 @@ application.add_typer(
 
 
 def main() -> None:
-    """Run the application"""
-    application()
+    """Run the application, reporting otherwise unhandled DSH errors."""
+    try:
+        application()
+    except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
+        raise SystemExit(1) from exc
