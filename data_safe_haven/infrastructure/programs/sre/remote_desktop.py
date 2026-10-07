@@ -18,7 +18,7 @@ from data_safe_haven.infrastructure.components import (
     PostgresqlDatabaseProps,
 )
 from data_safe_haven.resources import resources_path
-from data_safe_haven.utility import FileReader
+from data_safe_haven.utility import FileReader, LogLevelParser
 
 
 class SRERemoteDesktopProps:
@@ -49,6 +49,7 @@ class SRERemoteDesktopProps:
         subnet_guacamole_containers: Input[network.GetSubnetResult],
         subnet_guacamole_containers_support: Input[network.GetSubnetResult],
         user_group_name: Input[str],
+        log_level: Input[str],
         database_username: Input[str] | None = "postgresadmin",
     ) -> None:
         self.admin_group_name = admin_group_name
@@ -105,6 +106,7 @@ class SRERemoteDesktopProps:
             )
         )
         self.user_group_name = user_group_name
+        self.log_level = log_level
 
 
 class SRERemoteDesktopComponent(ComponentResource):
@@ -207,7 +209,10 @@ class SRERemoteDesktopComponent(ComponentResource):
                             name="GUACD_HOSTNAME", value="localhost"
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="LOGBACK_LEVEL", value="debug"
+                            name="LOG_LEVEL",
+                            value=LogLevelParser.service_logging_level(
+                                props.log_level, "guacamole", None
+                            ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_AUTHORIZATION_ENDPOINT",
@@ -281,7 +286,10 @@ class SRERemoteDesktopComponent(ComponentResource):
                     name="guacd"[:63],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
-                            name="GUACD_LOG_LEVEL", value="debug"
+                            name="LOG_LEVEL",
+                            value=LogLevelParser.service_logging_level(
+                                props.log_level, "guacamole", None
+                            ),
                         ),
                     ],
                     resources=containerinstance.ResourceRequirementsArgs(
