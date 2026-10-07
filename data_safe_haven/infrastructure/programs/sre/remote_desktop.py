@@ -17,6 +17,14 @@ from data_safe_haven.infrastructure.components import (
     PostgresqlDatabaseComponent,
     PostgresqlDatabaseProps,
 )
+from data_safe_haven.infrastructure.programs.sre.caddy_settings import (
+    CADDY_CONFIG_MOUNT_PATH,
+    CADDY_CONFIG_VOLUME_NAME,
+    CADDY_CPU,
+    CADDY_IMAGE,
+    CADDY_MEMORY_GB,
+    CADDY_NAME,
+)
 from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader, LogLevelParser
 
@@ -174,8 +182,8 @@ class SRERemoteDesktopComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-remote-desktop",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="caddy:2.11.4",
-                    name="caddy"[:63],
+                    image=CADDY_IMAGE,
+                    name=CADDY_NAME[:63],
                     ports=[
                         containerinstance.ContainerPortArgs(
                             port=80,
@@ -184,14 +192,14 @@ class SRERemoteDesktopComponent(ComponentResource):
                     ],
                     resources=containerinstance.ResourceRequirementsArgs(
                         requests=containerinstance.ResourceRequestsArgs(
-                            cpu=0.5,
-                            memory_in_gb=0.5,
+                            cpu=CADDY_CPU,
+                            memory_in_gb=CADDY_MEMORY_GB,
                         ),
                     ),
                     volume_mounts=[
                         containerinstance.VolumeMountArgs(
-                            mount_path="/etc/caddy",
-                            name="caddy-etc-caddy",
+                            mount_path=CADDY_CONFIG_MOUNT_PATH,
+                            name=CADDY_CONFIG_VOLUME_NAME,
                             read_only=False,
                         ),
                     ],
@@ -418,7 +426,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                         storage_account_key=props.storage_account_key,
                         storage_account_name=props.storage_account_name,
                     ),
-                    name="caddy-etc-caddy",
+                    name=CADDY_CONFIG_VOLUME_NAME,
                 ),
             ],
             opts=ResourceOptions.merge(
