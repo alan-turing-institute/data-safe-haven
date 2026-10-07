@@ -8,6 +8,7 @@ configure_entra_id.md
 deploy_shm.md
 deploy_sre.md
 self_code_ingress.md
+smoke_tests.md
 security_checklist.md
 :::
 
@@ -18,6 +19,7 @@ Deploying an instance of the Data Safe Haven involves the following steps:
 - Deploying the Safe Haven management component
 - Deploying a Secure Research Environment for each project
 - Optionally configuring pre-approved GitHub repositories for code ingress
+- Validating the deployed workspace with the smoke tests
 
 ## Requirements
 
