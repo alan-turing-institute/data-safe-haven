@@ -161,3 +161,5 @@ class EntraApplicationComponent(ComponentResource):
             for permission_type, permission in props.application_permissions
             if permission_type == EntraAppPermissionType.DELEGATED
         ]
+
+        self.register_outputs({})

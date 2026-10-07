@@ -466,6 +466,8 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
             "pypi": pypi_allowlist.destination_path,
         }
 
+        self.register_outputs({})
+
     @staticmethod
     def obtain_first_ip_address(address_prefix: str | None) -> str | None:
         if address_prefix:

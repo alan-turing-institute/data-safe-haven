@@ -149,6 +149,8 @@ class SREWorkspacesComponent(ComponentResource):
             "vm_outputs": vm_outputs,
         }
 
+        self.register_outputs({})
+
     @staticmethod
     def template_cloudinit(**kwargs: str) -> str:
         logger = get_logger()

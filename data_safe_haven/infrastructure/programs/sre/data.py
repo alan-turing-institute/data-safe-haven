@@ -864,3 +864,5 @@ class SREDataComponent(ComponentResource):
             "password_user_database_admin_secret": kvs_password_user_database_admin.name,
             "storage_account_data_configuration_name": storage_account_data_configuration.name,
         }
+
+        self.register_outputs({})
