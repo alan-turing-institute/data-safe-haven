@@ -526,10 +526,9 @@ def test_blob_acl_retries_transient_failures(
     data_lake = mocker.patch(
         "data_safe_haven.external.api.azure_sdk.DataLakeServiceClient"
     )
-    set_acl = (
-        data_lake.return_value.get_file_system_client.return_value
-        ._get_root_directory_client.return_value.set_access_control_recursive
-    )
+    file_system = data_lake.return_value.get_file_system_client.return_value
+    root_directory = file_system._get_root_directory_client.return_value
+    set_acl = root_directory.set_access_control_recursive
     set_acl.side_effect = [
         HttpResponseError(
             message="Azure service error",
