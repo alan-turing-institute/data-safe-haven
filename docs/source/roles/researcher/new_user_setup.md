@@ -97,7 +97,6 @@ username supplied by your system manager** rather than copying the suggested
 domain. If sign-in still fails, verify the username with your SRE contact.
 :::
 
-
 #### Network access
 
 The SRE that you're using may be configured to allow access only from a specific set of IP addresses.
