@@ -261,8 +261,39 @@ class ProjectManager:
             self.apply_config_options()
             if force:
                 self.cancel()
-            self.refresh(run_program)
-            self.upgrade(subscription_name, run_program=run_program)
+
+            # Determine whether a provider/schema upgrade is needed *before*
+            # Pulumi refresh. Otherwise older azure-native resource types can
+            # fail refresh before Upgrade gets a chance to check versions.
+            upgrade = Upgrade(self, subscription_name)
+            try:
+                proceed = upgrade.can_proceed()
+            except InvalidVersion as exc:
+                self.logger.error(f"Malformed SRE version: {exc}")
+                proceed = False
+            if not proceed:
+                raise UpgradeAbortedError
+
+            # Fresh/same-version deployments retain Pulumi's faster refresh.
+            # When a previous SRE version differs, --run-program loads the
+            # current provider code and resolves renamed resource types.
+            version_changed = getattr(
+                upgrade, "fresh_deployment", True
+            ) is False and getattr(upgrade, "dsh_version", None) != getattr(
+                upgrade, "sre_version", None
+            )
+            effective_run_program = run_program or version_changed
+            if version_changed:
+                self.logger.warning(
+                    "The deployed SRE version differs from this DSH CLI. "
+                    "Refreshing with --run-program to resolve provider changes."
+                )
+            self.refresh(effective_run_program)
+            self.upgrade(
+                subscription_name,
+                run_program=effective_run_program,
+                validated_upgrade=upgrade,
+            )
             self.preview(disable_diff)
             self.update()
         except Exception as exc:
@@ -423,13 +454,21 @@ class ProjectManager:
             msg = "Tearing down Pulumi infrastructure failed.."
             raise DataSafeHavenPulumiError(msg) from exc
 
-    def upgrade(self, subscription_name: str, *, run_program: bool = False) -> None:
+    def upgrade(
+        self,
+        subscription_name: str,
+        *,
+        run_program: bool = False,
+        validated_upgrade: Upgrade | None = None,
+    ) -> None:
         """Check whether any upgrade steps are needed and check with the
         user whether to apply them or not.
         """
         try:
-            upgrade = Upgrade(self, subscription_name)
-            proceed = upgrade.can_proceed()
+            upgrade = validated_upgrade or Upgrade(self, subscription_name)
+            # A checked upgrade has already been approved before the first
+            # refresh. Do not prompt twice or reread the Azure version.
+            proceed = True if validated_upgrade is not None else upgrade.can_proceed()
         except InvalidVersion as exc:
             proceed = False
             self.logger.error(f"{exc}")
