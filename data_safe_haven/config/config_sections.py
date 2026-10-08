@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from ipaddress import ip_network
 from itertools import combinations
+from typing import Literal
 
 from pydantic import BaseModel, HttpUrl, PositiveInt, field_validator, model_validator
 
@@ -135,6 +136,36 @@ class ConfigSectionUserServices(BaseModel, validate_assignment=True):
     )
 
 
+class ConfigSubsectionPostgresqlSku(BaseModel, validate_assignment=True):
+    """SKU of Azure Database for PostgreSQL flexible servers."""
+
+    name: str = "Standard_B2s"
+    tier: Literal["Burstable", "GeneralPurpose", "MemoryOptimized"] = "Burstable"
+
+    @field_validator("name")
+    @classmethod
+    def valid_sku_name(cls, value: str) -> str:
+        if not value.startswith("Standard_") or len(value) <= len("Standard_"):
+            msg = "PostgreSQL SKU name must start with 'Standard_'."
+            raise ValueError(msg)
+        return value
+
+
+class ConfigSubsectionMssqlSku(BaseModel, validate_assignment=True):
+    """SKU of Azure SQL databases (not of the logical SQL server)."""
+
+    name: str = "GP_S_Gen5"
+    family: str = "Gen5"
+    capacity: PositiveInt = 1
+
+
+class ConfigSubsectionDatabaseSkus(BaseModel, validate_assignment=True):
+    """Per-engine Azure database SKUs, with backward-compatible defaults."""
+
+    postgresql: ConfigSubsectionPostgresqlSku = ConfigSubsectionPostgresqlSku()
+    mssql: ConfigSubsectionMssqlSku = ConfigSubsectionMssqlSku()
+
+
 class ConfigSectionSRE(BaseModel, validate_assignment=True):
     # Mutable objects can be used as default arguments in Pydantic:
     # https://docs.pydantic.dev/latest/concepts/models/#fields-with-non-hashable-default-values
@@ -142,6 +173,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     admin_ip_addresses: list[IpAddress] = []
     allow_workspace_internet: bool = False
     databases: UniqueList[DatabaseSystem] = []
+    database_skus: ConfigSubsectionDatabaseSkus = ConfigSubsectionDatabaseSkus()
     data_provider_ip_addresses: list[IpAddress] = []
     monitoring: ConfigSectionMonitoring = ConfigSectionMonitoring()
     remote_desktop: ConfigSubsectionRemoteDesktopOpts
