@@ -58,9 +58,9 @@ From an SRE workspace:
 
 1. Open Gitea using the desktop shortcut and sign in with your normal
    short-form SRE username and password.
-2. Select **Explore**, find the mirrored repository, and copy its HTTP(S)
+1. Select **Explore**, find the mirrored repository, and copy its HTTP(S)
    clone URL from the repository page.
-3. Clone it from a workspace terminal:
+1. Clone it from a workspace terminal:
 
    :::{code} shell
    $ git clone URL_COPIED_FROM_GITEA
