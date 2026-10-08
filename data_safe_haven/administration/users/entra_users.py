@@ -164,3 +164,39 @@ class EntraUsers:
         except DataSafeHavenError as exc:
             msg = f"Unable to remove users from group {group_name}."
             raise DataSafeHavenEntraIDError(msg) from exc
+
+
+class ResilientEntraUsers(EntraUsers):
+    """Isolate individual CSV user failures without altering bulk API semantics."""
+
+    def add(self, new_users: Sequence[ResearchUser]) -> None:
+        """Attempt all users and report failed identities when finished."""
+        failures: list[str] = []
+        succeeded = 0
+        for user in new_users:
+            principal = f"{user.username}@{user.domain}"
+            try:
+                super().add([user])
+            except DataSafeHavenError as exc:
+                # Only surface known DSH errors; never log the full request
+                # (which may include a generated initial account password).
+                reason = exc
+                while isinstance(reason.__cause__, DataSafeHavenError):
+                    reason = reason.__cause__
+                failures.append(f"{principal}: {reason}")
+                self.logger.error(f"Could not add '{principal}': {reason}")
+            except Exception as exc:
+                # Unexpected HTTP/SDK exceptions may contain secret request
+                # bodies; report only the exception class and affected user.
+                reason = type(exc).__name__
+                failures.append(f"{principal}: {reason}")
+                self.logger.error(f"Could not add '{principal}' ({reason}).")
+            else:
+                succeeded += 1
+
+        if failures:
+            msg = (
+                f"Added or updated {succeeded} of {len(new_users)} Entra users. "
+                "Failed users: " + "; ".join(failures)
+            )
+            raise DataSafeHavenEntraIDError(msg)
