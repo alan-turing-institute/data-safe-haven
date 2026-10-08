@@ -1,6 +1,5 @@
 from collections.abc import Mapping
 from itertools import chain, islice
-from uuid import NAMESPACE_URL, uuid5
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import maintenance, monitor, operationalinsights
@@ -13,7 +12,7 @@ from data_safe_haven.infrastructure.components import (
 )
 from data_safe_haven.utility import LogLevelParser
 
-from .log_queries import DEFAULT_SAVED_QUERIES
+from .log_queries import DEFAULT_SAVED_QUERIES, saved_query_id
 
 
 class SREMonitoringElementsProps:
@@ -134,7 +133,7 @@ class SREMonitoringElementsComponent(ComponentResource):
                 display_name=display_name,
                 query=query,
                 resource_group_name=props.resource_group_name,
-                saved_search_id=str(uuid5(NAMESPACE_URL, f"{stack_name}/log-query/{key}")),
+                saved_search_id=saved_query_id(stack_name, key),
                 workspace_name=self.workspace_analytics.workspace.name,
                 opts=ResourceOptions.merge(
                     child_opts,
