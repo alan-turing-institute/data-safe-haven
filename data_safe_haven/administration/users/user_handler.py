@@ -30,42 +30,82 @@ class UserHandler:
             DataSafeHavenUserHandlingError if the users could not be added
         """
         try:
-            # Construct user list
-            with open(users_csv_path, encoding="utf-8") as f_csv:
-                dialect = csv.Sniffer().sniff(f_csv.read(), delimiters=";,")
+            # Validate all rows before making any remote Entra ID changes.
+            with open(users_csv_path, encoding="utf-8", newline="") as f_csv:
+                # Sniff the header so a malformed data row does not prevent
+                # reporting the missing field and its line number.
+                dialect = csv.Sniffer().sniff(f_csv.readline(), delimiters=";,")
                 f_csv.seek(0)
                 reader = csv.DictReader(f_csv, dialect=dialect)
-                for required_field in [
+                required_fields = (
                     "GivenName",
                     "Surname",
                     "Phone",
                     "Email",
-                    "CountryCode",
-                ]:
-                    if (not reader.fieldnames) or (
-                        required_field not in reader.fieldnames
-                    ):
-                        msg = f"Missing required CSV field '{required_field}'."
-                        raise ValueError(msg)
-                users = [
-                    ResearchUser(
-                        account_enabled=True,
-                        country=user["CountryCode"],
-                        domain=user.get("Domain", domain),
-                        email_address=user["Email"],
-                        given_name=user["GivenName"],
-                        phone_number=user["Phone"],
-                        surname=user["Surname"],
-                    )
-                    for user in reader
+                )
+                missing_columns = [
+                    field
+                    for field in required_fields
+                    if field not in (reader.fieldnames or [])
                 ]
+                if missing_columns:
+                    msg = f"Users CSV is missing required columns: {', '.join(missing_columns)}."
+                    raise DataSafeHavenUserHandlingError(msg)
+                allowed_fields = {*required_fields, "CountryCode", "Domain"}
+                extra_columns = [
+                    field
+                    for field in (reader.fieldnames or [])
+                    if field not in allowed_fields
+                ]
+                if extra_columns:
+                    msg = f"Users CSV contains unexpected columns: {', '.join(extra_columns)}."
+                    raise DataSafeHavenUserHandlingError(msg)
+
+                users = []
+                for data_row, row in enumerate(reader, start=1):
+                    row_location = f"file line {reader.line_num} (data row {data_row})"
+                    missing_values = [
+                        field
+                        for field in required_fields
+                        if not isinstance(row.get(field), str) or not row[field].strip()
+                    ]
+                    if missing_values:
+                        msg = (
+                            f"Users CSV {row_location} is missing values for: "
+                            f"{', '.join(missing_values)}."
+                        )
+                        raise DataSafeHavenUserHandlingError(msg)
+                    if None in row:
+                        msg = f"Users CSV {row_location} contains extra values."
+                        raise DataSafeHavenUserHandlingError(msg)
+
+                    users.append(
+                        ResearchUser(
+                            account_enabled=True,
+                            # An international number needs no region;
+                            # retain the legacy hint for national numbers.
+                            country=(row.get("CountryCode") or "").strip() or None,
+                            domain=row.get("Domain", domain),
+                            email_address=row["Email"],
+                            given_name=row["GivenName"],
+                            phone_number=row["Phone"],
+                            surname=row["Surname"],
+                        )
+                    )
+
             for user in users:
                 self.logger.debug(f"Processing new user: {user}")
 
-            # Add users to Entra ID
+            # Only contact Entra ID after the complete CSV has been validated.
             self.entra_users.add(users)
         except csv.Error as exc:
-            msg = f"Could not add users from '{users_csv_path}'."
+            msg = f"Could not parse users CSV '{users_csv_path}': {exc}."
+            raise DataSafeHavenUserHandlingError(msg) from exc
+        except UnicodeError as exc:
+            msg = f"Could not read users CSV '{users_csv_path}': expected UTF-8 text."
+            raise DataSafeHavenUserHandlingError(msg) from exc
+        except OSError as exc:
+            msg = f"Could not read users CSV '{users_csv_path}': {exc.strerror}."
             raise DataSafeHavenUserHandlingError(msg) from exc
 
     def get_usernames(
