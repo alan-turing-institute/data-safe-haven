@@ -51,9 +51,19 @@ class UserHandler:
                 if missing_columns:
                     msg = f"Users CSV is missing required columns: {', '.join(missing_columns)}."
                     raise DataSafeHavenUserHandlingError(msg)
+                allowed_fields = {*required_fields, "CountryCode", "Domain"}
+                extra_columns = [
+                    field
+                    for field in (reader.fieldnames or [])
+                    if field not in allowed_fields
+                ]
+                if extra_columns:
+                    msg = f"Users CSV contains unexpected columns: {', '.join(extra_columns)}."
+                    raise DataSafeHavenUserHandlingError(msg)
 
                 users = []
-                for row in reader:
+                for data_row, row in enumerate(reader, start=1):
+                    row_location = f"file line {reader.line_num} (data row {data_row})"
                     missing_values = [
                         field
                         for field in required_fields
@@ -61,12 +71,12 @@ class UserHandler:
                     ]
                     if missing_values:
                         msg = (
-                            f"Users CSV line {reader.line_num} is missing values for: "
+                            f"Users CSV {row_location} is missing values for: "
                             f"{', '.join(missing_values)}."
                         )
                         raise DataSafeHavenUserHandlingError(msg)
                     if None in row:
-                        msg = f"Users CSV line {reader.line_num} contains extra values."
+                        msg = f"Users CSV {row_location} contains extra values."
                         raise DataSafeHavenUserHandlingError(msg)
 
                     users.append(

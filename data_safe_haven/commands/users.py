@@ -53,7 +53,8 @@ def add(
         users = UserHandler(context, graph_api)
         users.add(csv, shm_config.shm.fqdn)
     except DataSafeHavenUserHandlingError as exc:
-        logger.critical(str(exc))
+        # DataSafeHavenError already logs on construction until #2693 lands.
+        # Do not print the same actionable CSV error twice.
         raise typer.Exit(1) from exc
     except DataSafeHavenError as exc:
         logger.critical("Could not add users to Data Safe Haven.")

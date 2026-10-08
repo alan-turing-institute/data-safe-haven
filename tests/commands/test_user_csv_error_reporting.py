@@ -53,7 +53,7 @@ def test_reports_missing_field_in_later_row_before_creating_any_user(handler, tm
 
     with pytest.raises(
         DataSafeHavenUserHandlingError,
-        match="line 3 is missing values for: Email",
+        match=r"file line 3 \(data row 2\) is missing values for: Email",
     ):
         handler.add(csv_file, "example.org")
 
@@ -69,10 +69,24 @@ def test_reports_extra_values(handler, tmp_path):
 
     with pytest.raises(
         DataSafeHavenUserHandlingError,
-        match="line 2 contains extra values",
+        match=r"file line 2 \(data row 1\) contains extra values",
     ):
         handler.add(csv_file, "example.org")
 
+    handler.entra_users.add.assert_not_called()
+
+
+def test_reports_unexpected_csv_headers_before_creating_users(handler, tmp_path):
+    csv_file = tmp_path / "users.csv"
+    csv_file.write_text(
+        "GivenName,Surname,Phone,Email,CountryCode,Unexpected\n"
+        "Ada,Lovelace,+441234567890,ada@example.org,GB,extra\n"
+    )
+    with pytest.raises(
+        DataSafeHavenUserHandlingError,
+        match="unexpected columns: Unexpected",
+    ):
+        handler.add(csv_file, "example.org")
     handler.entra_users.add.assert_not_called()
 
 

@@ -35,6 +35,23 @@ class TestAdd:
         (user,) = add_to_entra.call_args.args[0]
         assert user.country is None
 
+    def test_invalid_csv_error_is_reported_once(
+        self, mocker, runner, tmp_path, shm_config
+    ):
+        csv_file = tmp_path / "users.csv"
+        csv_file.write_text(
+            "GivenName,Surname,Phone,CountryCode\nAda,Lovelace,+441234567890,GB\n"
+        )
+        mocker.patch.object(SHMConfig, "from_remote", return_value=shm_config)
+        mocker.patch.object(GraphApi, "from_scopes", return_value=mocker.Mock())
+        add_to_entra = mocker.patch.object(EntraUsers, "add")
+
+        result = runner.invoke(users_command_group, ["add", str(csv_file)])
+
+        assert result.exit_code == 1
+        assert result.stdout.count("Users CSV is missing required columns: Email.") == 1
+        add_to_entra.assert_not_called()
+
 
 class TestListUsers:
     def test_invalid_shm(
