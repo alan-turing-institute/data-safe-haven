@@ -5,6 +5,7 @@ Sign-in failures here are Linux workspace syslog events, not Entra sign-in logs.
 """
 
 from typing import Final
+from uuid import NAMESPACE_URL, uuid5
 
 # Stable keys also feed the deterministic Azure saved-search IDs.
 DEFAULT_SAVED_QUERIES: Final[dict[str, tuple[str, str]]] = {
@@ -36,3 +37,8 @@ DEFAULT_SAVED_QUERIES: Final[dict[str, tuple[str, str]]] = {
 | order by TimeGenerated desc""",
     ),
 }
+
+
+def saved_query_id(stack_name: str, key: str) -> str:
+    """Give each query a stable identity without colliding across SRE stacks."""
+    return str(uuid5(NAMESPACE_URL, f"{stack_name}/log-query/{key}"))
