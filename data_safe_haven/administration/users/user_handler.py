@@ -23,7 +23,7 @@ class UserHandler:
         self.context = context
         self.logger = get_logger()
 
-    def add(self, users_csv_path: pathlib.Path, domain: str) -> None:
+    def add(self, users_csv_path: pathlib.Path, domain: str) -> list[ResearchUser]:
         """Add users to Entra ID and Guacamole
 
         Raises:
@@ -59,11 +59,25 @@ class UserHandler:
                     )
                     for user in reader
                 ]
+            # Validate the complete batch before creating any Entra accounts.
+            # Transliteration can cause previously distinct names to collide.
+            usernames: set[tuple[str, str]] = set()
             for user in users:
+                try:
+                    username = user.username
+                except ValueError as exc:
+                    msg = f"Cannot generate an Entra username for '{user.display_name}': {exc}"
+                    raise DataSafeHavenUserHandlingError(msg) from exc
+                principal = (username.casefold(), (user.domain or "").casefold())
+                if principal in usernames:
+                    msg = f"Duplicate generated username '{username}@{user.domain}' in the CSV."
+                    raise DataSafeHavenUserHandlingError(msg)
+                usernames.add(principal)
                 self.logger.debug(f"Processing new user: {user}")
 
-            # Add users to Entra ID
+            # Display the summary only after the whole batch has succeeded.
             self.entra_users.add(users)
+            return users
         except csv.Error as exc:
             msg = f"Could not add users from '{users_csv_path}'."
             raise DataSafeHavenUserHandlingError(msg) from exc
