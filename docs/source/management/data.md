@@ -107,9 +107,21 @@ Following data egress or ingress the IP address should be removed from the firew
 This task should therefore be performed either after the user has completed the data upload or download, or once the SAS token has expired.
 The approach taken should reflect the approach you used to add the IP address in the above instructions.
 
-- If you added the IP address to the **Networking** page on the Azure Portal, you should remove it from the same list.
-- If you used the `dsh` command line tool to redeploy the SRE, you should remove the IP address from the configuration and redeploy.
-  See the section {ref}`ingress_egress_update_ip_address_and_redeploy` above for details.
+- If you manually added a temporary IP address through the Azure Portal, you can
+  remove the **exact** rule directly using the DSH CLI instead of reopening the portal:
+
+  ```sh
+  dsh ingress close-firewall <sre-name> --ip 203.0.113.10
+  ```
+
+  The command only removes the requested IPv4 rule from the SRE's sensitive-data
+  storage account. It does not revoke any SAS tokens or remove other firewall
+  rules, and it will refuse to remove an IP rule covering an administrator address.
+- If you added the IP address to the SRE configuration's `data_provider_ip_addresses`,
+  also remove it from the configuration and redeploy.
+  See {ref}`ingress_egress_update_ip_address_and_redeploy` above for details.
+  Otherwise a later deployment can reintroduce an IP rule removed directly through
+  the CLI.
 
 ## The output volume
 
