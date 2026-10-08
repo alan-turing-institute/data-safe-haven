@@ -188,9 +188,9 @@ class ResilientEntraUsers(EntraUsers):
             except Exception as exc:
                 # Unexpected HTTP/SDK exceptions may contain secret request
                 # bodies; report only the exception class and affected user.
-                reason = type(exc).__name__
-                failures.append(f"{principal}: {reason}")
-                self.logger.error(f"Could not add '{principal}' ({reason}).")
+                error_type = type(exc).__name__
+                failures.append(f"{principal}: {error_type}")
+                self.logger.error(f"Could not add '{principal}' ({error_type}).")
             else:
                 succeeded += 1
 
