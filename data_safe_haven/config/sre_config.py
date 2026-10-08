@@ -114,7 +114,7 @@ class SREConfig(AzureSerialisableModel):
                 database_skus=ConfigSubsectionDatabaseSkus.model_construct(
                     postgresql=ConfigSubsectionPostgresqlSku.model_construct(
                         name="PostgreSQL Azure SKU name [default: Standard_B2s].",
-                        tier="PostgreSQL Azure SKU tier [Burstable, GeneralPurpose, MemoryOptimized].",
+                        tier="PostgreSQL Azure SKU tier [Burstable, GeneralPurpose, MemoryOptimized].",  # type: ignore[arg-type]
                     ),
                     mssql=ConfigSubsectionMssqlSku.model_construct(
                         name="Microsoft SQL database SKU name [default: GP_S_Gen5].",
