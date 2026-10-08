@@ -1,5 +1,6 @@
 from collections.abc import Mapping
 from itertools import chain, islice
+from uuid import NAMESPACE_URL, uuid5
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import maintenance, monitor, operationalinsights
@@ -11,6 +12,8 @@ from data_safe_haven.infrastructure.components import (
     OperationalInsightsWorkspaceProps,
 )
 from data_safe_haven.utility import LogLevelParser
+
+from .log_queries import DEFAULT_SAVED_QUERIES
 
 
 class SREMonitoringElementsProps:
@@ -121,6 +124,23 @@ class SREMonitoringElementsComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
+
+        # Register discoverable searches directly in this SRE's Log Analytics
+        # workspace. Names and UUIDs remain stable across Pulumi redeployments.
+        for key, (display_name, query) in DEFAULT_SAVED_QUERIES.items():
+            operationalinsights.SavedSearch(
+                f"{self._name}_saved_query_{key}",
+                category="Data Safe Haven",
+                display_name=display_name,
+                query=query,
+                resource_group_name=props.resource_group_name,
+                saved_search_id=str(uuid5(NAMESPACE_URL, f"{stack_name}/log-query/{key}")),
+                workspace_name=self.workspace_analytics.workspace.name,
+                opts=ResourceOptions.merge(
+                    child_opts,
+                    ResourceOptions(parent=self.workspace_analytics.workspace),
+                ),
+            )
 
         # Create a data collection endpoint
         self.data_collection_endpoint = monitor.DataCollectionEndpoint(
