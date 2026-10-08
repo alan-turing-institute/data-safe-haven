@@ -1361,14 +1361,15 @@ class AzureSdk:
             directory_client = file_system_client._get_root_directory_client()
             # Transient storage-service errors can occur during teardown.
             # Reapplying the same ACL is safe if the previous request partially succeeded.
-            for attempt in range(3):
+            max_attempts = 3
+            for attempt in range(max_attempts):
                 try:
                     directory_client.set_access_control_recursive(acl=desired_acl)
                     return
                 except HttpResponseError as exc:
                     if (
                         exc.status_code not in {408, 429, 500, 502, 503, 504}
-                        or attempt == 2
+                        or attempt == max_attempts - 1
                     ):
                         raise
                     delay_seconds = 2**attempt
