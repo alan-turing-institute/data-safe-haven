@@ -1,0 +1,16 @@
+[
+  {
+    "storage_account_desired_state_name": "dshdesiredstate",
+    "storage_account_data_private_sensitive_name": "dshsensitivedata",
+    "storage_account_data_private_user_name": "dshuserdata",
+    "apt_proxy_server_hostname": "aptproxy.internal.test",
+    "data_disk_support": true
+  },
+  {
+    "storage_account_desired_state_name": "dshdesiredstate",
+    "storage_account_data_private_sensitive_name": "dshsensitivedata",
+    "storage_account_data_private_user_name": "dshuserdata",
+    "apt_proxy_server_hostname": "aptproxy.internal.test",
+    "data_disk_support": false
+  }
+]

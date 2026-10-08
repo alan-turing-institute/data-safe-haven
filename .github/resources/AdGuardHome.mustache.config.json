@@ -1,9 +1,21 @@
-{
+[
+  {
     "admin_username": "admin",
-    "admin_password_encrypted": "password",
-    "allow_workspace_internet": true,
+    "admin_password_encrypted": "fake-hash",
+    "upstream_dns": "9.9.9.9",
+    "filter_block": [
+      "blocked.example"
+    ],
     "filter_allow": [
-        "clamav.net",
-        "current.cvd.clamav.net"
+      "clamav.net",
+      "current.cvd.clamav.net"
     ]
-}
+  },
+  {
+    "admin_username": "operator",
+    "admin_password_encrypted": "another-fake-hash",
+    "upstream_dns": "1.1.1.1",
+    "filter_block": [],
+    "filter_allow": []
+  }
+]
