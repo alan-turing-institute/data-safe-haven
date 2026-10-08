@@ -72,6 +72,14 @@ sre:
   admin_ip_addresses: # List of IP addresses belonging to administrators
   allow_workspace_internet: # True/False: whether to allow outbound internet access from workspaces. WARNING setting this to True will allow data to be moved out of the SRE WITHOUT OVERSIGHT OR APPROVAL
   data_provider_ip_addresses: # List of IP addresses belonging to data providers
+  database_skus: # Optional: database SKU overrides; omission uses the values below.
+    postgresql:
+      name: Standard_B2s # Azure Database for PostgreSQL flexible server SKU
+      tier: Burstable # Burstable, GeneralPurpose or MemoryOptimized
+    mssql:
+      name: GP_S_Gen5 # Azure SQL database SKU name
+      family: Gen5 # Azure SQL database SKU family
+      capacity: 1 # Positive Azure SQL database capacity
   databases: # List of database systems to deploy
   monitoring:
     log_level: # Maximum granularity of logs to capture [error, warn, info, debug (default), trace]. Append optional service=level pairs [default, gitea_mirror, gitea, hedgedoc, identity, syslog, guacamole, nexus] separated by semicolons
@@ -183,6 +191,18 @@ All VM SKUs you deploy must have CPUs with the `x86_64` architecture.
 :::{important}
 The antivirus process running on each workspace consumes around 1.3 GiB at idle.
 This usage will roughly double for a short period each day while its database is updated.
+
+You can adjust database sizes through the optional `sre.database_skus` configuration.
+`postgresql` applies to the shared PostgreSQL flexible server used by internal
+services and to any PostgreSQL database service selected in `sre.databases`.
+`mssql` controls Azure SQL database SKUs if SQL databases are provisioned.
+
+Existing SRE configuration files without `database_skus` retain the former
+defaults (`Standard_B2s`/`Burstable` for PostgreSQL and
+`GP_S_Gen5`/`Gen5`/capacity `1` for Azure SQL). Choose valid Azure SKUs for
+your region and tier; changing an existing database's SKU can affect
+cost, availability or require a service interruption. Review the Pulumi
+preview before applying a change.
 
 You should take this into account when choosing a VM size and pick an SKU with enough memory overhead for your workload and the antivirus service.
 :::
