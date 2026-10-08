@@ -511,6 +511,7 @@ def test_blob_acl_retries_transient_failures(
     error_codes: list[int],
     expected_calls: int,
     expected_delays: list[int],
+    *,
     should_raise: bool,
 ) -> None:
     """Retry temporary Azure ACL failures without retrying permanent failures."""
