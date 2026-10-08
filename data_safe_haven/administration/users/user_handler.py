@@ -42,7 +42,6 @@ class UserHandler:
                     "Surname",
                     "Phone",
                     "Email",
-                    "CountryCode",
                 )
                 missing_columns = [
                     field
@@ -73,7 +72,9 @@ class UserHandler:
                     users.append(
                         ResearchUser(
                             account_enabled=True,
-                            country=row["CountryCode"],
+                            # An international number needs no region;
+                            # retain the legacy hint for national numbers.
+                            country=(row.get("CountryCode") or "").strip() or None,
                             domain=row.get("Domain", domain),
                             email_address=row["Email"],
                             given_name=row["GivenName"],

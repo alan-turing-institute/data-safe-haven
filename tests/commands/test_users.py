@@ -16,7 +16,7 @@ class TestAdd:
         assert result.exit_code == 1
         assert "Have you deployed the SHM?" in result.stdout
 
-    def test_missing_csv_country_code_is_reported_to_cli(
+    def test_blank_optional_csv_country_code_is_accepted_by_cli(
         self, mocker, runner, tmp_path, shm_config
     ):
         csv_file = tmp_path / "users.csv"
@@ -30,9 +30,10 @@ class TestAdd:
 
         result = runner.invoke(users_command_group, ["add", str(csv_file)])
 
-        assert result.exit_code == 1
-        assert "line 2 is missing values for: CountryCode" in result.stdout
-        add_to_entra.assert_not_called()
+        assert result.exit_code == 0
+        add_to_entra.assert_called_once()
+        (user,) = add_to_entra.call_args.args[0]
+        assert user.country is None
 
 
 class TestListUsers:

@@ -15,15 +15,15 @@ def handler(mocker):
     return user_handler
 
 
-def test_reports_missing_column_without_calling_entra(handler, tmp_path):
+def test_reports_missing_email_column_without_calling_entra(handler, tmp_path):
     csv_file = tmp_path / "users.csv"
     csv_file.write_text(
-        "GivenName,Surname,Phone,Email\nAda,Lovelace,+441234567890,ada@example.org\n"
+        "GivenName,Surname,Phone,CountryCode\nAda,Lovelace,+441234567890,GB\n"
     )
 
     with pytest.raises(
         DataSafeHavenUserHandlingError,
-        match="missing required columns: CountryCode",
+        match="missing required columns: Email",
     ):
         handler.add(csv_file, "example.org")
 
@@ -31,20 +31,16 @@ def test_reports_missing_column_without_calling_entra(handler, tmp_path):
 
 
 @pytest.mark.parametrize("missing_value", ("", "   "))
-def test_reports_blank_country_code_and_csv_line(handler, tmp_path, missing_value):
+def test_blank_optional_country_code_is_accepted(handler, tmp_path, missing_value):
     csv_file = tmp_path / "users.csv"
     csv_file.write_text(
         "GivenName,Surname,Phone,Email,CountryCode\n"
         f"Ada,Lovelace,+441234567890,ada@example.org,{missing_value}\n"
     )
-
-    with pytest.raises(
-        DataSafeHavenUserHandlingError,
-        match="line 2 is missing values for: CountryCode",
-    ):
-        handler.add(csv_file, "example.org")
-
-    handler.entra_users.add.assert_not_called()
+    handler.add(csv_file, "example.org")
+    handler.entra_users.add.assert_called_once()
+    (user,) = handler.entra_users.add.call_args.args[0]
+    assert user.country is None
 
 
 def test_reports_missing_field_in_later_row_before_creating_any_user(handler, tmp_path):
@@ -52,12 +48,12 @@ def test_reports_missing_field_in_later_row_before_creating_any_user(handler, tm
     csv_file.write_text(
         "GivenName,Surname,Phone,Email,CountryCode\n"
         "Ada,Lovelace,+441234567890,ada@example.org,GB\n"
-        "Grace,Hopper,+441234567891,grace@example.org\n"
+        "Grace,Hopper,+441234567891,,GB\n"
     )
 
     with pytest.raises(
         DataSafeHavenUserHandlingError,
-        match="line 3 is missing values for: CountryCode",
+        match="line 3 is missing values for: Email",
     ):
         handler.add(csv_file, "example.org")
 
