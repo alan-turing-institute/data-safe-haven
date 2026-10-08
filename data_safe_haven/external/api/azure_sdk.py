@@ -2,6 +2,7 @@
 
 import time
 from contextlib import suppress
+from ipaddress import IPv4Network
 from typing import Any, cast
 
 from azure.core.exceptions import (
@@ -53,6 +54,7 @@ from azure.mgmt.storage.models import (
     StorageAccountCreateParameters,
     StorageAccountKey,
     StorageAccountListKeysResult,
+    StorageAccountUpdateParameters,
 )
 from azure.mgmt.subscription import SubscriptionClient
 from azure.mgmt.subscription.models import Subscription
@@ -734,6 +736,51 @@ class AzureSdk:
             return storage_account
         except AzureError as exc:
             msg = f"Failed to create storage account {storage_account_name}."
+            raise DataSafeHavenAzureStorageError(msg) from exc
+
+    def remove_storage_account_ip_rule(
+        self,
+        resource_group_name: str,
+        storage_account_name: str,
+        ip_address_or_range: str,
+    ) -> bool:
+        """Remove only one exact IPv4 firewall rule from an existing storage account.
+
+        Return False if the rule is already absent. Preserve the storage
+        account's default action, bypass settings, and virtual-network rules.
+        """
+        target = IPv4Network(ip_address_or_range, strict=False)
+        try:
+            client = StorageManagementClient(
+                self.credential(), self.subscription_id
+            ).storage_accounts
+            account = client.get_properties(resource_group_name, storage_account_name)
+            network_rules = account.network_rule_set
+            if network_rules is None:
+                msg = f"Storage account '{storage_account_name}' has no firewall configuration."
+                raise DataSafeHavenAzureStorageError(msg)
+
+            current_rules = list(network_rules.ip_rules or [])
+            remaining = [
+                rule
+                for rule in current_rules
+                if IPv4Network(rule.ip_address_or_range, strict=False) != target
+            ]
+            if len(remaining) == len(current_rules):
+                return False
+
+            network_rules.ip_rules = remaining
+            client.update(
+                resource_group_name,
+                storage_account_name,
+                StorageAccountUpdateParameters(network_rule_set=network_rules),
+            )
+            return True
+        except AzureError as exc:
+            msg = (
+                f"Could not update firewall rules for storage account "
+                f"'{storage_account_name}'."
+            )
             raise DataSafeHavenAzureStorageError(msg) from exc
 
     def ensure_storage_blob_container(

@@ -43,6 +43,14 @@ from data_safe_haven.infrastructure.components import (
 from data_safe_haven.types import AzureDnsZoneNames
 
 
+def sensitive_data_storage_account_name(stack_name: str) -> str:
+    """Derive the existing sensitive-data storage account name from an SRE stack."""
+    return alphanumeric(
+        f"{''.join(truncate_tokens(stack_name.split('-'), 11))}"
+        f"sensitivedata{sha256hash('sre_data')}"
+    )[:24]
+
+
 class SREDataProps:
     """Properties for SREDataComponent"""
 
@@ -554,9 +562,7 @@ class SREDataComponent(ComponentResource):
             f"{self._name}_storage_account_data_private_sensitive",
             NFSV3StorageAccountProps(
                 # Storage account names have a maximum of 24 characters
-                account_name=alphanumeric(
-                    f"{''.join(truncate_tokens(stack_name.split('-'), 11))}sensitivedata{sha256hash(self._name)}"
-                )[:24],
+                account_name=sensitive_data_storage_account_name(stack_name),
                 allowed_ip_addresses=data_private_sensitive_ip_addresses,
                 location=props.location,
                 log_analytics_workspace=props.log_analytics_workspace,
