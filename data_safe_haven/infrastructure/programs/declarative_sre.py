@@ -425,6 +425,7 @@ class DeclarativeSRE:
                 allow_workspace_internet=self.config.sre.allow_workspace_internet,
                 clamav_mirror_hostname=clamav_mirror.hostname,
                 database_service_admin_password=data.password_database_service_admin,
+                databases=self.config.sre.databases,
                 dns_private_zones=dns.private_zones,
                 gitea_hostname=user_services.gitea_server.hostname,
                 hedgedoc_hostname=user_services.hedgedoc_server.hostname,

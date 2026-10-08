@@ -6,6 +6,14 @@
     dest: /usr/local/smoke_tests/
     mode: '0755'
 
+# Render on every desired-state run so a redeployment that removes a database
+# also removes it from the smoke-test inventory.
+- name: Write enabled SRE database systems for smoke tests
+  ansible.builtin.template:
+    src: usr/local/smoke_tests/enabled_databases.j2
+    dest: /usr/local/smoke_tests/enabled_databases
+    mode: '0644'
+
 - name: Write database credential for smoke tests
   ansible.builtin.template:
     src: etc/database_credential.j2
