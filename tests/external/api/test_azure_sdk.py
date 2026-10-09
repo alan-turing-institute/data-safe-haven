@@ -1,3 +1,4 @@
+import re
 from datetime import UTC, datetime
 
 import pytest
@@ -26,6 +27,11 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureSdk, GraphApi
 from data_safe_haven.infrastructure import SREProjectManager
+
+SAS_DETAILS = (
+    "IP address '{ip_address}', permissions 'wl',"
+    " valid from 2026-10-08T09:00:00+00:00 to 2026-10-09T09:00:00+00:00"
+)
 
 
 @fixture
@@ -550,6 +556,7 @@ class TestAzureSdk:
         expected_sas_ip,
         mock_azuresdk_get_credential,  # noqa: ARG002
         mocker,
+        capsys,
     ):
         blob_service_client = mocker.patch(
             "data_safe_haven.external.api.azure_sdk.BlobServiceClient"
@@ -586,6 +593,9 @@ class TestAzureSdk:
             ip=expected_sas_ip,
             protocol="https",
         )
+        assert f"({SAS_DETAILS.format(ip_address=ip_address)})" in " ".join(
+            capsys.readouterr().out.split()
+        )
 
     def test_generate_container_sas_url_failure(
         self,
@@ -599,13 +609,16 @@ class TestAzureSdk:
         sdk = AzureSdk("subscription name")
         with pytest.raises(
             DataSafeHavenAzureStorageError,
-            match="Failed to generate SAS token for container 'ingress'",
+            match=re.escape(
+                "Failed to generate SAS token for container 'ingress' in storage account"
+                f" 'account' ({SAS_DETAILS.format(ip_address='5.6.7.8/32')})."
+            ),
         ):
             sdk.generate_container_sas_url(
                 "ingress",
                 "account",
-                expiry=datetime(2026, 10, 9, tzinfo=UTC),
-                ip_address="5.6.7.8",
+                expiry=datetime(2026, 10, 9, 9, 0, tzinfo=UTC),
+                ip_address="5.6.7.8/32",
                 permissions=ContainerSasPermissions(write=True, list=True),
-                start=datetime(2026, 10, 8, tzinfo=UTC),
+                start=datetime(2026, 10, 8, 9, 0, tzinfo=UTC),
             )

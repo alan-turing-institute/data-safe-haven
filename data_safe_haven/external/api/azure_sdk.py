@@ -904,6 +904,7 @@ class AzureSdk:
         Raises:
             DataSafeHavenAzureStorageError if the SAS token could not be generated
         """
+        sas_details = f"IP address '{ip_address}', permissions '{permissions}', valid from {start.isoformat()} to {expiry.isoformat()}"
         try:
             # Connect to Azure clients
             account_url = f"https://{storage_account_name}.blob.core.windows.net"
@@ -932,11 +933,11 @@ class AzureSdk:
                 protocol="https",
             )
             self.logger.info(
-                f"Generated SAS token for container [green]{container_name}[/] in storage account [green]{storage_account_name}[/].",
+                f"Generated SAS token for container [green]{container_name}[/] in storage account [green]{storage_account_name}[/] ({sas_details}).",
             )
             return f"{account_url}/{container_name}?{sas_token}"
         except AzureError as exc:
-            msg = f"Failed to generate SAS token for container '{container_name}' in storage account '{storage_account_name}'."
+            msg = f"Failed to generate SAS token for container '{container_name}' in storage account '{storage_account_name}' ({sas_details})."
             raise DataSafeHavenAzureStorageError(msg) from exc
 
     def get_keyvault_certificate(
