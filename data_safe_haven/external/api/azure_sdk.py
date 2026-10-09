@@ -802,7 +802,7 @@ class AzureSdk:
                 f"Allowing [green]{ip_address}[/] in storage account [green]{storage_account_name}[/]...",
             )
             network_rule_set.ip_rules = ip_rules + [
-                IPRule(ip_address_or_range=ip) for ip in missing_ips
+                IPRule(ip_address_or_range=ip, action="Allow") for ip in missing_ips
             ]
             storage_client.storage_accounts.update(
                 resource_group_name,

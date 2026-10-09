@@ -535,10 +535,10 @@ class TestAzureSdk:
             client.storage_accounts.update.assert_not_called()
         else:
             _, _, parameters = client.storage_accounts.update.call_args.args
-            assert [
-                rule.ip_address_or_range
-                for rule in parameters.network_rule_set.ip_rules
-            ] == expected_ips
+            ip_rules = parameters.network_rule_set.ip_rules
+            assert [rule.ip_address_or_range for rule in ip_rules] == expected_ips
+            # The first two rules are the existing ones
+            assert all(rule.action == "Allow" for rule in ip_rules[2:])
 
     @pytest.mark.parametrize(
         "ip_address,expected_sas_ip",
