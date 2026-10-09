@@ -38,18 +38,25 @@ def create_sas(
             help="IP address or CIDR range that will access the container.",
         ),
     ],
-    end: Annotated[
-        datetime,
-        typer.Option(
-            formats=DATETIME_FORMATS,
-            help="Time (UTC) at which the SAS token expires.",
-        ),
-    ],
     start: Annotated[
         Optional[datetime],  # noqa: UP045
         typer.Option(
             formats=DATETIME_FORMATS,
             help="Time (UTC) from which the SAS token is valid. Defaults to now.",
+        ),
+    ] = None,
+    end: Annotated[
+        Optional[datetime],  # noqa: UP045
+        typer.Option(
+            formats=DATETIME_FORMATS,
+            help="Time (UTC) at which the SAS token expires. Cannot be used with --hours.",
+        ),
+    ] = None,
+    hours: Annotated[
+        Optional[int],  # noqa: UP045
+        typer.Option(
+            min=1,
+            help="Number of hours from the start time until the SAS token expires. Cannot be used with --end.",
         ),
     ] = None,
 ) -> None:
@@ -58,7 +65,16 @@ def create_sas(
 
     now = datetime.now(UTC)
     start_utc = start.replace(tzinfo=UTC) if start else now
-    end_utc = end.replace(tzinfo=UTC)
+    if end and hours:
+        msg = "Use either --end or --hours, not both."
+        raise typer.BadParameter(msg, param_hint="'--end' / '--hours'")
+    if end:
+        end_utc = end.replace(tzinfo=UTC)
+    elif hours:
+        end_utc = start_utc + timedelta(hours=hours)
+    else:
+        msg = "Either --end or --hours is required."
+        raise typer.BadParameter(msg, param_hint="'--end' / '--hours'")
     if end_utc <= start_utc:
         msg = "The end time must be after the start time."
         raise typer.BadParameter(msg, param_hint="'--end'")

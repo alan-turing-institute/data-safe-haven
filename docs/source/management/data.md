@@ -16,6 +16,7 @@ $ dsh create-sas YOUR_SRE_NAME --container ingress --ip DATA_PROVIDER_IP_ADDRESS
 
 - `--ip` accepts a single IPv4 address or a CIDR range
 - `--start` and `--end` accept dates (`2026-10-08`) or datetimes (`2026-10-08T09:00`) in UTC. `--start` defaults to now and `--end` can be at most 7 days from now.
+- Instead of `--end`, you can use `--hours` to set how many hours after the start time the URL expires, e.g. `--hours 24`. Use either `--end` or `--hours`, not both.
 
 The command adds the IP address to the firewall of the storage account ending with `sensitivedata` and prints a **Blob SAS URL** with write and list permissions on the **ingress** container.
 The URL is only valid for the given IP address and time window.

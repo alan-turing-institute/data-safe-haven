@@ -57,25 +57,27 @@ def deployed_sre(
 
 
 class TestCreateSas:
+    @mark.parametrize("use_hours", [False, True])
     def test_create_sas(
         self,
         runner,
         deployed_sre,  # noqa: ARG002
         mock_azuresdk_sas,
+        use_hours,
     ):
         mock_ensure_ip_rule, mock_generate_sas = mock_azuresdk_sas
         start = utc_offset(hours=1)
+        start_utc = datetime.fromisoformat(start).replace(tzinfo=UTC)
+        if use_hours:
+            expiry_option = ["--hours", "24"]
+            expected_expiry = start_utc + timedelta(hours=24)
+        else:
+            end = utc_offset(days=1)
+            expiry_option = ["--end", end]
+            expected_expiry = datetime.fromisoformat(end).replace(tzinfo=UTC)
         result = runner.invoke(
             application,
-            [
-                *COMMAND,
-                "--ip",
-                "5.6.7.8",
-                "--start",
-                start,
-                "--end",
-                utc_offset(days=1),
-            ],
+            [*COMMAND, "--ip", "5.6.7.8", "--start", start, *expiry_option],
         )
 
         assert result.exit_code == 0
@@ -88,7 +90,8 @@ class TestCreateSas:
         _, kwargs = mock_generate_sas.call_args
         assert mock_generate_sas.call_args.args == ("ingress", "sensitivedata")
         assert kwargs["ip_address"] == "5.6.7.8"
-        assert kwargs["start"] == datetime.fromisoformat(start).replace(tzinfo=UTC)
+        assert kwargs["start"] == start_utc
+        assert kwargs["expiry"] == expected_expiry
         assert kwargs["permissions"].write
         assert kwargs["permissions"].list
         assert not kwargs["permissions"].read
@@ -107,6 +110,22 @@ class TestCreateSas:
             (
                 ["--end", utc_offset(days=8)],
                 "The end time must be at most 7 days from now.",
+            ),
+            (
+                ["--hours", "200"],
+                "The end time must be at most 7 days from now.",
+            ),
+            (
+                ["--end", utc_offset(days=1), "--hours", "24"],
+                "Use either --end or --hours, not both.",
+            ),
+            (
+                ["--start", utc_offset(hours=1)],
+                "Either --end or --hours is required.",
+            ),
+            (
+                ["--hours", "0"],
+                "0 is not in the range x>=1.",
             ),
         ],
     )
