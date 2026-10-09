@@ -6,6 +6,7 @@ from typing import Annotated, Optional
 
 import typer
 from azure.storage.blob import ContainerSasPermissions
+from packaging.version import Version
 
 from data_safe_haven import console
 from data_safe_haven.config import ContextManager, DSHPulumiConfig, SREConfig
@@ -20,6 +21,8 @@ from data_safe_haven.validators import typer_ip_address
 DATETIME_FORMATS = ["%Y-%m-%d", "%Y-%m-%dT%H:%M", "%Y-%m-%dT%H:%M:%S"]
 # User delegation keys are valid for at most 7 days
 MAX_SAS_VALIDITY = timedelta(days=7)
+# SREs deployed with this version or earlier lack the storage account output
+LATEST_UNSUPPORTED_SRE_VERSION = Version("5.8.0")
 
 
 def create_sas(
@@ -109,20 +112,25 @@ def create_sas(
             pulumi_config=pulumi_config,
         )
         resource_group_name = sre_stack.output("sre_resource_group")
-        try:
-            storage_account_name = sre_stack.output("data")[
-                "storage_account_data_private_sensitive_name"
-            ]
-        except KeyError as exc:
-            msg = f"Could not find the sensitive data storage account for '{sre_config.name}'. Redeploy the SRE with `dsh sre deploy`."
-            logger.error(msg)
-            raise DataSafeHavenConfigError(msg) from exc
 
         # The storage account is in the SRE subscription
         sre_subscription_name = AzureSdk(
             context.subscription_name
         ).get_subscription_name(sre_config.azure.subscription_id)
         azure_sdk = AzureSdk(sre_subscription_name)
+        try:
+            storage_account_name = sre_stack.output("data")[
+                "storage_account_data_private_sensitive_name"
+            ]
+        except KeyError as exc:
+            sre_version = azure_sdk.get_version(resource_group_name)
+            if Version(sre_version) <= LATEST_UNSUPPORTED_SRE_VERSION:
+                msg = f"SRE '{sre_config.name}' was deployed with Data Safe Haven version {sre_version}, but `dsh create-sas` only supports SREs deployed with a version later than {LATEST_UNSUPPORTED_SRE_VERSION}. Upgrade Data Safe Haven and redeploy the SRE with `dsh sre deploy`."
+            else:
+                msg = f"Could not find the sensitive data storage account for '{sre_config.name}'. Redeploy the SRE with `dsh sre deploy`."
+            logger.error(msg)
+            raise DataSafeHavenConfigError(msg) from exc
+
         azure_sdk.ensure_storage_account_ip_rule(
             ip, resource_group_name, storage_account_name
         )

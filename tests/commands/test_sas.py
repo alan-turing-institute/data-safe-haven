@@ -183,3 +183,30 @@ class TestCreateSas:
             "Could not create a SAS token for container 'ingress' of SRE 'sandbox'"
             in result.stdout
         )
+
+    @mark.parametrize(
+        "sre_version,message",
+        [
+            ("5.8.0", "only supports SREs deployed with a version later than 5.8.0"),
+            ("5.9.0", "Could not find the sensitive data storage account"),
+        ],
+    )
+    def test_missing_storage_account_output(
+        self,
+        mocker,
+        runner,
+        deployed_sre,  # noqa: ARG002
+        mock_azuresdk_sas,  # noqa: ARG002
+        stack_outputs,
+        sre_version,
+        message,
+    ):
+        stack_outputs["data"] = {}
+        mocker.patch.object(AzureSdk, "get_version", return_value=sre_version)
+        result = runner.invoke(
+            application,
+            [*COMMAND, "--ip", "5.6.7.8", "--end", utc_offset(days=1)],
+        )
+
+        assert result.exit_code == 1
+        assert message in " ".join(result.stdout.split())
