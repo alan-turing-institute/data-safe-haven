@@ -4,7 +4,32 @@
 
 It is the {ref}`role_data_provider_representative`'s responsibility to upload the data required by the safe haven.
 
-The following steps show how to generate a temporary, write-only upload token that can be securely sent to the {ref}`role_data_provider_representative`, enabling them to upload the data:
+You need to generate a temporary, write-only upload token that can be securely sent to the {ref}`role_data_provider_representative`, enabling them to upload the data.
+
+### Using `dsh` (recommended)
+
+Run {typer}`dsh create-sas` with the data provider's IP address and the time window for the upload:
+
+:::{code} shell
+$ dsh create-sas YOUR_SRE_NAME --container ingress --ip DATA_PROVIDER_IP_ADDRESS --end END_DATETIME
+:::
+
+- `--ip` accepts a single IPv4 address or a CIDR range
+- `--start` and `--end` accept dates (`2026-10-08`) or datetimes (`2026-10-08T09:00`) in UTC. `--start` defaults to now and `--end` can be at most 7 days from now.
+
+The command adds the IP address to the firewall of the storage account ending with `sensitivedata` and prints a **Blob SAS URL** with write and list permissions on the **ingress** container.
+The URL is only valid for the given IP address and time window.
+
+:::{note}
+If the IP address is not in the `data_provider_ip_addresses` list of your SRE configuration, the next `dsh sre deploy` will remove it from the firewall.
+:::
+
+Send the **Blob SAS URL** to the data provider through a secure channel.
+Then validate the upload and complete the follow-up tasks, as described in the last steps of the Azure portal route below.
+
+### Using the Azure portal
+
+Alternatively, follow these steps:
 
 - In the Azure portal select **Subscriptions** then navigate to the subscription containing the relevant SHM
 - Search for the resource group: `shm-<YOUR_SHM_NAME>-sre-<YOUR_SRE_NAME>-rg`, then click through to the storage account ending with `sensitivedata`

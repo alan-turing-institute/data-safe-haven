@@ -6,6 +6,7 @@
 allowlist.md
 config.md
 context.md
+sas.md
 users.md
 pulumi.md
 shm.md
@@ -34,6 +35,9 @@ For further detail on each subcommand, navigate to the relevant page.
 
 [Context](context.md)
 : Manage DSH contexts, the groupings that encompass an SHM and its associated SREs
+
+[SAS tokens](sas.md)
+: Creation of SAS tokens for SRE storage containers
 
 [Users](users.md)
 : Management of users in Entra ID
