@@ -1,5 +1,6 @@
 """Interface to the Azure Python SDK"""
 
+import ipaddress
 import time
 from contextlib import suppress
 from datetime import datetime
@@ -745,6 +746,14 @@ class AzureSdk:
             msg = f"Failed to create storage account {storage_account_name}."
             raise DataSafeHavenAzureStorageError(msg) from exc
 
+    @staticmethod
+    def _storage_firewall_rules(ip_address: str) -> list[str]:
+        """Azure rejects /31 and /32 ranges, so list their addresses individually"""
+        network = ipaddress.IPv4Network(ip_address)
+        if network.prefixlen >= 31:  # noqa: PLR2004
+            return [str(ip) for ip in network]  # all addresses, not hosts()
+        return [str(network)]
+
     def ensure_storage_account_ip_rule(
         self,
         ip_address: str,
@@ -769,13 +778,19 @@ class AzureSdk:
                 msg = f"Storage account '{storage_account_name}' has no network rules."
                 raise DataSafeHavenAzureStorageError(msg)
 
-            # Azure does not accept /31 or /32 ranges, so add each IP individually
+            # Skip rules already covered by an existing address or range
             ip_rules = network_rule_set.ip_rules or []
-            existing_ips = {rule.ip_address_or_range for rule in ip_rules}
+            existing_networks = [
+                ipaddress.IPv4Network(rule.ip_address_or_range, strict=False)
+                for rule in ip_rules
+            ]
             missing_ips = [
-                str(ip)
-                for ip in AzureIPv4Range.from_cidr(ip_address).all_ips()
-                if str(ip) not in existing_ips
+                rule
+                for rule in self._storage_firewall_rules(ip_address)
+                if not any(
+                    ipaddress.IPv4Network(rule).subnet_of(network)
+                    for network in existing_networks
+                )
             ]
             if not missing_ips:
                 self.logger.info(

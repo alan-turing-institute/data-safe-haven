@@ -501,9 +501,11 @@ class TestAzureSdk:
     @pytest.mark.parametrize(
         "ip_address,expected_ips",
         [
-            ("5.6.7.8/32", ["1.2.3.4", "5.6.7.8"]),
-            ("10.0.0.0/30", ["1.2.3.4", "10.0.0.1", "10.0.0.2"]),
+            ("5.6.7.8/32", ["1.2.3.4", "9.9.9.0/24", "5.6.7.8"]),
+            ("5.6.7.8/31", ["1.2.3.4", "9.9.9.0/24", "5.6.7.8", "5.6.7.9"]),
+            ("5.6.7.0/30", ["1.2.3.4", "9.9.9.0/24", "5.6.7.0/30"]),
             ("1.2.3.4", None),
+            ("9.9.9.9/32", None),
         ],
     )
     def test_ensure_storage_account_ip_rule(
@@ -520,7 +522,10 @@ class TestAzureSdk:
         client.storage_accounts.get_properties.return_value.network_rule_set = (
             NetworkRuleSet(
                 default_action="Deny",
-                ip_rules=[IPRule(ip_address_or_range="1.2.3.4")],
+                ip_rules=[
+                    IPRule(ip_address_or_range="1.2.3.4"),
+                    IPRule(ip_address_or_range="9.9.9.0/24"),
+                ],
             )
         )
         sdk = AzureSdk("subscription name")
