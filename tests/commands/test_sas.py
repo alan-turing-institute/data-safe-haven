@@ -136,7 +136,8 @@ class TestCreateSas:
         )
 
         assert result.exit_code == 2
-        assert message in result.stderr
+        # Rich may wrap the error panel, so drop borders and line breaks
+        assert message in " ".join(result.stderr.replace("│", "").split())
 
     def test_invalid_ip(self, runner):
         result = runner.invoke(
