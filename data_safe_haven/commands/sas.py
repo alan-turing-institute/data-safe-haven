@@ -1,4 +1,4 @@
-"""Command group for managing data ingress"""
+"""Command for creating SAS tokens for SRE storage containers"""
 
 import ipaddress
 from datetime import UTC, datetime, timedelta
@@ -14,26 +14,28 @@ from data_safe_haven.external import AzureSdk
 from data_safe_haven.functions import current_ip_address, ip_address_in_list
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.logging import get_logger
+from data_safe_haven.types import StorageContainer
 from data_safe_haven.validators import typer_ip_address
-
-ingress_command_group = typer.Typer()
 
 DATETIME_FORMATS = ["%Y-%m-%d", "%Y-%m-%dT%H:%M", "%Y-%m-%dT%H:%M:%S"]
 # User delegation keys are valid for at most 7 days
 MAX_SAS_VALIDITY = timedelta(days=7)
 
 
-@ingress_command_group.command()
 def create_sas(
     name: Annotated[
         str,
-        typer.Argument(help="Name of SRE to create an ingress SAS token for."),
+        typer.Argument(help="Name of SRE to create a SAS token for."),
+    ],
+    container: Annotated[
+        StorageContainer,
+        typer.Option(help="Storage container to create a SAS token for."),
     ],
     ip: Annotated[
         str,
         typer.Option(
             callback=typer_ip_address,
-            help="IP address or CIDR range that the data provider will upload from.",
+            help="IP address or CIDR range that will access the container.",
         ),
     ],
     end: Annotated[
@@ -51,7 +53,7 @@ def create_sas(
         ),
     ] = None,
 ) -> None:
-    """Create a SAS token for uploading data to the ingress container of an SRE."""
+    """Create a SAS token for a storage container of an SRE."""
     logger = get_logger()
 
     now = datetime.now(UTC)
@@ -109,7 +111,7 @@ def create_sas(
             ip, resource_group_name, storage_account_name
         )
         sas_url = azure_sdk.generate_container_sas_url(
-            "ingress",
+            container,
             storage_account_name,
             expiry=end_utc,
             ip_address=ip,
@@ -118,7 +120,7 @@ def create_sas(
         )
     except DataSafeHavenError as exc:
         logger.critical(
-            f"Could not create an ingress SAS token for SRE '[green]{name}[/]'."
+            f"Could not create a SAS token for container '{container}' of SRE '[green]{name}[/]'."
         )
         raise typer.Exit(code=1) from exc
 
@@ -133,7 +135,7 @@ def create_sas(
             " It will be removed the next time you run `dsh sre deploy`."
         )
     console.print(
-        f"Ingress SAS URL for SRE '[green]{name}[/]', valid from"
+        f"SAS URL for container '{container}' of SRE '[green]{name}[/]', valid from"
         f" {start_utc.isoformat()} to {end_utc.isoformat()} for IP address '{ip}':"
     )
     console.print(sas_url, soft_wrap=True)

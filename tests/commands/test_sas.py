@@ -7,8 +7,7 @@ from data_safe_haven.exceptions import DataSafeHavenAzureStorageError
 from data_safe_haven.external import AzureSdk
 from data_safe_haven.infrastructure import SREProjectManager
 
-# A group with a single command is collapsed by Typer, so invoke it through `dsh`
-COMMAND = ["ingress", "create-sas", "sandbox"]
+COMMAND = ["create-sas", "sandbox", "--container", "ingress"]
 
 
 def utc_offset(**kwargs) -> str:
@@ -129,6 +128,24 @@ class TestCreateSas:
         assert result.exit_code == 2
         assert "Expected valid IPv4 address" in result.stderr
 
+    def test_invalid_container(self, runner):
+        result = runner.invoke(
+            application,
+            [
+                "create-sas",
+                "sandbox",
+                "--container",
+                "some-container",
+                "--ip",
+                "5.6.7.8",
+                "--end",
+                utc_offset(days=1),
+            ],
+        )
+
+        assert result.exit_code == 2
+        assert "'some-container' is not one of 'ingress'" in result.stderr
+
     def test_azure_error(
         self,
         runner,
@@ -144,5 +161,6 @@ class TestCreateSas:
 
         assert result.exit_code == 1
         assert (
-            "Could not create an ingress SAS token for SRE 'sandbox'" in result.stdout
+            "Could not create a SAS token for container 'ingress' of SRE 'sandbox'"
+            in result.stdout
         )
