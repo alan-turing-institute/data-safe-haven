@@ -1,10 +1,23 @@
+import re
+from datetime import UTC, datetime
+
 import pytest
-from azure.core.exceptions import ClientAuthenticationError, ResourceNotFoundError
+from azure.core.exceptions import (
+    ClientAuthenticationError,
+    HttpResponseError,
+    ResourceNotFoundError,
+)
 from azure.mgmt.keyvault.models import DeletedVault
-from azure.mgmt.storage.models import StorageAccountListKeysResult
+from azure.mgmt.storage.models import (
+    IPRule,
+    NetworkRuleSet,
+    StorageAccountListKeysResult,
+)
 from azure.mgmt.subscription import SubscriptionClient
 from azure.mgmt.subscription.models import Subscription
+from azure.storage.blob import ContainerSasPermissions
 from pytest import CaptureFixture, fixture
+from pytest_mock import MockerFixture
 
 import data_safe_haven.external.api.azure_sdk
 from data_safe_haven.exceptions import (
@@ -15,6 +28,11 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureSdk, GraphApi
 from data_safe_haven.infrastructure import SREProjectManager
+
+SAS_DETAILS = (
+    "IP address '{ip_address}', permissions 'wl',"
+    " valid from 2026-10-08T09:00:00+00:00 to 2026-10-09T09:00:00+00:00"
+)
 
 
 @fixture
@@ -486,3 +504,123 @@ class TestAzureSdk:
         assert "Operations remaining: 1" in captured.out
         assert "Operations remaining: 6" not in captured.out
         assert "All deletion operations completed" in captured.out
+
+    @pytest.mark.parametrize(
+        "ip_address,expected_ips",
+        [
+            ("5.6.7.8/32", ["1.2.3.4", "9.9.9.0/24", "5.6.7.8"]),
+            ("5.6.7.8/31", ["1.2.3.4", "9.9.9.0/24", "5.6.7.8", "5.6.7.9"]),
+            ("5.6.7.0/30", ["1.2.3.4", "9.9.9.0/24", "5.6.7.0/30"]),
+            ("1.2.3.4", None),
+            ("9.9.9.9/32", None),
+        ],
+    )
+    @pytest.mark.usefixtures(
+        "mock_azuresdk_get_subscription", "mock_azuresdk_get_credential"
+    )
+    def test_ensure_storage_account_ip_rule(
+        self,
+        ip_address: str,
+        expected_ips: list[str] | None,
+        mocker: MockerFixture,
+    ) -> None:
+        client = mocker.patch(
+            "data_safe_haven.external.api.azure_sdk.StorageManagementClient"
+        ).return_value
+        client.storage_accounts.get_properties.return_value.network_rule_set = (
+            NetworkRuleSet(
+                default_action="Deny",
+                ip_rules=[
+                    IPRule(ip_address_or_range="1.2.3.4"),
+                    IPRule(ip_address_or_range="9.9.9.0/24"),
+                ],
+            )
+        )
+        sdk = AzureSdk("subscription name")
+        sdk.ensure_storage_account_ip_rule(ip_address, "resource group", "account")
+
+        if expected_ips is None:
+            client.storage_accounts.update.assert_not_called()
+        else:
+            _, _, parameters = client.storage_accounts.update.call_args.args
+            ip_rules = parameters.network_rule_set.ip_rules
+            assert [rule.ip_address_or_range for rule in ip_rules] == expected_ips
+            # The first two rules are the existing ones
+            assert all(rule.action == "Allow" for rule in ip_rules[2:])
+
+    @pytest.mark.parametrize(
+        "ip_address,expected_sas_ip",
+        [("5.6.7.8/32", "5.6.7.8"), ("10.0.0.0/30", "10.0.0.0-10.0.0.3")],
+    )
+    @pytest.mark.usefixtures("mock_azuresdk_get_credential")
+    def test_generate_container_sas_url(
+        self,
+        ip_address: str,
+        expected_sas_ip: str,
+        mocker: MockerFixture,
+        capsys: CaptureFixture[str],
+    ) -> None:
+        blob_service_client = mocker.patch(
+            "data_safe_haven.external.api.azure_sdk.BlobServiceClient"
+        ).return_value
+        mock_generate_container_sas = mocker.patch(
+            "data_safe_haven.external.api.azure_sdk.generate_container_sas",
+            return_value="sas-token",
+        )
+        start = datetime(2026, 10, 8, 9, 0, tzinfo=UTC)
+        expiry = datetime(2026, 10, 9, 9, 0, tzinfo=UTC)
+        permissions = ContainerSasPermissions(write=True, list=True)
+        sdk = AzureSdk("subscription name")
+
+        url = sdk.generate_container_sas_url(
+            "ingress",
+            "account",
+            expiry=expiry,
+            ip_address=ip_address,
+            permissions=permissions,
+            start=start,
+        )
+
+        assert url == "https://account.blob.core.windows.net/ingress?sas-token"
+        blob_service_client.get_user_delegation_key.assert_called_once_with(
+            key_start_time=start, key_expiry_time=expiry
+        )
+        mock_generate_container_sas.assert_called_once_with(
+            "account",
+            "ingress",
+            user_delegation_key=blob_service_client.get_user_delegation_key.return_value,
+            permission=permissions,
+            expiry=expiry,
+            start=start,
+            ip=expected_sas_ip,
+            protocol="https",
+        )
+        assert f"({SAS_DETAILS.format(ip_address=ip_address)})" in " ".join(
+            capsys.readouterr().out.split()
+        )
+
+    @pytest.mark.usefixtures("mock_azuresdk_get_credential")
+    def test_generate_container_sas_url_failure(
+        self,
+        mocker: MockerFixture,
+    ) -> None:
+        blob_service_client = mocker.patch(
+            "data_safe_haven.external.api.azure_sdk.BlobServiceClient"
+        ).return_value
+        blob_service_client.get_user_delegation_key.side_effect = HttpResponseError
+        sdk = AzureSdk("subscription name")
+        with pytest.raises(
+            DataSafeHavenAzureStorageError,
+            match=re.escape(
+                "Failed to generate SAS token for container 'ingress' in storage account"
+                f" 'account' ({SAS_DETAILS.format(ip_address='5.6.7.8/32')})."
+            ),
+        ):
+            sdk.generate_container_sas_url(
+                "ingress",
+                "account",
+                expiry=datetime(2026, 10, 9, 9, 0, tzinfo=UTC),
+                ip_address="5.6.7.8/32",
+                permissions=ContainerSasPermissions(write=True, list=True),
+                start=datetime(2026, 10, 8, 9, 0, tzinfo=UTC),
+            )

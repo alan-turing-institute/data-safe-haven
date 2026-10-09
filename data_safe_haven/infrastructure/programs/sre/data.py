@@ -40,7 +40,7 @@ from data_safe_haven.infrastructure.components import (
     SSLCertificate,
     SSLCertificateProps,
 )
-from data_safe_haven.types import AzureDnsZoneNames
+from data_safe_haven.types import AzureDnsZoneNames, StorageContainer
 
 
 class SREDataProps:
@@ -594,7 +594,7 @@ class SREDataComponent(ComponentResource):
                 # ensure that the above permissions are also set on any newly created
                 # files (eg. with Azure Storage Explorer)
                 apply_default_permissions=True,
-                container_name="ingress",
+                container_name=StorageContainer.INGRESS,
                 resource_group_name=props.resource_group_name,
                 storage_account=storage_account_data_private_sensitive,
                 subscription_name=props.subscription_name,
@@ -863,4 +863,5 @@ class SREDataComponent(ComponentResource):
             "password_nexus_database_admin_secret": kvs_password_nexus_database_admin.name,
             "password_user_database_admin_secret": kvs_password_user_database_admin.name,
             "storage_account_data_configuration_name": storage_account_data_configuration.name,
+            "storage_account_data_private_sensitive_name": storage_account_data_private_sensitive.name,
         }

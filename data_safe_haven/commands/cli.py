@@ -11,6 +11,7 @@ from .allowlist import allowlist_command_group
 from .config import config_command_group
 from .context import context_command_group
 from .pulumi import pulumi_command_group
+from .sas import create_sas
 from .shm import shm_command_group
 from .sre import sre_command_group
 from .users import users_command_group
@@ -98,6 +99,9 @@ application.add_typer(
     name="sre",
     help="Manage Data Safe Haven SRE infrastructure.",
 )
+
+# Register standalone commands
+application.command()(create_sas)
 
 
 def main() -> None:

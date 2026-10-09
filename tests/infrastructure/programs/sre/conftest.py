@@ -72,6 +72,9 @@ class DataSafeHavenMocks(pulumi.runtime.Mocks):
             # Ensure a value is set for the VirtualNetwork name
             # Otherwise this comes through as None and the tests fail
             state["name"] = state["virtualNetworkName"]
+        elif args.typ == "azure-native:storage:StorageAccount":
+            # Ensure a value is set for the StorageAccount name
+            state["name"] = state["accountName"]
 
         resources = (args.name + "_id", state)
         return resources
