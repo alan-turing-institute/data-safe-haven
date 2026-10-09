@@ -1,6 +1,8 @@
 import pytest
-from pytest import CaptureFixture
+from pytest import CaptureFixture, MonkeyPatch
+from rich.console import Console
 
+from data_safe_haven.console import pretty
 from data_safe_haven.console.pretty import pretty_print
 
 
@@ -29,9 +31,21 @@ class TestPrettyPrint:
         if not_expected is not None:
             assert not_expected not in captured.out
 
-    def test_pretty_print_soft_wrap(self, capsys: CaptureFixture[str]) -> None:
+    @pytest.mark.parametrize("soft_wrap", [False, True])
+    def test_pretty_print_soft_wrap(
+        self,
+        soft_wrap: bool,  # noqa: FBT001
+        capsys: CaptureFixture[str],
+        monkeypatch: MonkeyPatch,
+    ) -> None:
+        # Fix the width, as Rich otherwise reads it from the environment
+        monkeypatch.setattr(pretty, "console", Console(width=80))
         long_url = "https://example.com/" + "a" * 500
-        pretty_print(long_url, soft_wrap=True)
+        pretty_print(long_url, soft_wrap=soft_wrap)
 
-        captured = capsys.readouterr()
-        assert long_url in captured.out
+        lines = capsys.readouterr().out.splitlines()
+        assert "".join(lines) == long_url
+        if soft_wrap:
+            assert len(lines) == 1
+        else:
+            assert all(len(line) <= 80 for line in lines)
