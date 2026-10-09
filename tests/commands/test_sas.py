@@ -1,6 +1,9 @@
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from pytest import fixture, mark
+from pytest_mock import MockerFixture, MockType
+from typer.testing import CliRunner
 
 from data_safe_haven.commands import application
 from data_safe_haven.exceptions import DataSafeHavenAzureStorageError
@@ -10,12 +13,12 @@ from data_safe_haven.infrastructure import SREProjectManager
 COMMAND = ["create-sas", "sandbox", "--container", "ingress"]
 
 
-def utc_offset(**kwargs) -> str:
+def utc_offset(**kwargs: float) -> str:
     return (datetime.now(UTC) + timedelta(**kwargs)).strftime("%Y-%m-%dT%H:%M:%S")
 
 
 @fixture
-def stack_outputs():
+def stack_outputs() -> dict[str, Any]:
     return {
         "data": {"storage_account_data_private_sensitive_name": "sensitivedata"},
         "sre_resource_group": "resource-group",
@@ -23,14 +26,16 @@ def stack_outputs():
 
 
 @fixture
-def mock_sre_project_manager_outputs(mocker, stack_outputs):
+def mock_sre_project_manager_outputs(
+    mocker: MockerFixture, stack_outputs: dict[str, Any]
+) -> None:
     mocker.patch.object(
         SREProjectManager, "output", side_effect=lambda name: stack_outputs[name]
     )
 
 
 @fixture
-def mock_azuresdk_sas(mocker):
+def mock_azuresdk_sas(mocker: MockerFixture) -> tuple[MockType, MockType]:
     mocker.patch.object(
         AzureSdk, "get_subscription_name", return_value="SRE subscription"
     )
@@ -44,27 +49,26 @@ def mock_azuresdk_sas(mocker):
     )
 
 
-@fixture
-def deployed_sre(
-    mock_azuresdk_get_credential,
-    mock_azuresdk_get_subscription,
-    mock_ip_1_2_3_4,
-    mock_pulumi_config_no_key_from_remote,
-    mock_sre_config_from_remote,
-    mock_sre_project_manager_outputs,
-):
-    pass
+# Mocks for a deployed SRE, applied for their side effects only
+DEPLOYED_SRE = mark.usefixtures(
+    "mock_azuresdk_get_credential",
+    "mock_azuresdk_get_subscription",
+    "mock_ip_1_2_3_4",
+    "mock_pulumi_config_no_key_from_remote",
+    "mock_sre_config_from_remote",
+    "mock_sre_project_manager_outputs",
+)
 
 
 class TestCreateSas:
+    @DEPLOYED_SRE
     @mark.parametrize("use_hours", [False, True])
     def test_create_sas(
         self,
-        runner,
-        deployed_sre,  # noqa: ARG002
-        mock_azuresdk_sas,
-        use_hours,
-    ):
+        runner: CliRunner,
+        mock_azuresdk_sas: tuple[MockType, MockType],
+        use_hours: bool,  # noqa: FBT001
+    ) -> None:
         mock_ensure_ip_rule, mock_generate_sas = mock_azuresdk_sas
         start = utc_offset(hours=1)
         start_utc = datetime.fromisoformat(start).replace(tzinfo=UTC)
@@ -129,7 +133,9 @@ class TestCreateSas:
             ),
         ],
     )
-    def test_invalid_window(self, runner, window, message):
+    def test_invalid_window(
+        self, runner: CliRunner, window: list[str], message: str
+    ) -> None:
         result = runner.invoke(
             application,
             [*COMMAND, "--ip", "5.6.7.8", *window],
@@ -139,7 +145,7 @@ class TestCreateSas:
         # Rich may wrap the error panel, so drop borders and line breaks
         assert message in " ".join(result.stderr.replace("│", "").split())
 
-    def test_invalid_ip(self, runner):
+    def test_invalid_ip(self, runner: CliRunner) -> None:
         result = runner.invoke(
             application,
             [*COMMAND, "--ip", "not-an-ip", "--end", utc_offset(days=1)],
@@ -148,7 +154,7 @@ class TestCreateSas:
         assert result.exit_code == 2
         assert "Expected valid IPv4 address" in result.stderr
 
-    def test_invalid_container(self, runner):
+    def test_invalid_container(self, runner: CliRunner) -> None:
         result = runner.invoke(
             application,
             [
@@ -166,12 +172,12 @@ class TestCreateSas:
         assert result.exit_code == 2
         assert "'some-container' is not one of 'ingress'" in result.stderr
 
+    @DEPLOYED_SRE
     def test_azure_error(
         self,
-        runner,
-        deployed_sre,  # noqa: ARG002
-        mock_azuresdk_sas,
-    ):
+        runner: CliRunner,
+        mock_azuresdk_sas: tuple[MockType, MockType],
+    ) -> None:
         mock_ensure_ip_rule, _ = mock_azuresdk_sas
         mock_ensure_ip_rule.side_effect = DataSafeHavenAzureStorageError("mock error")
         result = runner.invoke(
@@ -185,6 +191,8 @@ class TestCreateSas:
             in result.stdout
         )
 
+    @DEPLOYED_SRE
+    @mark.usefixtures("mock_azuresdk_sas")
     @mark.parametrize(
         "sre_version,message",
         [
@@ -194,14 +202,12 @@ class TestCreateSas:
     )
     def test_missing_storage_account_output(
         self,
-        mocker,
-        runner,
-        deployed_sre,  # noqa: ARG002
-        mock_azuresdk_sas,  # noqa: ARG002
-        stack_outputs,
-        sre_version,
-        message,
-    ):
+        mocker: MockerFixture,
+        runner: CliRunner,
+        stack_outputs: dict[str, Any],
+        sre_version: str,
+        message: str,
+    ) -> None:
         stack_outputs["data"] = {}
         mocker.patch.object(AzureSdk, "get_version", return_value=sre_version)
         result = runner.invoke(

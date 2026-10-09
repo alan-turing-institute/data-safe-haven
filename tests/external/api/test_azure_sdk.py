@@ -17,6 +17,7 @@ from azure.mgmt.subscription import SubscriptionClient
 from azure.mgmt.subscription.models import Subscription
 from azure.storage.blob import ContainerSasPermissions
 from pytest import CaptureFixture, fixture
+from pytest_mock import MockerFixture
 
 import data_safe_haven.external.api.azure_sdk
 from data_safe_haven.exceptions import (
@@ -514,14 +515,15 @@ class TestAzureSdk:
             ("9.9.9.9/32", None),
         ],
     )
+    @pytest.mark.usefixtures(
+        "mock_azuresdk_get_subscription", "mock_azuresdk_get_credential"
+    )
     def test_ensure_storage_account_ip_rule(
         self,
-        ip_address,
-        expected_ips,
-        mock_azuresdk_get_subscription,  # noqa: ARG002
-        mock_azuresdk_get_credential,  # noqa: ARG002
-        mocker,
-    ):
+        ip_address: str,
+        expected_ips: list[str] | None,
+        mocker: MockerFixture,
+    ) -> None:
         client = mocker.patch(
             "data_safe_haven.external.api.azure_sdk.StorageManagementClient"
         ).return_value
@@ -550,14 +552,14 @@ class TestAzureSdk:
         "ip_address,expected_sas_ip",
         [("5.6.7.8/32", "5.6.7.8"), ("10.0.0.0/30", "10.0.0.0-10.0.0.3")],
     )
+    @pytest.mark.usefixtures("mock_azuresdk_get_credential")
     def test_generate_container_sas_url(
         self,
-        ip_address,
-        expected_sas_ip,
-        mock_azuresdk_get_credential,  # noqa: ARG002
-        mocker,
-        capsys,
-    ):
+        ip_address: str,
+        expected_sas_ip: str,
+        mocker: MockerFixture,
+        capsys: CaptureFixture[str],
+    ) -> None:
         blob_service_client = mocker.patch(
             "data_safe_haven.external.api.azure_sdk.BlobServiceClient"
         ).return_value
@@ -597,11 +599,11 @@ class TestAzureSdk:
             capsys.readouterr().out.split()
         )
 
+    @pytest.mark.usefixtures("mock_azuresdk_get_credential")
     def test_generate_container_sas_url_failure(
         self,
-        mock_azuresdk_get_credential,  # noqa: ARG002
-        mocker,
-    ):
+        mocker: MockerFixture,
+    ) -> None:
         blob_service_client = mocker.patch(
             "data_safe_haven.external.api.azure_sdk.BlobServiceClient"
         ).return_value

@@ -1,4 +1,5 @@
 import pytest
+from pytest import CaptureFixture
 
 from data_safe_haven.console.pretty import pretty_print
 
@@ -28,7 +29,7 @@ class TestPrettyPrint:
         if not_expected is not None:
             assert not_expected not in captured.out
 
-    def test_pretty_print_soft_wrap(self, capsys):
+    def test_pretty_print_soft_wrap(self, capsys: CaptureFixture[str]) -> None:
         long_url = "https://example.com/" + "a" * 500
         pretty_print(long_url, soft_wrap=True)
 
