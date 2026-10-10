@@ -3,8 +3,13 @@ from freezegun import freeze_time
 
 from data_safe_haven.exceptions import DataSafeHavenValueError
 from data_safe_haven.functions import (
+    alphanumeric,
+    get_desired_state_storage_account_name,
     get_key_vault_name,
+    get_sre_storage_account_name,
     next_occurrence,
+    sha256hash,
+    truncate_tokens,
 )
 
 
@@ -82,8 +87,6 @@ def test_get_key_vault_name(value, expected):
     ],
 )
 def test_desired_state_storage_name_is_valid_and_stable(stack):
-    from data_safe_haven.functions import get_desired_state_storage_account_name
-
     name = get_desired_state_storage_account_name(stack, "sre_desired_state")
     assert 3 <= len(name) <= 24
     assert name.isascii()
@@ -93,8 +96,6 @@ def test_desired_state_storage_name_is_valid_and_stable(stack):
 
 
 def test_desired_state_names_distinguish_sres_with_same_truncated_prefix():
-    from data_safe_haven.functions import get_desired_state_storage_account_name
-
     first = get_desired_state_storage_account_name(
         "shm-pro-sre-dsg1234", "sre_desired_state"
     )
@@ -107,8 +108,6 @@ def test_desired_state_names_distinguish_sres_with_same_truncated_prefix():
 
 
 def test_desired_state_names_include_full_stack_hash_even_for_late_difference():
-    from data_safe_haven.functions import get_desired_state_storage_account_name
-
     names = {
         get_desired_state_storage_account_name(
             f"shm-production-sre-project-longname-{index:04d}",
@@ -124,12 +123,6 @@ def test_desired_state_names_include_full_stack_hash_even_for_late_difference():
     ["shm-a", "sre-x", "shm-dev", "sre-research"],
 )
 def test_short_stacks_preserve_existing_storage_account_names(stack):
-    from data_safe_haven.functions import (
-        alphanumeric,
-        get_desired_state_storage_account_name,
-        sha256hash,
-    )
-
     expected = alphanumeric(
         f"{stack.replace('-', '')}desiredstate{sha256hash('sre_desired_state')}"
     )[:24]
@@ -139,8 +132,6 @@ def test_short_stacks_preserve_existing_storage_account_names(stack):
 
 
 def test_storage_name_changes_only_when_truncation_loses_stack_suffix():
-    from data_safe_haven.functions import get_desired_state_storage_account_name
-
     short_name = get_desired_state_storage_account_name(
         "shm-a-sre-b", "sre_desired_state"
     )
@@ -162,8 +153,6 @@ def test_storage_name_changes_only_when_truncation_loses_stack_suffix():
 def test_all_sre_storage_account_purposes_keep_unique_full_stack_suffix(
     purpose, budget, component
 ):
-    from data_safe_haven.functions import get_sre_storage_account_name
-
     first = get_sre_storage_account_name(
         "shm-pro-sre-verylong-dsg1234", purpose, budget, component
     )
@@ -191,12 +180,6 @@ def test_all_sre_storage_account_purposes_keep_unique_full_stack_suffix(
 def test_short_stacks_retain_legacy_names_for_all_storage_purposes(
     purpose, budget, component
 ):
-    from data_safe_haven.functions import (
-        alphanumeric,
-        get_sre_storage_account_name,
-        sha256hash,
-    )
-
     stack = "shm-a"
     component_hash = sha256hash(component) if component else ""
     expected = alphanumeric(f"shma{purpose}{component_hash}")[:24]
@@ -204,15 +187,11 @@ def test_short_stacks_retain_legacy_names_for_all_storage_purposes(
 
 
 def test_storage_purpose_length_must_allow_full_stack_hash():
-    from data_safe_haven.functions import get_sre_storage_account_name
-
     with pytest.raises(ValueError, match="too long"):
         get_sre_storage_account_name("shm-pro-sre-dsg1234", "purpose-way-too-long", 4)
 
 
 def test_legacy_desired_state_name_collides_for_reported_sre_names():
-    from data_safe_haven.functions import alphanumeric, sha256hash, truncate_tokens
-
     def legacy_name(stack):
         truncated = "".join(truncate_tokens(stack.split("-"), 11))
         return alphanumeric(

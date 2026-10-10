@@ -1,5 +1,5 @@
 import base64
-import datetime
+import datetime as dt
 import hashlib
 import random
 import secrets
@@ -59,7 +59,8 @@ def get_sre_storage_account_name(
     digest_length = 8
     prefix_length = 24 - len(purpose) - digest_length
     if prefix_length < 0:
-        raise ValueError("Storage account purpose is too long for hashing.")
+        msg = "Storage account purpose is too long for hashing."
+        raise ValueError(msg)
     readable_prefix = alphanumeric(stack_name)[:prefix_length]
     return f"{readable_prefix}{purpose}{sha256hash(stack_name)[:digest_length]}".lower()
 
@@ -84,7 +85,7 @@ def next_occurrence(
     """
     try:
         local_tz = pytz.timezone(timezone)
-        local_dt = datetime.datetime.now(local_tz).replace(
+        local_dt = dt.datetime.now(local_tz).replace(
             hour=hour,
             minute=minute,
             second=0,
@@ -94,9 +95,9 @@ def next_occurrence(
         # Add one day until this datetime is at least 1 hour in the future.
         # This ensures that any Azure functions which depend on this datetime being in
         # the future should treat it as valid.
-        utc_near_future = datetime.datetime.now(pytz.utc) + datetime.timedelta(hours=1)
+        utc_near_future = dt.datetime.now(pytz.utc) + dt.timedelta(hours=1)
         while utc_dt < utc_near_future:
-            utc_dt += datetime.timedelta(days=1)
+            utc_dt += dt.timedelta(days=1)
         if time_format == "iso":
             return utc_dt.isoformat()
         elif time_format == "iso_minute":
