@@ -20,12 +20,10 @@ from pulumi_azure_native import (
 
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import (
-    alphanumeric,
     get_key_vault_name,
+    get_sre_storage_account_name,
     replace_separators,
     seeded_uuid,
-    sha256hash,
-    truncate_tokens,
 )
 from data_safe_haven.infrastructure.common import (
     get_id_from_rg,
@@ -424,9 +422,7 @@ class SREDataComponent(ComponentResource):
         storage_account_data_configuration = storage.StorageAccount(
             f"{self._name}_storage_account_data_configuration",
             # Note that account names have a maximum of 24 characters
-            account_name=alphanumeric(
-                f"{''.join(truncate_tokens(stack_name.split('-'), 14))}configdata"
-            )[:24],
+            account_name=get_sre_storage_account_name(stack_name, "configdata", 14),
             kind=storage.Kind.STORAGE_V2,
             large_file_shares_state=storage.LargeFileSharesState.DISABLED,
             location=props.location,
@@ -554,9 +550,9 @@ class SREDataComponent(ComponentResource):
             f"{self._name}_storage_account_data_private_sensitive",
             NFSV3StorageAccountProps(
                 # Storage account names have a maximum of 24 characters
-                account_name=alphanumeric(
-                    f"{''.join(truncate_tokens(stack_name.split('-'), 11))}sensitivedata{sha256hash(self._name)}"
-                )[:24],
+                account_name=get_sre_storage_account_name(
+                    stack_name, "sensitivedata", 11, self._name
+                ),
                 allowed_ip_addresses=data_private_sensitive_ip_addresses,
                 location=props.location,
                 log_analytics_workspace=props.log_analytics_workspace,
@@ -674,9 +670,9 @@ class SREDataComponent(ComponentResource):
             f"{self._name}_storage_account_data_private_user",
             access_tier=storage.AccessTier.COOL,
             # Storage account names have a maximum of 24 characters
-            account_name=alphanumeric(
-                f"{''.join(truncate_tokens(stack_name.split('-'), 16))}userdata{sha256hash(self._name)}"
-            )[:24],
+            account_name=get_sre_storage_account_name(
+                stack_name, "userdata", 16, self._name
+            ),
             enable_https_traffic_only=False,
             encryption=storage.EncryptionArgs(
                 key_source=storage.KeySource.MICROSOFT_STORAGE,
