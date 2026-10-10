@@ -1,5 +1,5 @@
 import base64
-import datetime
+import datetime as dt
 import hashlib
 import random
 import secrets
@@ -27,6 +27,49 @@ def get_key_vault_name(stack_name: str) -> str:
     return f"{''.join(truncate_tokens(stack_name.split('-'), 17))}secrets"
 
 
+def get_sre_storage_account_name(
+    stack_name: str,
+    purpose: str,
+    legacy_prefix_length: int,
+    component_name: str | None = None,
+) -> str:
+    """Build a storage account name that identifies the full SRE stack.
+
+    Azure storage account names are globally unique and limited to 24 ASCII
+    lowercase alphanumeric characters. The legacy convention trimmed the
+    stack name to a short prefix and, in some cases, appended a hash of a
+    constant component name, so different SREs could collide (issue #2370).
+
+    Untruncated names retain their legacy value to avoid needless replacement.
+    When a stack would be truncated, reserve eight hex digits for a hash of
+    the *entire* stack rather than repeating its truncated prefix.
+
+    WARNING: Existing long-name SREs will receive new storage account names.
+    Those deployments require a reviewed data migration before an upgrade.
+    """
+    stack_prefix = "".join(stack_name.split("-"))
+    legacy_prefix = "".join(
+        truncate_tokens(stack_name.split("-"), legacy_prefix_length)
+    )
+    legacy_suffix = sha256hash(component_name) if component_name else ""
+    legacy_name = alphanumeric(f"{legacy_prefix}{purpose}{legacy_suffix}")[:24]
+    if legacy_prefix == stack_prefix:
+        return legacy_name
+
+    digest_length = 8
+    prefix_length = 24 - len(purpose) - digest_length
+    if prefix_length < 0:
+        msg = "Storage account purpose is too long for hashing."
+        raise ValueError(msg)
+    readable_prefix = alphanumeric(stack_name)[:prefix_length]
+    return f"{readable_prefix}{purpose}{sha256hash(stack_name)[:digest_length]}".lower()
+
+
+def get_desired_state_storage_account_name(stack_name: str, component_name: str) -> str:
+    """Get the collision-resistant name for the SRE desired-state storage."""
+    return get_sre_storage_account_name(stack_name, "desiredstate", 11, component_name)
+
+
 def next_occurrence(
     hour: int, minute: int, timezone: str, *, time_format: str = "iso"
 ) -> str:
@@ -42,7 +85,7 @@ def next_occurrence(
     """
     try:
         local_tz = pytz.timezone(timezone)
-        local_dt = datetime.datetime.now(local_tz).replace(
+        local_dt = dt.datetime.now(local_tz).replace(
             hour=hour,
             minute=minute,
             second=0,
@@ -52,9 +95,9 @@ def next_occurrence(
         # Add one day until this datetime is at least 1 hour in the future.
         # This ensures that any Azure functions which depend on this datetime being in
         # the future should treat it as valid.
-        utc_near_future = datetime.datetime.now(pytz.utc) + datetime.timedelta(hours=1)
+        utc_near_future = dt.datetime.now(pytz.utc) + dt.timedelta(hours=1)
         while utc_dt < utc_near_future:
-            utc_dt += datetime.timedelta(days=1)
+            utc_dt += dt.timedelta(days=1)
         if time_format == "iso":
             return utc_dt.isoformat()
         elif time_format == "iso_minute":
