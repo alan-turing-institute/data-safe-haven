@@ -236,7 +236,7 @@ class SREGiteaMirrorManagerComponent(ComponentResource):
                     ),
                 ),
                 containerinstance.ContainerArgs(
-                    image="gitea/gitea:1.27.1",
+                    image="gitea/gitea:28.0",
                     name="gitea"[:63],
                     command=["/app/custom/entrypoint.sh"],
                     environment_variables=[
