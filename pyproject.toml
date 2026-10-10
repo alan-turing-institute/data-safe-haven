@@ -69,31 +69,31 @@ Source = "https://github.com/alan-turing-institute/data-safe-haven"
 
 [project.optional-dependencies]
 docs = [
-  "emoji==2.15.0",
+  "emoji==2.16.0",
   "myst-parser==5.1.0",
-  "pydata-sphinx-theme==0.20.0",
+  "pydata-sphinx-theme==0.22.0",
   "sphinx-togglebutton==0.4.5",
   "sphinx>=7,<10",
-  "sphinxcontrib-typer==0.9.1",
+  "sphinxcontrib-typer==0.10.0",
 ]
 lint = [
-  "ansible-dev-tools==26.7.2",
-  "ansible==14.2.0",
+  "ansible-dev-tools==26.9.0",
+  "ansible==14.4.0",
   "black==26.5.1",
-  "mypy==2.3.0",
-  "pandas-stubs==3.0.3.260530",
+  "mypy==2.3.1",
+  "pandas-stubs==3.0.5.260914",
   "pydantic==2.13.4",
-  "ruff==0.16.0",
+  "ruff==0.16.9",
   "types-appdirs==1.4.3.5",
   "types-chevron==0.14.2.20260408",
-  "types-pytz==2026.3.1.20260727",
-  "types-pyyaml==6.0.12.20260724",
-  "types-requests==2.33.0.20260712",
+  "types-pytz==2026.4.0.20260926",
+  "types-pyyaml==6.0.12.20260906",
+  "types-requests==2.33.0.20260906",
 ]
 test = [
-  "coverage==7.15.2",
+  "coverage==7.16.2",
   "freezegun==1.5.5",
-  "pytest-mock==3.15.1",
+  "pytest-mock==3.16.0",
   "pytest==9.1.1",
   "requests-mock==1.12.1",
 ]
