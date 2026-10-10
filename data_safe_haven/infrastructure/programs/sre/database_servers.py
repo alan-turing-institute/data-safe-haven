@@ -24,6 +24,7 @@ class SREDatabaseServerProps:
         resource_group_name: Input[str],
         sre_fqdn: Input[str],
         subnet_id: Input[str],
+        log_analytics_workspace_id: Input[str] | None = None,
     ) -> None:
         self.database_password = database_password
         self.database_system = database_system
@@ -32,6 +33,7 @@ class SREDatabaseServerProps:
         self.resource_group_name = resource_group_name
         self.sre_fqdn = sre_fqdn
         self.subnet_id = subnet_id
+        self.log_analytics_workspace_id = log_analytics_workspace_id
 
 
 class SREDatabaseServerComponent(ComponentResource):
@@ -92,6 +94,7 @@ class SREDatabaseServerComponent(ComponentResource):
                     database_username=props.database_username,
                     disable_secure_transport=True,
                     location=props.location,
+                    log_analytics_workspace_id=props.log_analytics_workspace_id,
                 ),
                 opts=child_opts,
                 tags=child_tags,
