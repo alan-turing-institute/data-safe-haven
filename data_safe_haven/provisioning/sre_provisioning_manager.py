@@ -51,9 +51,14 @@ class SREProvisioningManager:
         nexus_database_secret_name = sre_stack.output("data")[
             "password_nexus_database_admin_secret"
         ]
-        self.software_repository_params: dict[str, str] | None = sre_stack.output(
-            "software_repositories"
-        )
+        self.software_repository_params: dict[str, str] | None = None
+
+        try:
+            self.software_repository_params = sre_stack.output("software_repositories")
+        except KeyError:
+            self.logger.info(
+                "There's no software repositories information in the current SRE"
+            )
         if self.software_repository_params:
             connection_nexus_database_server_password = azure_sdk.get_keyvault_secret(
                 keyvault_name, nexus_database_secret_name
