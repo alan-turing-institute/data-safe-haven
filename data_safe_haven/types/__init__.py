@@ -31,6 +31,7 @@ from .enums import (
     Ports,
     PostgreSqlExtension,
     SoftwarePackageCategory,
+    StorageContainer,
 )
 from .types import PathType
 
@@ -64,6 +65,7 @@ __all__ = [
     "SafeSreName",
     "SafeString",
     "SoftwarePackageCategory",
+    "StorageContainer",
     "TimeZone",
     "UniqueList",
 ]
