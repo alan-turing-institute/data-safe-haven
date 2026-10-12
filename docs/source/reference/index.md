@@ -6,11 +6,11 @@
 allowlist.md
 config.md
 context.md
-sas.md
 users.md
 pulumi.md
 shm.md
 sre.md
+storage.md
 :::
 
 A Data Safe Haven is managed using the `dsh` command line interface.
@@ -36,9 +36,6 @@ For further detail on each subcommand, navigate to the relevant page.
 [Context](context.md)
 : Manage DSH contexts, the groupings that encompass an SHM and its associated SREs
 
-[SAS tokens](sas.md)
-: Creation of SAS tokens for SRE storage containers
-
 [Users](users.md)
 : Management of users in Entra ID
 
@@ -50,3 +47,6 @@ For further detail on each subcommand, navigate to the relevant page.
 
 [sre](sre.md)
 : Management of infrastructure for DSH Secure Research Environments
+
+[storage](storage.md)
+: Management of SRE storage, such as SAS tokens for storage containers

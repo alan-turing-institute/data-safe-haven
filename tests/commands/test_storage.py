@@ -10,7 +10,7 @@ from data_safe_haven.exceptions import DataSafeHavenAzureStorageError
 from data_safe_haven.external import AzureSdk
 from data_safe_haven.infrastructure import SREProjectManager
 
-COMMAND = ["create-sas", "sandbox", "--container", "ingress"]
+COMMAND = ["storage", "create-sas", "sandbox", "--container", "ingress"]
 
 
 def utc_offset(**kwargs: float) -> str:
@@ -158,6 +158,7 @@ class TestCreateSas:
         result = runner.invoke(
             application,
             [
+                "storage",
                 "create-sas",
                 "sandbox",
                 "--container",

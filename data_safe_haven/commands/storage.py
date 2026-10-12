@@ -1,4 +1,4 @@
-"""Command for creating SAS tokens for SRE storage containers"""
+"""Command group for managing SRE storage"""
 
 import ipaddress
 from datetime import UTC, datetime, timedelta
@@ -18,6 +18,8 @@ from data_safe_haven.logging import get_logger
 from data_safe_haven.types import StorageContainer
 from data_safe_haven.validators import typer_ip_address
 
+storage_command_group = typer.Typer()
+
 DATETIME_FORMATS = ["%Y-%m-%d", "%Y-%m-%dT%H:%M", "%Y-%m-%dT%H:%M:%S"]
 # User delegation keys are valid for at most 7 days
 MAX_SAS_VALIDITY = timedelta(days=7)
@@ -25,6 +27,7 @@ MAX_SAS_VALIDITY = timedelta(days=7)
 LATEST_UNSUPPORTED_SRE_VERSION = Version("5.8.0")
 
 
+@storage_command_group.command()
 def create_sas(
     name: Annotated[
         str,
@@ -125,7 +128,7 @@ def create_sas(
         except KeyError as exc:
             sre_version = azure_sdk.get_version(resource_group_name)
             if Version(sre_version) <= LATEST_UNSUPPORTED_SRE_VERSION:
-                msg = f"SRE '{sre_config.name}' was deployed with Data Safe Haven version {sre_version}, but `dsh create-sas` only supports SREs deployed with a version later than {LATEST_UNSUPPORTED_SRE_VERSION}. Upgrade Data Safe Haven and redeploy the SRE with `dsh sre deploy`."
+                msg = f"SRE '{sre_config.name}' was deployed with Data Safe Haven version {sre_version}, but `dsh storage create-sas` only supports SREs deployed with a version later than {LATEST_UNSUPPORTED_SRE_VERSION}. Upgrade Data Safe Haven and redeploy the SRE with `dsh sre deploy`."
             else:
                 msg = f"Could not find the sensitive data storage account for '{sre_config.name}'. Redeploy the SRE with `dsh sre deploy`."
             logger.error(msg)

@@ -8,10 +8,10 @@ You need to generate a temporary, write-only upload token that can be securely s
 
 ### Using `dsh` (recommended)
 
-Run {typer}`dsh create-sas` with the data provider's IP address and the time window for the upload:
+Run {typer}`dsh storage create-sas` with the data provider's IP address and the time window for the upload:
 
 :::{code} shell
-$ dsh create-sas YOUR_SRE_NAME --container ingress --ip DATA_PROVIDER_IP_ADDRESS --end END_DATETIME
+$ dsh storage create-sas YOUR_SRE_NAME --container ingress --ip DATA_PROVIDER_IP_ADDRESS --end END_DATETIME
 :::
 
 - `--ip` accepts a single IPv4 address or a CIDR range
