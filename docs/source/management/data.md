@@ -7,7 +7,7 @@ It is the {ref}`role_data_provider_representative`'s responsibility to upload th
 The following steps show how to generate a temporary, write-only upload token that can be securely sent to the {ref}`role_data_provider_representative`, enabling them to upload the data:
 
 - In the Azure portal select **Subscriptions** then navigate to the subscription containing the relevant SHM
-- Search for the resource group: `shm-<YOUR_SHM_NAME>-sre-<YOUR_SRE_NAME>-rg`, then click through to the storage account ending with `sensitivedata`
+- Search for the resource group: `shm-<YOUR_SHM_NAME>-sre-<YOUR_SRE_NAME>-rg`, then click through to the storage account containing `sensitivedata` in its name (newer accounts also have a hash suffix)
 - Browse to **{menuselection}`Security + networking --> Networking`** and ensure that the data provider's IP address is one of those allowed under the **Firewall** header
     - If it's not listed there are two possible approaches to take:
         - Either: directly add the IP address on the **Networking** page in Azure.
@@ -47,7 +47,7 @@ Outputs are potentially sensitive, and so an appropriate process must be applied
 The {ref}`role_system_manager` creates a time-limited and IP restricted link to remove data from the environment.
 
 - In the Azure portal select **Subscriptions** then navigate to the subscription containing the relevant SHM
-- Search for the resource group: `shm-<YOUR_SHM_NAME>-sre-<YOUR_SRE_NAME>-rg`, then click through to the storage account ending with `sensitivedata`
+- Search for the resource group: `shm-<YOUR_SHM_NAME>-sre-<YOUR_SRE_NAME>-rg`, then click through to the storage account containing `sensitivedata` in its name (newer accounts also have a hash suffix)
 - Browse to **{menuselection}`Security + networking --> Networking`** and check the list of pre-approved IP addresses allowed under the **Firewall** header
     - Ensure that the IP address of the person to receive the outputs is listed. If it's not listed there are two possible approaches to take:
         - Either: directly add the IP address on the **Networking** page in Azure.

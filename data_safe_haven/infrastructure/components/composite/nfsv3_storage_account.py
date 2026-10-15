@@ -84,7 +84,11 @@ class NFSV3StorageAccountComponent(ComponentResource):
             public_network_access=storage.PublicNetworkAccess.ENABLED,
             resource_group_name=props.resource_group_name,
             sku=storage.SkuArgs(name=storage.SkuName.PREMIUM_ZRS),
-            opts=child_opts,
+            # Keep existing desired-state and sensitive-data accounts in place
+            # when the naming convention changes; new accounts use props above.
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(ignore_changes=["account_name"])
+            ),
             tags=child_tags,
         )
 
