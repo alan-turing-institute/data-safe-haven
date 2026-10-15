@@ -1,10 +1,17 @@
+from unittest.mock import Mock
+
 import pytest
-from azure.core.exceptions import ClientAuthenticationError, ResourceNotFoundError
+from azure.core.exceptions import (
+    ClientAuthenticationError,
+    HttpResponseError,
+    ResourceNotFoundError,
+)
 from azure.mgmt.keyvault.models import DeletedVault
 from azure.mgmt.storage.models import StorageAccountListKeysResult
 from azure.mgmt.subscription import SubscriptionClient
 from azure.mgmt.subscription.models import Subscription
 from pytest import CaptureFixture, fixture
+from pytest_mock import MockerFixture
 
 import data_safe_haven.external.api.azure_sdk
 from data_safe_haven.exceptions import (
@@ -486,3 +493,64 @@ class TestAzureSdk:
         assert "Operations remaining: 1" in captured.out
         assert "Operations remaining: 6" not in captured.out
         assert "All deletion operations completed" in captured.out
+
+
+@pytest.mark.parametrize(
+    ("error_codes", "expected_calls", "expected_delays", "should_raise"),
+    [
+        ([], 1, [], False),
+        ([500], 2, [1], False),
+        ([503, 429], 3, [1, 2], False),
+        ([500, 500, 500], 3, [1, 2], True),
+        ([403], 1, [], True),
+        ([400], 1, [], True),
+    ],
+)
+def test_blob_acl_retries_transient_failures(
+    mocker: MockerFixture,
+    error_codes: list[int],
+    expected_calls: int,
+    expected_delays: list[int],
+    *,
+    should_raise: bool,
+) -> None:
+    """Retry temporary Azure ACL failures without retrying permanent failures."""
+    sdk = AzureSdk("test-subscription", disable_logging=True)
+    sdk.subscription_id_ = "test-subscription-id"
+    mocker.patch.object(sdk, "credential", return_value=object())
+
+    storage = mocker.patch(
+        "data_safe_haven.external.api.azure_sdk.StorageManagementClient"
+    )
+    storage.return_value.blob_containers.get.return_value.name = "egress"
+    data_lake = mocker.patch(
+        "data_safe_haven.external.api.azure_sdk.DataLakeServiceClient"
+    )
+    file_system = data_lake.return_value.get_file_system_client.return_value
+    root_directory = file_system._get_root_directory_client.return_value
+    set_acl = root_directory.set_access_control_recursive
+    set_acl.side_effect = [
+        HttpResponseError(
+            message="Azure service error",
+            response=Mock(status_code=code, reason="Service error"),
+        )
+        for code in error_codes
+    ] + [None]
+    sleep = mocker.patch("data_safe_haven.external.api.azure_sdk.time.sleep")
+
+    def run_acl_update() -> None:
+        sdk.set_blob_container_acl(
+            container_name="egress",
+            desired_acl="user::rwx,group::r-x,other::---",
+            resource_group_name="test-rg",
+            storage_account_name="teststorage",
+        )
+
+    if should_raise:
+        with pytest.raises(DataSafeHavenAzureError):
+            run_acl_update()
+    else:
+        run_acl_update()
+
+    assert set_acl.call_count == expected_calls
+    assert [call.args[0] for call in sleep.call_args_list] == expected_delays

@@ -1359,8 +1359,28 @@ class AzureSdk:
                 file_system=container_name
             )
             directory_client = file_system_client._get_root_directory_client()
-            # Set the desired ACL
-            directory_client.set_access_control_recursive(acl=desired_acl)
+            # Transient storage-service errors can occur during teardown.
+            # Reapplying the same ACL is safe if the previous request partially succeeded.
+            max_attempts = 3
+            for attempt in range(max_attempts):
+                try:
+                    directory_client.set_access_control_recursive(acl=desired_acl)
+                    return
+                except HttpResponseError as exc:
+                    if (
+                        exc.status_code not in {408, 429, 500, 502, 503, 504}
+                        or attempt == max_attempts - 1
+                    ):
+                        raise
+                    delay_seconds = 2**attempt
+                    self.logger.warning(
+                        "Transient ACL update error (HTTP %s) on container '%s'; "
+                        "retrying in %s seconds.",
+                        exc.status_code,
+                        container_name,
+                        delay_seconds,
+                    )
+                    time.sleep(delay_seconds)
         except AzureError as exc:
             msg = f"Failed to set ACL '{desired_acl}' on container '{container_name}'."
             raise DataSafeHavenAzureError(msg) from exc

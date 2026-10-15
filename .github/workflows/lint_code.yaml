@@ -15,12 +15,21 @@ jobs:
         uses: actions/checkout@v7
       - name: Install caddy
         shell: bash
+        env:
+          CADDY_VERSION: "2.11.7"
+          CADDY_SHA256: "727b91701a392de6ebc5027509f548bf39979e5216340d0faed8fa5e69c84f8b"
         run: |
-          sudo mkdir -m 0755 -p /usr/share/keyrings/
-          sudo wget 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' -O - | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-          sudo wget 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' -O /etc/apt/sources.list.d/caddy-stable.list
-          sudo apt update
-          sudo apt install caddy
+          # Use a pinned upstream binary; the Cloudsmith APT endpoint can be unavailable.
+          install_dir="$(mktemp -d "${RUNNER_TEMP}/caddy.XXXXXX")"
+          archive="${install_dir}/caddy.tar.gz"
+          curl --fail --silent --show-error --location --retry 3 \
+            "https://github.com/caddyserver/caddy/releases/download/v${CADDY_VERSION}/caddy_${CADDY_VERSION}_linux_amd64.tar.gz" \
+            --output "${archive}"
+          printf '%s  %s\n' "${CADDY_SHA256}" "${archive}" | sha256sum --check --strict
+          tar -xzf "${archive}" -C "${install_dir}" caddy
+          chmod +x "${install_dir}/caddy"
+          printf '%s\n' "${install_dir}" >> "${GITHUB_PATH}"
+          "${install_dir}/caddy" version
       - name: Lint Caddy
         shell: bash
         run: |
