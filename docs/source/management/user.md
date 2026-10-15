@@ -3,14 +3,14 @@
 ## Add users to the Data Safe Haven
 
 :::{important}
-You will need a full name, phone number, email address and country for each user.
+You will need a full name, phone number and email address for each user.
 :::
 
 1. You can add users directly in your Entra tenant, following the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/how-to-create-delete-users).
-1. Alternatively, you can use {typer}`dsh users add` to add multiple users from a CSV file with columns named (`GivenName`, `Surname`, `Phone`, `Email`, `CountryCode`).
+1. Alternatively, you can use {typer}`dsh users add` to add multiple users from a CSV file with columns named (`GivenName`, `Surname`, `Phone`, `Email`).
     - (Optional) you can provide a `Domain` column if you like but this will otherwise default to the domain of your SHM
+    - (Optional) provide a `CountryCode` column with the two-letter ISO 3166-1 country where the phone number is registered if you use a national number format. For the recommended international `+`-prefixed phone numbers, no country code is required. Do not infer someone's country of residence from their phone number.
     - {{warning}} **Phone** must be in [E.123 international format](https://en.wikipedia.org/wiki/E.123)
-    - {{warning}} **CountryCode** is the two letter [ISO 3166-1 Alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements) code for the country where the user is based
 
 ::::{admonition} Example CSV user file
 :class: dropdown tip
