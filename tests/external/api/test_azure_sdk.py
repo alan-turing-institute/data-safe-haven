@@ -1,5 +1,10 @@
 import pytest
-from azure.core.exceptions import ClientAuthenticationError, ResourceNotFoundError
+from azure.core.exceptions import (
+    AzureError,
+    ClientAuthenticationError,
+    HttpResponseError,
+    ResourceNotFoundError,
+)
 from azure.mgmt.keyvault.models import DeletedVault
 from azure.mgmt.storage.models import StorageAccountListKeysResult
 from azure.mgmt.subscription import SubscriptionClient
@@ -143,6 +148,9 @@ def mock_key_vault_management_client(monkeypatch):
     class Poller:
         def done(self):
             return True
+
+        def result(self):
+            return None
 
     class MockVaultsOperations:
         def __init__(self, vault_name, location):
@@ -392,6 +400,118 @@ class TestAzureSdk:
         assert "Found deleted key vault key_vault_name in location" in stdout
         assert "Purging deleted key vault key_vault_name in location" in stdout
         assert result is True
+
+    def test_purge_keyvault_missing_is_safe(
+        self,
+        mocker,
+        mock_azuresdk_get_subscription,  # noqa: ARG002
+        mock_azuresdk_get_credential,  # noqa: ARG002
+    ):
+        client = mocker.patch(
+            "data_safe_haven.external.api.azure_sdk.KeyVaultManagementClient"
+        ).return_value.vaults
+        client.get_deleted.side_effect = ResourceNotFoundError("Not found")
+
+        sdk = AzureSdk("subscription name")
+        assert sdk.purge_keyvault("already-removed", "uksouth") is False
+        client.begin_purge_deleted.assert_not_called()
+
+    def test_purge_keyvault_lookup_permission_failure(
+        self,
+        mocker,
+        mock_azuresdk_get_subscription,  # noqa: ARG002
+        mock_azuresdk_get_credential,  # noqa: ARG002
+    ):
+        client = mocker.patch(
+            "data_safe_haven.external.api.azure_sdk.KeyVaultManagementClient"
+        ).return_value.vaults
+        client.get_deleted.side_effect = HttpResponseError(message="Forbidden")
+
+        sdk = AzureSdk("subscription name")
+        with pytest.raises(DataSafeHavenAzureError) as exc:
+            sdk.purge_keyvault("protected", "uksouth")
+        assert isinstance(exc.value.__cause__, HttpResponseError)
+        client.begin_purge_deleted.assert_not_called()
+
+    def test_purge_keyvault_purge_permission_failure(
+        self,
+        mocker,
+        mock_azuresdk_get_subscription,  # noqa: ARG002
+        mock_azuresdk_get_credential,  # noqa: ARG002
+    ):
+        client = mocker.patch(
+            "data_safe_haven.external.api.azure_sdk.KeyVaultManagementClient"
+        ).return_value.vaults
+        client.get_deleted.return_value = DeletedVault()
+        client.begin_purge_deleted.side_effect = HttpResponseError(message="Forbidden")
+
+        sdk = AzureSdk("subscription name")
+        with pytest.raises(DataSafeHavenAzureError) as exc:
+            sdk.purge_keyvault("protected", "uksouth")
+        assert isinstance(exc.value.__cause__, HttpResponseError)
+
+    def test_purge_keyvault_poller_failure(
+        self,
+        mocker,
+        mock_azuresdk_get_subscription,  # noqa: ARG002
+        mock_azuresdk_get_credential,  # noqa: ARG002
+    ):
+        client = mocker.patch(
+            "data_safe_haven.external.api.azure_sdk.KeyVaultManagementClient"
+        ).return_value.vaults
+        client.get_deleted.return_value = DeletedVault()
+        client.begin_purge_deleted.return_value.done.return_value = True
+        client.begin_purge_deleted.return_value.result.side_effect = HttpResponseError(
+            message="Purge denied"
+        )
+
+        sdk = AzureSdk("subscription name")
+        with pytest.raises(DataSafeHavenAzureError) as exc:
+            sdk.purge_keyvault("protected", "uksouth")
+        assert isinstance(exc.value.__cause__, HttpResponseError)
+
+    def test_purge_keyvault_waits_for_deleted_vault_to_disappear(
+        self,
+        mocker,
+        mock_azuresdk_get_subscription,  # noqa: ARG002
+        mock_azuresdk_get_credential,  # noqa: ARG002
+    ):
+        client = mocker.patch(
+            "data_safe_haven.external.api.azure_sdk.KeyVaultManagementClient"
+        ).return_value.vaults
+        client.get_deleted.side_effect = [
+            DeletedVault(),
+            DeletedVault(),
+            ResourceNotFoundError("Not found"),
+        ]
+        client.begin_purge_deleted.return_value.done.return_value = True
+        sleep = mocker.patch("data_safe_haven.external.api.azure_sdk.time.sleep")
+
+        sdk = AzureSdk("subscription name")
+        assert sdk.purge_keyvault("deleted", "uksouth") is True
+        sleep.assert_called_once_with(10)
+        assert client.get_deleted.call_count == 3
+
+    def test_purge_keyvault_still_deleted_is_an_error(
+        self,
+        mocker,
+        mock_azuresdk_get_subscription,  # noqa: ARG002
+        mock_azuresdk_get_credential,  # noqa: ARG002
+    ):
+        client = mocker.patch(
+            "data_safe_haven.external.api.azure_sdk.KeyVaultManagementClient"
+        ).return_value.vaults
+        client.get_deleted.return_value = DeletedVault()
+        client.begin_purge_deleted.return_value.done.return_value = True
+        sleep = mocker.patch("data_safe_haven.external.api.azure_sdk.time.sleep")
+
+        sdk = AzureSdk("subscription name")
+        with pytest.raises(DataSafeHavenAzureError) as exc:
+            sdk.purge_keyvault("not-purged", "uksouth")
+        assert isinstance(exc.value.__cause__, AzureError)
+        assert "still exists in deleted state" in str(exc.value.__cause__)
+        assert client.get_deleted.call_count == 13
+        assert sleep.call_count == 11
 
     @pytest.mark.parametrize(
         "storage_account_name,exists",

@@ -1042,57 +1042,64 @@ class AzureSdk:
         key_vault_name: str,
         location: str,
     ) -> bool:
-        """Purge a deleted Key Vault from Azure
+        """Permanently purge a deleted Azure Key Vault.
 
-        Returns:
-            True: if the Key Vault was purged from a deleted state
-            False: if the Key Vault did not need to be purged
-
-        Raises:
-            DataSafeHavenAzureError if the non-existence of the Key Vault could not be verified
+        Return False only when the vault is already absent. Authorization
+        errors or incomplete purges must fail cleanup so the next deployment
+        cannot mistake a retained soft-deleted vault for a successful teardown.
         """
         try:
-            # Connect to Azure clients
             key_vault_client = KeyVaultManagementClient(
                 self.credential(), self.subscription_id
             )
 
-            # Check whether a deleted Key Vault exists
             try:
-                key_vault_client.vaults.get_deleted(
+                deleted_vault = key_vault_client.vaults.get_deleted(
                     vault_name=key_vault_name,
                     location=location,
                 )
-            except HttpResponseError:
+            except ResourceNotFoundError:
+                deleted_vault = None
+
+            if deleted_vault is None:
                 self.logger.debug(
                     f"Key Vault [green]{key_vault_name}[/] does not need to be purged."
                 )
                 return False
 
-            # Purge the Key Vault
-            with suppress(HttpResponseError):
-                self.logger.debug(
-                    f"Purging Key Vault [green]{key_vault_name}[/]...",
-                )
+            self.logger.debug(
+                f"Purging Key Vault [green]{key_vault_name}[/]...",
+            )
+            poller = key_vault_client.vaults.begin_purge_deleted(
+                vault_name=key_vault_name,
+                location=location,
+            )
+            while not poller.done():
+                poller.wait(10)
+            # Polling completion does not imply operation success. A poller's
+            # result() raises for failed Azure management operations.
+            poller.result()
 
-                # Keep polling until purge is finished
-                poller = key_vault_client.vaults.begin_purge_deleted(
-                    vault_name=key_vault_name,
-                    location=location,
-                )
-                while not poller.done():
-                    poller.wait(10)
+            # Deletion can take time to become visible after Azure reports
+            # completion. Only an actual 404 (or no deleted vault) is success.
+            max_attempts = 12
+            for attempt in range(max_attempts):
+                try:
+                    deleted_vault = key_vault_client.vaults.get_deleted(
+                        vault_name=key_vault_name,
+                        location=location,
+                    )
+                except ResourceNotFoundError:
+                    deleted_vault = None
 
-            # Check whether the Key Vault is still in deleted state
-            with suppress(HttpResponseError):
-                if key_vault_client.vaults.get_deleted(
-                    vault_name=key_vault_name,
-                    location=location,
-                ):
-                    msg = f"Key Vault '{key_vault_name}' exists in deleted state."
-                    raise AzureError(msg)
-            self.logger.debug(f"Purged Key Vault [green]{key_vault_name}[/].")
-            return True
+                if deleted_vault is None:
+                    self.logger.debug(f"Purged Key Vault [green]{key_vault_name}[/].")
+                    return True
+                if attempt + 1 < max_attempts:
+                    time.sleep(10)
+
+            msg = f"Key Vault '{key_vault_name}' still exists in deleted state."
+            raise AzureError(msg)
         except AzureError as exc:
             msg = f"Failed to remove Key Vault '{key_vault_name}'."
             raise DataSafeHavenAzureError(msg) from exc
