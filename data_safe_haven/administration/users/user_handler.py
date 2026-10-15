@@ -23,26 +23,23 @@ class UserHandler:
         self.context = context
         self.logger = get_logger()
 
-    def add(self, users_csv_path: pathlib.Path, domain: str) -> None:
-        """Add users to Entra ID and Guacamole
-
-        Raises:
-            DataSafeHavenUserHandlingError if the users could not be added
-        """
+    @staticmethod
+    def _parse_users_csv(
+        users_csv_path: pathlib.Path,
+        *,
+        domain: str | None = None,
+        default_country: str | None = None,
+        account_enabled: bool | None = None,
+    ) -> list[ResearchUser]:
+        """Validate a user CSV fully before any remote changes are made."""
         try:
-            # Validate all rows before making any remote Entra ID changes.
             with open(users_csv_path, encoding="utf-8", newline="") as f_csv:
-                # Sniff the header so a malformed data row does not prevent
-                # reporting the missing field and its line number.
+                # Sniff the header only so a malformed data row still produces
+                # an actionable row-level error.
                 dialect = csv.Sniffer().sniff(f_csv.readline(), delimiters=";,")
                 f_csv.seek(0)
                 reader = csv.DictReader(f_csv, dialect=dialect)
-                required_fields = (
-                    "GivenName",
-                    "Surname",
-                    "Phone",
-                    "Email",
-                )
+                required_fields = ("GivenName", "Surname", "Phone", "Email")
                 missing_columns = [
                     field
                     for field in required_fields
@@ -51,6 +48,7 @@ class UserHandler:
                 if missing_columns:
                     msg = f"Users CSV is missing required columns: {', '.join(missing_columns)}."
                     raise DataSafeHavenUserHandlingError(msg)
+
                 allowed_fields = {*required_fields, "CountryCode", "Domain"}
                 extra_columns = [
                     field
@@ -81,10 +79,9 @@ class UserHandler:
 
                     users.append(
                         ResearchUser(
-                            account_enabled=True,
-                            # An international number needs no region;
-                            # retain the legacy hint for national numbers.
-                            country=(row.get("CountryCode") or "").strip() or None,
+                            account_enabled=account_enabled,
+                            country=(row.get("CountryCode") or "").strip()
+                            or default_country,
                             domain=row.get("Domain", domain),
                             email_address=row["Email"],
                             given_name=row["GivenName"],
@@ -92,12 +89,7 @@ class UserHandler:
                             surname=row["Surname"],
                         )
                     )
-
-            for user in users:
-                self.logger.debug(f"Processing new user: {user}")
-
-            # Only contact Entra ID after the complete CSV has been validated.
-            self.entra_users.add(users)
+                return users
         except csv.Error as exc:
             msg = f"Could not parse users CSV '{users_csv_path}': {exc}."
             raise DataSafeHavenUserHandlingError(msg) from exc
@@ -107,6 +99,19 @@ class UserHandler:
         except OSError as exc:
             msg = f"Could not read users CSV '{users_csv_path}': {exc.strerror}."
             raise DataSafeHavenUserHandlingError(msg) from exc
+
+    def add(self, users_csv_path: pathlib.Path, domain: str) -> None:
+        """Add users to Entra ID and Guacamole.
+
+        Raises:
+            DataSafeHavenUserHandlingError if the users could not be added
+        """
+        users = self._parse_users_csv(
+            users_csv_path, domain=domain, account_enabled=True
+        )
+        for user in users:
+            self.logger.debug(f"Processing new user: {user}")
+        self.entra_users.add(users)
 
     def get_usernames(
         self, sre_name: str, pulumi_config: DSHPulumiConfig
@@ -199,47 +204,32 @@ class UserHandler:
             raise DataSafeHavenUserHandlingError(msg) from exc
 
     def set(self, users_csv_path: str) -> None:
-        """Set Entra ID and Guacamole users
+        """Set Entra ID and Guacamole users.
 
         Raises:
             DataSafeHavenUserHandlingError if the users could not be set to the desired list
         """
+        # Reuse add()'s validation and delimiter handling, while retaining the
+        # legacy GB default when no CountryCode is provided.
+        desired_users = self._parse_users_csv(
+            pathlib.Path(users_csv_path), default_country="GB"
+        )
         try:
-            # Construct user list
-            with open(users_csv_path, encoding="utf-8") as f_csv:
-                reader = csv.DictReader(f_csv)
-                for required_field in ["GivenName", "Surname", "Phone", "Email"]:
-                    if (not reader.fieldnames) or (
-                        required_field not in reader.fieldnames
-                    ):
-                        msg = f"Missing required CSV field '{required_field}'."
-                        raise ValueError(msg)
-                desired_users = [
-                    ResearchUser(
-                        country="GB",
-                        email_address=user["Email"],
-                        given_name=user["GivenName"],
-                        phone_number=user["Phone"],
-                        surname=user["Surname"],
-                    )
-                    for user in reader
-                ]
             for user in desired_users:
                 self.logger.debug(f"Processing user: {user}")
 
-            # Keep existing users with the same username
+            # Keep existing users with the same username.
             entra_desired_users = [
                 user
                 for user in self.entra_users.list()
                 if user.username in [u.username for u in desired_users]
             ]
 
-            # Construct list of new users
+            # Construct list of new users.
             entra_desired_users = [
                 user for user in desired_users if user not in entra_desired_users
             ]
 
-            # Commit changes
             self.entra_users.set(entra_desired_users)
         except Exception as exc:
             msg = f"Could not set users from '{users_csv_path}'."
