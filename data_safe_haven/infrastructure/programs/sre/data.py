@@ -448,7 +448,11 @@ class SREDataComponent(ComponentResource):
             ),
             resource_group_name=props.resource_group_name,
             sku=storage.SkuArgs(name=storage.SkuName.STANDARD_LRS),
-            opts=child_opts,
+            # Reuse the physical name recorded in state for existing accounts.
+            # The collision-resistant name is used only when creating an account.
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(ignore_changes=["account_name"])
+            ),
             tags=child_tags,
         )
         # Retrieve configuration data storage account keys
@@ -696,7 +700,11 @@ class SREDataComponent(ComponentResource):
             ),
             resource_group_name=props.resource_group_name,
             sku=storage.SkuArgs(name=storage.SkuName.PREMIUM_ZRS),
-            opts=child_opts,
+            # Reuse the physical name recorded in state for existing accounts.
+            # The collision-resistant name is used only when creating an account.
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(ignore_changes=["account_name"])
+            ),
             tags=child_tags,
         )
         # Add diagnostic setting for files

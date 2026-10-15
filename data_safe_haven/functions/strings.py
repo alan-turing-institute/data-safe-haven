@@ -44,8 +44,9 @@ def get_sre_storage_account_name(
     When a stack would be truncated, reserve eight hex digits for a hash of
     the *entire* stack rather than repeating its truncated prefix.
 
-    WARNING: Existing long-name SREs will receive new storage account names.
-    Those deployments require a reviewed data migration before an upgrade.
+    The storage resources ignore account_name changes on updates, preserving
+    the physical names recorded in Pulumi state for existing deployments.
+    These generated names apply to new accounts, not a data migration.
     """
     stack_prefix = "".join(stack_name.split("-"))
     legacy_prefix = "".join(

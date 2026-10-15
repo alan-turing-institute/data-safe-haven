@@ -92,3 +92,23 @@ As a consequence, if you want to update the list of administrator IP addresses, 
 Updating the size of either the OS disk or the data disk is not possible via DSH [due to Pulumi limitations](https://github.com/pulumi/pulumi-azure-native/issues/3952).
 These changes need to happen manually after VM deallocation.
 ::::
+
+### Storage account names when upgrading
+
+New SRE storage accounts use collision-resistant names when the stack name would otherwise be truncated.
+The readable account purpose is followed by a hash of the complete stack name, so SREs with the same shortened prefix receive distinct names.
+This applies to desired-state, configuration, sensitive-data and user-data storage.
+
+Existing storage accounts retain the physical account names recorded in their Pulumi state.
+The storage resources use Pulumi's `ignore_changes` option for `account_name` so that changing the generated name does not itself request an account replacement.
+New accounts still receive the generated name on their first deployment, while references to existing accounts use the names returned by the resource.
+See [Pulumi's ignored property documentation](https://www.pulumi.com/docs/iac/concepts/resources/options/ignorechanges/) for details.
+
+::::{admonition} Preserve state and review the deployment plan
+:class: warning
+Keep a recoverable backup of the existing Pulumi state and storage data before an upgrade.
+Check that the deployment plan retains each existing storage account and its name; stop if it proposes a storage replacement, deletion or unexpected account creation.
+Do not delete the stack state or recreate an SRE to adopt the new naming convention.
+If state has been lost or an account is not managed in that state, recover or explicitly import the existing resources before deploying.
+These safeguards do not migrate data between accounts, repair an existing collision, or prevent a deliberate teardown or replacement caused by other configuration changes.
+::::
