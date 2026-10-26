@@ -69,7 +69,7 @@ black==26.5.1
     #   ansible-lint
 bracex==3.2
     # via wcmatch
-cachetools==7.2.4
+cachetools==7.2.5
     # via tox
 cffi==2.1.1
     # via
