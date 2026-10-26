@@ -109,7 +109,7 @@ azure-storage-file-datalake==12.25.0
     # via hatch.envs.default
 azure-storage-file-share==12.26.0
     # via hatch.envs.default
-certifi==2026.7.22
+certifi==2026.10.19
     # via
     #   msrest
     #   requests
