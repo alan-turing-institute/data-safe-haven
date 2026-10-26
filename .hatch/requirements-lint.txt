@@ -99,7 +99,7 @@ enrich==1.2.7
     # via molecule
 execnet==2.1.2
     # via pytest-xdist
-filelock==3.32.0
+filelock==4.2.1
     # via
     #   ansible-lint
     #   python-discovery
