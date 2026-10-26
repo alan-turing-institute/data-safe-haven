@@ -274,7 +274,7 @@ oauthlib==3.3.1
     # via
     #   -c .hatch/requirements.txt
     #   requests-oauthlib
-opentelemetry-api==1.44.0
+opentelemetry-api==1.45.1
     # via
     #   -c .hatch/requirements.txt
     #   opentelemetry-exporter-otlp-proto-grpc
