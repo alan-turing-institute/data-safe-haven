@@ -21,8 +21,14 @@ $ dsh storage create-sas YOUR_SRE_NAME --container ingress --ip DATA_PROVIDER_IP
 The command adds the IP address to the firewall of the storage account ending with `sensitivedata` and prints a **Blob SAS URL** with write and list permissions on the **ingress** container.
 The URL is only valid for the given IP address and time window.
 
+:::{danger}
+**Very important:** the IP address added to the storage account firewall is **not** removed automatically when the SAS URL expires.
+You must **manually remove it** once the data provider has finished uploading or the time window has expired, otherwise the IP address keeps its network access to the storage account.
+See the {ref}`ingress_egress_follow_up_tasks` section below for details.
+:::
+
 :::{note}
-If the IP address is not in the `data_provider_ip_addresses` list of your SRE configuration, the next `dsh sre deploy` will remove it from the firewall.
+If the IP address is not in the `data_provider_ip_addresses` list of your SRE configuration, the next `dsh sre deploy` will also remove it from the firewall.
 :::
 
 Send the **Blob SAS URL** to the data provider through a secure channel.
