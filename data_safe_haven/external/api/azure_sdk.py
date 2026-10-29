@@ -1,7 +1,9 @@
 """Interface to the Azure Python SDK"""
 
+import ipaddress
 import time
 from contextlib import suppress
+from datetime import datetime
 from typing import Any, cast
 
 from azure.core.exceptions import (
@@ -45,6 +47,7 @@ from azure.mgmt.resource.resources.models import (
 from azure.mgmt.storage import StorageManagementClient
 from azure.mgmt.storage.models import (
     BlobContainer,
+    IPRule,
     Kind as StorageAccountKind,
     MinimumTlsVersion,
     PublicAccess,
@@ -53,10 +56,16 @@ from azure.mgmt.storage.models import (
     StorageAccountCreateParameters,
     StorageAccountKey,
     StorageAccountListKeysResult,
+    StorageAccountUpdateParameters,
 )
 from azure.mgmt.subscription import SubscriptionClient
 from azure.mgmt.subscription.models import Subscription
-from azure.storage.blob import BlobClient, BlobServiceClient
+from azure.storage.blob import (
+    BlobClient,
+    BlobServiceClient,
+    ContainerSasPermissions,
+    generate_container_sas,
+)
 from azure.storage.filedatalake import DataLakeServiceClient
 from azure.storage.fileshare import ShareClient, ShareServiceClient
 
@@ -66,6 +75,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureStorageError,
     DataSafeHavenValueError,
 )
+from data_safe_haven.external.interface.azure_ipv4_range import AzureIPv4Range
 from data_safe_haven.logging import get_logger, get_null_logger
 from data_safe_haven.types import AzureSdkCredentialScope
 
@@ -736,6 +746,76 @@ class AzureSdk:
             msg = f"Failed to create storage account {storage_account_name}."
             raise DataSafeHavenAzureStorageError(msg) from exc
 
+    @staticmethod
+    def _storage_firewall_rules(ip_address: str) -> list[str]:
+        """Azure rejects /31 and /32 ranges, so list their addresses individually"""
+        network = ipaddress.IPv4Network(ip_address)
+        if network.prefixlen >= 31:  # noqa: PLR2004
+            return [str(ip) for ip in network]  # all addresses, not hosts()
+        return [str(network)]
+
+    def ensure_storage_account_ip_rule(
+        self,
+        ip_address: str,
+        resource_group_name: str,
+        storage_account_name: str,
+    ) -> None:
+        """Ensure that the firewall of a storage account allows an IP address or range
+
+        Raises:
+            DataSafeHavenAzureStorageError if the firewall rules could not be updated
+        """
+        try:
+            # Connect to Azure clients
+            storage_client = StorageManagementClient(
+                self.credential(), self.subscription_id
+            )
+            storage_account = storage_client.storage_accounts.get_properties(
+                resource_group_name, storage_account_name
+            )
+            network_rule_set = storage_account.network_rule_set
+            if not network_rule_set:
+                msg = f"Storage account '{storage_account_name}' has no network rules."
+                raise DataSafeHavenAzureStorageError(msg)
+
+            # Skip rules already covered by an existing address or range
+            ip_rules = network_rule_set.ip_rules or []
+            existing_networks = [
+                ipaddress.IPv4Network(rule.ip_address_or_range, strict=False)
+                for rule in ip_rules
+            ]
+            missing_ips = [
+                rule
+                for rule in self._storage_firewall_rules(ip_address)
+                if not any(
+                    ipaddress.IPv4Network(rule).subnet_of(network)
+                    for network in existing_networks
+                )
+            ]
+            if not missing_ips:
+                self.logger.info(
+                    f"Storage account [green]{storage_account_name}[/] already allows [green]{ip_address}[/]."
+                )
+                return
+
+            self.logger.debug(
+                f"Allowing [green]{ip_address}[/] in storage account [green]{storage_account_name}[/]...",
+            )
+            network_rule_set.ip_rules = ip_rules + [
+                IPRule(ip_address_or_range=ip, action="Allow") for ip in missing_ips
+            ]
+            storage_client.storage_accounts.update(
+                resource_group_name,
+                storage_account_name,
+                StorageAccountUpdateParameters(network_rule_set=network_rule_set),
+            )
+            self.logger.info(
+                f"Allowed [green]{ip_address}[/] in storage account [green]{storage_account_name}[/].",
+            )
+        except AzureError as exc:
+            msg = f"Failed to allow {ip_address} in storage account {storage_account_name}."
+            raise DataSafeHavenAzureStorageError(msg) from exc
+
     def ensure_storage_blob_container(
         self,
         container_name: str,
@@ -805,6 +885,60 @@ class AzureSdk:
             f"File [green]{file_name}[/] {response} in file share.",
         )
         return exists
+
+    def generate_container_sas_url(
+        self,
+        container_name: str,
+        storage_account_name: str,
+        *,
+        expiry: datetime,
+        ip_address: str,
+        permissions: ContainerSasPermissions,
+        start: datetime,
+    ) -> str:
+        """Generate a user delegation SAS URL for a blob container
+
+        Returns:
+            str: The container URL including the SAS token
+
+        Raises:
+            DataSafeHavenAzureStorageError if the SAS token could not be generated
+        """
+        sas_details = f"IP address '{ip_address}', permissions '{permissions}', valid from {start.isoformat()} to {expiry.isoformat()}"
+        try:
+            # Connect to Azure clients
+            account_url = f"https://{storage_account_name}.blob.core.windows.net"
+            blob_service_client = BlobServiceClient(
+                account_url=account_url, credential=self.credential()
+            )
+            user_delegation_key = blob_service_client.get_user_delegation_key(
+                key_start_time=start, key_expiry_time=expiry
+            )
+
+            # SAS tokens accept a single IP or a 'first-last' range
+            ip_range = AzureIPv4Range.from_cidr(ip_address)
+            sas_ip = (
+                str(ip_range[0])
+                if ip_range.num_addresses == 1
+                else f"{ip_range[0]}-{ip_range[-1]}"
+            )
+            sas_token = generate_container_sas(
+                storage_account_name,
+                container_name,
+                user_delegation_key=user_delegation_key,
+                permission=permissions,
+                expiry=expiry,
+                start=start,
+                ip=sas_ip,
+                protocol="https",
+            )
+            self.logger.info(
+                f"Generated SAS token for container [green]{container_name}[/] in storage account [green]{storage_account_name}[/] ({sas_details}).",
+            )
+            return f"{account_url}/{container_name}?{sas_token}"
+        except AzureError as exc:
+            msg = f"Failed to generate SAS token for container '{container_name}' in storage account '{storage_account_name}' ({sas_details})."
+            raise DataSafeHavenAzureStorageError(msg) from exc
 
     def get_keyvault_certificate(
         self, certificate_name: str, key_vault_name: str
