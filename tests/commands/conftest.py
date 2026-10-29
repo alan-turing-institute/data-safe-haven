@@ -131,6 +131,11 @@ def mock_pulumi_config_remote_exists(mocker):
 
 
 @fixture
+def mock_pulumi_config_no_remote_exists(mocker):
+    mocker.patch.object(DSHPulumiConfig, "remote_exists", return_value=False)
+
+
+@fixture
 def mock_shm_config_from_remote(mocker, shm_config):
     mocker.patch.object(SHMConfig, "from_remote", return_value=shm_config)
 
