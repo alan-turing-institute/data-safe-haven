@@ -202,7 +202,7 @@ dill==0.4.1
     # via
     #   -c .hatch/requirements.txt
     #   pulumi
-dnspython==2.7.0
+dnspython==2.9.0
     # via
     #   -c .hatch/requirements.txt
     #   simple-acme-dns
