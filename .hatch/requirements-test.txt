@@ -270,7 +270,7 @@ msrest==0.7.1
     #   -c .hatch/requirements.txt
     #   azure-mgmt-rdbms
     #   azure-mgmt-subscription
-oauthlib==3.3.1
+oauthlib==4.0.0
     # via
     #   -c .hatch/requirements.txt
     #   requests-oauthlib
