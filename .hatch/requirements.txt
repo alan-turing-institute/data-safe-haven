@@ -143,7 +143,7 @@ fqdn==1.5.1
     # via hatch.envs.default
 googleapis-common-protos==1.76.0
     # via opentelemetry-exporter-otlp-proto-grpc
-grpcio==1.84.1
+grpcio==1.85.1
     # via
     #   opentelemetry-exporter-otlp-proto-grpc
     #   pulumi
@@ -183,7 +183,7 @@ msrest==0.7.1
     #   azure-mgmt-subscription
 oauthlib==4.0.0
     # via requests-oauthlib
-opentelemetry-api==1.45.1
+opentelemetry-api==1.45.2
     # via
     #   opentelemetry-exporter-otlp-proto-grpc
     #   opentelemetry-instrumentation
@@ -191,26 +191,26 @@ opentelemetry-api==1.45.1
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
     #   pulumi
-opentelemetry-exporter-otlp-common==0.66b1
+opentelemetry-exporter-otlp-common==0.66b2
     # via opentelemetry-exporter-otlp-proto-grpc
-opentelemetry-exporter-otlp-proto-common==1.45.1
+opentelemetry-exporter-otlp-proto-common==1.45.2
     # via opentelemetry-exporter-otlp-proto-grpc
-opentelemetry-exporter-otlp-proto-grpc==1.45.1
+opentelemetry-exporter-otlp-proto-grpc==1.45.2
     # via pulumi
-opentelemetry-instrumentation==0.66b1
+opentelemetry-instrumentation==0.66b2
     # via opentelemetry-instrumentation-grpc
-opentelemetry-instrumentation-grpc==0.66b1
+opentelemetry-instrumentation-grpc==0.66b2
     # via pulumi
-opentelemetry-proto==1.45.1
+opentelemetry-proto==1.45.2
     # via
     #   opentelemetry-exporter-otlp-proto-common
     #   opentelemetry-exporter-otlp-proto-grpc
-opentelemetry-sdk==1.45.1
+opentelemetry-sdk==1.45.2
     # via
     #   opentelemetry-exporter-otlp-common
     #   opentelemetry-exporter-otlp-proto-grpc
     #   pulumi
-opentelemetry-semantic-conventions==0.66b1
+opentelemetry-semantic-conventions==0.66b2
     # via
     #   opentelemetry-instrumentation
     #   opentelemetry-instrumentation-grpc
@@ -327,7 +327,7 @@ validators==0.35.0
     # via simple-acme-dns
 websocket-client==1.9.0
     # via hatch.envs.default
-wrapt==2.5.1
+wrapt==2.5.2
     # via
     #   opentelemetry-instrumentation
     #   opentelemetry-instrumentation-grpc

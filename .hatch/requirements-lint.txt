@@ -69,7 +69,7 @@ black==26.5.1
     #   ansible-lint
 bracex==3.2
     # via wcmatch
-cachetools==7.2.5
+cachetools==7.2.7
     # via tox
 cffi==2.1.1
     # via
@@ -99,7 +99,7 @@ enrich==1.2.7
     # via molecule
 execnet==2.1.2
     # via pytest-xdist
-filelock==4.2.4
+filelock==4.2.5
     # via
     #   ansible-lint
     #   python-discovery
@@ -173,7 +173,7 @@ pbr==7.1.3
     # via bindep
 pexpect==4.9.0
     # via ansible-runner
-platformdirs==4.13.5
+platformdirs==4.14.0
     # via
     #   black
     #   tox
@@ -195,9 +195,9 @@ pygments==2.21.0
     # via
     #   pytest
     #   rich
-pyproject-api==1.12.0
+pyproject-api==1.12.2
     # via tox
-pytest==9.1.1
+pytest==9.2.0
     # via
     #   pytest-ansible
     #   pytest-xdist
@@ -212,7 +212,7 @@ pytest-xdist==3.8.0
     #   tox-ansible
 python-daemon==3.1.2
     # via ansible-runner
-python-discovery==1.6.4
+python-discovery==1.7.0
     # via
     #   tox
     #   virtualenv
@@ -259,7 +259,7 @@ subprocess-tee==0.4.2
     #   ansible-lint
 tomli-w==1.2.0
     # via tox
-tox==4.67.1
+tox==4.67.4
     # via tox-ansible
 tox-ansible==26.10.0
     # via ansible-dev-tools
@@ -284,11 +284,11 @@ typing-extensions==4.16.0
     #   typing-inspection
 typing-inspection==0.4.4
     # via pydantic
-tzdata==2026.5
+tzdata==2026.6
     # via ansible-navigator
 urllib3==2.8.0
     # via types-requests
-virtualenv==21.14.13
+virtualenv==21.15.2
     # via tox
 wcmatch==11.2
     # via
