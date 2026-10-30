@@ -153,7 +153,7 @@ debugpy==1.8.21
     # via pulumi
 dill==0.4.1
     # via pulumi
-dnspython==2.7.0
+dnspython==2.9.0
     # via simple-acme-dns
 docutils==0.22.4
     # via

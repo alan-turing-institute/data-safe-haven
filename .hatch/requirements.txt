@@ -137,7 +137,7 @@ debugpy==1.8.21
     # via pulumi
 dill==0.4.1
     # via pulumi
-dnspython==2.7.0
+dnspython==2.9.0
     # via simple-acme-dns
 fqdn==1.5.1
     # via hatch.envs.default
