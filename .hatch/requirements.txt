@@ -181,7 +181,7 @@ msrest==0.7.1
     # via
     #   azure-mgmt-rdbms
     #   azure-mgmt-subscription
-oauthlib==4.0.0
+oauthlib==4.0.1
     # via requests-oauthlib
 opentelemetry-api==1.45.2
     # via
