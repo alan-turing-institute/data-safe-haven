@@ -36,12 +36,12 @@
 # - simple-acme-dns==4.0.1
 # - typer==0.27.0
 # - websocket-client==1.9.0
-# - emoji==2.15.0
+# - emoji==2.16.0
 # - myst-parser==5.1.0
-# - pydata-sphinx-theme==0.20.0
+# - pydata-sphinx-theme==0.23.0
 # - sphinx-togglebutton==0.4.5
 # - sphinx<10,>=7
-# - sphinxcontrib-typer==0.9.1
+# - sphinxcontrib-typer==0.10.0
 #
 
 accessible-pygments==0.0.5
@@ -161,7 +161,7 @@ docutils==0.22.4
     #   pydata-sphinx-theme
     #   sphinx
     #   sphinx-togglebutton
-emoji==2.15.0
+emoji==2.16.0
     # via hatch.envs.docs
 fqdn==1.5.1
     # via hatch.envs.docs
@@ -221,7 +221,7 @@ msrest==0.7.1
     #   azure-mgmt-subscription
 myst-parser==5.1.0
     # via hatch.envs.docs
-oauthlib==4.0.0
+oauthlib==4.0.1
     # via requests-oauthlib
 opentelemetry-api==1.45.2
     # via
@@ -293,7 +293,7 @@ pydantic==2.13.4
     # via hatch.envs.docs
 pydantic-core==2.46.4
     # via pydantic
-pydata-sphinx-theme==0.20.0
+pydata-sphinx-theme==0.23.0
     # via hatch.envs.docs
 pygments==2.21.0
     # via
@@ -368,7 +368,7 @@ sphinxcontrib-qthelp==2.0.0
     # via sphinx
 sphinxcontrib-serializinghtml==2.0.0
     # via sphinx
-sphinxcontrib-typer==0.9.1
+sphinxcontrib-typer==0.10.0
     # via hatch.envs.docs
 typer==0.27.0
     # via
