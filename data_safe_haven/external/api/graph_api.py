@@ -1,6 +1,6 @@
 """Interface to the Microsoft Graph API"""
 
-import datetime
+import datetime as dt
 import json
 import time
 from collections.abc import Sequence
@@ -299,8 +299,7 @@ class GraphApi:
                 "passwordCredential": {
                     "displayName": application_secret_name,
                     "endDateTime": (
-                        datetime.datetime.now(datetime.UTC)
-                        + datetime.timedelta(weeks=520)
+                        dt.datetime.now(dt.UTC) + dt.timedelta(weeks=520)
                     ).strftime("%Y-%m-%dT%H:%M:%SZ"),
                 }
             }

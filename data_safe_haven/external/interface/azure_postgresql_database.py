@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 import pathlib
 import time
 from collections.abc import Sequence
@@ -47,9 +47,7 @@ class AzurePostgreSQLDatabase:
         self.port = 5432
         self.resource_group_name = resource_group_name
         self.server_name = database_server_name
-        self.rule_suffix = datetime.datetime.now(tz=datetime.UTC).strftime(
-            r"%Y%m%d-%H%M%S"
-        )
+        self.rule_suffix = dt.datetime.now(tz=dt.UTC).strftime(r"%Y%m%d-%H%M%S")
 
     @staticmethod
     def wait(poller: LROPoller[Any]) -> None:
