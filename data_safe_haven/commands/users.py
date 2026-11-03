@@ -48,7 +48,15 @@ def add(
 
         # Add users to SHM
         users = UserHandler(context, graph_api)
-        users.add(csv, shm_config.shm.fqdn)
+        created = users.add(csv, shm_config.shm.fqdn)
+        if created:
+            console.tabulate(
+                ["Name", "Username"],
+                [
+                    [user.display_name, f"{user.username}@{user.domain}"]
+                    for user in created
+                ],
+            )
     except DataSafeHavenError as exc:
         logger.critical("Could not add users to Data Safe Haven.")
         raise typer.Exit(1) from exc

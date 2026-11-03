@@ -1,4 +1,32 @@
+import re
+import unicodedata
 from typing import Any
+
+# Some letters are not decomposed by Unicode NFKD normalization.
+MAX_ENTRA_NICKNAME_LENGTH = 64
+
+_NAME_TRANSLITERATION = str.maketrans(
+    {"ł": "l", "ø": "o", "đ": "d", "ð": "d", "þ": "th", "æ": "ae", "œ": "oe"}
+)
+
+
+def _username_part(value: str | None) -> str:
+    """Create an ASCII-only, Entra-safe component of a generated username."""
+    if not value or not value.strip():
+        msg = "Both given name and surname are required to generate a username."
+        raise ValueError(msg)
+    normalized = unicodedata.normalize(
+        "NFKD", value.strip().casefold().translate(_NAME_TRANSLITERATION)
+    )
+    ascii_name = "".join(char for char in normalized if not unicodedata.combining(char))
+    ascii_name = ascii_name.encode("ascii", errors="ignore").decode("ascii")
+    # Preserve double surnames using hyphens; apostrophes do not act as separators.
+    ascii_name = re.sub(r"[\s_\-]+", "-", ascii_name.replace("'", ""))
+    ascii_name = re.sub(r"[^a-z0-9-]", "", ascii_name).strip("-")
+    if not ascii_name:
+        msg = "Name cannot be transliterated into an ASCII Entra username."
+        raise ValueError(msg)
+    return ascii_name
 
 
 class ResearchUser:
@@ -53,7 +81,13 @@ class ResearchUser:
     def username(self) -> str:
         if self.sam_account_name:
             return self.sam_account_name
-        return f"{self.given_name}.{self.surname}".lower()
+        username = f"{_username_part(self.given_name)}.{_username_part(self.surname)}"
+        if len(username) > MAX_ENTRA_NICKNAME_LENGTH:
+            msg = (
+                "Generated username exceeds the 64-character Entra mailNickname limit."
+            )
+            raise ValueError(msg)
+        return username
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, ResearchUser):
