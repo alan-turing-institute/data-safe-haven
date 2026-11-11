@@ -355,6 +355,13 @@ It allows you to use [git](https://git-scm.com/about) to **version control** you
 The **Gitea** server within the SRE can hold code, documentation and results from your team's analyses.
 Use the **Gitea** server to work collaboratively on code with other project team members.
 
+If your workspace cannot access GitHub directly, the SRE administrator can
+approve and configure **read-only mirrors** of selected GitHub repositories.
+These are available through Gitea, but are not the same as the writable
+project repositories you create for your own work. See
+{ref}`self_code_ingress` for how to request, clone, update and work
+with an approved mirrored repository.
+
 :::{important}
 This **Gitea** server is entirely within the SRE - you do not need to worry about the security of the information you upload there as it is inaccessible from the public internet.
 :::
