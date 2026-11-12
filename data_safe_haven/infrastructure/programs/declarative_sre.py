@@ -284,6 +284,7 @@ class DeclarativeSRE:
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
             ),
+            opts=ResourceOptions(depends_on=[dns.readiness_check]),
             tags=self.tags,
         )
 
@@ -302,6 +303,7 @@ class DeclarativeSRE:
                 storage_account_name=data.storage_account_data_configuration_name,
                 subnet=networking.subnet_clamav_mirror,
             ),
+            opts=ResourceOptions(depends_on=[dns.readiness_check]),
             tags=self.tags,
         )
 
@@ -325,6 +327,7 @@ class DeclarativeSRE:
                 subnet_containers=networking.subnet_identity_containers,
                 log_level=self.config.sre.monitoring.log_level,
             ),
+            opts=ResourceOptions(depends_on=[dns.readiness_check]),
             tags=self.tags,
         )
 
@@ -374,6 +377,7 @@ class DeclarativeSRE:
                 user_group_name=ldap_group_names["user_group_name"],
                 log_level=self.config.sre.monitoring.log_level,
             ),
+            opts=ResourceOptions(depends_on=[dns.readiness_check]),
             tags=self.tags,
         )
 
@@ -413,6 +417,7 @@ class DeclarativeSRE:
                 subnet_software_repositories_support=networking.subnet_user_services_software_repositories_support,
                 log_level=self.config.sre.monitoring.log_level,
             ),
+            opts=ResourceOptions(depends_on=[dns.readiness_check]),
             tags=self.tags,
         )
 
@@ -476,7 +481,7 @@ class DeclarativeSRE:
                     for vm_index, vm_size in enumerate(self.config.sre.workspace_skus)
                 ],
             ),
-            opts=ResourceOptions(depends_on=[desired_state]),
+            opts=ResourceOptions(depends_on=[desired_state, dns.readiness_check]),
             tags=self.tags,
         )
 
