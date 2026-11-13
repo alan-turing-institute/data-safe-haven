@@ -40,6 +40,7 @@
 # - websocket-client==1.9.0
 # - coverage==7.15.2
 # - freezegun==1.5.5
+# - jinja2==3.1.6
 # - pytest-mock==3.15.1
 # - pytest==9.1.1
 # - requests-mock==1.12.1
@@ -244,6 +245,8 @@ isodate==0.7.2
     #   azure-storage-file-datalake
     #   azure-storage-file-share
     #   msrest
+jinja2==3.1.6
+    # via hatch.envs.test
 josepy==2.2.0
     # via
     #   -c .hatch/requirements.txt
@@ -252,6 +255,8 @@ markdown-it-py==4.2.0
     # via
     #   -c .hatch/requirements.txt
     #   rich
+markupsafe==3.0.3
+    # via jinja2
 mdurl==0.1.2
     # via
     #   -c .hatch/requirements.txt

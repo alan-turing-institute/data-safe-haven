@@ -46,10 +46,9 @@
       ansible.builtin.import_tasks: tasks/xfce.yaml
       tags: xfce
 
-    - name: Configure package proxies
+    - name: Configure package repositories
       ansible.builtin.import_tasks: tasks/package_proxy.yaml
       tags: package_proxies
-      when: use_software_repositories | bool
 
     - name: Configure scratchpad
       ansible.builtin.import_tasks: tasks/scratchpad.yaml
