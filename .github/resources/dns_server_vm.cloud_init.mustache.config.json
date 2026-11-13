@@ -1,0 +1,7 @@
+{
+  "entrypoint_sh_content_encoded": "IyEvYmluL3NoCg==",
+  "adguardhome_yaml_content_encoded": "dXNlcnM6IFtdCg==",
+  "dockerhub_username": "fixture-user",
+  "dockerhub_access_token": "fixture-token-not-valid",
+  "container_image": "ghcr.io/example/adguardhome:example"
+}
