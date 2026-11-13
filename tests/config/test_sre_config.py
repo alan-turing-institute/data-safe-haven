@@ -158,3 +158,15 @@ class TestConfig:
 
     def test_sre_config_yaml_name(self, sre_config: SREConfig) -> None:
         assert sre_config.filename == "sre-sandbox.yaml"
+
+
+def test_sre_config_diff_uses_local_remote_orientation(sre_config):
+    remote = sre_config.model_copy(deep=True)
+    remote.description = "Remote description"
+
+    changes = sre_config.diff(remote)
+
+    assert changes[0:2] == ["--- remote\n", "+++ local\n"]
+    assert "-description: Remote description\n" in changes
+    assert f"+description: {sre_config.description}\n" in changes
+    assert sre_config.diff(sre_config.model_copy(deep=True)) == []
