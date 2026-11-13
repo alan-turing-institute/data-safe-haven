@@ -31,6 +31,12 @@ from data_safe_haven.upgrade import (
 
 from .programs import DeclarativeSRE
 
+# Azure resource providers may throttle a large burst of parallel deletes.
+# Pulumi otherwise defaults to 16 concurrent operations on destroy.
+PULUMI_DESTROY_PARALLELISM = 4
+PULUMI_DESTROY_THROTTLE_RETRIES = 3
+PULUMI_DESTROY_THROTTLE_WAIT_SECONDS = 30
+
 
 class ProjectManager:
     """
@@ -272,17 +278,39 @@ class ProjectManager:
     def destroy(self) -> None:
         """Destroy deployed infrastructure."""
         try:
-            # Note that the first iteration can fail due to failure to delete container NICs
-            # See https://github.com/MicrosoftDocs/azure-docs/issues/20737 for details
+            # Note that the first iteration can fail due to failure to delete container NICs.
+            # See https://github.com/MicrosoftDocs/azure-docs/issues/20737 for details.
+            throttle_retries = 0
             while True:
                 try:
                     result = self.stack.destroy(
+                        parallel=PULUMI_DESTROY_PARALLELISM,
                         **self.pulumi_extra_args,
                     )
                     self.evaluate(result.summary.result)
                     break
                 except automation.CommandError as exc:
-                    if any(
+                    if (
+                        any(
+                            error in str(exc)
+                            for error in (
+                                "ResourceRequestsThrottled",
+                                "TooManyRequests",
+                            )
+                        )
+                        and throttle_retries < PULUMI_DESTROY_THROTTLE_RETRIES
+                    ):
+                        # Azure rate limits may remain active briefly after a partial
+                        # destroy. Resume with the remaining resources after a delay.
+                        throttle_retries += 1
+                        self.logger.warning(
+                            "Pulumi resource deletion was throttled by Azure "
+                            f"(retry {throttle_retries}/{PULUMI_DESTROY_THROTTLE_RETRIES})."
+                        )
+                        time.sleep(
+                            PULUMI_DESTROY_THROTTLE_WAIT_SECONDS * throttle_retries
+                        )
+                    elif any(
                         error in str(exc)
                         for error in (
                             "Linked Service is used by a solution",
