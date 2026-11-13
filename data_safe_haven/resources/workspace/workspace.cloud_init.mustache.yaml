@@ -1,6 +1,26 @@
 #cloud-config
 
 write_files:
+  # cloud-init mounts runs in init, before nfs-common is installed in final.
+  # Defer NFS fstab entries until runcmd (which runs after package installation).
+  - path: "/usr/local/sbin/dsh-register-nfs-mounts"
+    permissions: "0755"
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      # Idempotent if the cloud-init final stage is retried.
+      while IFS= read -r entry; do
+        if ! grep -Fqx -- "$entry" /etc/fstab; then
+          printf '%s\n' "$entry" >> /etc/fstab
+        fi
+      done <<'DSH_NFS_FSTAB'
+      {{storage_account_desired_state_name}}.blob.core.windows.net:/{{storage_account_desired_state_name}}/desiredstate /var/local/ansible nfs ro,_netdev,sec=sys,vers=3,nolock,proto=tcp 0 0
+      {{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/ingress /mnt/input nfs ro,_netdev,sec=sys,vers=3,nolock,proto=tcp 0 0
+      {{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/egress /mnt/output nfs rw,_netdev,sec=sys,vers=3,nolock,proto=tcp 0 0
+      {{storage_account_data_private_user_name}}.file.core.windows.net:/{{storage_account_data_private_user_name}}/shared /mnt/shared nfs _netdev,sec=sys,nconnect=4 0 0
+      {{storage_account_data_private_user_name}}.file.core.windows.net:/{{storage_account_data_private_user_name}}/home /home nfs _netdev,sec=sys,nconnect=4 0 0
+      DSH_NFS_FSTAB
+
   - path: "/etc/systemd/system/desired-state.timer"
     permissions: "0644"
     content: |
@@ -54,14 +74,6 @@ mounts:
   # Mounting data disk
   - ["/dev/disk/azure/scsi1/lun0-part1", "/mnt/datadrive", auto, "defaults,nofail"]
   {{/data_disk_support}}
-  # Desired state configuration is in a blob container mounted as NFSv3
-  - ["{{storage_account_desired_state_name}}.blob.core.windows.net:/{{storage_account_desired_state_name}}/desiredstate", /var/local/ansible, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
-  # Secure data is in a blob container mounted as NFSv3
-  - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/ingress", /mnt/input, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
-  - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/egress", /mnt/output, nfs, "rw,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
-  # User data is in a file share mounted as NFSv4
-  - ["{{storage_account_data_private_user_name}}.file.core.windows.net:/{{storage_account_data_private_user_name}}/shared", /mnt/shared, nfs, "_netdev,sec=sys,nconnect=4"]
-  - ["{{storage_account_data_private_user_name}}.file.core.windows.net:/{{storage_account_data_private_user_name}}/home", /home, nfs, "_netdev,sec=sys,nconnect=4"]
 
 # Add additional apt repositories
 apt:
@@ -84,6 +96,8 @@ runcmd:
   # Mount all external volumes
   # --------------------------
   - echo ">=== Mounting all external volumes... ===<"
+  - mkdir -p /var/local/ansible /mnt/input /mnt/output /mnt/shared /home
+  - /usr/local/sbin/dsh-register-nfs-mounts
   - grep -v -e '^[[:space:]]*$' /etc/fstab | sed 's|^|  /etc/fstab  |'
   - mount -fav
   - while (! mountpoint -q /mnt/input); do sleep 5; mount /mnt/input; done
