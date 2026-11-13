@@ -13,9 +13,12 @@ from .config_sections import (
     ConfigSectionMonitoring,
     ConfigSectionSRE,
     ConfigSectionUserServices,
+    ConfigSubsectionDatabaseSkus,
     ConfigSubsectionDnsSidecar,
     ConfigSubsectionGiteaMirror,
+    ConfigSubsectionMssqlSku,
     ConfigSubsectionNexus,
+    ConfigSubsectionPostgresqlSku,
     ConfigSubsectionRemoteDesktopOpts,
     ConfigSubsectionStorageQuotaGB,
     GitRepository,
@@ -108,6 +111,17 @@ class SREConfig(AzureSerialisableModel):
                 admin_ip_addresses=["List of IP addresses belonging to administrators"],
                 allow_workspace_internet=allow_workspace_internet,
                 databases=["List of database systems to deploy"],  # type: ignore
+                database_skus=ConfigSubsectionDatabaseSkus.model_construct(
+                    postgresql=ConfigSubsectionPostgresqlSku.model_construct(
+                        name="PostgreSQL Azure SKU name [default: Standard_B2s].",
+                        tier="PostgreSQL Azure SKU tier [Burstable, GeneralPurpose, MemoryOptimized].",  # type: ignore[arg-type]
+                    ),
+                    mssql=ConfigSubsectionMssqlSku.model_construct(
+                        name="Microsoft SQL database SKU name [default: GP_S_Gen5].",
+                        family="Microsoft SQL database SKU family [default: Gen5].",
+                        capacity="Microsoft SQL database SKU capacity [default: 1].",  # type: ignore
+                    ),
+                ),
                 data_provider_ip_addresses=[
                     "List of IP addresses belonging to data providers"
                 ],

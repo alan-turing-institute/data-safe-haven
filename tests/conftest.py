@@ -633,6 +633,14 @@ def sre_config_yaml(request: FixtureRequest) -> str:
         - 1.2.3.4/32
         allow_workspace_internet: false
         data_provider_ip_addresses: []
+        database_skus:
+            postgresql:
+                name: Standard_B2s
+                tier: Burstable
+            mssql:
+                name: GP_S_Gen5
+                family: Gen5
+                capacity: 1
         databases: []
         monitoring:
             log_level: debug
