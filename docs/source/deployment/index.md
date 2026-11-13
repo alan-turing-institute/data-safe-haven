@@ -7,6 +7,7 @@ setup_context.md
 configure_entra_id.md
 deploy_shm.md
 deploy_sre.md
+desired_state_development.md
 self_code_ingress.md
 smoke_tests.md
 security_checklist.md
