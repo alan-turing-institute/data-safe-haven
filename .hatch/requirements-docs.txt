@@ -30,6 +30,7 @@
 # - pulumi==3.254.0
 # - pydantic==2.13.4
 # - pyjwt[crypto]==2.13.0
+# - phonenumbers==9.0.40
 # - pytz==2026.3.post1
 # - pyyaml==6.0.3
 # - rich==15.0.0
@@ -263,6 +264,8 @@ parver==1.0
     #   pulumi-azure-native
     #   pulumi-azuread
     #   pulumi-random
+phonenumbers==9.0.40
+    # via hatch.envs.docs
 protobuf==6.33.6
     # via
     #   googleapis-common-protos
