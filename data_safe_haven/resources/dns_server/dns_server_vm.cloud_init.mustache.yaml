@@ -38,6 +38,9 @@ write_files:
       ExecStop=/usr/bin/docker stop adguardhome
       ExecStopPost=/usr/bin/docker rm adguardhome
 
+      [Install]
+      WantedBy=multi-user.target
+
 system_info:
   default_user:
     groups: [docker]
@@ -48,6 +51,7 @@ mounts:
 
 # Install necessary apt packages
 packages:
+  - dnsutils
   - docker.io
   - unattended-upgrades
 package_update: true
@@ -70,6 +74,6 @@ runcmd:
   # ---------------------------
   - echo ">=== Run the adguardhome service... ===<"
   - systemctl daemon-reload
-  - systemctl start adguardhome
+  - systemctl enable --now adguardhome
 
 final_message: "The system is finally up, after $UPTIME seconds"
