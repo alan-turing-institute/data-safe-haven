@@ -79,6 +79,9 @@ $ dsh config show-shm
 
 This is useful when validating an existing SHM or preparing to update or redeploy it. Pass `--file PATH` to write the configuration to a file instead of printing it to the console.
 
+For a step-by-step procedure to update an already deployed SHM without
+removing its shared resources, see {ref}`upgrade_shm`.
+
 :::{important}
 You may be asked to delegate your domain name to Azure. To do this, you'll need to know details about the parent domain. For example, if you are deploying to `dsh.example.com` then the parent name is `example.com`.
 
