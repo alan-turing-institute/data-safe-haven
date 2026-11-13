@@ -303,6 +303,15 @@ If you want to make changes to the config, edit this file and then run `dsh conf
 $ dsh sre deploy YOUR_SRE_NAME
 :::
 
+When redeploying an existing SRE with a newer DSH CLI version, the deploy
+command checks the SRE's recorded version **before** refreshing Pulumi state
+and asks for upgrade confirmation. If the versions differ, refresh
+automatically enables `--run-program` so that the current Pulumi providers
+can recognise resources created by an older release. For unusual recovery
+scenarios, you can explicitly enable this for any refresh using
+`dsh sre deploy YOUR_SRE_NAME --run-program`. A normal same-version
+deployment does not change its refresh behavior.
+
 ::::{important}
 After deployment, you may need to manually ensure that backups function.
 
