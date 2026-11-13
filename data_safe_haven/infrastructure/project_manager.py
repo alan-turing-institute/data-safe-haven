@@ -420,7 +420,17 @@ class ProjectManager:
             self.destroy()
             self.cleanup()
         except Exception as exc:
-            msg = "Tearing down Pulumi infrastructure failed.."
+            # A failed destroy may have removed only some resources. Do not run
+            # cleanup or delete the stack: retain it for a safe retry after
+            # the original Azure/Pulumi problem has been addressed.
+            self.logger.error(
+                "Infrastructure teardown did not complete. Some Azure resources "
+                "may still exist. Review the preceding Pulumi error, resolve the "
+                "underlying issue, and rerun the same teardown command. "
+                "Do not redeploy or manually remove the Pulumi stack until "
+                "teardown succeeds."
+            )
+            msg = "Pulumi infrastructure teardown did not complete."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def upgrade(self, subscription_name: str, *, run_program: bool = False) -> None:

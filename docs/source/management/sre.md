@@ -50,6 +50,25 @@ Tearing down the SHM also renders the SREs inaccessible to users and prevents th
 All SREs associated with the SHM should be torn down before the SHM is torn down.
 ::::
 
+### Recovering from an incomplete teardown
+
+An SRE teardown can fail after removing only some Azure resources, for example
+if a resource remains in use while Azure is deleting a dependent resource.
+The CLI reports this and retains the Pulumi stack so that deletion can be retried.
+
+Review the error printed immediately before the teardown failure, resolve any
+reported Azure resource dependency or permission problem, then **run the same
+teardown command again**:
+
+:::{code} shell
+$ dsh sre teardown YOUR_SRE_NAME
+:::
+
+If the error persists, consult your SHM/SRE administrator and inspect the
+Pulumi diagnostics rather than deleting the Pulumi state by hand. Do not
+redeploy an SRE of the same name until teardown has completed successfully;
+some resources may still exist.
+
 ## Updating SREs
 
 SREs are modified by updating the configuration then running the deploy command.
