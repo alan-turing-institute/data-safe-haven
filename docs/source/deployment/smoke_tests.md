@@ -18,7 +18,9 @@ cd /usr/local/smoke_tests
 
 The suite checks workspace mounts, Python and R package repositories and functionality, and database connectivity. A full run typically takes six minutes or more and requires no user interaction after it starts.
 
-The database tests are included even when a particular database service is not deployed. If credentials are available but that service is absent, the corresponding database tests can report `not ok`; this is expected. Focus on failures for functionality that is actually installed in the SRE. For example, an SRE without MS SQL may produce output like:
+The database tests run only for database systems selected in the deployed SRE configuration. The desired-state playbook writes `/usr/local/smoke_tests/enabled_databases` from the configured database list on each run. If a database system is not deployed, its Python and R tests are marked **skipped**, not failed. If a deployed database is unreachable, its tests still fail.
+
+On older workspaces without the inventory file, the smoke-test suite keeps its previous behaviour until the SRE is redeployed and its desired state applied. For example, after redeploying an SRE without MS SQL, the output is:
 
 :::{code} text
 1..13
@@ -31,8 +33,8 @@ ok 6 Python package repository
 ok 7 R package repository
 ok 8 Python functionality
 ok 9 R functionality
-not ok 10 MS SQL database (Python)
-not ok 11 MS SQL database (R)
+ok 10 MS SQL database (Python) # skip mssql database is not deployed in this SRE
+ok 11 MS SQL database (R) # skip mssql database is not deployed in this SRE
 ok 12 Postgres database (Python)
 ok 13 Postgres database (R)
 :::

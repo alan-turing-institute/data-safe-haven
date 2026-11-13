@@ -37,7 +37,7 @@ from data_safe_haven.infrastructure.components import (
     NFSV3StorageAccountProps,
 )
 from data_safe_haven.resources import resources_path
-from data_safe_haven.types import AzureDnsZoneNames
+from data_safe_haven.types import AzureDnsZoneNames, DatabaseSystem
 
 
 class SREDesiredStateProps:
@@ -49,6 +49,7 @@ class SREDesiredStateProps:
         allow_workspace_internet: Input[bool],
         clamav_mirror_hostname: Input[str],
         database_service_admin_password: Input[str],
+        databases: Sequence[DatabaseSystem],
         dns_private_zones: Input[dict[str, privatedns.PrivateZone]],
         gitea_hostname: Input[str],
         hedgedoc_hostname: Input[str],
@@ -69,6 +70,8 @@ class SREDesiredStateProps:
         self.allow_workspace_internet = allow_workspace_internet
         self.clamav_mirror_hostname = clamav_mirror_hostname
         self.database_service_admin_password = database_service_admin_password
+        # Mirror the exact database selection used by SREUserServicesComponent.
+        self.database_systems = [database.value for database in databases]
         self.dns_private_zones = dns_private_zones
         self.gitea_hostname = gitea_hostname
         self.hedgedoc_hostname = hedgedoc_hostname
@@ -174,6 +177,7 @@ class SREDesiredStateComponent(ComponentResource):
             source=Output.all(
                 clamav_mirror_hostname=props.clamav_mirror_hostname,
                 database_service_admin_password=props.database_service_admin_password,
+                database_systems=props.database_systems,
                 gitea_hostname=props.gitea_hostname,
                 hedgedoc_hostname=props.hedgedoc_hostname,
                 ldap_group_filter=props.ldap_group_filter,
@@ -234,5 +238,5 @@ class SREDesiredStateComponent(ComponentResource):
         self.storage_account_name = storage_account.name
 
     @staticmethod
-    def ansible_vars_file(**kwargs: str) -> str:
+    def ansible_vars_file(**kwargs: object) -> str:
         return yaml.safe_dump(kwargs, explicit_start=True, indent=2)

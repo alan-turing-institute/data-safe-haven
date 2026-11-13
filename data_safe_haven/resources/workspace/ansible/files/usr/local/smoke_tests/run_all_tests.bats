@@ -31,6 +31,16 @@ install_r_package_version() {
     Rscript -e "library('remotes', lib='$ENV_PATH'); remotes::install_version(package='$PACKAGE_NAME', version='$PACKAGE_VERSION', lib='$ENV_PATH');"
 }
 
+# Database selection is generated from the SRE configuration by desired state.
+# Preserve the legacy checks on existing workspaces without that inventory.
+check_db_deployed() {
+    local database="$1"
+    local inventory="${SMOKE_TEST_DATABASES_FILE:-/usr/local/smoke_tests/enabled_databases}"
+    if [ -f "$inventory" ] && ! grep -Fxq -- "$database" "$inventory"; then
+        skip "$database database is not deployed in this SRE"
+    fi
+}
+
 check_db_credentials() {
     db_password="$(cat /etc/database_credential 2> /dev/null)"
     if [ -z "$db_password" ]; then
@@ -98,6 +108,7 @@ check_db_credentials() {
 # ---------
 # Test MS SQL database
 @test "MS SQL database (Python)" {
+    check_db_deployed "mssql"
     check_db_credentials || skip "No database credentials available"
     initialise_python_environment
     pip install pandas psycopg pymssql --quiet
@@ -105,6 +116,7 @@ check_db_credentials() {
     [ "$status" -eq 0 ]
 }
 @test "MS SQL database (R)" {
+    check_db_deployed "mssql"
     check_db_credentials || skip "No database credentials available"
     initialise_r_environment
     install_r_package "DBI"
@@ -115,6 +127,7 @@ check_db_credentials() {
 }
 # Test Postgres database
 @test "Postgres database (Python)" {
+    check_db_deployed "postgresql"
     check_db_credentials || skip "No database credentials available"
     initialise_python_environment
     pip install pandas psycopg pymssql --quiet
@@ -122,6 +135,7 @@ check_db_credentials() {
     [ "$status" -eq 0 ]
 }
 @test "Postgres database (R)" {
+    check_db_deployed "postgresql"
     check_db_credentials || skip "No database credentials available"
     initialise_r_environment
     install_r_package "DBI"
