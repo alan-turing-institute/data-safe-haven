@@ -417,3 +417,5 @@ class SREGiteaMirrorManagerComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=self.container_group)
             ),
         )
+
+        self.register_outputs({})

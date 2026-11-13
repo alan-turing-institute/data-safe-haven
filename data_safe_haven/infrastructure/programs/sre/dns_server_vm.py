@@ -118,6 +118,8 @@ class SREDnsServerVMComponent(ComponentResource):
             "sku": container_host_vm.vm_size,
         }
 
+        self.register_outputs({})
+
     @staticmethod
     def template_cloudinit(**kwargs: str) -> str:
         logger = get_logger()

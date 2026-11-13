@@ -407,3 +407,5 @@ class SREApplicationGatewayComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
+
+        self.register_outputs({})

@@ -121,3 +121,5 @@ class SREEntraComponent(ComponentResource):
         self.remote_desktop_application_id = (
             self.remote_desktop_application.application.client_id
         )
+
+        self.register_outputs({})

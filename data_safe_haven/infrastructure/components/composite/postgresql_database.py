@@ -168,3 +168,5 @@ class PostgresqlDatabaseComponent(ComponentResource):
             private_endpoint
         ).apply(lambda ips: ips[0])
         self.database_resource_group_name = props.database_resource_group_name
+
+        self.register_outputs({})
