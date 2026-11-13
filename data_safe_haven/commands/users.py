@@ -10,7 +10,7 @@ from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import ContextManager, DSHPulumiConfig, SHMConfig, SREConfig
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
-from data_safe_haven.logging import get_logger
+from data_safe_haven.logging import get_logger, log_unhandled_dsh_exception
 
 users_command_group = typer.Typer()
 
@@ -50,6 +50,7 @@ def add(
         users = UserHandler(context, graph_api)
         users.add(csv, shm_config.shm.fqdn)
     except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical("Could not add users to Data Safe Haven.")
         raise typer.Exit(1) from exc
 
@@ -92,6 +93,7 @@ def list_users(
         users = UserHandler(context, graph_api)
         users.list(sre, pulumi_config)
     except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical("Could not list Data Safe Haven users.")
         raise typer.Exit(1) from exc
 
@@ -122,6 +124,7 @@ def register(
         try:
             shm_config = SHMConfig.from_remote(context)
         except DataSafeHavenError as exc:
+            log_unhandled_dsh_exception(exc)
             logger.error("Have you deployed the SHM?")
             raise typer.Exit(1) from exc
 
@@ -172,6 +175,7 @@ def register(
                 console.print("Please use 'dsh users add' to create this user.")
         users.register(sre_config.name, usernames_to_register)
     except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical(f"Could not register Data Safe Haven users with SRE '{sre}'.")
         raise typer.Exit(1) from exc
 
@@ -210,6 +214,7 @@ def remove(
             users = UserHandler(context, graph_api)
             users.remove(usernames)
     except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical("Could not remove users from Data Safe Haven.")
         raise typer.Exit(1) from exc
 
@@ -282,5 +287,6 @@ def unregister(
         ):
             users.unregister(group_name, usernames_to_unregister)
     except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical(f"Could not unregister Data Safe Haven users from SRE '{sre}'.")
         raise typer.Exit(1) from exc

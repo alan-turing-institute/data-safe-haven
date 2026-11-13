@@ -11,7 +11,7 @@ from data_safe_haven.config import ContextManager, DSHPulumiConfig, SREConfig
 from data_safe_haven.exceptions import DataSafeHavenConfigError, DataSafeHavenError
 from data_safe_haven.external import AzureSdk
 from data_safe_haven.infrastructure import SREProjectManager
-from data_safe_haven.logging import get_logger
+from data_safe_haven.logging import get_logger, log_unhandled_dsh_exception
 from data_safe_haven.resources import resources_path
 from data_safe_haven.types import AllowlistRepository, SoftwarePackageCategory
 from data_safe_haven.utility import FileReader
@@ -61,6 +61,7 @@ def show(
     try:
         context = ContextManager.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical(
             "No context is selected. Use `dsh context add` to create a context "
             "or `dsh context switch` to select one."
@@ -97,6 +98,7 @@ def show(
             context=context, repository=repository, sre_stack=sre_stack
         )
     except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical(
             "No allowlist is configured. Use `dsh allowlist upload` to create one."
         )

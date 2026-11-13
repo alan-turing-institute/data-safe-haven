@@ -1,4 +1,4 @@
-from pytest import CaptureFixture, LogCaptureFixture
+from pytest import LogCaptureFixture
 from pytest_mock import MockerFixture
 from typer.testing import CliRunner
 
@@ -133,14 +133,12 @@ class TestDeploySRE:
 
     def test_no_shm(
         self,
-        capfd,
         runner: CliRunner,
         mock_shm_config_from_remote_fails,  # noqa: ARG002
     ) -> None:
         result = runner.invoke(sre_command_group, ["deploy", "sandbox"])
-        out, _ = capfd.readouterr()
         assert result.exit_code == 1
-        assert "mock from_remote failure" in out
+        assert "mock from_remote failure" in result.stdout
 
 
 class TestTeardownSRE:
@@ -165,14 +163,14 @@ class TestTeardownSRE:
 
     def test_no_shm(
         self,
-        capfd: CaptureFixture,
         runner: CliRunner,
         mock_shm_config_from_remote_fails,  # noqa: ARG002
     ) -> None:
         result = runner.invoke(sre_command_group, ["teardown", "sandbox"])
-        out, _ = capfd.readouterr()
         assert result.exit_code == 1
-        assert "mock from_remote failure" in out
+        assert "Could not teardown Secure Research Environment" in result.stdout
+        # The failed SHM lookup was handled; it must no longer log by itself.
+        assert "mock from_remote failure" not in result.stdout
 
     def test_auth_failure(
         self,

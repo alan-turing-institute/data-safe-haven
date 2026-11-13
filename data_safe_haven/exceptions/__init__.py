@@ -1,6 +1,3 @@
-from data_safe_haven.logging import get_logger
-
-
 class DataSafeHavenError(Exception):
     """
     Parent class for all DataSafeHaven exceptions.
@@ -8,14 +5,8 @@ class DataSafeHavenError(Exception):
     This class is not intended to be instantiated directly. Developers should use one of the subclasses instead.
     """
 
-    def __init__(self, message: str | bytes):
-        super().__init__(message)
-
-        # Log exception message as an error
-        logger = get_logger()
-        message_str = message if isinstance(message, str) else message.decode("utf-8")
-        # Replace line breaks with escape code
-        logger.error(message_str.replace("\n", r"\n"))
+    # Deliberately do not log on construction: callers may catch these errors
+    # and recover. Log only when a failure is actually reported to the user.
 
 
 class DataSafeHavenAzureError(DataSafeHavenError):

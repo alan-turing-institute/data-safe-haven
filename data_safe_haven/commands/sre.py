@@ -10,7 +10,7 @@ from data_safe_haven.exceptions import DataSafeHavenConfigError, DataSafeHavenEr
 from data_safe_haven.external import AzureSdk, GraphApi
 from data_safe_haven.functions import current_ip_address, ip_address_in_list
 from data_safe_haven.infrastructure import SREProjectManager
-from data_safe_haven.logging import get_logger
+from data_safe_haven.logging import get_logger, log_unhandled_dsh_exception
 from data_safe_haven.provisioning import SREProvisioningManager
 
 sre_command_group = typer.Typer()
@@ -201,6 +201,8 @@ def deploy(
         )
 
     except DataSafeHavenError as exc:
+
+        log_unhandled_dsh_exception(exc)
         logger.critical(
             f"Could not deploy Secure Research Environment '[green]{name}[/]'."
         )
@@ -265,6 +267,7 @@ def teardown(
         # Upload Pulumi config to blob storage
         pulumi_config.upload(context)
     except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical(
             f"Could not teardown Secure Research Environment '[green]{name}[/]'."
         )
