@@ -514,6 +514,7 @@ class DeclarativeSRE:
                 workload_maximum_count=self.config.user_services.dns_sidecar.workload_maximum_count,
                 workload_minimum_count=self.config.user_services.dns_sidecar.workload_minimum_count,
             ),
+            opts=ResourceOptions(depends_on=[dns.readiness_check]),
         )
 
         # Export values for later use
