@@ -96,7 +96,9 @@ def available() -> None:
         raise typer.Exit(0)
 
     config_names = [blob.removeprefix("sre-").removesuffix(".yaml") for blob in blobs]
-    pulumi_config = DSHPulumiConfig.from_remote(context)
+    pulumi_config = DSHPulumiConfig.from_remote_or_create(
+        context, encrypted_key=None, projects={}
+    )
     deployed = pulumi_config.project_names
 
     headers = ["SRE Name", "Deployed"]
