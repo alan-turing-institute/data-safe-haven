@@ -36,6 +36,35 @@ Either log into that workspace and close Firefox, or follow the instructions [he
 Your profile is likely stored under **~/snap/firefox/common/.mozilla/firefox**.
 :::
 
+## {{fox_face}} Firefox fails to start after a VM redeployment
+
+If Firefox stops opening following an SRE workspace redeployment and prints
+an error such as:
+
+:::{code} text
+internal error, please report: running "firefox" failed:
+transient scope could not be started
+:::
+
+the Snap service may have a stale connection to the systemd user bus.
+From a terminal **inside the affected workspace**, run as your normal user
+(without `sudo`):
+
+:::{code} shell
+$ systemctl --user reset-failed
+$ systemctl --user daemon-reexec
+:::
+
+Then try Firefox again. These commands reset failed user units and restart
+the user manager so it can reconnect to the system bus. They do not remove
+your Firefox profile or browsing data. This workaround has been confirmed
+following a workspace VM redeployment (issue #2623).
+
+This is different from the **Firefox not responding** message above. If
+Firefox instead opens but repeatedly crashes after switching between
+workspace VMs, ask your SRE administrator before moving or deleting the
+Snap profile: it may contain bookmarks and other user data.
+
 ## {{zzz}} Idle screen lock
 
 By default, the Xfce desktop will enter a screensaver and lock the screen after idling for five minutes.
