@@ -1,9 +1,7 @@
 from typing import Any
-from unittest.mock import patch
 
 import pulumi
 import pulumi.runtime
-import pytest
 from pulumi_azure_native import resources
 from pytest import fixture
 
@@ -32,85 +30,13 @@ from data_safe_haven.types import (
 )
 
 
-class DSHUserServiceMocks(pulumi.runtime.Mocks):
-    """Configuration for Pulumi mocks"""
-
-    def new_resource(
-        self, args: pulumi.runtime.MockResourceArgs
-    ) -> tuple[str | None, dict[Any, Any]]:
-        state = dict(args.inputs)
-
-        if args.typ == "azure-native:dns:Zone":
-            # Ensure a value is available for the nameservers
-            # Otherwise these come through as None and the tests fail
-            state["nameServers"] = [
-                "ns1.example.com",
-            ]
-        elif args.typ == "azure-native:network:VirtualNetwork":
-            # Ensure a value is set for the VirtualNetwork name
-            # Otherwise this comes through as None and the tests fail
-            state["name"] = state["virtualNetworkName"]
-
-        resources = (args.name + "_id", state)
-        return resources
-
-    def call(
-        self, args: pulumi.runtime.MockCallArgs
-    ) -> tuple[dict[Any, Any], list[tuple[str, str]] | None]:
-        if args.token == "azure-native:network:getSubnet":  # noqa: S105
-            # Ensure we return a validly formed subnet
-            # Otherwise this comes through as None and the tests fail
-            return (
-                {
-                    "id": "/subscriptions/test/subnets/subnet1",
-                    "name": "subnet1",
-                    "addressPrefix": "10.0.0.0/24",
-                },
-                [],
-            )
-        return ({}, [])
-
-
-## Avoids a delayed return value causing the tests to fail
-@fixture(autouse=True)
-def patch_ips() -> pulumi.Output[list[str]]:
-    with patch(
-        "data_safe_haven.infrastructure.components.composite.postgresql_database.get_ip_addresses_from_private_endpoint"
-    ) as mock:
-        mock.return_value = pulumi.Output.from_input(["10.0.0.0"])
-        yield mock
-
-
-# Ensure the dns_zone is set. This is equivalent to setting:
-# os.environ["PULUMI_CONFIG"] = '{"project:dnsZone":"example.com"}'
-@fixture(autouse=True)
-def patch_config() -> pulumi.Output[str]:
-    with patch(
-        "pulumi.Config.require", side_effect=pulumi_config_require_side_effect
-    ) as mock:
-        yield mock
-
-
-def pulumi_config_require_side_effect(key: str) -> str:
-    values = {
-        "dnsZone": "example.com",
-    }
-    return values[key]
-
-
-# Set the Pulumi mocks for testing
-mocks = DSHUserServiceMocks()
-pulumi.runtime.set_mocks(
-    mocks,
-    preview=False,
-)
-
-
 # Fixture for the User Services Component properties for testing
 @fixture
 def user_services_props(
     dns: SREDnsServerComponent,
     dockerhub_credentials: DockerHubCredentials,
+    gitea_admin_password: str,
+    gitea_user_password: str,
     ldap_username_attribute: str,
     ldap_user_filter: str,
     ldap_user_search_base: str,
@@ -127,6 +53,8 @@ def user_services_props(
         db_server_shared_password="shared-db-password",
         dns_server_ip=dns.ip_address,
         dockerhub_credentials=dockerhub_credentials,
+        gitea_admin_password=gitea_admin_password,
+        gitea_user_password=gitea_user_password,
         ldap_server_hostname="identity.none",
         ldap_server_port=9999,
         ldap_username_attribute=ldap_username_attribute,
@@ -150,11 +78,12 @@ def user_services_props(
         subnet_software_repositories=networking.subnet_user_services_software_repositories,
         subnet_software_repositories_support=networking.subnet_user_services_software_repositories_support,
         db_server_shared_username="shared_db-username",
+        log_level="info",
     )
 
 
 # Fixture for the User Services Component for testing
-@pytest.fixture
+@fixture
 def user_services_component(
     user_services_props: SREUserServicesProps,
     stack_name: str,
@@ -286,3 +215,30 @@ class TestSREUserServicesProps:
                 "component_subnets": user_services_component.mirror_monitor.container_group.subnet_ids,
             }
         ).apply(check)
+
+    def test_dns_sidecar_targets(
+        self, user_services_component: SREUserServicesComponent
+    ) -> None:
+        """Check that the Gitea Mirror is maintained by the DNS sidecar, and Nexus is skipped when not deployed"""
+        assert {
+            target.dns_record_name
+            for target in user_services_component.dns_sidecar_targets
+        } == {"gitea", "hedgedoc", "giteamirror"}
+
+    def test_dns_sidecar_targets_without_gitea_mirror(
+        self,
+        user_services_props: SREUserServicesProps,
+        stack_name: str,
+    ) -> None:
+        """Check that the Gitea Mirror is not a DNS sidecar target when not deployed"""
+        user_services_props.subnet_gitea_mirrors_id = None
+        component = SREUserServicesComponent(
+            name="userservices-no-mirror",
+            stack_name=stack_name,
+            props=user_services_props,
+        )
+        assert component.mirror_monitor is None
+        assert {target.dns_record_name for target in component.dns_sidecar_targets} == {
+            "gitea",
+            "hedgedoc",
+        }

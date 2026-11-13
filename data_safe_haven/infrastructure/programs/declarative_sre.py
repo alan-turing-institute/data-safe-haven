@@ -143,6 +143,9 @@ class DeclarativeSRE:
                 location=self.config.azure.location,
                 resource_group_name=resource_group.name,
                 timezone=self.config.sre.timezone,
+                log_level=self.config.sre.monitoring.log_level,
+                retention_period_days=self.config.sre.monitoring.retention_period,
+                sampling_interval_seconds=self.config.sre.monitoring.sampling_interval,
             ),
             tags=self.tags,
         )
@@ -320,6 +323,7 @@ class DeclarativeSRE:
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
                 subnet_containers=networking.subnet_identity_containers,
+                log_level=self.config.sre.monitoring.log_level,
             ),
             tags=self.tags,
         )
@@ -345,6 +349,7 @@ class DeclarativeSRE:
             "sre_remote_desktop",
             self.stack_name,
             SRERemoteDesktopProps(
+                admin_group_name=ldap_group_names["admin_group_name"],
                 allow_copy=self.config.sre.remote_desktop.allow_copy,
                 allow_paste=self.config.sre.remote_desktop.allow_paste,
                 database_password=data.password_user_database_admin,
@@ -366,6 +371,8 @@ class DeclarativeSRE:
                 storage_account_name=data.storage_account_data_configuration_name,
                 subnet_guacamole_containers_support=networking.subnet_guacamole_containers_support,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
+                user_group_name=ldap_group_names["user_group_name"],
+                log_level=self.config.sre.monitoring.log_level,
             ),
             tags=self.tags,
         )
@@ -380,6 +387,8 @@ class DeclarativeSRE:
                 db_server_shared_password=data.password_shared_database_admin,
                 dns_server_ip=dns.ip_address,
                 dockerhub_credentials=dockerhub_credentials,
+                gitea_admin_password=data.password_gitea_admin,
+                gitea_user_password=data.password_gitea_user,
                 ldap_server_hostname=identity.hostname,
                 ldap_server_port=identity.server_port,
                 ldap_user_filter=ldap_user_filter,
@@ -402,6 +411,7 @@ class DeclarativeSRE:
                 subnet_databases=networking.subnet_user_services_databases,
                 subnet_software_repositories=networking.subnet_user_services_software_repositories,
                 subnet_software_repositories_support=networking.subnet_user_services_software_repositories_support,
+                log_level=self.config.sre.monitoring.log_level,
             ),
             tags=self.tags,
         )
@@ -429,7 +439,7 @@ class DeclarativeSRE:
                 resource_group=resource_group,
                 software_repository_hostname=(
                     user_services.software_repositories.hostname
-                    if hasattr(user_services, "software_repositories")
+                    if user_services.software_repositories is not None
                     else ""
                 ),
                 subnet_desired_state=networking.subnet_desired_state,
@@ -472,16 +482,11 @@ class DeclarativeSRE:
 
         # Deploy the DNS Sidecar
         container_instance_information: list[SupportsDnsSidecar] = [
-            user_services.gitea_server,
-            user_services.hedgedoc_server,
+            *user_services.dns_sidecar_targets,
             apt_proxy_server,
             clamav_mirror,
             identity,
         ]
-        if hasattr(user_services, "software_repositories"):
-            container_instance_information.append(
-                user_services.software_repositories,
-            )
 
         DnsSidecarComponent(
             "dns_sidecar",
@@ -507,7 +512,7 @@ class DeclarativeSRE:
         )
 
         # Export values for later use
-        if hasattr(user_services, "software_repositories"):
+        if user_services.software_repositories is not None:
             pulumi.export(
                 "allowlist_share_name",
                 user_services.software_repositories.allowlist_file_share_name,

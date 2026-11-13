@@ -10,6 +10,7 @@ from data_safe_haven.types import SafeSreName, SoftwarePackageCategory
 from .config_sections import (
     ConfigSectionAzure,
     ConfigSectionDockerHub,
+    ConfigSectionMonitoring,
     ConfigSectionSRE,
     ConfigSectionUserServices,
     ConfigSubsectionDnsSidecar,
@@ -110,6 +111,11 @@ class SREConfig(AzureSerialisableModel):
                 data_provider_ip_addresses=[
                     "List of IP addresses belonging to data providers"
                 ],
+                monitoring=ConfigSectionMonitoring.model_construct(
+                    log_level="Maximum granularity of logs to capture [error, warn, info, debug (default), trace]. Append optional service=level pairs [default, gitea_mirror, gitea, hedgedoc, identity, syslog, guacamole, nexus] separated by semicolons",
+                    retention_period="Length of time to store logs and monitoring data in days [default: 30, minimum: 30, maximum: 730]",  # type: ignore
+                    sampling_interval="Interval between collecting performance metrics in seconds [default: 60, minimum: 1]",  # type: ignore
+                ),
                 remote_desktop=ConfigSubsectionRemoteDesktopOpts.model_construct(
                     allow_copy=remote_desktop_allow_copy,
                     allow_paste=remote_desktop_allow_paste,
@@ -148,7 +154,9 @@ class SREConfig(AzureSerialisableModel):
                             repository_url="The URL of the GitHub repository to mirror.",  # type: ignore
                             repository_auth_token="A read-only GitHub personal access token, with access to the repository to mirror.",
                         )
-                    ]
+                    ],
+                    mirror_interval_minutes="How often, in minutes, to sync mirrors [default: 10, minimum: 1].",  # type: ignore
+                    update_schedule_minutes="How often, in minutes, Gitea checks for mirrors due to sync [default: 10, minimum: 1, maximum: mirror_interval_minutes].",  # type: ignore
                 ),
             ),
         )

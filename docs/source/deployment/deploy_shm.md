@@ -20,6 +20,7 @@ However, you may choose to use multiple SHMs if, for example, you want to separa
     - An account with [Global Administrator](https://learn.microsoft.com/en-us/entra/global-secure-access/reference-role-based-permissions#global-administrator) privileges on the tenant that you set up in the {ref}`configure_entra_id` step.
 - An Azure subscription where you will deploy your infrastructure
     - An account with at least [Contributor](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/general#contributor) permissions on this subscription
+    - The same account must also have [Key Vault Administrator](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/security#key-vault-administrator) permissions at a scope covering the SHM Key Vault, so that deployment can create and access the Pulumi encryption key
 
 ## Deployment
 
@@ -69,6 +70,14 @@ You will be prompted to log in to the Azure CLI and to the Graph API.
 - Graph API: use your **Entra tenant** administrator credentials
 
 :::
+
+To inspect the configuration of an SHM that has already been deployed for the selected context, run:
+
+:::{code} shell
+$ dsh config show-shm
+:::
+
+This is useful when validating an existing SHM or preparing to update or redeploy it. Pass `--file PATH` to write the configuration to a file instead of printing it to the console.
 
 :::{important}
 You may be asked to delegate your domain name to Azure. To do this, you'll need to know details about the parent domain. For example, if you are deploying to `dsh.example.com` then the parent name is `example.com`.

@@ -4,38 +4,40 @@
 
 It is the {ref}`role_data_provider_representative`'s responsibility to upload the data required by the safe haven.
 
-The following steps show how to generate a temporary, write-only upload token that can be securely sent to the {ref}`role_data_provider_representative`, enabling them to upload the data:
+You need to generate a temporary, write-only upload token that can be securely sent to the {ref}`role_data_provider_representative`, enabling them to upload the data.
 
-- In the Azure portal select **Subscriptions** then navigate to the subscription containing the relevant SHM
-- Search for the resource group: `shm-<YOUR_SHM_NAME>-sre-<YOUR_SRE_NAME>-rg`, then click through to the storage account ending with `sensitivedata`
-- Browse to **{menuselection}`Security + networking --> Networking`** and ensure that the data provider's IP address is one of those allowed under the **Firewall** header
-    - If it's not listed there are two possible approaches to take:
-        - Either: directly add the IP address on the **Networking** page in Azure.
-        - Or: use `dsh` to modify and redeploy the configuration with the IP address added to the `data_provider_ip_addresses` list.
-           See the {ref}`ingress_egress_update_ip_address_and_redeploy` section below for details.
-- Browse to **{menuselection}`Data storage --> Containers`** from the menu on the left hand side
-- Click **ingress**
-- Browse to **{menuselection}`Settings --> Shared access tokens`** and do the following:
-    - Under **Signing method**, select **User delegation key**
-    - Under **Permissions**, check these boxes:
-        - **Write**
-        - **List**
-    - Set a 24 hour time window in the **Start and expiry date/time** (or an appropriate length of time)
-    - Leave everything else as default and click **{guilabel}`Generate SAS token and URL`**
-    - Copy the **Blob SAS URL**
+Run {typer}`dsh storage create-sas` with the data provider's IP address and the time window for the upload:
 
-      :::{image} ingress_token_write_only.png
-      :alt: write-only SAS token
-      :align: center
-      :::
+:::{code} shell
+$ dsh storage create-sas YOUR_SRE_NAME --container ingress --ip DATA_PROVIDER_IP_ADDRESS --end END_DATETIME
+:::
 
-- Send the **Blob SAS URL** to the data provider through a secure channel
-- The data provider should now be able to upload data
-- Validate successful data ingress
-    - Browse to **{menuselection}`Data storage --> Containers`** (in the middle of the page)
-    - Select the **ingress** container and ensure that the uploaded files are present
-- Once the user has uploaded the data, or the ingress time window has expired, the IP address must be removed from the firewall rules.
-  See the {ref}`ingress_egress_follow_up_tasks` section below for details.
+- `--ip` accepts a single IPv4 address or a CIDR range
+- `--start` and `--end` accept dates (`2026-10-08`) or datetimes (`2026-10-08T09:00`) in UTC. `--start` defaults to now and `--end` can be at most 7 days from now.
+- Instead of `--end`, you can use `--hours` to set how many hours after the start time the URL expires, e.g. `--hours 24`. Use either `--end` or `--hours`, not both.
+
+The command adds the IP address to the firewall of the storage account ending with `sensitivedata` and prints a **Blob SAS URL** with write and list permissions on the **ingress** container.
+The URL is only valid for the given IP address and time window.
+
+:::{danger}
+**Very important:** the IP address added to the storage account firewall is **not** removed automatically when the SAS URL expires.
+You must **manually remove it** once the data provider has finished uploading or the time window has expired, otherwise the IP address keeps its network access to the storage account.
+See the {ref}`ingress_egress_follow_up_tasks` section below for details.
+:::
+
+:::{note}
+If the IP address is not in the `data_provider_ip_addresses` list of your SRE configuration, the next `dsh sre deploy` will also remove it from the firewall.
+:::
+
+Send the **Blob SAS URL** to the data provider through a secure channel.
+The data provider should now be able to upload data.
+
+To validate the upload, open the storage account ending with `sensitivedata` in the Azure portal, browse to **{menuselection}`Data storage --> Containers`**, select the **ingress** container and ensure that the uploaded files are present.
+Then complete the {ref}`follow-up tasks <ingress_egress_follow_up_tasks>`.
+
+:::{note}
+It is also possible to generate the SAS URL using the Azure portal, by adding the IP address to the storage account firewall and creating a **user delegation key** SAS token on the **ingress** container with **Write** and **List** permissions.
+:::
 
 ## Data egress
 

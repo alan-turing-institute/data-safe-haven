@@ -19,6 +19,11 @@ jobs:
       # comments (to avoid publishing multiple comments in the same PR)
       contents: write
     steps:
+      - name: Install Pulumi
+        run: |
+          curl -fsSL https://get.pulumi.com | sh -s -- --version 3.274.1 --silent
+          PATH=$HOME/.pulumi/bin:$PATH
+          echo Pulumi version: $(pulumi version)
       - name: Checkout code
         uses: actions/checkout@v7
       - name: Set up Python
@@ -29,7 +34,9 @@ jobs:
         run: pip install virtualenv==20.39.0 hatch==1.16.3
         # Temporary workaround. virtualenv==21.0.0 breaks the GH Action.
       - name: Test Python
-        run: hatch run test:test-coverage
+        run: |
+          PATH=$HOME/.pulumi/bin:$PATH
+          hatch run test:test-coverage
       # For security reasons, PRs created from forks cannot generate PR comments directly
       # (see https://securitylab.github.com/research/github-actions-preventing-pwn-requests/).
       # Instead we need to trigger another workflow after this one completes.

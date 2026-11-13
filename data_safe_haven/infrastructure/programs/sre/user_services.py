@@ -16,6 +16,7 @@ from data_safe_haven.infrastructure.components import (
 from data_safe_haven.types import DatabaseSystem, SoftwarePackageCategory
 
 from .database_servers import SREDatabaseServerComponent, SREDatabaseServerProps
+from .dns_sidecar import SupportsDnsSidecar
 from .gitea_mirror_manager import (
     SREGiteaMirrorManagerComponent,
     SREGiteaMirrorManagerProps,
@@ -38,6 +39,8 @@ class SREUserServicesProps:
         db_server_shared_password: Input[str],
         dns_server_ip: Input[str],
         dockerhub_credentials: DockerHubCredentials,
+        gitea_admin_password: Input[str],
+        gitea_user_password: Input[str],
         ldap_server_hostname: Input[str],
         ldap_server_port: Input[int],
         ldap_username_attribute: Input[str],
@@ -58,6 +61,7 @@ class SREUserServicesProps:
         subnet_containers_support: Input[network.GetSubnetResult],
         subnet_gitea_mirrors: Input[network.GetSubnetResult],
         subnet_databases: Input[network.GetSubnetResult],
+        log_level: Input[str],
         subnet_software_repositories: Input[network.GetSubnetResult] | None,
         subnet_software_repositories_support: Input[network.GetSubnetResult] | None,
         db_server_shared_username: Input[str] | None = None,
@@ -67,6 +71,8 @@ class SREUserServicesProps:
         self.db_server_shared_password = db_server_shared_password
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
+        self.gitea_admin_password = Output.secret(gitea_admin_password)
+        self.gitea_user_password = Output.secret(gitea_user_password)
         self.ldap_server_hostname = ldap_server_hostname
         self.ldap_server_port = ldap_server_port
         self.ldap_username_attribute = ldap_username_attribute
@@ -103,6 +109,8 @@ class SREUserServicesProps:
             self.subnet_gitea_mirrors_id = Output.from_input(
                 subnet_gitea_mirrors
             ).apply(get_id_from_subnet)
+
+        self.log_level = log_level
 
         self.subnet_software_repositories_id: Output[str] | None = None
 
@@ -153,6 +161,7 @@ class SREUserServicesComponent(ComponentResource):
             "sre_gitea_server",
             stack_name,
             SREGiteaServerProps(
+                admin_password=props.gitea_admin_password,
                 containers_subnet_id=props.subnet_containers_id,
                 db_server_shared=self.db_server_shared,
                 db_server_shared_password=props.db_server_shared_password,
@@ -169,17 +178,22 @@ class SREUserServicesComponent(ComponentResource):
                 sre_fqdn=props.sre_fqdn,
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
+                update_schedule_minutes=props.repository_data.update_schedule_minutes,
+                workspace_password=props.gitea_user_password,
+                log_level=props.log_level,
             ),
             opts=child_opts,
             tags=child_tags,
         )
 
         # Deploy the Gitea Mirror
+        self.mirror_monitor: SREGiteaMirrorManagerComponent | None = None
         if props.subnet_gitea_mirrors_id is not None:
             self.mirror_monitor = SREGiteaMirrorManagerComponent(
                 "gitea_mirror_monitor",
                 stack_name,
                 SREGiteaMirrorManagerProps(
+                    admin_password=props.gitea_admin_password,
                     db_server_shared=self.db_server_shared,
                     db_server_shared_password=props.db_server_shared_password,
                     dns_server_ip=props.dns_server_ip,
@@ -188,6 +202,7 @@ class SREUserServicesComponent(ComponentResource):
                     location=props.location,
                     log_analytics_workspace=props.log_analytics_workspace,
                     mirror_manager_subnet_id=props.subnet_gitea_mirrors_id,
+                    mirror_password=props.gitea_user_password,
                     repository_data=props.repository_data,
                     resource_group_name=props.resource_group_name,
                     sre_fqdn=props.sre_fqdn,
@@ -195,6 +210,7 @@ class SREUserServicesComponent(ComponentResource):
                     storage_account_name=props.storage_account_name,
                     workspace_username=self.gitea_server.workspace_username,
                     workspace_password=self.gitea_server.workspace_password,
+                    log_level=props.log_level,
                 ),
                 opts=child_opts,
                 tags=child_tags,
@@ -221,12 +237,14 @@ class SREUserServicesComponent(ComponentResource):
                 sre_fqdn=props.sre_fqdn,
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
+                log_level=props.log_level,
             ),
             opts=child_opts,
             tags=child_tags,
         )
 
         # Deploy software repository servers
+        self.software_repositories: SRESoftwareRepositoriesComponent | None = None
         if (
             props.subnet_software_repositories_id
             and props.subnet_software_repositories_support
@@ -249,6 +267,7 @@ class SREUserServicesComponent(ComponentResource):
                     storage_account_name=props.storage_account_name,
                     subnet_software_repositories_id=props.subnet_software_repositories_id,
                     subnet_software_repositories_support=props.subnet_software_repositories_support,
+                    log_level=props.log_level,
                 ),
                 opts=child_opts,
                 tags=child_tags,
@@ -270,3 +289,18 @@ class SREUserServicesComponent(ComponentResource):
                 opts=child_opts,
                 tags=child_tags,
             )
+
+        self.dns_sidecar_targets = self.get_dns_sidecar_targets()
+
+    def get_dns_sidecar_targets(self) -> list[SupportsDnsSidecar]:
+        """Container instances whose DNS records the DNS sidecar should maintain"""
+        targets: list[SupportsDnsSidecar] = [self.gitea_server, self.hedgedoc_server]
+        if self.mirror_monitor is not None:
+            targets.append(self.mirror_monitor)
+        # Nexus is only deployed for some package categories
+        if (
+            self.software_repositories is not None
+            and self.software_repositories.container_group is not None
+        ):
+            targets.append(self.software_repositories)
+        return targets

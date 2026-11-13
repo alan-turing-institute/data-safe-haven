@@ -4,9 +4,11 @@ from pydantic import ValidationError
 from data_safe_haven.config.config_sections import (
     ConfigSectionAzure,
     ConfigSectionDockerHub,
+    ConfigSectionMonitoring,
     ConfigSectionSHM,
     ConfigSectionSRE,
     ConfigSectionUserServices,
+    ConfigSubsectionGiteaMirror,
     ConfigSubsectionNexus,
     ConfigSubsectionRemoteDesktopOpts,
     ConfigSubsectionStorageQuotaGB,
@@ -139,6 +141,45 @@ class TestConfigSectionUserServices:
             )
 
 
+class TestConfigSubsectionGiteaMirror:
+    def test_constructor_defaults(self) -> None:
+        gitea_mirror = ConfigSubsectionGiteaMirror(repositories=[])
+        assert gitea_mirror.mirror_interval_minutes == 10
+
+    def test_constructor_override(self) -> None:
+        gitea_mirror = ConfigSubsectionGiteaMirror(
+            repositories=[], mirror_interval_minutes=1, update_schedule_minutes=1
+        )
+        assert gitea_mirror.mirror_interval_minutes == 1
+
+    def test_invalid_mirror_interval_minutes_zero(self) -> None:
+        with pytest.raises(ValueError, match=r"Input should be greater than 0"):
+            ConfigSubsectionGiteaMirror(repositories=[], mirror_interval_minutes=0)
+
+    def test_invalid_mirror_interval_minutes_negative(self) -> None:
+        with pytest.raises(ValueError, match=r"Input should be greater than 0"):
+            ConfigSubsectionGiteaMirror(repositories=[], mirror_interval_minutes=-1)
+
+    def test_update_schedule_minutes_default(self) -> None:
+        gitea_mirror = ConfigSubsectionGiteaMirror(repositories=[])
+        assert gitea_mirror.update_schedule_minutes == 10
+
+    def test_update_schedule_minutes_override(self) -> None:
+        gitea_mirror = ConfigSubsectionGiteaMirror(
+            repositories=[], mirror_interval_minutes=10, update_schedule_minutes=5
+        )
+        assert gitea_mirror.update_schedule_minutes == 5
+
+    def test_invalid_update_schedule_minutes_above_mirror_interval(self) -> None:
+        with pytest.raises(
+            ValueError,
+            match=r"`update_schedule_minutes` must be less than or equal to `mirror_interval_minutes`",
+        ):
+            ConfigSubsectionGiteaMirror(
+                repositories=[], mirror_interval_minutes=10, update_schedule_minutes=11
+            )
+
+
 class TestConfigSectionSRE:
     def test_constructor(
         self,
@@ -248,6 +289,43 @@ class TestConfigSectionSRE:
                 research_user_ip_addresses=addresses,
             )
 
+    def test_internet_and_packages_validation(
+        self,
+        config_subsection_remote_desktop: ConfigSubsectionRemoteDesktopOpts,
+        config_subsection_storage_quota_gb: ConfigSubsectionStorageQuotaGB,
+    ):
+        sre_config = ConfigSectionSRE(
+            admin_email_address="admin@example.com",
+            remote_desktop=config_subsection_remote_desktop,
+            storage_quota_gb=config_subsection_storage_quota_gb,
+            allow_workspace_internet=True,
+            software_packages=SoftwarePackageCategory.ANY,
+        )
+        assert sre_config.allow_workspace_internet
+        assert sre_config.software_packages == SoftwarePackageCategory.ANY
+
+        sre_config = ConfigSectionSRE(
+            admin_email_address="admin@example.com",
+            remote_desktop=config_subsection_remote_desktop,
+            storage_quota_gb=config_subsection_storage_quota_gb,
+            allow_workspace_internet=False,
+            software_packages=SoftwarePackageCategory.NONE,
+        )
+        assert not sre_config.allow_workspace_internet
+        assert sre_config.software_packages == SoftwarePackageCategory.NONE
+
+        with pytest.raises(
+            ValueError,
+            match=r"When `allow_workspace_internet` is `true`, `software_packages` must be `any`",
+        ):
+            ConfigSectionSRE(
+                admin_email_address="admin@example.com",
+                remote_desktop=config_subsection_remote_desktop,
+                storage_quota_gb=config_subsection_storage_quota_gb,
+                allow_workspace_internet=True,
+                software_packages=SoftwarePackageCategory.NONE,
+            )
+
 
 class TestConfigSubsectionRemoteDesktopOpts:
     def test_constructor(self) -> None:
@@ -301,3 +379,135 @@ class TestConfigSubsectionStorageQuotaGB:
                 home=50,
                 shared=100,
             )
+
+
+class TestConfigSectionMonitoring:
+    def test_constructor(self) -> None:
+        ConfigSectionMonitoring()
+
+    def test_constructor_defaults(self) -> None:
+        section = ConfigSectionMonitoring()
+        assert section.log_level == "debug"
+        assert section.retention_period == 30
+        assert section.sampling_interval == 60
+
+    def test_constructor_undefaults(self) -> None:
+        section = ConfigSectionMonitoring(
+            log_level="debug", retention_period=47, sampling_interval=21
+        )
+        assert section.log_level == "debug"
+        assert section.retention_period == 47
+        assert section.sampling_interval == 21
+
+    @pytest.mark.parametrize(
+        "log_level",
+        [
+            "error",
+            "warn",
+            "info",
+            "debug",
+            "trace",
+            "error;gitea=value",
+            'error;nexus="quoted space";gitea="none"',
+            'gitea_mirror="quoted space";gitea="none"',
+            'error;nexus=unquoted space;gitea="none"',
+            'error;nexus="quoted;semicolon";gitea="none"',
+        ],
+    )
+    def test_constructor_valid_log_level(self, log_level: str) -> None:
+        ConfigSectionMonitoring(log_level=log_level)
+
+    @pytest.mark.parametrize(
+        "log_level",
+        [
+            "critical",
+            "diaspora",
+            "error;mirror=value",
+            'critical;nexus=value;gitea="none"',
+            "unquoted;semicolon",
+        ],
+    )
+    def test_constructor_invalid_log_level(self, log_level: str) -> None:
+        with pytest.raises(
+            ValueError,
+            match=r"Value error, Logging level must be one of error, warn, info, debug, trace; or service-specific",
+        ):
+            ConfigSectionMonitoring(log_level=log_level)
+        with pytest.raises(
+            ValueError,
+            match=r"Input should be a valid string",
+        ):
+            ConfigSectionMonitoring(log_level=3)
+
+    @pytest.mark.parametrize(
+        "log_level",
+        [
+            "invalid-character%",
+            "invalid-character:",
+            "invalid-character;:",
+            "invalid-character#",
+            "invalid-character~",
+        ],
+    )
+    def test_constructor_invalid_log_level_syntax(self, log_level: str) -> None:
+        with pytest.raises(
+            ValueError,
+            match=r"Value error, Expected valid string containing only letters, numbers, quotes spaces, hyphens, underscores, semi-colons and equals.",
+        ):
+            ConfigSectionMonitoring(log_level=log_level)
+        with pytest.raises(
+            ValueError,
+            match=r"Input should be a valid string",
+        ):
+            ConfigSectionMonitoring(log_level=3)
+
+    @pytest.mark.parametrize("retention_period", [30, 31, 99, 729, 730])
+    def test_constructor_valid_retention_period(self, retention_period: int) -> None:
+        ConfigSectionMonitoring(retention_period=retention_period)
+
+    def test_constructor_valid_retention_period_string(self) -> None:
+        section = ConfigSectionMonitoring(retention_period="37")
+        assert section.retention_period == 37
+
+    @pytest.mark.parametrize("retention_period", [29, 731])
+    def test_constructor_invalid_retention_period(self, retention_period: int) -> None:
+        with pytest.raises(
+            ValueError,
+            match=r"Value error, Retention period must be between 30 and 730 days \(inclusive\)",
+        ):
+            ConfigSectionMonitoring(retention_period=retention_period)
+
+    @pytest.mark.parametrize("retention_period", [0, -1])
+    def test_constructor_invalid_retention_period_positive(
+        self, retention_period: int
+    ) -> None:
+        with pytest.raises(
+            ValueError,
+            match=r"Input should be greater than 0",
+        ):
+            ConfigSectionMonitoring(retention_period=retention_period)
+
+    def test_constructor_invalid_retention_period_string(self) -> None:
+        with pytest.raises(
+            ValueError,
+            match=r"Input should be greater than 0",
+        ):
+            ConfigSectionMonitoring(retention_period="0")
+
+    @pytest.mark.parametrize("sampling_interval", [1, 2, 60, 9999])
+    def test_constructor_valid_sampling_interval(self, sampling_interval: int) -> None:
+        ConfigSectionMonitoring(sampling_interval=sampling_interval)
+
+    def test_constructor_valid_sampling_interval_string(self) -> None:
+        section = ConfigSectionMonitoring(sampling_interval="87")
+        assert section.sampling_interval == 87
+
+    @pytest.mark.parametrize("sampling_interval", [0, -1])
+    def test_constructor_invalid_sampling_interval(
+        self, sampling_interval: int
+    ) -> None:
+        with pytest.raises(
+            ValueError,
+            match=r"Input should be greater than 0",
+        ):
+            ConfigSectionMonitoring(sampling_interval=sampling_interval)

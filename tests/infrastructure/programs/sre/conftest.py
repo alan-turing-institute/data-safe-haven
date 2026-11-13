@@ -1,5 +1,6 @@
 import asyncio
 from typing import Any
+from unittest.mock import patch
 
 import pulumi
 import pulumi.runtime
@@ -12,10 +13,23 @@ from data_safe_haven.config.config_sections import (
 from data_safe_haven.infrastructure.common import (
     DockerHubCredentials,
     SREIpRanges,
+    get_id_from_subnet,
+)
+from data_safe_haven.infrastructure.components import (
+    PostgresqlDatabaseComponent,
+    PostgresqlDatabaseProps,
 )
 from data_safe_haven.infrastructure.programs.sre.dns_server import (
     SREDnsServerComponent,
     SREDnsServerProps,
+)
+from data_safe_haven.infrastructure.programs.sre.gitea_mirror_manager import (
+    SREGiteaMirrorManagerComponent,
+    SREGiteaMirrorManagerProps,
+)
+from data_safe_haven.infrastructure.programs.sre.gitea_server import (
+    SREGiteaServerComponent,
+    SREGiteaServerProps,
 )
 from data_safe_haven.infrastructure.programs.sre.monitoring_elements import (
     SREMonitoringElementsComponent,
@@ -24,6 +38,10 @@ from data_safe_haven.infrastructure.programs.sre.monitoring_elements import (
 from data_safe_haven.infrastructure.programs.sre.networking import (
     SRENetworkingComponent,
     SRENetworkingProps,
+)
+from data_safe_haven.infrastructure.programs.sre.remote_desktop import (
+    SRERemoteDesktopComponent,
+    SRERemoteDesktopProps,
 )
 
 
@@ -42,12 +60,39 @@ class DataSafeHavenMocks(pulumi.runtime.Mocks):
     def new_resource(
         self, args: pulumi.runtime.MockResourceArgs
     ) -> tuple[str | None, dict[Any, Any]]:
-        resources = (args.name + "_id", args.inputs)
+        state = dict(args.inputs)
+
+        if args.typ == "azure-native:dns:Zone":
+            # Ensure a value is available for the nameservers
+            # Otherwise these come through as None and the tests fail
+            state["nameServers"] = [
+                "ns1.example.com",
+            ]
+        elif args.typ == "azure-native:network:VirtualNetwork":
+            # Ensure a value is set for the VirtualNetwork name
+            # Otherwise this comes through as None and the tests fail
+            state["name"] = state["virtualNetworkName"]
+        elif args.typ == "azure-native:storage:StorageAccount":
+            # Ensure a value is set for the StorageAccount name
+            state["name"] = state["accountName"]
+
+        resources = (args.name + "_id", state)
         return resources
 
     def call(
-        self, _: pulumi.runtime.MockCallArgs
+        self, args: pulumi.runtime.MockCallArgs
     ) -> tuple[dict[Any, Any], list[tuple[str, str]] | None]:
+        if args.token == "azure-native:network:getSubnet":  # noqa: S105
+            # Ensure we return a validly formed subnet
+            # Otherwise this comes through as None and the tests fail
+            return (
+                {
+                    "id": "/subscriptions/test/subnets/subnet1",
+                    "name": "subnet1",
+                    "addressPrefix": "10.0.0.0/24",
+                },
+                [],
+            )
         return ({}, [])
 
 
@@ -55,6 +100,16 @@ pulumi.runtime.set_mocks(
     DataSafeHavenMocks(),
     preview=False,
 )
+
+
+## Avoids a delayed return value causing the tests to fail
+@fixture(autouse=True)
+def patch_ips() -> pulumi.Output[list[str]]:
+    with patch(
+        "data_safe_haven.infrastructure.components.composite.postgresql_database.get_ip_addresses_from_private_endpoint"
+    ) as mock:
+        mock.return_value = pulumi.Output.from_input(["10.0.0.0"])
+        yield mock
 
 
 #
@@ -263,13 +318,19 @@ def dockerhub_credentials() -> DockerHubCredentials:
 
 
 @fixture
-def ldap_user_filter(ldap_group_search_base: str) -> str:
-    ldap_group_name_prefix = "Data Safe Haven SRE unit test"
-    ldap_group_names = {
-        "admin_group_name": f"{ldap_group_name_prefix} Administrators",
-        "privileged_user_group_name": f"{ldap_group_name_prefix} Privileged Users",
-        "user_group_name": f"{ldap_group_name_prefix} Users",
-    }
+def admin_group_name() -> str:
+    return "Data Safe Haven SRE unit test Administrators"
+
+
+@fixture
+def user_group_name() -> str:
+    return "Data Safe Haven SRE unit test Users"
+
+
+@fixture
+def ldap_user_filter(
+    admin_group_name: str, ldap_group_search_base: str, user_group_name: str
+) -> str:
     return "".join(
         [
             "(&",
@@ -277,7 +338,30 @@ def ldap_user_filter(ldap_group_search_base: str) -> str:
             "(|",
             *(
                 f"(memberOf=CN={group_name},{ldap_group_search_base})"
-                for group_name in ldap_group_names.values()
+                for group_name in (admin_group_name, user_group_name)
+            ),
+            ")",
+            ")",
+        ]
+    )
+
+
+@fixture
+def ldap_group_filter(
+    admin_group_name: str, ldap_group_search_base: str, user_group_name: str
+) -> str:
+    return "".join(
+        [
+            "(&",
+            "(objectClass=posixGroup)",
+            "(|",
+            *(
+                f"(CN={group_name})"
+                for group_name in (admin_group_name, user_group_name)
+            ),
+            *(
+                f"(memberOf=CN=Primary user groups for {group_name},{ldap_group_search_base})"
+                for group_name in (admin_group_name, user_group_name)
             ),
             ")",
             ")",
@@ -300,6 +384,9 @@ def monitoring_elements(
             location=location,
             resource_group_name=resource_group.name,
             timezone=timezone,
+            log_level="info",
+            retention_period_days=30,
+            sampling_interval_seconds=60,
         ),
         tags=tags,
     )
@@ -370,4 +457,204 @@ def networking(
 def repository_data() -> ConfigSubsectionGiteaMirror:
     return ConfigSubsectionGiteaMirror(
         repositories=[],
+    )
+
+
+@fixture
+def db_server_shared(
+    location: str,
+    resource_group: resources.ResourceGroup,
+    stack_name: str,
+    tags: dict[str, str],
+) -> PostgresqlDatabaseComponent:
+    return PostgresqlDatabaseComponent(
+        "db_server_shared",
+        PostgresqlDatabaseProps(
+            database_names=[],
+            database_password="db-password",
+            database_resource_group_name=resource_group.name,
+            database_server_name=f"{stack_name}-db-server-shared",
+            database_subnet_id="subnet_id",
+            database_username="db-username",
+            disable_secure_transport=False,
+            location=location,
+        ),
+        tags=tags,
+    )
+
+
+@fixture
+def gitea_admin_password() -> str:
+    return "gitea-admin-password"
+
+
+@fixture
+def gitea_user_password() -> str:
+    return "gitea-user-password"
+
+
+@fixture
+def gitea_server_props(
+    dns: SREDnsServerComponent,
+    db_server_shared: PostgresqlDatabaseComponent,
+    dockerhub_credentials: DockerHubCredentials,
+    gitea_admin_password: str,
+    gitea_user_password: str,
+    ldap_username_attribute: str,
+    ldap_user_filter: str,
+    ldap_user_search_base: str,
+    location: str,
+    monitoring_elements: SREMonitoringElementsComponent,
+    networking: SRENetworkingComponent,
+    resource_group: resources.ResourceGroup,
+    sre_fqdn: str,
+) -> SREGiteaServerProps:
+    return SREGiteaServerProps(
+        admin_password=gitea_admin_password,
+        containers_subnet_id=pulumi.Output.from_input(
+            networking.subnet_user_services_containers
+        ).apply(get_id_from_subnet),
+        db_server_shared=db_server_shared,
+        db_server_shared_password="shared-db-password",
+        dns_server_ip=dns.ip_address,
+        dockerhub_credentials=dockerhub_credentials,
+        ldap_server_hostname="identity.none",
+        ldap_server_port=9999,
+        ldap_username_attribute=ldap_username_attribute,
+        ldap_user_filter=ldap_user_filter,
+        ldap_user_search_base=ldap_user_search_base,
+        location=location,
+        log_analytics_workspace=monitoring_elements.workspace_analytics,
+        resource_group_name=resource_group.name,
+        sre_fqdn=sre_fqdn,
+        storage_account_key="storage_key",
+        storage_account_name="storage_account",
+        update_schedule_minutes=10,
+        workspace_password=gitea_user_password,
+        log_level="info",
+    )
+
+
+@fixture
+def gitea_server_component(
+    gitea_server_props: SREGiteaServerProps,
+    stack_name: str,
+    tags: dict[str, str],
+) -> SREGiteaServerComponent:
+    return SREGiteaServerComponent(
+        name="gitea-server-name",
+        stack_name=stack_name,
+        props=gitea_server_props,
+        tags=tags,
+    )
+
+
+@fixture
+def gitea_mirror_manager_props(
+    db_server_shared: PostgresqlDatabaseComponent,
+    dns: SREDnsServerComponent,
+    dockerhub_credentials: DockerHubCredentials,
+    gitea_admin_password: str,
+    gitea_server_component: SREGiteaServerComponent,
+    gitea_user_password: str,
+    location: str,
+    monitoring_elements: SREMonitoringElementsComponent,
+    networking: SRENetworkingComponent,
+    repository_data: ConfigSubsectionGiteaMirror,
+    resource_group: resources.ResourceGroup,
+    sre_fqdn: str,
+) -> SREGiteaMirrorManagerProps:
+    return SREGiteaMirrorManagerProps(
+        admin_password=gitea_admin_password,
+        db_server_shared=db_server_shared,
+        db_server_shared_password="shared-db-password",
+        dns_server_ip=dns.ip_address,
+        dockerhub_credentials=dockerhub_credentials,
+        gitea_workspace_dns_record=gitea_server_component.dns_record_name,
+        location=location,
+        log_analytics_workspace=monitoring_elements.workspace_analytics,
+        mirror_manager_subnet_id=pulumi.Output.from_input(
+            networking.subnet_user_services_gitea_mirror
+        ).apply(get_id_from_subnet),
+        mirror_password=gitea_user_password,
+        repository_data=repository_data,
+        resource_group_name=resource_group.name,
+        sre_fqdn=sre_fqdn,
+        storage_account_key="storage_key",
+        storage_account_name="storage_account",
+        workspace_username=gitea_server_component.workspace_username,
+        workspace_password=gitea_server_component.workspace_password,
+        log_level="info",
+    )
+
+
+@fixture
+def gitea_mirror_manager_component(
+    gitea_mirror_manager_props: SREGiteaMirrorManagerProps,
+    stack_name: str,
+    tags: dict[str, str],
+) -> SREGiteaMirrorManagerComponent:
+    return SREGiteaMirrorManagerComponent(
+        name="gitea-mirror-manager-name",
+        stack_name=stack_name,
+        props=gitea_mirror_manager_props,
+        tags=tags,
+    )
+
+
+@fixture
+def remote_desktop_props(
+    admin_group_name: str,
+    dns: SREDnsServerComponent,
+    dockerhub_credentials: DockerHubCredentials,
+    ldap_group_filter: str,
+    ldap_group_search_base: str,
+    ldap_server_hostname: str,
+    ldap_user_filter: str,
+    ldap_user_search_base: str,
+    location: str,
+    monitoring_elements: SREMonitoringElementsComponent,
+    networking: SRENetworkingComponent,
+    resource_group: resources.ResourceGroup,
+    user_group_name: str,
+) -> SRERemoteDesktopProps:
+    return SRERemoteDesktopProps(
+        admin_group_name=admin_group_name,
+        allow_copy=True,
+        allow_paste=True,
+        database_password="database_password",
+        dns_server_ip=dns.ip_address,
+        dockerhub_credentials=dockerhub_credentials,
+        entra_application_id="entra_application_id",
+        entra_application_url="https://entra-application.example.com",
+        entra_tenant_id="entra_tenant_id",
+        ldap_group_filter=ldap_group_filter,
+        ldap_group_search_base=ldap_group_search_base,
+        ldap_server_hostname=ldap_server_hostname,
+        ldap_server_port=9999,
+        ldap_user_filter=ldap_user_filter,
+        ldap_user_search_base=ldap_user_search_base,
+        location=location,
+        log_analytics_workspace=monitoring_elements.workspace_analytics,
+        resource_group_name=resource_group.name,
+        storage_account_key="storage_key",
+        storage_account_name="storage_account",
+        subnet_guacamole_containers=networking.subnet_guacamole_containers,
+        subnet_guacamole_containers_support=networking.subnet_guacamole_containers_support,
+        user_group_name=user_group_name,
+        log_level="info",
+    )
+
+
+@fixture
+def remote_desktop_component(
+    remote_desktop_props: SRERemoteDesktopProps,
+    stack_name: str,
+    tags: dict[str, str],
+) -> SRERemoteDesktopComponent:
+    return SRERemoteDesktopComponent(
+        name="remote-desktop-name",
+        stack_name=stack_name,
+        props=remote_desktop_props,
+        tags=tags,
     )

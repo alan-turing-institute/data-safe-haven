@@ -9,6 +9,7 @@ from .annotated_types import (
     Fqdn,
     Guid,
     IpAddress,
+    SafeLogLevelString,
     SafeSreName,
     SafeString,
     TimeZone,
@@ -30,6 +31,7 @@ from .enums import (
     Ports,
     PostgreSqlExtension,
     SoftwarePackageCategory,
+    StorageContainer,
 )
 from .types import PathType
 
@@ -59,9 +61,11 @@ __all__ = [
     "PermittedDomains",
     "Ports",
     "PostgreSqlExtension",
+    "SafeLogLevelString",
     "SafeSreName",
     "SafeString",
     "SoftwarePackageCategory",
+    "StorageContainer",
     "TimeZone",
     "UniqueList",
 ]

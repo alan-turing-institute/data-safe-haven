@@ -135,6 +135,16 @@ def safe_string(safe_string: str) -> str:
     return safe_string
 
 
+def safe_log_level_string(safe_log_level_string: str) -> str:
+    if (
+        not re.match(r"^[a-zA-Z0-9_;=\" -]+$", safe_log_level_string)
+        or not safe_log_level_string
+    ):
+        msg = "Expected valid string containing only letters, numbers, quotes spaces, hyphens, underscores, semi-colons and equals."
+        raise ValueError(msg)
+    return safe_log_level_string
+
+
 def safe_sre_name(safe_sre_name: str) -> str:
     if not re.match(r"^[a-z0-9_-]+$", safe_sre_name) or not safe_sre_name:
         msg = "Expected valid string containing only lowercase letters, numbers, hyphens and underscores."

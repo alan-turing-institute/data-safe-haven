@@ -40,7 +40,7 @@ from data_safe_haven.infrastructure.components import (
     SSLCertificate,
     SSLCertificateProps,
 )
-from data_safe_haven.types import AzureDnsZoneNames
+from data_safe_haven.types import AzureDnsZoneNames, StorageContainer
 
 
 class SREDataProps:
@@ -362,6 +362,44 @@ class SREDataComponent(ComponentResource):
             tags=child_tags,
         )
 
+        # Secret: Gitea admin password
+        password_gitea_admin = pulumi_random.RandomPassword(
+            f"{self._name}_password_gitea_admin",
+            length=20,
+            special=False,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+        )
+        keyvault.Secret(
+            f"{self._name}_kvs_password_gitea_admin",
+            properties=keyvault.SecretPropertiesArgs(value=password_gitea_admin.result),
+            resource_group_name=props.resource_group_name,
+            secret_name="password-gitea-server-admin",
+            vault_name=key_vault.name,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_gitea_admin)
+            ),
+            tags=child_tags,
+        )
+
+        # Secret: Gitea user password
+        password_gitea_user = pulumi_random.RandomPassword(
+            f"{self._name}_password_gitea_user",
+            length=20,
+            special=False,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+        )
+        keyvault.Secret(
+            f"{self._name}_kvs_password_gitea_user",
+            properties=keyvault.SecretPropertiesArgs(value=password_gitea_user.result),
+            resource_group_name=props.resource_group_name,
+            secret_name="password-gitea-mirror-user",
+            vault_name=key_vault.name,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_gitea_user)
+            ),
+            tags=child_tags,
+        )
+
         # Secret: Workspace admin password
         password_workspace_admin = pulumi_random.RandomPassword(
             f"{self._name}_password_workspace_admin",
@@ -556,7 +594,7 @@ class SREDataComponent(ComponentResource):
                 # ensure that the above permissions are also set on any newly created
                 # files (eg. with Azure Storage Explorer)
                 apply_default_permissions=True,
-                container_name="ingress",
+                container_name=StorageContainer.INGRESS,
                 resource_group_name=props.resource_group_name,
                 storage_account=storage_account_data_private_sensitive,
                 subscription_name=props.subscription_name,
@@ -816,6 +854,8 @@ class SREDataComponent(ComponentResource):
             password_user_database_admin.result
         )
         self.password_workspace_admin = Output.secret(password_workspace_admin.result)
+        self.password_gitea_admin = Output.secret(password_gitea_admin.result)
+        self.password_gitea_user = Output.secret(password_gitea_user.result)
 
         # Register exports
         self.exports = {
@@ -823,4 +863,5 @@ class SREDataComponent(ComponentResource):
             "password_nexus_database_admin_secret": kvs_password_nexus_database_admin.name,
             "password_user_database_admin_secret": kvs_password_user_database_admin.name,
             "storage_account_data_configuration_name": storage_account_data_configuration.name,
+            "storage_account_data_private_sensitive_name": storage_account_data_private_sensitive.name,
         }

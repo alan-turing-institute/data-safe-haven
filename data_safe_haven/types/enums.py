@@ -253,3 +253,10 @@ class AllowlistRepository(StrEnum):
 @verify(UNIQUE)
 class PostgreSqlExtension(StrEnum):
     PG_TRGM = "PG_TRGM"
+
+
+@verify(UNIQUE)
+class StorageContainer(StrEnum):
+    """SRE storage containers that SAS tokens can be created for."""
+
+    INGRESS = "ingress"
