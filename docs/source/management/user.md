@@ -26,6 +26,13 @@ Grace;Hopper;+18005550100;grace@nasa.gov;US
 $ dsh users add PATH_TO_MY_CSV_FILE
 :::
 
+If an individual Entra user cannot be created or updated, the command
+continues processing the remaining CSV rows and reports the failed usernames
+and the number of successful operations at the end. The command exits with an
+error when any row fails, even if other users were created. Review the errors
+and correct the input or account permissions, then rerun the CSV. Existing
+Entra users are updated rather than duplicated.
+
 ## List available users
 
 - You can do this from the [Microsoft Entra admin centre](https://entra.microsoft.com/)
