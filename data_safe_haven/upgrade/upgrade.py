@@ -94,6 +94,22 @@ class Upgrade:
                     self.logger.info(
                         "If you have non-duplicate data stored on any of these you should back them up before proceeding."
                     )
+                if (self.sre_version < Version("5.9.0")) and (
+                    self.dsh_version >= Version("5.9.0")
+                ):
+                    self.logger.info(
+                        f"Upgrading to version {self.dsh_version} will result in the following new options being added to your SRE configuration with default values:"
+                    )
+                    self.logger.info("1. sre.monitoring.log_level")
+                    self.logger.info("2. sre.monitoring.retention_period")
+                    self.logger.info("3. sre.monitoring.sampling_interval")
+                    self.logger.info(
+                        "4. user_services.gitea_mirror.mirror_interval_minutes"
+                    )
+                    self.logger.info(
+                        "5. user_services.gitea_mirror.update_schedule_minutes"
+                    )
+
                 self.proceed = console.confirm(
                     "Are you sure you wish to proceed with the upgrade?",
                     default_to_yes=False,
