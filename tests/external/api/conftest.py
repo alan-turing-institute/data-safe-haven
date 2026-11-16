@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 import os
 
 import jwt
@@ -109,7 +109,7 @@ def mock_devicecodecredential_new(mocker, authentication_record):
             self.prompt_callback(
                 "VERIFICATION_URI",
                 "USER_DEVICE_CODE",
-                datetime.datetime.now(tz=datetime.UTC),
+                dt.datetime.now(tz=dt.UTC),
             )
             return authentication_record
 

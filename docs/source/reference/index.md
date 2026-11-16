@@ -10,6 +10,7 @@ users.md
 pulumi.md
 shm.md
 sre.md
+storage.md
 :::
 
 A Data Safe Haven is managed using the `dsh` command line interface.
@@ -46,3 +47,6 @@ For further detail on each subcommand, navigate to the relevant page.
 
 [sre](sre.md)
 : Management of infrastructure for DSH Secure Research Environments
+
+[storage](storage.md)
+: Management of SRE storage, such as SAS tokens for storage containers

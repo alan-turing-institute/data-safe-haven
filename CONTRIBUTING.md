@@ -150,19 +150,22 @@ Releases are made by branching from `develop` into a branch called `release-<ver
 - deployment is tested from this release and any necessary integration changes are made on this branch
 - the branch is then merged into `latest` (which is tagged) as the next release **and** into `develop` so that any fixes are included there
 
-The release can then be published to PyPI:
+Tagged releases will automatically be built and pushed to PyPi by the GitHub workflow.
+You can also build it manually.
 
-- Build the tarball and wheel
-
-```console
-> hatch run build
-```
-
-- Upload to PyPI, providing your API token at the prompt
+To build the tarball and wheel:
 
 ```console
-> hatch run publish --user __token__
+> hatch build
 ```
+
+To upload to PyPI, providing your API token at the prompt
+
+```console
+> hatch publish --user __token__
+```
+
+There's also a custom workflow called "Upload to PyPI" which can be run as a GitHub Action.
 
 ## Who's involved in the project
 

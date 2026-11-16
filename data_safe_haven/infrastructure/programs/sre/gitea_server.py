@@ -2,7 +2,6 @@ from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, storage
-from pulumi_random import RandomPassword
 
 from data_safe_haven.infrastructure.common import (
     DockerHubCredentials,
@@ -17,14 +16,19 @@ from data_safe_haven.infrastructure.components import (
     PostgresqlDatabaseComponent,
 )
 from data_safe_haven.resources import resources_path
-from data_safe_haven.utility import FileReader
+from data_safe_haven.utility import FileReader, LogLevelParser
 
 
 class SREGiteaServerProps:
     """Properties for SREGiteaServerComponent"""
 
+    @staticmethod
+    def log_level_convert(log_level: str) -> str:
+        return log_level.capitalize()
+
     def __init__(
         self,
+        admin_password: Input[str],
         containers_subnet_id: Input[str],
         db_server_shared: Input[PostgresqlDatabaseComponent],
         db_server_shared_password: Input[str],
@@ -41,7 +45,11 @@ class SREGiteaServerProps:
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
+        update_schedule_minutes: int,
+        workspace_password: Input[str],
+        log_level: Input[str],
     ) -> None:
+        self.admin_password = admin_password
         self.containers_subnet_id = containers_subnet_id
         self.db_server_shared = db_server_shared
         self.db_server_shared_password = db_server_shared_password
@@ -58,6 +66,9 @@ class SREGiteaServerProps:
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
+        self.update_schedule_minutes = update_schedule_minutes
+        self.workspace_password = workspace_password
+        self.log_level = log_level
 
 
 class SREGiteaServerComponent(ComponentResource):
@@ -132,15 +143,9 @@ class SREGiteaServerComponent(ComponentResource):
             resources_path / "gitea" / "gitea" / "configure.mustache.sh"
         )
 
-        gitea_workspace_user_password: RandomPassword = RandomPassword(
-            f"{self._name}_password_gitea_workspace_user",
-            length=20,
-            special=False,
-        )
-
         self.workspace_username: str = "workspaceuser"
         self.workspace_password: Output[str] = Output.secret(
-            gitea_workspace_user_password.result
+            Output.from_input(props.workspace_password)
         )
 
         gitea_configure_sh = Output.all(
@@ -210,7 +215,7 @@ class SREGiteaServerComponent(ComponentResource):
             container_group_name=self.container_group_name,
             containers=[
                 containerinstance.ContainerArgs(
-                    image="caddy:2.11.4",
+                    image="caddy:2.11.7",
                     name="caddy"[:63],
                     ports=[
                         containerinstance.ContainerPortArgs(
@@ -233,7 +238,7 @@ class SREGiteaServerComponent(ComponentResource):
                     ],
                 ),
                 containerinstance.ContainerArgs(
-                    image="gitea/gitea:1.27.1",
+                    image="gitea/gitea:28.2",
                     name="gitea"[:63],
                     command=["/app/custom/entrypoint.sh"],
                     environment_variables=[
@@ -266,14 +271,36 @@ class SREGiteaServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__log__LEVEL",
-                            # Options are: "Trace", "Debug", "Info" [default], "Warn", "Error", "Critical" or "None".
-                            value="Debug",
+                            # Options are: "Trace", "Debug", "Info", "Warn", "Error", "Critical" or "None".
+                            value=LogLevelParser.service_logging_level(
+                                props.log_level,
+                                "gitea",
+                                SREGiteaServerProps.log_level_convert,
+                            ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__security__INSTALL_LOCK", value="true"
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__migrations__ALLOW_LOCALNETWORKS", value="true"
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            # Allow any interval down to Gitea's practical floor.
+                            # `gitea-mirror-manager` sets the actual sync interval
+                            # explicitly per mirror via the API.
+                            name="GITEA__mirror__MIN_INTERVAL",
+                            value="1m",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            # Configurable cron task schedule that scans for and
+                            # triggers mirror syncs. More info at:
+                            # https://docs.gitea.com/administration/config-cheat-sheet/#cron---update-mirrors-cronupdate_mirrors
+                            name="GITEA__cron_0x2E_update_mirrors__SCHEDULE",
+                            value=f"@every {props.update_schedule_minutes}m",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="ADMIN_SERVER_PASSWORD",
+                            secure_value=props.admin_password,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="WORKSPACE_SERVER_PASSWORD",

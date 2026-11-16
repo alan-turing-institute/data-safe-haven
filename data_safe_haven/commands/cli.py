@@ -13,6 +13,7 @@ from .context import context_command_group
 from .pulumi import pulumi_command_group
 from .shm import shm_command_group
 from .sre import sre_command_group
+from .storage import storage_command_group
 from .users import users_command_group
 
 # Create the application
@@ -97,6 +98,11 @@ application.add_typer(
     sre_command_group,
     name="sre",
     help="Manage Data Safe Haven SRE infrastructure.",
+)
+application.add_typer(
+    storage_command_group,
+    name="storage",
+    help="Manage the storage of Data Safe Haven SREs.",
 )
 
 
