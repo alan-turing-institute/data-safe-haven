@@ -1,3 +1,4 @@
+from . import network, strings
 from .network import current_ip_address, ip_address_in_list
 from .strings import (
     alphanumeric,
@@ -17,10 +18,12 @@ __all__ = [
     "current_ip_address",
     "get_key_vault_name",
     "ip_address_in_list",
+    "network",
     "next_occurrence",
     "password",
     "replace_separators",
     "seeded_uuid",
     "sha256hash",
+    "strings",
     "truncate_tokens",
 ]
