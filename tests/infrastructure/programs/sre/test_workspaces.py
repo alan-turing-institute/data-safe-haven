@@ -10,6 +10,6 @@ class TestTemplateCloudInit:
         )
 
         assert (
-            '- ["sadesiredstate.blob.core.windows.net:/sadesiredstate/desiredstate", /var/local/ansible, nfs, "ro,'
+            "sadesiredstate.blob.core.windows.net:/sadesiredstate/desiredstate /var/local/ansible nfs ro,"
             in cloudinit
         )
