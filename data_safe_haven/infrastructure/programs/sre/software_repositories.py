@@ -423,6 +423,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         database_username=props.database_username,
                         disable_secure_transport=False,
                         location=props.location,
+                        log_analytics_workspace_id=props.log_analytics_workspace.workspace.id,
                     ),
                     opts=ResourceOptions.merge(
                         child_opts,

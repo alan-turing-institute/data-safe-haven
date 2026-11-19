@@ -72,6 +72,34 @@ There are two tables,
 : Various metrics on file share utilisation and performance.
 : This table is not reserved for the configuration data shares and other resources may log to it.
 
+## PostgreSQL database logs
+
+The SRE's PostgreSQL Flexible Servers (including the shared service database,
+Guacamole, the software-repository database and research PostgreSQL servers)
+forward their existing server logs to the [SRE Log Analytics Workspace](#log-workspace)
+using Azure Monitor diagnostic settings.
+
+The resource-specific `PGSQLServerLogs` table contains entries from the
+`PostgreSQLLogs` category. For example, to inspect recent PostgreSQL errors:
+
+```kusto
+PGSQLServerLogs
+| where TimeGenerated > ago(24h)
+| where ErrorLevel in ("ERROR", "FATAL", "PANIC")
+| project TimeGenerated, LogicalServerName, ErrorLevel, Message
+| order by TimeGenerated desc
+```
+
+This setting does **not** enable SQL statement logging, Query Store SQL Text or
+other diagnostic categories. Log volume and storage incur Azure Monitor costs,
+and database logs can contain sensitive operational information. Restrict
+access to the Log Analytics Workspace accordingly. If additional logging is
+required, review the privacy implications before changing the PostgreSQL
+server parameters.
+
+See the [Azure PostgreSQL log configuration guide](https://learn.microsoft.com/en-us/azure/postgresql/monitor/how-to-configure-and-access-logs)
+for further details.
+
 ## Container logs
 
 Some of the Data Safe Haven infrastructure is provisioned as containers.
