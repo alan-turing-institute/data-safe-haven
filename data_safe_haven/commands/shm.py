@@ -12,7 +12,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenError,
 )
 from data_safe_haven.infrastructure import ImperativeSHM
-from data_safe_haven.logging import get_logger
+from data_safe_haven.logging import get_logger, log_unhandled_dsh_exception
 from data_safe_haven.validators import typer_aad_guid, typer_fqdn
 
 shm_command_group = typer.Typer()
@@ -48,6 +48,7 @@ def deploy(
     try:
         context = ContextManager.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
+        log_unhandled_dsh_exception(exc)
         if exc.args[0] == "No context selected":
             logger.critical(
                 "No context selected. Use `dsh context switch` to select one."
@@ -104,6 +105,7 @@ def deploy(
                 location=location,
             )
     except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
         msg = "Failed to load SHM configuration."
         logger.critical(msg)
         raise typer.Exit(1) from exc
@@ -113,10 +115,12 @@ def deploy(
         shm_infra = ImperativeSHM(context, config)
         shm_infra.deploy()
     except DataSafeHavenAzureAPIAuthenticationError as exc:
+        log_unhandled_dsh_exception(exc)
         msg = "Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`."
         logger.critical(msg)
         raise typer.Exit(1) from exc
     except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
         msg = "Failed to deploy Data Safe Haven infrastructure."
         logger.critical(msg)
         raise typer.Exit(1) from exc
@@ -133,6 +137,7 @@ def teardown() -> None:
     try:
         context = ContextManager.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
+        log_unhandled_dsh_exception(exc)
         if exc.args[0] == "No context selected":
             msg = "No context selected. Use `dsh context switch` to select one."
         else:
@@ -158,5 +163,6 @@ def teardown() -> None:
             logger.critical(f"No deployed SHM found for context [green]{context.name}.")
             raise typer.Exit(1)
     except DataSafeHavenError as exc:
+        log_unhandled_dsh_exception(exc)
         logger.critical("Could not teardown Safe Haven Management environment.")
         raise typer.Exit(1) from exc

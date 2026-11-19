@@ -1,4 +1,8 @@
+import pytest
+
 from data_safe_haven.commands import application
+from data_safe_haven.commands.cli import main
+from data_safe_haven.exceptions import DataSafeHavenConfigError
 from data_safe_haven.version import __version__
 
 
@@ -33,3 +37,16 @@ class TestVersion:
         result = runner.invoke(application, ["--version"])
         assert result.exit_code == 0
         assert f"Data Safe Haven {__version__}" in result.stdout
+
+
+def test_main_reports_unhandled_dsh_errors_at_command_boundary(mocker, caplog):
+    message = "Uncaught configuration failure"
+    mocker.patch(
+        "data_safe_haven.commands.cli.application",
+        side_effect=DataSafeHavenConfigError(message),
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        main()
+    assert exc_info.value.code == 1
+    assert message in caplog.text
