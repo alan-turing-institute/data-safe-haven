@@ -384,6 +384,7 @@ class DeclarativeSRE:
             SREUserServicesProps(
                 database_service_admin_password=data.password_database_service_admin,
                 databases=self.config.sre.databases,
+                database_skus=self.config.sre.database_skus,
                 db_server_shared_password=data.password_shared_database_admin,
                 dns_server_ip=dns.ip_address,
                 dockerhub_credentials=dockerhub_credentials,

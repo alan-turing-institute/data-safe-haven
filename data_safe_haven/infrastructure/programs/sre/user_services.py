@@ -3,7 +3,10 @@ from collections.abc import Mapping
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
-from data_safe_haven.config.config_sections import ConfigSubsectionGiteaMirror
+from data_safe_haven.config.config_sections import (
+    ConfigSubsectionDatabaseSkus,
+    ConfigSubsectionGiteaMirror,
+)
 from data_safe_haven.infrastructure.common import (
     DockerHubCredentials,
     get_id_from_subnet,
@@ -65,10 +68,12 @@ class SREUserServicesProps:
         subnet_software_repositories: Input[network.GetSubnetResult] | None,
         subnet_software_repositories_support: Input[network.GetSubnetResult] | None,
         db_server_shared_username: Input[str] | None = None,
+        database_skus: ConfigSubsectionDatabaseSkus | None = None,
     ) -> None:
         self.database_service_admin_password = database_service_admin_password
         self.databases = databases
         self.db_server_shared_password = db_server_shared_password
+        self.database_skus = database_skus or ConfigSubsectionDatabaseSkus()
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
         self.gitea_admin_password = Output.secret(gitea_admin_password)
@@ -151,6 +156,8 @@ class SREUserServicesComponent(ComponentResource):
                 database_username=props.db_server_shared_username,
                 disable_secure_transport=False,
                 location=props.location,
+                sku_name=props.database_skus.postgresql.name,
+                sku_tier=props.database_skus.postgresql.tier,
             ),
             opts=child_opts,
             tags=child_tags,
@@ -281,6 +288,7 @@ class SREUserServicesComponent(ComponentResource):
                 SREDatabaseServerProps(
                     database_password=props.database_service_admin_password,
                     database_system=database,
+                    database_skus=props.database_skus,
                     location=props.location,
                     resource_group_name=props.resource_group_name,
                     sre_fqdn=props.sre_fqdn,

@@ -18,6 +18,9 @@ class MicrosoftSQLDatabaseProps:
         database_subnet_id: Input[str],
         database_username: Input[str],
         location: Input[str],
+        sku_name: str = "GP_S_Gen5",
+        sku_family: str = "Gen5",
+        sku_capacity: int = 1,
     ) -> None:
         self.database_names = Output.from_input(database_names)
         self.database_password = database_password
@@ -26,6 +29,9 @@ class MicrosoftSQLDatabaseProps:
         self.database_subnet_id = database_subnet_id
         self.database_username = database_username
         self.location = location
+        self.sku_name = sku_name
+        self.sku_family = sku_family
+        self.sku_capacity = sku_capacity
 
 
 class MicrosoftSQLDatabaseComponent(ComponentResource):
@@ -67,9 +73,9 @@ class MicrosoftSQLDatabaseComponent(ComponentResource):
                     resource_group_name=props.database_resource_group_name,
                     server_name=db_server.name,
                     sku=sql.SkuArgs(
-                        capacity=1,
-                        family="Gen5",
-                        name="GP_S_Gen5",
+                        capacity=props.sku_capacity,
+                        family=props.sku_family,
+                        name=props.sku_name,
                     ),
                     opts=ResourceOptions.merge(
                         child_opts, ResourceOptions(parent=db_server)

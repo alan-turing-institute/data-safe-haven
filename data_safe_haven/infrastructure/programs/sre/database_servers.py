@@ -2,6 +2,7 @@ from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, ResourceOptions
 
+from data_safe_haven.config.config_sections import ConfigSubsectionDatabaseSkus
 from data_safe_haven.infrastructure.components import (
     LocalDnsRecordComponent,
     LocalDnsRecordProps,
@@ -24,10 +25,12 @@ class SREDatabaseServerProps:
         resource_group_name: Input[str],
         sre_fqdn: Input[str],
         subnet_id: Input[str],
+        database_skus: ConfigSubsectionDatabaseSkus | None = None,
     ) -> None:
         self.database_password = database_password
         self.database_system = database_system
         self.database_username = "databaseadmin"
+        self.database_skus = database_skus or ConfigSubsectionDatabaseSkus()
         self.location = location
         self.resource_group_name = resource_group_name
         self.sre_fqdn = sre_fqdn
@@ -61,6 +64,9 @@ class SREDatabaseServerComponent(ComponentResource):
                     database_subnet_id=props.subnet_id,
                     database_username=props.database_username,
                     location=props.location,
+                    sku_name=props.database_skus.mssql.name,
+                    sku_family=props.database_skus.mssql.family,
+                    sku_capacity=props.database_skus.mssql.capacity,
                 ),
                 opts=child_opts,
                 tags=child_tags,
@@ -92,6 +98,8 @@ class SREDatabaseServerComponent(ComponentResource):
                     database_username=props.database_username,
                     disable_secure_transport=True,
                     location=props.location,
+                    sku_name=props.database_skus.postgresql.name,
+                    sku_tier=props.database_skus.postgresql.tier,
                 ),
                 opts=child_opts,
                 tags=child_tags,

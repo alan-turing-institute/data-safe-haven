@@ -22,6 +22,8 @@ class PostgresqlDatabaseProps:
         disable_secure_transport: bool,
         location: Input[str],
         azure_extensions: Input[PostgreSqlExtension] | None = None,
+        sku_name: str = "Standard_B2s",
+        sku_tier: str = "Burstable",
     ) -> None:
         self.azure_extensions = azure_extensions
         self.database_names = Output.from_input(database_names)
@@ -32,6 +34,8 @@ class PostgresqlDatabaseProps:
         self.database_username = database_username
         self.disable_secure_transport = disable_secure_transport
         self.location = location
+        self.sku_name = sku_name
+        self.sku_tier = sku_tier
 
 
 class PostgresqlDatabaseComponent(ComponentResource):
@@ -74,8 +78,8 @@ class PostgresqlDatabaseComponent(ComponentResource):
                 :63
             ],  # At most, 63 characters allowed.
             sku=dbforpostgresql.SkuArgs(
-                name="Standard_B2s",
-                tier=dbforpostgresql.SkuTier.BURSTABLE,
+                name=props.sku_name,
+                tier=props.sku_tier,
             ),
             storage=dbforpostgresql.StorageArgs(
                 storage_size_gb=32,
