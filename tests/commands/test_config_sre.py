@@ -178,6 +178,7 @@ class TestUploadSRE:
             ["upload", str(sre_config_file)],
         )
         assert result.exit_code == 0
+        assert "Uploaded SRE configuration 'sandbox'." in result.stdout
 
         mock_exists.assert_called_once_with(context, filename=sre_filename)
         mock_upload.assert_called_once_with(
@@ -203,6 +204,7 @@ class TestUploadSRE:
             ["upload", str(sre_config_file)],
         )
         assert result.exit_code == 0
+        assert "Uploaded SRE configuration" not in result.stdout
 
         mock_exists.assert_called_once_with(context, filename=sre_filename)
         mock_from_remote.assert_called_once_with(context, filename=sre_filename)
@@ -232,6 +234,7 @@ class TestUploadSRE:
             input="y\n",
         )
         assert result.exit_code == 0
+        assert "Uploaded SRE configuration 'sandbox'." in result.stdout
 
         mock_exists.assert_called_once_with(context, filename=sre_filename)
         mock_from_remote.assert_called_once_with(context, filename=sre_filename)
@@ -262,6 +265,7 @@ class TestUploadSRE:
             input="n\n",
         )
         assert result.exit_code == 0
+        assert "Uploaded SRE configuration" not in result.stdout
 
         mock_exists.assert_called_once_with(context, filename=sre_filename)
         mock_from_remote.assert_called_once_with(context, filename=sre_filename)
@@ -323,6 +327,7 @@ class TestUploadSRE:
         )
 
         assert result.exit_code == 0
+        assert "Uploaded SRE configuration 'sandbox'." in result.stdout
 
         mock_upload.assert_called_once_with(
             sre_config_yaml,
@@ -331,6 +336,21 @@ class TestUploadSRE:
             context.storage_account_name,
             context.storage_container_name,
         )
+
+    def test_upload_failure_does_not_report_success(
+        self, mocker, runner, sre_config_file
+    ):
+        mocker.patch.object(SREConfig, "remote_exists", return_value=False)
+        mocker.patch.object(
+            SREConfig,
+            "upload",
+            side_effect=DataSafeHavenAzureError("Mock storage failure"),
+        )
+
+        result = runner.invoke(config_command_group, ["upload", str(sre_config_file)])
+
+        assert result.exit_code == 1
+        assert "Uploaded SRE configuration" not in result.stdout
 
     def test_upload_missing_field(
         self, runner, tmp_path, sre_config_yaml_missing_field
