@@ -8,7 +8,7 @@ from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.logging import get_logger
 
-from .entra_users import EntraUsers
+from .entra_users import ResilientEntraUsers
 from .guacamole_users import GuacamoleUsers
 from .research_user import ResearchUser
 
@@ -19,7 +19,7 @@ class UserHandler:
         context: Context,
         graph_api: GraphApi,
     ):
-        self.entra_users = EntraUsers(graph_api)
+        self.entra_users = ResilientEntraUsers(graph_api)
         self.context = context
         self.logger = get_logger()
 
