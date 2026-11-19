@@ -109,3 +109,5 @@ class SREDatabaseServerComponent(ComponentResource):
                     child_opts, ResourceOptions(parent=db_server_postgresql)
                 ),
             )
+
+        self.register_outputs({})

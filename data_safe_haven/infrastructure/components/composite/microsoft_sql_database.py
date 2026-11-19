@@ -110,3 +110,5 @@ class MicrosoftSQLDatabaseComponent(ComponentResource):
         self.private_ip_address = get_ip_addresses_from_private_endpoint(
             private_endpoint
         ).apply(lambda ips: ips[0])
+
+        self.register_outputs({})

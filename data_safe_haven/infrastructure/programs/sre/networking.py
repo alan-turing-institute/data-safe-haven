@@ -1978,6 +1978,8 @@ class SRENetworkingComponent(ComponentResource):
         )
         self.virtual_network = sre_virtual_network
 
+        self.register_outputs({})
+
     @staticmethod
     def get_subnet_by_name(
         subnet_name: str,

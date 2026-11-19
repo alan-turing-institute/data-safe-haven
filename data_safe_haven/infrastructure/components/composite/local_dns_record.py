@@ -68,3 +68,5 @@ class LocalDnsRecordComponent(ComponentResource):
         )
 
         self.private_record_set_id = private_dns_record_set.id
+
+        self.register_outputs({})

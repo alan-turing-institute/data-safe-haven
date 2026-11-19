@@ -240,3 +240,5 @@ class SREMonitoringElementsComponent(ComponentResource):
             ),
             tags=child_tags,
         )
+
+        self.register_outputs({})

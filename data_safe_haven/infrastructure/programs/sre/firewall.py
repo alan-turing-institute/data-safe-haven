@@ -546,3 +546,5 @@ class SREFirewallComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=self.firewall)
             ),
         )
+
+        self.register_outputs({})

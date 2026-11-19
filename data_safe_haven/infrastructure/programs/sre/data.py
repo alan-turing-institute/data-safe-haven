@@ -865,3 +865,5 @@ class SREDataComponent(ComponentResource):
             "storage_account_data_configuration_name": storage_account_data_configuration.name,
             "storage_account_data_private_sensitive_name": storage_account_data_private_sensitive.name,
         }
+
+        self.register_outputs({})

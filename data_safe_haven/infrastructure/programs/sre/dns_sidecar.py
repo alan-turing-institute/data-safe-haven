@@ -359,3 +359,5 @@ class DnsSidecarComponent(ComponentResource):
             ),
             workload_profile_name=workload_profile_name,
         )
+
+        self.register_outputs({})

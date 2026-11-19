@@ -309,3 +309,5 @@ class VMComponent(ComponentResource):
         )
         self.vm_name: Output[str] = virtual_machine.name
         self.vm_size: Output[str] = Output.from_input(props.vm_size)
+
+        self.register_outputs({})

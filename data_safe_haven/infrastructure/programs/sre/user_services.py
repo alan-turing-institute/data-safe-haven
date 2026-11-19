@@ -292,6 +292,8 @@ class SREUserServicesComponent(ComponentResource):
 
         self.dns_sidecar_targets = self.get_dns_sidecar_targets()
 
+        self.register_outputs({})
+
     def get_dns_sidecar_targets(self) -> list[SupportsDnsSidecar]:
         """Container instances whose DNS records the DNS sidecar should maintain"""
         targets: list[SupportsDnsSidecar] = [self.gitea_server, self.hedgedoc_server]
