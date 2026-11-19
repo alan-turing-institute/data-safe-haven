@@ -90,7 +90,7 @@ class AzureSerialisableModel(YAMLSerialisableModel):
         """
         remote_model = self.from_remote(context, filename=filename)
 
-        return self.yaml_diff(remote_model, from_name="remote", to_name="local")
+        return self.diff(remote_model)
 
     def upload(self: T, context: ContextBase, *, filename: str | None = None) -> None:
         """Serialise an AzureSerialisableModel to a YAML file in Azure storage."""

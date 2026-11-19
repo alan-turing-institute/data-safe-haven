@@ -79,6 +79,16 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
             self.model_dump(by_alias=True, mode="json", warnings=warnings), indent=2
         )
 
+    def diff(
+        self, other: T, *, from_name: str = "remote", to_name: str = "local"
+    ) -> list[str]:
+        """Compare this local model to another (typically remote) model.
+
+        Produce a unified diff from other to self. This mirrors Allowlist.diff,
+        while retaining yaml_diff for backward compatibility.
+        """
+        return self.yaml_diff(other, from_name=from_name, to_name=to_name)
+
     def yaml_diff(
         self, other: T, from_name: str = "other", to_name: str = "self"
     ) -> list[str]:

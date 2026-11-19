@@ -96,7 +96,7 @@ class TestAllowlist:
             repository=AllowlistRepository.CRAN,
         )
 
-        diff = remote_allowlist.diff(local_allowlist)
+        diff = local_allowlist.diff(remote_allowlist)
 
         assert isinstance(diff, list)
         assert "+pandas" in diff
@@ -127,7 +127,7 @@ class TestAllowlist:
             repository=AllowlistRepository.CRAN,
         )
 
-        diff = remote_allowlist.diff(local_allowlist)
+        diff = local_allowlist.diff(remote_allowlist)
 
         assert isinstance(diff, list)
         assert not diff
