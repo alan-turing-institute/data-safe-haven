@@ -13,6 +13,33 @@ We suggest using a dedicated Microsoft Entra tenant for your DSH deployment, but
 We also recommend using a separate tenant for managing your users from the one where your infrastructure subscriptions live, but this is not a requirement.
 :::
 
+### Choose a neutral sign-in username hint when sharing a tenant
+
+Microsoft Entra [default company branding](https://learn.microsoft.com/en-us/entra/fundamentals/how-to-customize-branding)
+is configured at the **tenant** level, not individually for each Data Safe Haven
+SHM or SRE. If several SHMs share one Entra tenant but use different username
+domains, a sign-in page that suggests `@one-shm.example.org` will be misleading
+to users from another SHM.
+
+Before onboarding users to more than one SHM using the same tenant:
+
+1. In the [Microsoft Entra admin centre](https://entra.microsoft.com/), go to
+   **Entra ID --> Custom branding** and inspect the default company branding,
+   including any browser-language variants.
+1. In the **Sign-in form** settings, leave **Username hint text** blank or
+   use a neutral hint such as **Email address**. Do not put a domain specific
+   to just one SHM in a tenant-wide hint.
+1. Give every user their actual **long-form username** (for example
+   `ada.lovelace@research.example.org`) along with their SRE URL. The user
+   should enter that username even if the sign-in screen suggests a different
+   domain.
+
+Microsoft also documents [branding themes that can be applied to individual applications](https://learn.microsoft.com/en-us/entra/fundamentals/how-to-customize-branding-themes-apps).
+These are distinct from tenant-wide default branding; support for standard
+Microsoft Entra ID tenants is currently a preview feature, and Data Safe Haven
+does not configure these themes. Do not assume that changing default company
+branding will target one SRE.
+
 If you decide to deploy a new tenant for user management, follow the instructions here:
 
 :::{admonition} How to deploy a new tenant
