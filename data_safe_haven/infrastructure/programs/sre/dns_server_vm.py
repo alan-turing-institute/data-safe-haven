@@ -2,7 +2,7 @@ from collections.abc import Mapping
 
 import chevron
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import network
+from pulumi_azure_native import compute, network
 
 from data_safe_haven.functions import b64encode, replace_separators
 from data_safe_haven.infrastructure.common import (
@@ -14,6 +14,10 @@ from data_safe_haven.infrastructure.common import (
 from data_safe_haven.infrastructure.components import LinuxVMComponentProps, VMComponent
 from data_safe_haven.logging import get_logger
 from data_safe_haven.resources import resources_path
+from data_safe_haven.utility import FileReader
+
+# Upper bound for cloud-init plus the readiness polling in the script
+READINESS_CHECK_TIMEOUT_SECONDS = 1800
 
 
 class SREDnsServerVMProps:
@@ -111,7 +115,35 @@ class SREDnsServerVMComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Get details of the deployed VM and register exports.
+        # Block until AdGuard Home answers DNS queries on the VM
+        readiness_script_reader = FileReader(
+            resources_path / "dns_server" / "wait_for_dns_server.sh"
+        )
+        self.readiness_check = compute.VirtualMachineRunCommandByVirtualMachine(
+            replace_separators(f"{self._name}_dns_readiness_check", "_"),
+            async_execution=False,
+            location=props.location,
+            resource_group_name=props.resource_group_name,
+            run_command_name="dns-readiness-check",
+            source=compute.VirtualMachineRunCommandScriptSourceArgs(
+                script=readiness_script_reader.file_contents(),
+            ),
+            timeout_in_seconds=READINESS_CHECK_TIMEOUT_SECONDS,
+            treat_failure_as_deployment_failure=True,
+            vm_name=container_host_vm.vm_name,
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(
+                    # Avoid clashing with other VM extension operations
+                    depends_on=[container_host_vm],
+                    # Re-run the check whenever the VM is replaced
+                    replacement_trigger=container_host_vm.vm_id,
+                ),
+            ),
+            tags=child_tags,
+        )
+
+        # Get details of the deployed VM and register exports
         self.exports = {
             "ip_address": container_host_vm.ip_address_private,
             "name": container_host_vm.vm_name,
