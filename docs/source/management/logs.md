@@ -11,6 +11,30 @@ Select which Log Analytics Workspace you want to view by clicking on the workspa
 
 The logs can be filtered using [Kusto Query Language (KQL)](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/log-query-overview).
 
+## Built-in saved queries
+
+New or updated SRE deployments register three saved Log Analytics queries in
+each SRE's own workspace under the **Data Safe Haven** category:
+
+- **Workspace - failed Linux authentication:** failed authentication recorded
+  in the `Syslog` table on workspace virtual machines. This is not a query
+  against Microsoft Entra sign-in logs.
+- **Sensitive data - ingress uploads:** upload activity for the `ingress`
+  blob container, from `StorageBlobLogs`.
+- **Sensitive data - egress downloads:** `GetBlob` operations against the
+  `egress` blob container, also from `StorageBlobLogs`.
+
+Open the SRE's Log Analytics workspace in the Azure portal, select **Logs**,
+and find these queries under the saved-query category. The default windows
+are 24 hours for authentication attempts and seven days for blob transfers.
+Adjust filters and retention as needed for an investigation.
+
+Storage queries rely on the SRE storage diagnostic settings and the
+[StorageBlobLogs schema](https://learn.microsoft.com/en-us/azure/azure-monitor/reference/tables/storagebloblogs).
+Results are limited to events actually ingested into this workspace; missing
+records do not prove that no transfers occurred. The queries do not enable
+any additional data collection or Microsoft Entra sign-in ingestion.
+
 ## Storage logs
 
 Depending on how different parts of Data Safe Haven storage are provisioned, logs may differ.
