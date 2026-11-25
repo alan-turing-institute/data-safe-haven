@@ -181,24 +181,6 @@ class TestSREUserServicesProps:
         ).apply(check)
 
     @pulumi.runtime.test  # type: ignore
-    def test_shared_db_subnet_hedgedoc(
-        self, user_services_component: SREUserServicesComponent
-    ) -> Any:
-        """Check that the Hedgedock service is in the same subnet as the shared database"""
-
-        def check(subnets: dict[Any, Any]) -> None:
-            assert subnets["db_subnet"] in [
-                subnet["id"] for subnet in subnets["component_subnets"]
-            ]
-
-        return pulumi.Output.from_input(
-            {
-                "db_subnet": user_services_component.db_server_shared.private_endpoint.subnet.id,
-                "component_subnets": user_services_component.hedgedoc_server.container_group.subnet_ids,
-            }
-        ).apply(check)
-
-    @pulumi.runtime.test  # type: ignore
     def test_shared_db_subnet_gitea_mirror(
         self, user_services_component: SREUserServicesComponent
     ) -> Any:
@@ -223,7 +205,7 @@ class TestSREUserServicesProps:
         assert {
             target.dns_record_name
             for target in user_services_component.dns_sidecar_targets
-        } == {"gitea", "hedgedoc", "giteamirror"}
+        } == {"gitea", "giteamirror"}
 
     def test_dns_sidecar_targets_without_gitea_mirror(
         self,
@@ -240,5 +222,4 @@ class TestSREUserServicesProps:
         assert component.mirror_monitor is None
         assert {target.dns_record_name for target in component.dns_sidecar_targets} == {
             "gitea",
-            "hedgedoc",
         }
