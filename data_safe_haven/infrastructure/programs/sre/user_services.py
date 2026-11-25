@@ -294,7 +294,7 @@ class SREUserServicesComponent(ComponentResource):
 
     def get_dns_sidecar_targets(self) -> list[SupportsDnsSidecar]:
         """Container instances whose DNS records the DNS sidecar should maintain"""
-        targets: list[SupportsDnsSidecar] = [self.gitea_server, self.hedgedoc_server]
+        targets: list[SupportsDnsSidecar] = [self.gitea_server]
         if self.mirror_monitor is not None:
             targets.append(self.mirror_monitor)
         # Nexus is only deployed for some package categories
