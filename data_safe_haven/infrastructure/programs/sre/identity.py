@@ -2,7 +2,7 @@
 
 from collections.abc import Mapping
 
-from pulumi import ComponentResource, Input, Output, ResourceOptions
+from pulumi import ComponentResource, Input, Output, Resource, ResourceOptions
 from pulumi_azure_native import containerinstance, network, storage
 
 from data_safe_haven.config import LOGGING_LEVELS
@@ -42,6 +42,7 @@ class SREIdentityProps:
     def __init__(
         self,
         dns_server_ip: Input[str],
+        dns_server_readiness_check: Resource,
         dockerhub_credentials: DockerHubCredentials,
         entra_application_id: Input[str],
         entra_application_secret: Input[str],
@@ -57,6 +58,7 @@ class SREIdentityProps:
         log_level: Input[str],
     ) -> None:
         self.dns_server_ip = dns_server_ip
+        self.dns_server_readiness_check = dns_server_readiness_check
         self.dockerhub_credentials = dockerhub_credentials
         self.entra_application_id = entra_application_id
         self.entra_application_secret = entra_application_secret
@@ -251,7 +253,10 @@ class SREIdentityComponent(ComponentResource):
                 ResourceOptions(
                     delete_before_replace=True,
                     replace_on_changes=["containers"],
-                    depends_on=[props.log_analytics_workspace.workspace],
+                    depends_on=[
+                        props.dns_server_readiness_check,
+                        props.log_analytics_workspace.workspace,
+                    ],
                 ),
             ),
             tags=child_tags,

@@ -2,7 +2,7 @@
 
 from collections.abc import Mapping
 
-from pulumi import ComponentResource, Input, Output, ResourceOptions
+from pulumi import ComponentResource, Input, Output, Resource, ResourceOptions
 from pulumi_azure_native import containerinstance, network, storage
 
 from data_safe_haven.external import AzureIPv4Range
@@ -31,6 +31,7 @@ class SRERemoteDesktopProps:
         allow_paste: Input[bool],
         database_password: Input[str],
         dns_server_ip: Input[str],
+        dns_server_readiness_check: Resource,
         dockerhub_credentials: DockerHubCredentials,
         entra_application_id: Input[str],
         entra_application_url: Input[str],
@@ -60,6 +61,7 @@ class SRERemoteDesktopProps:
         self.disable_copy = not allow_copy
         self.disable_paste = not allow_paste
         self.dns_server_ip = dns_server_ip
+        self.dns_server_readiness_check = dns_server_readiness_check
         self.dockerhub_credentials = dockerhub_credentials
         self.entra_application_id = entra_application_id
         self.entra_application_url = entra_application_url
@@ -426,7 +428,10 @@ class SRERemoteDesktopComponent(ComponentResource):
                 ResourceOptions(
                     delete_before_replace=True,
                     replace_on_changes=["containers"],
-                    depends_on=[props.log_analytics_workspace.workspace],
+                    depends_on=[
+                        props.dns_server_readiness_check,
+                        props.log_analytics_workspace.workspace,
+                    ],
                 ),
             ),
             tags=child_tags,

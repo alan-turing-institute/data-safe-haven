@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 
-from pulumi import ComponentResource, Input, Output, ResourceOptions
+from pulumi import ComponentResource, Input, Output, Resource, ResourceOptions
 from pulumi_azure_native import containerinstance, network, storage
 
 from data_safe_haven.infrastructure.common import (
@@ -24,6 +24,7 @@ class SREAptProxyServerProps:
         self,
         containers_subnet: Input[network.GetSubnetResult],
         dns_server_ip: Input[str],
+        dns_server_readiness_check: Resource,
         location: Input[str],
         log_analytics_workspace: Input[OperationalInsightsWorkspace],
         resource_group_name: Input[str],
@@ -35,6 +36,7 @@ class SREAptProxyServerProps:
             get_id_from_subnet
         )
         self.dns_server_ip = dns_server_ip
+        self.dns_server_readiness_check = dns_server_readiness_check
         self.location = location
         self.log_analytics_workspace = log_analytics_workspace
         self.resource_group_name = resource_group_name
@@ -175,6 +177,7 @@ class SREAptProxyServerComponent(ComponentResource):
                     depends_on=[
                         file_share_apt_proxy_server,
                         file_share_apt_proxy_server_repositories,
+                        props.dns_server_readiness_check,
                         props.log_analytics_workspace.workspace,
                     ],
                     replace_on_changes=["containers"],

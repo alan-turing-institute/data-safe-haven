@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from pulumi import ComponentResource, Input, Output, ResourceOptions
+from pulumi import ComponentResource, Input, Output, Resource, ResourceOptions
 from pulumi_azure_native import (
     authorization,
     containerinstance,
@@ -57,6 +57,7 @@ class DnsSidecarProps:
         self,
         container_instances: list[SupportsDnsSidecar],
         cron_expression: str,
+        dns_server_readiness_check: Resource,
         subnet_id: Input[str],
         location: Input[str],
         log_analytics_workspace: Input[OperationalInsightsWorkspace],
@@ -72,6 +73,7 @@ class DnsSidecarProps:
     ):
         self.container_instances = container_instances
         self.cron_expression = cron_expression
+        self.dns_server_readiness_check = dns_server_readiness_check
         self.subnet_id = subnet_id
         self.location = location
         self.log_analytics_workspace = log_analytics_workspace
@@ -264,7 +266,10 @@ class DnsSidecarComponent(ComponentResource):
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
-                    depends_on=[props.log_analytics_workspace.workspace],
+                    depends_on=[
+                        props.dns_server_readiness_check,
+                        props.log_analytics_workspace.workspace,
+                    ],
                 ),
             ),
         )

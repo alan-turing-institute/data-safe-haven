@@ -1,7 +1,7 @@
 import json
 from collections.abc import Mapping
 
-from pulumi import ComponentResource, Input, Output, ResourceOptions
+from pulumi import ComponentResource, Input, Output, Resource, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, storage
 
 from data_safe_haven.config.config_sections import ConfigSubsectionGiteaMirror
@@ -34,6 +34,7 @@ class SREGiteaMirrorManagerProps:
         db_server_shared: Input[PostgresqlDatabaseComponent],
         db_server_shared_password: Input[str],
         dns_server_ip: Input[str],
+        dns_server_readiness_check: Resource,
         dockerhub_credentials: DockerHubCredentials,
         gitea_workspace_dns_record: str,
         location: Input[str],
@@ -53,6 +54,7 @@ class SREGiteaMirrorManagerProps:
         self.db_server_shared = db_server_shared
         self.db_server_shared_password = db_server_shared_password
         self.dns_server_ip = dns_server_ip
+        self.dns_server_readiness_check = dns_server_readiness_check
         self.dockerhub_credentials = dockerhub_credentials
         self.gitea_workspace_dns_record = gitea_workspace_dns_record
         self.location = location
@@ -395,6 +397,7 @@ class SREGiteaMirrorManagerComponent(ComponentResource):
                         db_gitea_repository,
                         file_share_gitea_gitea_entrypoint_sh,
                         file_share_gitea_gitea_configure_sh,
+                        props.dns_server_readiness_check,
                         props.log_analytics_workspace.workspace,
                     ],
                     replace_on_changes=["containers"],
