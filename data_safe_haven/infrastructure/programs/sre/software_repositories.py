@@ -3,7 +3,7 @@
 from collections.abc import Mapping
 from typing import Any
 
-from pulumi import ComponentResource, Input, Output, ResourceOptions
+from pulumi import ComponentResource, Input, Output, Resource, ResourceOptions
 from pulumi_azure_native import containerinstance, network, storage
 
 from data_safe_haven.config import LOGGING_LEVELS
@@ -47,6 +47,7 @@ class SRESoftwareRepositoriesProps:
         self,
         database_password: Input[str],
         dns_server_ip: Input[str],
+        dns_server_readiness_check: Resource,
         dockerhub_credentials: DockerHubCredentials,
         location: Input[str],
         log_analytics_workspace: Input[OperationalInsightsWorkspace],
@@ -67,6 +68,7 @@ class SRESoftwareRepositoriesProps:
             database_username if database_username else "postgresadmin"
         )
         self.dns_server_ip = dns_server_ip
+        self.dns_server_readiness_check = dns_server_readiness_check
         self.dockerhub_credentials = dockerhub_credentials
         self.location = location
         self.log_analytics_workspace = log_analytics_workspace
@@ -401,6 +403,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         delete_before_replace=True,
                         replace_on_changes=["containers"],
                         depends_on=[
+                            props.dns_server_readiness_check,
                             props.log_analytics_workspace.workspace,
                         ],
                     ),

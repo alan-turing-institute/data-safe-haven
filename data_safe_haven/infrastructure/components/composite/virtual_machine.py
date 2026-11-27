@@ -307,5 +307,6 @@ class VMComponent(ComponentResource):
         self.resource_group_name: Output[str] = Output.from_input(
             props.resource_group_name
         )
+        self.vm_id: Output[str] = virtual_machine.vm_id
         self.vm_name: Output[str] = virtual_machine.name
         self.vm_size: Output[str] = Output.from_input(props.vm_size)

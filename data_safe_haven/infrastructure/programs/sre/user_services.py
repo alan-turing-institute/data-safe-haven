@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 
-from pulumi import ComponentResource, Input, Output, ResourceOptions
+from pulumi import ComponentResource, Input, Output, Resource, ResourceOptions
 from pulumi_azure_native import network
 
 from data_safe_haven.config.config_sections import ConfigSubsectionGiteaMirror
@@ -38,6 +38,7 @@ class SREUserServicesProps:
         databases: list[DatabaseSystem],  # this must *not* be passed as an Input[T]
         db_server_shared_password: Input[str],
         dns_server_ip: Input[str],
+        dns_server_readiness_check: Resource,
         dockerhub_credentials: DockerHubCredentials,
         gitea_admin_password: Input[str],
         gitea_user_password: Input[str],
@@ -70,6 +71,7 @@ class SREUserServicesProps:
         self.databases = databases
         self.db_server_shared_password = db_server_shared_password
         self.dns_server_ip = dns_server_ip
+        self.dns_server_readiness_check = dns_server_readiness_check
         self.dockerhub_credentials = dockerhub_credentials
         self.gitea_admin_password = Output.secret(gitea_admin_password)
         self.gitea_user_password = Output.secret(gitea_user_password)
@@ -166,6 +168,7 @@ class SREUserServicesComponent(ComponentResource):
                 db_server_shared=self.db_server_shared,
                 db_server_shared_password=props.db_server_shared_password,
                 dns_server_ip=props.dns_server_ip,
+                dns_server_readiness_check=props.dns_server_readiness_check,
                 dockerhub_credentials=props.dockerhub_credentials,
                 ldap_server_hostname=props.ldap_server_hostname,
                 ldap_server_port=props.ldap_server_port,
@@ -197,6 +200,7 @@ class SREUserServicesComponent(ComponentResource):
                     db_server_shared=self.db_server_shared,
                     db_server_shared_password=props.db_server_shared_password,
                     dns_server_ip=props.dns_server_ip,
+                    dns_server_readiness_check=props.dns_server_readiness_check,
                     dockerhub_credentials=props.dockerhub_credentials,
                     gitea_workspace_dns_record=self.gitea_server.dns_record_name,
                     location=props.location,
@@ -225,6 +229,7 @@ class SREUserServicesComponent(ComponentResource):
                 db_server_shared=self.db_server_shared,
                 db_server_shared_password=props.db_server_shared_password,
                 dns_server_ip=props.dns_server_ip,
+                dns_server_readiness_check=props.dns_server_readiness_check,
                 dockerhub_credentials=props.dockerhub_credentials,
                 ldap_server_hostname=props.ldap_server_hostname,
                 ldap_server_port=props.ldap_server_port,
@@ -255,6 +260,7 @@ class SREUserServicesComponent(ComponentResource):
                 SRESoftwareRepositoriesProps(
                     database_password=props.software_repositories_database_password,
                     dns_server_ip=props.dns_server_ip,
+                    dns_server_readiness_check=props.dns_server_readiness_check,
                     dockerhub_credentials=props.dockerhub_credentials,
                     location=props.location,
                     log_analytics_workspace=props.log_analytics_workspace,

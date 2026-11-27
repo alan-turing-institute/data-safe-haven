@@ -277,6 +277,7 @@ class DeclarativeSRE:
             SREAptProxyServerProps(
                 containers_subnet=networking.subnet_apt_proxy_server,
                 dns_server_ip=dns.ip_address,
+                dns_server_readiness_check=dns.readiness_check,
                 location=self.config.azure.location,
                 log_analytics_workspace=monitoring_elements.workspace_analytics,
                 resource_group_name=resource_group.name,
@@ -293,6 +294,7 @@ class DeclarativeSRE:
             self.stack_name,
             SREClamAVMirrorProps(
                 dns_server_ip=dns.ip_address,
+                dns_server_readiness_check=dns.readiness_check,
                 dockerhub_credentials=dockerhub_credentials,
                 location=self.config.azure.location,
                 log_analytics_workspace=monitoring_elements.workspace_analytics,
@@ -311,6 +313,7 @@ class DeclarativeSRE:
             self.stack_name,
             SREIdentityProps(
                 dns_server_ip=dns.ip_address,
+                dns_server_readiness_check=dns.readiness_check,
                 dockerhub_credentials=dockerhub_credentials,
                 entra_application_id=entra.identity_application_id,
                 entra_application_secret=entra.identity_application_secret,
@@ -354,6 +357,7 @@ class DeclarativeSRE:
                 allow_paste=self.config.sre.remote_desktop.allow_paste,
                 database_password=data.password_user_database_admin,
                 dns_server_ip=dns.ip_address,
+                dns_server_readiness_check=dns.readiness_check,
                 dockerhub_credentials=dockerhub_credentials,
                 entra_application_id=entra.remote_desktop_application_id,
                 entra_application_url=entra.remote_desktop_url,
@@ -386,6 +390,7 @@ class DeclarativeSRE:
                 databases=self.config.sre.databases,
                 db_server_shared_password=data.password_shared_database_admin,
                 dns_server_ip=dns.ip_address,
+                dns_server_readiness_check=dns.readiness_check,
                 dockerhub_credentials=dockerhub_credentials,
                 gitea_admin_password=data.password_gitea_admin,
                 gitea_user_password=data.password_gitea_user,
@@ -476,7 +481,7 @@ class DeclarativeSRE:
                     for vm_index, vm_size in enumerate(self.config.sre.workspace_skus)
                 ],
             ),
-            opts=ResourceOptions(depends_on=[desired_state]),
+            opts=ResourceOptions(depends_on=[desired_state, dns.readiness_check]),
             tags=self.tags,
         )
 
@@ -494,6 +499,7 @@ class DeclarativeSRE:
             DnsSidecarProps(
                 container_instances=container_instance_information,
                 cron_expression=self.config.user_services.dns_sidecar.cron_expression,
+                dns_server_readiness_check=dns.readiness_check,
                 subnet_id=Output.from_input(networking.subnet_dns_sidecar).apply(
                     get_id_from_subnet
                 ),

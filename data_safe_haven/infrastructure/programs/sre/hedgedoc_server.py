@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 
-from pulumi import ComponentResource, Input, Output, ResourceOptions
+from pulumi import ComponentResource, Input, Output, Resource, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, storage
 
 from data_safe_haven.config import LOGGING_LEVELS
@@ -41,6 +41,7 @@ class SREHedgeDocServerProps:
         db_server_shared: Input[PostgresqlDatabaseComponent],
         db_server_shared_password: Input[str],
         dns_server_ip: Input[str],
+        dns_server_readiness_check: Resource,
         dockerhub_credentials: DockerHubCredentials,
         ldap_server_hostname: Input[str],
         ldap_server_port: Input[int],
@@ -60,6 +61,7 @@ class SREHedgeDocServerProps:
         self.db_server_shared_password = db_server_shared_password
         self.resource_group_name = resource_group_name
         self.dns_server_ip = dns_server_ip
+        self.dns_server_readiness_check = dns_server_readiness_check
         self.dockerhub_credentials = dockerhub_credentials
         self.ldap_server_hostname = ldap_server_hostname
         self.ldap_server_port = Output.from_input(ldap_server_port).apply(str)
@@ -328,6 +330,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                     depends_on=[
                         db_hedgedoc_documents,
                         file_share_hedgedoc_caddy_caddyfile,
+                        props.dns_server_readiness_check,
                         props.log_analytics_workspace.workspace,
                     ],
                     replace_on_changes=["containers"],

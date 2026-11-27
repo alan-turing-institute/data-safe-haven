@@ -301,4 +301,5 @@ class SREDnsServerComponent(ComponentResource):
         # Register outputs
         self.ip_address = dns_server_vm_component.exports["ip_address"]
         self.password_admin = password_admin
+        self.readiness_check = dns_server_vm_component.readiness_check
         self.virtual_network = virtual_network

@@ -52,6 +52,7 @@ def user_services_props(
         databases=[DatabaseSystem.POSTGRESQL],
         db_server_shared_password="shared-db-password",
         dns_server_ip=dns.ip_address,
+        dns_server_readiness_check=dns.readiness_check,
         dockerhub_credentials=dockerhub_credentials,
         gitea_admin_password=gitea_admin_password,
         gitea_user_password=gitea_user_password,
