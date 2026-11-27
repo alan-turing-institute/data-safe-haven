@@ -49,7 +49,9 @@ class FileShareFileProvider(DshResourceProvider):
         tokens = destination_path.split("/")
         directory = "/".join(tokens[:-1])
         file_name = tokens[-1]
+        # See: https://learn.microsoft.com/en-us/python/api/azure-storage-file-share/azure.storage.fileshare.aio.sharedirectoryclient?view=azure-python
         if directory:
+            # Check if the full path exists; no need to create directories if it does
             directory_client = ShareDirectoryClient(
                 account_url=f"https://{storage_account_name}.file.core.windows.net",
                 share_name=share_name,
@@ -57,7 +59,19 @@ class FileShareFileProvider(DshResourceProvider):
                 credential=storage_account_key,
             )
             if not directory_client.exists():
-                directory_client.create_directory()
+                # If it doesn't exist we need to walk the path starting from the root
+                directory_client = ShareDirectoryClient(
+                    account_url=f"https://{storage_account_name}.file.core.windows.net",
+                    share_name=share_name,
+                    directory_path="",
+                    credential=storage_account_key,
+                )
+                for subdir in tokens[:-1]:
+                    # Move to the subdirectory, which need not yet exist
+                    directory_client = directory_client.get_subdirectory_client(subdir)
+                    if not directory_client.exists():
+                        # Create the subdirectory if it doesn't already exist
+                        directory_client.create_directory()
             return directory_client.get_file_client(file_name)
         return ShareFileClient(
             account_url=f"https://{storage_account_name}.file.core.windows.net",

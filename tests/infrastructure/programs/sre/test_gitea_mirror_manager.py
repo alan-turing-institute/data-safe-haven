@@ -17,13 +17,13 @@ class TestSREGiteaMirrorManagerComponent:
     def test_mirrormanager_image_tag(
         self, gitea_mirror_manager_component: SREGiteaMirrorManagerComponent
     ) -> Any:
-        """Check that the mirrormanager container uses at least the v0.0.2 image"""
+        """Check that the mirrormanager container uses at least the v0.0.3 image"""
 
         def check(containers: list[Any]) -> None:
             mirrormanager = next(c for c in containers if c["name"] == "mirrormanager")
             image, _, tag = mirrormanager["image"].rpartition(":")
             assert_equal("ghcr.io/alan-turing-institute/gitea-mirror-manager", image)
-            assert Version(tag) >= Version("0.0.2")
+            assert Version(tag) >= Version("0.0.3")
 
         return pulumi.Output.from_input(
             gitea_mirror_manager_component.container_group.containers
