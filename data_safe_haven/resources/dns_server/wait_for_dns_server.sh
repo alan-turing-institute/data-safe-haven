@@ -6,15 +6,18 @@ SLEEP_SECONDS=10
 
 # A non-zero exit code here only signals cloud-init warnings or errors
 cloud-init status --wait > /dev/null || echo "cloud-init finished with warnings or errors"
+CLOUD_INIT_SECONDS=$SECONDS
 
 for attempt in $(seq 1 "$MAX_ATTEMPTS"); do
     # dig exits with 0 on any DNS reply (including NXDOMAIN) and 9 on no reply
     if systemctl is-active --quiet adguardhome && dig @127.0.0.1 +time=2 +tries=1 readiness-check.invalid > /dev/null; then
         echo "DNS server ready after ${attempt} attempt(s)"
+        echo "readiness-check: cloud_init_seconds=${CLOUD_INIT_SECONDS} dns_wait_seconds=$((SECONDS - CLOUD_INIT_SECONDS)) total_seconds=${SECONDS} attempts=${attempt}"
         exit 0
     fi
     sleep "$SLEEP_SECONDS"
 done
 
 echo "DNS server not ready after $((MAX_ATTEMPTS * SLEEP_SECONDS)) seconds" >&2
+echo "readiness-check: cloud_init_seconds=${CLOUD_INIT_SECONDS} dns_wait_seconds=$((SECONDS - CLOUD_INIT_SECONDS)) total_seconds=${SECONDS} attempts=${MAX_ATTEMPTS}" >&2
 exit 1
