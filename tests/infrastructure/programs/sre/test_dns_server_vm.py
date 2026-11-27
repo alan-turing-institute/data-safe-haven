@@ -71,8 +71,8 @@ class TestSREDnsServerVMComponent:
             async_execution, treat_failure, timeout, script = values
             assert async_execution is False
             assert treat_failure is True
-            assert_equal(READINESS_CHECK_TIMEOUT_SECONDS, timeout)
-            assert_equal(expected_script, script)
+            assert_equal(READINESS_CHECK_TIMEOUT_SECONDS, timeout)  # type: ignore
+            assert_equal(expected_script, script)  # type: ignore
 
         return pulumi.Output.all(
             readiness_check.async_execution,
