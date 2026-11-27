@@ -16,8 +16,8 @@ from data_safe_haven.logging import get_logger
 from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader
 
-# Upper bound for cloud-init plus the readiness polling in the script
-READINESS_CHECK_TIMEOUT_SECONDS = 1800
+# Upper bound for cloud-init plus the 5-minute readiness polling in the script
+READINESS_CHECK_TIMEOUT_SECONDS = 720
 
 
 class SREDnsServerVMProps:
